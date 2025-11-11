@@ -308,10 +308,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's own tasks/complaints
   app.get("/api/tasks/my", requireAuth, async (req, res) => {
     try {
-      const userId = req.query.userId as string;
+      const userId = req.session.userId;
 
       if (!userId) {
-        return res.status(400).json({ error: "User ID is required" });
+        return res.status(401).json({ error: "Not authenticated" });
       }
 
       const tasks = await storage.getTasksByUserId(userId);
@@ -323,7 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new task/complaint
-  app.post("/api/tasks", async (req, res) => {
+  app.post("/api/tasks", requireAuth, async (req, res) => {
     console.log('📥 [POST /api/tasks] Request received');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     try {
@@ -334,9 +334,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         blok, 
         soba, 
         priority, 
-        userId, 
-        userName, 
-        userDepartment,
         images,
         status,
         assigned_to,
@@ -346,10 +343,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recurrence_end_date
       } = req.body;
 
-      // Validation
-      if (!title || !description || !hotel || !blok || !userId || !userName || !userDepartment) {
+      // Get user info from session
+      const sessionUserId = req.session.userId;
+      if (!sessionUserId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const user = await storage.getUserById(sessionUserId);
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      const userId = user.id;
+      const userName = user.full_name;
+      const userDepartment = user.department || 'N/A';
+
+      // Validation - only require task details, not user info
+      if (!title || !description || !hotel || !blok) {
         return res.status(400).json({ 
-          error: "Missing required fields" 
+          error: "Missing required fields (title, description, hotel, blok)" 
         });
       }
 
