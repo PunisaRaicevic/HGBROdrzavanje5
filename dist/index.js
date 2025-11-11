@@ -1119,13 +1119,15 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
-  const port = parseInt(process.env.PORT || "5000", 10);
+  const PORT = Number(process.env.PORT) || 5e3;
   server.listen({
-    port,
+    port: PORT,
     host: "0.0.0.0",
     reusePort: true
   }, () => {
-    log(`serving on port ${port}`);
-    startCronScheduler();
+    log(`Server running on port ${PORT}`);
+    if (process.env.NODE_ENV === "production") {
+      startCronScheduler();
+    }
   });
 })();

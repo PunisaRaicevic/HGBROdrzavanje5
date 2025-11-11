@@ -12,6 +12,30 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (November 2025)
 
+### Production Deployment Configuration (November 11, 2025)
+
+**Health Check Endpoints for Replit Deployment**
+- **Added Endpoints**:
+  - `GET /health` - Minimal health check (returns `{"status":"ok"}`)
+  - `GET /` - Root endpoint (returns `{"status":"ok","message":"Server is running"}`)
+- **Important**: Health check endpoints do NOT query database for speed and reliability
+- **Purpose**: Replit deployment provisioning and monitoring
+
+**Cron Scheduler Production-Only Execution**
+- **Configuration**: Cron scheduler (`startCronScheduler()`) now runs ONLY in production (`NODE_ENV=production`)
+- **Reasoning**: 
+  - Development environment doesn't need automatic recurring task creation
+  - Reduces noise in development logs
+  - Prevents unintended task creation during development
+- **Location**: `server/index.ts` - called after server.listen() callback
+- **Production Behavior**: Starts immediately and runs every 15 minutes
+- **Development Behavior**: Does NOT start - must be triggered manually if needed
+
+**Password Reset** (November 11, 2025)
+- **All user passwords**: Changed from "password123" to "**1111**" (plaintext)
+- **Auto-hashing**: Login endpoint automatically converts plaintext passwords to bcrypt hashes on first login
+- **Test credentials**: Any username with password "1111" (e.g., `aleksandar / 1111`)
+
 ### Username-Based Authentication Migration (November 10, 2025)
 
 **Complete Migration from Email-Based to Username-Based Login**
