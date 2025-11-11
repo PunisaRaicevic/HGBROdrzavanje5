@@ -28,7 +28,7 @@ app.use(
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
-      secure: false, // Allow both HTTP and HTTPS for development and production
+      secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
       sameSite: "lax",
     },
   })
