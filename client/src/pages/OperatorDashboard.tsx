@@ -73,11 +73,12 @@ export default function OperatorDashboard() {
       assigned_to?: string;
       assigned_to_name?: string;
     }) => {
-      return apiRequest('PATCH', `/api/tasks/${taskId}`, { 
+      const response = await apiRequest('PATCH', `/api/tasks/${taskId}`, { 
         status, 
         assigned_to, 
         assigned_to_name
       });
+      return await response.json();
     },
     onSuccess: () => {
       // Invalidate and refetch tasks

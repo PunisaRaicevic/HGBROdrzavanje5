@@ -64,11 +64,12 @@ export default function SupervisorDashboard() {
       assigned_to?: string;
       assigned_to_name?: string;
     }) => {
-      return apiRequest('PATCH', `/api/tasks/${taskId}`, { 
+      const response = await apiRequest('PATCH', `/api/tasks/${taskId}`, { 
         status, 
         assigned_to, 
         assigned_to_name
       });
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
@@ -90,9 +91,10 @@ export default function SupervisorDashboard() {
   // Mutation for sending task to external company
   const sendToExternalMutation = useMutation({
     mutationFn: async (taskId: string) => {
-      return apiRequest('PATCH', `/api/tasks/${taskId}`, { 
+      const response = await apiRequest('PATCH', `/api/tasks/${taskId}`, { 
         status: 'with_external'
       });
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
@@ -114,9 +116,10 @@ export default function SupervisorDashboard() {
   // Mutation for completing external task
   const completeExternalTaskMutation = useMutation({
     mutationFn: async (taskId: string) => {
-      return apiRequest('PATCH', `/api/tasks/${taskId}`, { 
+      const response = await apiRequest('PATCH', `/api/tasks/${taskId}`, { 
         status: 'completed'
       });
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
