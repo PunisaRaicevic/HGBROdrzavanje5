@@ -1,0 +1,8 @@
+{
+  "name": "Hotel Maintenance App",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react",
+  "id": "hotel-maintenance"
+}
