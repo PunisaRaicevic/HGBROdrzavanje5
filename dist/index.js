@@ -470,6 +470,9 @@ function requireAdmin(req, res, next) {
 }
 async function registerRoutes(app2) {
   const server = createServer(app2);
+  app2.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
   app2.post("/api/auth/login", async (req, res) => {

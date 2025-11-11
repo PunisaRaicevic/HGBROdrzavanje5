@@ -51,6 +51,11 @@ function requireAdmin(req: any, res: any, next: any) {
 export async function registerRoutes(app: Express): Promise<Server> {
   const server = createServer(app);
   
+  // Health check endpoint za Replit
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+  
   // Initialize Socket.IO for real-time notifications
   initializeSocket(server);
   console.log('[INIT] Socket.IO initialized for real-time notifications');
