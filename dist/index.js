@@ -1121,7 +1121,7 @@ app.use((req, res, next) => {
   }, () => {
     log(`Server running on port ${PORT}`);
     console.log("[STARTUP] Server is ready to accept health checks");
-    setTimeout(() => {
+    setImmediate(() => {
       console.log("[STARTUP] Starting cron scheduler...");
       try {
         startCronScheduler();
@@ -1129,6 +1129,6 @@ app.use((req, res, next) => {
       } catch (error) {
         console.error("[STARTUP] Failed to start cron scheduler:", error);
       }
-    }, 2e4);
+    });
   });
 })();

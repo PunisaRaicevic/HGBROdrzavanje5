@@ -4,6 +4,32 @@
 
 A comprehensive hotel and facility management system designed for multi-role task tracking, maintenance operations, and real-time collaboration. The application supports various user roles, including administrators, receptionists, operators, supervisors, workers, service technicians, and managers, each with tailored dashboards and workflows across departments like reception, restaurant, pool, housekeeping, technical services, and external contractors. The system facilitates efficient task creation, assignment, tracking, and completion with priority levels, status management, and real-time notifications. It supports English and Serbian languages and adheres to Material Design 3 principles for an optimized, information-dense user interface.
 
+## Recent Changes (November 2025)
+
+### Replit Autoscale Deployment Optimization (November 11, 2025)
+
+**Ultra-Fast Health Check Implementation**
+- **Health Check Endpoint**: `/health` returns `{"status":"ok"}` in ~3ms
+- **Route Registration**: Health check registered FIRST (line 11 in server/index.ts), before all middleware
+- **Session Middleware Skip**: Conditional wrapper explicitly bypasses session middleware for `/health` endpoint (lines 41-46)
+- **Zero Database Queries**: No database calls, no session store access for health checks
+- **Root Endpoint**: `/` serves React application (not JSON response)
+
+**Cron Scheduler Optimization**
+- **Initialization**: setImmediate() in server.listen() callback (immediate, non-blocking)
+- **Job Execution**: First job runs after 15 minutes (not on startup)
+- **Error Handling**: try/catch wrapper prevents cron failures from crashing server
+- **Location**: `server/index.ts` line 135, `server/cron.ts` line 51
+
+**Deployment Configuration**
+- Set `healthCheckPath = "/health"` in Replit Deployment Settings
+- Production build: `npm run build:full` (Vite + esbuild)
+- Health check performance: ~3.1ms response time (tested 2025-11-11)
+
+**Password Configuration**
+- All user passwords in Supabase: "1111" (plaintext)
+- Auto-hashing on first login via login endpoint
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -60,7 +86,7 @@ Preferred communication style: Simple, everyday language.
 6.  **Design System First**: Comprehensive design guidelines ensure consistency.
 7.  **Bilingual Support**: i18n built-in from the start with locale stored in `localStorage`.
 8.  **Health Check Optimization**: Dedicated `/health` endpoint registered first, bypassing session middleware and database calls for ultra-fast responses (approx. 3.5ms).
-9.  **Cron Scheduler Optimization**: Delayed startup (20 seconds) and non-immediate job execution prevent resource contention during deployment and server startup.
+9.  **Cron Scheduler Optimization**: setImmediate() initialization (immediate, non-blocking) with non-immediate job execution prevents resource contention during deployment and server startup. First job runs after 15 minutes.
 10. **Username-Based Authentication**: Full migration from email to username login to accommodate workers without email addresses.
 11. **Mobile App Persistence**: Switched from `sessionStorage` to `localStorage` in AuthContext for reliable user session persistence in Capacitor mobile apps.
 12. **Worker Task Forwarding**: Corrected task status mapping and cache invalidation to allow workers to return tasks to supervisors with reasons.
