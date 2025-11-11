@@ -1,18 +1,13 @@
-import { db } from "./db";
-import { eq, desc, asc, inArray, isNotNull, ne, and } from "drizzle-orm";
-import { 
-  users,
-  tasks,
-  task_history,
-  notifications,
-  type User, 
-  type InsertUser,
-  type Task,
-  type InsertTask,
-  type TaskHistory,
-  type InsertTaskHistory,
-  type Notification,
-  type InsertNotification
+import { supabase } from "./lib/supabase";
+import type { 
+  User, 
+  InsertUser,
+  Task,
+  InsertTask,
+  TaskHistory,
+  InsertTaskHistory,
+  Notification,
+  InsertNotification
 } from "@shared/schema";
 
 export interface IStorage {
@@ -41,113 +36,239 @@ export interface IStorage {
   markAllNotificationsAsRead(userId: string): Promise<void>;
 }
 
-export class DrizzleStorage implements IStorage {
+export class SupabaseStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.email, email));
-    return result[0];
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') return undefined; // No rows returned
+      throw error;
+    }
+    return data as User;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.username, username));
-    return result[0];
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') return undefined; // No rows returned
+      throw error;
+    }
+    return data as User;
   }
 
   async getUserById(id: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id));
-    return result[0];
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') return undefined;
+      throw error;
+    }
+    return data as User;
   }
 
   async createUser(userData: Partial<InsertUser>): Promise<User> {
-    const result = await db.insert(users).values(userData as any).returning();
-    return result[0];
+    const { data, error } = await supabase
+      .from('users')
+      .insert(userData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as User;
   }
 
-  async updateUser(id: string, data: Partial<User>): Promise<User | undefined> {
-    const result = await db.update(users).set(data).where(eq(users.id, id)).returning();
-    return result[0];
+  async updateUser(id: string, userData: Partial<User>): Promise<User | undefined> {
+    const { data, error } = await supabase
+      .from('users')
+      .update(userData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') return undefined;
+      throw error;
+    }
+    return data as User;
   }
 
   async getUsers(): Promise<User[]> {
-    return await db.select().from(users).orderBy(desc(users.created_at));
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as User[];
   }
 
   async getTechnicians(): Promise<User[]> {
-    return await db.select().from(users)
-      .where(inArray(users.role, ['serviser', 'radnik']))
-      .orderBy(asc(users.full_name));
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .in('role', ['serviser', 'radnik'])
+      .order('full_name', { ascending: true });
+    
+    if (error) throw error;
+    return data as User[];
   }
 
   async getTasks(): Promise<Task[]> {
-    return await db.select().from(tasks).orderBy(desc(tasks.created_at));
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as Task[];
   }
 
   async getTaskById(id: string): Promise<Task | undefined> {
-    const result = await db.select().from(tasks).where(eq(tasks.id, id));
-    return result[0];
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') return undefined;
+      throw error;
+    }
+    return data as Task;
   }
 
   async getTasksByUserId(userId: string): Promise<Task[]> {
-    return await db.select().from(tasks)
-      .where(eq(tasks.created_by, userId))
-      .orderBy(desc(tasks.created_at));
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('created_by', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as Task[];
   }
 
   async getRecurringTasks(): Promise<Task[]> {
-    return await db.select().from(tasks)
-      .where(and(
-        eq(tasks.is_recurring, true),
-        isNotNull(tasks.next_occurrence),
-        ne(tasks.recurrence_pattern, 'once')
-      ));
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('is_recurring', true)
+      .not('next_occurrence', 'is', null)
+      .neq('recurrence_pattern', 'once');
+    
+    if (error) throw error;
+    return data as Task[];
   }
 
   async createTask(taskData: Partial<InsertTask>): Promise<Task> {
-    const result = await db.insert(tasks).values(taskData as any).returning();
-    return result[0];
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert(taskData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as Task;
   }
 
-  async updateTask(id: string, data: Partial<Task>): Promise<Task | undefined> {
-    const result = await db.update(tasks).set(data).where(eq(tasks.id, id)).returning();
-    return result[0];
+  async updateTask(id: string, taskData: Partial<Task>): Promise<Task | undefined> {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(taskData)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') return undefined;
+      throw error;
+    }
+    return data as Task;
   }
 
   async deleteTask(id: string): Promise<void> {
-    await db.delete(tasks).where(eq(tasks.id, id));
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
   }
 
   async createTaskHistory(historyData: Partial<InsertTaskHistory>): Promise<TaskHistory> {
-    const result = await db.insert(task_history).values(historyData as any).returning();
-    return result[0];
+    const { data, error } = await supabase
+      .from('task_history')
+      .insert(historyData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as TaskHistory;
   }
 
   async getTaskHistory(taskId: string): Promise<TaskHistory[]> {
-    return await db.select().from(task_history)
-      .where(eq(task_history.task_id, taskId))
-      .orderBy(desc(task_history.timestamp));
+    const { data, error } = await supabase
+      .from('task_history')
+      .select('*')
+      .eq('task_id', taskId)
+      .order('timestamp', { ascending: false });
+    
+    if (error) throw error;
+    return data as TaskHistory[];
   }
 
   async createNotification(notificationData: Partial<InsertNotification>): Promise<Notification> {
-    const result = await db.insert(notifications).values(notificationData as any).returning();
-    return result[0];
+    const { data, error } = await supabase
+      .from('notifications')
+      .insert(notificationData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as Notification;
   }
 
   async getUserNotifications(userId: string): Promise<Notification[]> {
-    return await db.select().from(notifications)
-      .where(eq(notifications.user_id, userId))
-      .orderBy(desc(notifications.created_at));
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as Notification[];
   }
 
   async markNotificationAsRead(id: string): Promise<void> {
-    await db.update(notifications)
-      .set({ is_read: true, read_at: new Date() } as any)
-      .where(eq(notifications.id, id));
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .eq('id', id);
+    
+    if (error) throw error;
   }
 
   async markAllNotificationsAsRead(userId: string): Promise<void> {
-    await db.update(notifications)
-      .set({ is_read: true, read_at: new Date() } as any)
-      .where(eq(notifications.user_id, userId));
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .eq('user_id', userId);
+    
+    if (error) throw error;
   }
 }
 
-export const storage = new DrizzleStorage();
+export const storage = new SupabaseStorage();
