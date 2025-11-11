@@ -55,6 +55,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
   });
+
+  // Root endpoint
+  app.get('/', (req, res) => {
+    res.status(200).json({ 
+      status: 'ok',
+      message: 'Server is running'
+    });
+  });
   
   // Initialize Socket.IO for real-time notifications
   initializeSocket(server);
