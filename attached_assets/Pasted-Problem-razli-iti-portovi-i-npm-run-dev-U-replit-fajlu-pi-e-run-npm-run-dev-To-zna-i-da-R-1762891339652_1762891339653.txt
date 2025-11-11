@@ -1,0 +1,109 @@
+Problem: različiti portovi i npm run dev
+
+U .replit fajlu piše:
+
+run = "npm run dev"
+
+
+To znači da Replit koristi development server (npr. Vite, React, Next.js, Express, …) koji startuje lokalni server, obično na portu 5173, 3000 ili sličnom.
+
+Ali dole u istom fajlu vidim definisano:
+
+[env]
+PORT = "5000"
+
+
+I još gomilu premapiranja:
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+
+To znači da Replit očekuje da tvoja aplikacija sluša na portu 5000, dok tvoj npm run dev verovatno startuje server na drugom portu (npr. 5173 ili 3000).
+
+👉 Zato u development modu frontend i backend nisu povezani kako treba (npr. frontend ne može da pošalje zahtev API-ju jer API ne sluša na tom portu ili se ne autentifikuje).
+
+🔐 2. Error: Authentication required
+
+Poruka na slici pokazuje:
+
+❌ Error — Authentication required
+
+To znači da frontend pokušava da pozove API rutu (npr. /api/...), ali backend ne prepoznaje korisnika — jer:
+
+token ne stiže,
+
+ili je API URL drugačiji u dev modu (npr. localhost:5173 umesto replit.app),
+
+ili CORS / session cookie nisu pravilno postavljeni u developmentu.
+
+🧩 3. Rešenje korak po korak
+✅ Korak 1 — Proveri na kom portu backend sluša
+
+Ako imaš backend deo (Express, Nest, itd.), u server.js ili index.js proveri da li koristi:
+
+const port = process.env.PORT || 5000;
+app.listen(port, () => console.log(`Server running on port ${port}`));
+
+
+Ako koristi neki drugi port (npr. 3000), promeni da koristi 5000 (da se slaže sa .replit konfiguracijom).
+
+✅ Korak 2 — Ako koristiš Vite ili React dev server
+
+U package.json, pogledaj scripts deo:
+
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "start": "node server.js"
+}
+
+
+Ako koristiš vite, on po defaultu startuje na 5173.
+Replit očekuje 5000, pa možeš u vite.config.js dodati:
+
+export default {
+  server: {
+    port: 5000,
+    host: true
+  }
+}
+
+✅ Korak 3 — Proveri environment varijable za API
+
+Ako frontend koristi nešto poput:
+
+axios.get('/api/reklamacije');
+
+
+onda u dev modu možda treba da imaš:
+
+axios.get(import.meta.env.VITE_API_URL + '/api/reklamacije');
+
+
+i u .env fajlu definiši:
+
+VITE_API_URL=http://localhost:5000
+
+
+Tako da dev i production build koriste pravi URL.
+
+✅ Korak 4 — Ponovno pokreni build
+
+Posle izmene .replit fajla i eventualnog vite.config.js, pokreni u Replit terminalu:
+
+npm install
+npm run build
+npm start
+
+
+ili, ako koristiš npm run dev, proveri da se server pokreće baš na portu 5000 (Replit mora da vidi Server running on port 5000 u logu).
+
+💡 Ukratko:
+
+Replit očekuje server na portu 5000, a tvoj dev server koristi drugi port.
+
+Zbog toga autentifikacija ne prolazi (cookie/token ne ide na pravi URL).
+
+Rešenje je da ujednačiš portove i/ili API URL-ove između dev i production okruženja.
