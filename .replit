@@ -6,8 +6,8 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 channel = "stable-25_05"
 
 [deployment]
-deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
+deploymentTarget = "vm"
+build = ["npm", "run", "build:full"]
 run = ["npm", "run", "start"]
 
 [[ports]]
