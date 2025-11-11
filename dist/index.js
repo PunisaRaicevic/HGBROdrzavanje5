@@ -1044,9 +1044,6 @@ var app = express2();
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
-app.get("/", (req, res) => {
-  res.status(200).json({ status: "ok", message: "Server is running" });
-});
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.error("FATAL: SESSION_SECRET must be set and at least 32 characters long");
   console.error("Generate a strong secret with: openssl rand -base64 32");

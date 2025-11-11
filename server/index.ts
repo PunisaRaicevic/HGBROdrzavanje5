@@ -7,14 +7,10 @@ import { startCronScheduler } from "./cron";
 
 const app = express();
 
-// ✅ 1. PRVO - Health check endpoints (PRE session middleware!)
-// Moraju biti NA SAMOM VRHU da Replit deployment health check ne timeout-uje
+// ✅ Health check endpoint - SAMO /health
+// Root endpoint '/' je rezervisan za React aplikaciju
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
-});
-
-app.get("/", (req, res) => {
-  res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
 // ✅ 2. Session validation check
