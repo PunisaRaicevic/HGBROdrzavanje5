@@ -14,22 +14,34 @@ Preferred communication style: Simple, everyday language.
 
 ### Production Deployment Configuration (November 11, 2025)
 
-**Health Check Endpoints for Replit Deployment**
-- **Added Endpoints**:
-  - `GET /health` - Minimal health check (returns `{"status":"ok"}`)
-  - `GET /` - Root endpoint (returns `{"status":"ok","message":"Server is running"}`)
-- **Important**: Health check endpoints do NOT query database for speed and reliability
-- **Purpose**: Replit deployment provisioning and monitoring
+**Ultra-Simple Health Check Implementation (Final Fix)**
+- **Problem**: Replit Autoscale deployment health checks were timing out
+- **Root Cause**: Complex conditional logic and route ordering issues
+- **Solution**: 
+  - Removed ALL conditional logic from health check endpoints
+  - Registered `/` and `/health` BEFORE static file serving
+  - Added 10-second delay to cron scheduler initialization
+- **Implementation**:
+  - `GET /health` - Returns `{"status":"ok"}` immediately
+  - `GET /` - Returns `{"status":"ok","message":"Server is running"}` immediately
+  - Both endpoints registered BEFORE `serveStatic()` to prevent catch-all route interception
+  - No database queries, no Accept header checks, no conditional logic
+- **Route Order** (critical for deployment):
+  1. API routes (`/api/*`)
+  2. Health check endpoints (`/` and `/health`) ← MUST be before static serving
+  3. Static file serving (`express.static`) for JS/CSS/images
+  4. Catch-all route (`*`) for React app (index.html)
+- **Purpose**: Satisfy Replit Autoscale deployment provisioning requirements
 
-**Cron Scheduler Production-Only Execution**
-- **Configuration**: Cron scheduler (`startCronScheduler()`) now runs ONLY in production (`NODE_ENV=production`)
+**Cron Scheduler Delayed Initialization**
+- **Configuration**: Cron scheduler starts 10 seconds AFTER server.listen() callback
 - **Reasoning**: 
-  - Development environment doesn't need automatic recurring task creation
-  - Reduces noise in development logs
-  - Prevents unintended task creation during development
-- **Location**: `server/index.ts` - called after server.listen() callback
-- **Production Behavior**: Starts immediately and runs every 15 minutes
-- **Development Behavior**: Does NOT start - must be triggered manually if needed
+  - Prevents expensive operations during health check window
+  - Ensures server responds to health checks immediately
+  - Production-only execution (`NODE_ENV=production`)
+- **Location**: `server/index.ts` - setTimeout() with 10-second delay
+- **Production Behavior**: Delayed start, then runs every 15 minutes
+- **Development Behavior**: Does NOT start
 
 **Password Reset** (November 11, 2025)
 - **All user passwords**: Changed from "password123" to "**1111**" (plaintext)

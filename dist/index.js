@@ -1097,21 +1097,6 @@ app.use((req, res, next) => {
   });
   next();
 });
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
-app.get("/", (req, res, next) => {
-  const acceptHeader = req.headers.accept || "";
-  const userAgent = req.headers["user-agent"] || "";
-  const isHealthCheck = (acceptHeader.includes("application/json") || acceptHeader === "*/*") && !acceptHeader.includes("text/html");
-  if (isHealthCheck) {
-    return res.status(200).json({
-      status: "ok",
-      message: "Server is running"
-    });
-  }
-  next();
-});
 (async () => {
   const server = await registerRoutes(app);
   app.use((err, _req, res, _next) => {
@@ -1119,6 +1104,12 @@ app.get("/", (req, res, next) => {
     const message = err.message || "Internal Server Error";
     res.status(status).json({ message });
     throw err;
+  });
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+  app.get("/", (req, res) => {
+    res.status(200).json({ status: "ok", message: "Server is running" });
   });
   if (app.get("env") === "development") {
     await setupVite(app, server);
@@ -1133,7 +1124,11 @@ app.get("/", (req, res, next) => {
   }, () => {
     log(`Server running on port ${PORT}`);
     if (process.env.NODE_ENV === "production") {
-      startCronScheduler();
+      console.log("[STARTUP] Delaying cron scheduler initialization for 10 seconds...");
+      setTimeout(() => {
+        console.log("[STARTUP] Starting cron scheduler now...");
+        startCronScheduler();
+      }, 1e4);
     }
   });
 })();

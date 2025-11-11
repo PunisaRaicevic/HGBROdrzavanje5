@@ -85,38 +85,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Health check endpoints MUST be registered FIRST (before routes and static serving)
-// This ensures Replit deployment can verify the server is running quickly
-app.get('/health', (req, res) => {
-  // NE koristi database ovde!
-  res.status(200).json({ status: 'ok' });
-});
-
-// Smart health check middleware for / endpoint
-// Returns JSON for health checks, but allows HTML/static serving for browsers
-app.get('/', (req, res, next) => {
-  // Check if this is a health check request (not a browser)
-  const acceptHeader = req.headers.accept || '';
-  const userAgent = req.headers['user-agent'] || '';
-  
-  // If Accept header prefers JSON or is generic (*/*), and not a browser
-  const isHealthCheck = (
-    (acceptHeader.includes('application/json') || acceptHeader === '*/*') &&
-    !acceptHeader.includes('text/html')
-  );
-  
-  if (isHealthCheck) {
-    // Respond immediately for health checks
-    return res.status(200).json({ 
-      status: 'ok',
-      message: 'Server is running'
-    });
-  }
-  
-  // Otherwise, continue to static file serving (React app)
-  next();
-});
-
 (async () => {
   const server = await registerRoutes(app);
 
@@ -126,6 +94,16 @@ app.get('/', (req, res, next) => {
 
     res.status(status).json({ message });
     throw err;
+  });
+
+  // ✅ CRITICAL: Health check endpoints MUST be registered BEFORE static serving!
+  // This ensures they respond immediately without being intercepted by catch-all routes
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+  
+  app.get('/', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'Server is running' });
   });
 
   // importantly only setup vite in development and after
@@ -155,9 +133,13 @@ app.get('/', (req, res, next) => {
   }, () => {
     log(`Server running on port ${PORT}`);
     
-    // ✅ Pokreni cron scheduler OVDE (nakon što server počne da sluša)
+    // ✅ Delay cron scheduler to ensure health checks pass first
     if (process.env.NODE_ENV === 'production') {
-      startCronScheduler();
+      console.log('[STARTUP] Delaying cron scheduler initialization for 10 seconds...');
+      setTimeout(() => {
+        console.log('[STARTUP] Starting cron scheduler now...');
+        startCronScheduler();
+      }, 10000); // 10 second delay
     }
   });
 })();
