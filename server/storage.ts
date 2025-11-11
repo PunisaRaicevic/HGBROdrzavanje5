@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, desc, asc, inArray, isNotNull, ne } from "drizzle-orm";
+import { eq, desc, asc, inArray, isNotNull, ne, and } from "drizzle-orm";
 import { 
   users,
   tasks,
@@ -58,7 +58,7 @@ export class DrizzleStorage implements IStorage {
   }
 
   async createUser(userData: Partial<InsertUser>): Promise<User> {
-    const result = await db.insert(users).values(userData as InsertUser).returning();
+    const result = await db.insert(users).values(userData as any).returning();
     return result[0];
   }
 
@@ -94,13 +94,15 @@ export class DrizzleStorage implements IStorage {
 
   async getRecurringTasks(): Promise<Task[]> {
     return await db.select().from(tasks)
-      .where(eq(tasks.is_recurring, true))
-      .where(isNotNull(tasks.next_occurrence))
-      .where(ne(tasks.recurrence_pattern, 'once'));
+      .where(and(
+        eq(tasks.is_recurring, true),
+        isNotNull(tasks.next_occurrence),
+        ne(tasks.recurrence_pattern, 'once')
+      ));
   }
 
   async createTask(taskData: Partial<InsertTask>): Promise<Task> {
-    const result = await db.insert(tasks).values(taskData as InsertTask).returning();
+    const result = await db.insert(tasks).values(taskData as any).returning();
     return result[0];
   }
 
@@ -114,7 +116,7 @@ export class DrizzleStorage implements IStorage {
   }
 
   async createTaskHistory(historyData: Partial<InsertTaskHistory>): Promise<TaskHistory> {
-    const result = await db.insert(task_history).values(historyData as InsertTaskHistory).returning();
+    const result = await db.insert(task_history).values(historyData as any).returning();
     return result[0];
   }
 
@@ -125,7 +127,7 @@ export class DrizzleStorage implements IStorage {
   }
 
   async createNotification(notificationData: Partial<InsertNotification>): Promise<Notification> {
-    const result = await db.insert(notifications).values(notificationData as InsertNotification).returning();
+    const result = await db.insert(notifications).values(notificationData as any).returning();
     return result[0];
   }
 
@@ -137,13 +139,13 @@ export class DrizzleStorage implements IStorage {
 
   async markNotificationAsRead(id: string): Promise<void> {
     await db.update(notifications)
-      .set({ is_read: true, read_at: new Date() })
+      .set({ isRead: true, readAt: new Date() } as any)
       .where(eq(notifications.id, id));
   }
 
   async markAllNotificationsAsRead(userId: string): Promise<void> {
     await db.update(notifications)
-      .set({ is_read: true, read_at: new Date() })
+      .set({ isRead: true, readAt: new Date() } as any)
       .where(eq(notifications.user_id, userId));
   }
 }
