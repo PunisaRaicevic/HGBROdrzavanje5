@@ -53,6 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Health check endpoint za Replit
   app.get('/health', (req, res) => {
+    // NE koristi database ovde!
     res.status(200).json({ status: 'ok' });
   });
 
