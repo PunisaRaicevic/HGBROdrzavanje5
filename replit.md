@@ -2,268 +2,81 @@
 
 ## Overview
 
-A comprehensive hotel and facility management system designed for multi-role task tracking, maintenance operations, and real-time collaboration. The application supports various user roles including administrators, receptionists, operators, supervisors, workers, service technicians, and managers, each with tailored dashboards and workflows for task management across different departments (reception, restaurant, pool, housekeeping, technical services, and external contractors).
-
-The system enables efficient task creation, assignment, tracking, and completion with priority levels, status management, and real-time notifications. It features bilingual support (English/Serbian) and follows Material Design 3 principles for a clean, information-dense interface optimized for productivity.
+A comprehensive hotel and facility management system designed for multi-role task tracking, maintenance operations, and real-time collaboration. The application supports various user roles, including administrators, receptionists, operators, supervisors, workers, service technicians, and managers, each with tailored dashboards and workflows across departments like reception, restaurant, pool, housekeeping, technical services, and external contractors. The system facilitates efficient task creation, assignment, tracking, and completion with priority levels, status management, and real-time notifications. It supports English and Serbian languages and adheres to Material Design 3 principles for an optimized, information-dense user interface.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 
-## Recent Changes (November 2025)
-
-### Production Deployment Configuration (November 11, 2025)
-
-**Ultra-Optimized Health Check Implementation (Final Version)**
-- **Problem**: Replit Autoscale deployment health checks were timing out
-- **Root Cause**: 
-  - Root endpoint (`/`) blocked by JSON response (preventing React app)
-  - Cron scheduler running expensive database operations immediately on startup
-- **Solution**: 
-  - Health check ONLY on `/health` endpoint
-  - Root endpoint (`/`) reserved for React application
-  - Cron scheduler does NOT run jobs immediately on startup
-  - Error handling prevents cron failures from crashing server
-- **Implementation**:
-  - `GET /health` - Returns `{"status":"ok"}` immediately (registered FIRST, before all middleware)
-  - `GET /` - Serves React application (index.html)
-  - Health check registered BEFORE session middleware to avoid database queries
-  - No conditional logic, no database queries, instant response
-- **Route Order** (critical for deployment):
-  1. Health check endpoint (`/health`) ← Registered FIRST (line 15 in server/index.ts)
-  2. Session middleware ← After health check
-  3. API routes (`/api/*`)
-  4. Static file serving (`express.static`) for JS/CSS/images
-  5. Catch-all route (`*`) for React app (index.html)
-- **Deployment Configuration**: Set `healthCheckPath = "/health"` in Replit Deployment Settings
-- **Purpose**: Satisfy Replit Autoscale deployment provisioning requirements
-
-**Cron Scheduler Optimizations**
-- **Startup Behavior**: 
-  - 5-second delay after server.listen() (with try/catch error handling)
-  - Scheduler initializes but does NOT run jobs immediately
-  - First job execution happens after 15 minutes (not on startup)
-- **Reasoning**: 
-  - Prevents expensive database operations during health check window
-  - Allows server to respond to health checks instantly
-  - Server continues running even if cron initialization fails
-- **Location**: 
-  - `server/index.ts` - setTimeout() with error handling
-  - `server/cron.ts` - Removed immediate job execution on startup
-- **Production Behavior**: 
-  - Delayed initialization (5 seconds)
-  - Jobs run every 15 minutes (first run after 15 minutes)
-- **Development Behavior**: Does NOT start (production-only)
-
-**Password Reset** (November 11, 2025)
-- **All user passwords**: Changed from "password123" to "**1111**" (plaintext)
-- **Auto-hashing**: Login endpoint automatically converts plaintext passwords to bcrypt hashes on first login
-- **Test credentials**: Any username with password "1111" (e.g., `aleksandar / 1111`)
-
-### Username-Based Authentication Migration (November 10, 2025)
-
-**Complete Migration from Email-Based to Username-Based Login**
-- **Objective**: Enable login with username instead of email since many hotel workers don't have email addresses
-- **Implementation**:
-  - Added `username` column to Supabase users table (TEXT, UNIQUE)
-  - Auto-generated usernames from existing email addresses (e.g., aleksandar@hotel.me → aleksandar)
-  - Created `getUserByUsername()` method in storage layer
-  - Updated `/api/auth/login` endpoint to accept username instead of email
-  - Updated `createUserSchema` to require username (minimum 3 characters)
-  - Added username uniqueness validation before user creation
-  - Updated frontend LoginPage to use username input field
-  - Updated AuthContext to send `{ username, password }` with `credentials: 'include'`
-  - Added AdminDashboard username field to user creation form
-  - Added translations: "Username" (EN), "Korisničko ime" (SR)
-- **Current Usernames**:
-  - admin, aleksandar, petar, direktor, jovan, marko, milica, strahinja
-- **Impact**: Users now login with simple usernames instead of email addresses
-- **Test credentials**: aleksandar / password123 (all users have password: password123)
-- **Status**: Production ready, architect reviewed and approved
-
-### Critical Bug Fixes
-
-**Mobile App Authentication - localStorage Migration** (November 8, 2025)
-- **Issue**: Mobile app (APK) unable to persist user login - users logged out after app restart
-- **Root Cause**: 
-  - AuthContext used `sessionStorage` for user persistence
-  - sessionStorage is unreliable in Capacitor mobile apps (iOS/Android)
-  - Login was successful on backend but session wasn't retained on mobile
-- **Fix**: 
-  - Replaced all `sessionStorage` calls with `localStorage` in AuthContext
-  - localStorage is stable across app restarts in Capacitor
-  - Changed login(), logout(), and useEffect initialization
-- **Impact**: Mobile app now properly retains user session across app restarts
-- **Test credentials**: aleksandar / password123 (username-based login)
-
-**Worker-to-Supervisor Task Forwarding** (November 8, 2025)
-- **Issue**: When worker attempted to return task to supervisor with reason, task status wouldn't update
-- **Root Cause**: 
-  - WorkerDashboard Task interface only allowed 3 statuses ('new', 'in_progress', 'completed')
-  - Backend used full TaskStatus with 9 statuses including 'returned_to_sef'
-  - Status mapping logic converted all backend statuses to only 3 frontend values
-  - React Query cache invalidation wasn't awaited before closing dialog
-- **Fix**: 
-  - Updated Task interface to use TaskStatus and Priority from shared/types.ts
-  - Removed incorrect status mapping - now uses backend status directly
-  - Changed status checks from 'new' to 'assigned_to_radnik' (actual status workers receive)
-  - Added await to cache invalidation in updateTaskMutation.onSuccess
-  - Updated activeTasks filter to check for correct statuses
-- **Impact**: Workers can now successfully return tasks to supervisors with reason, task disappears from active list
-
-### Feature Additions
-
-**Ionic + Capacitor Mobile App Integration** (November 8, 2025)
-- Implemented Hybrid mobile app approach using Ionic React + Capacitor
-- Added native mobile capabilities via Capacitor plugins:
-  - **Camera** (@capacitor/camera@7.0.2) - Native photo capture and gallery access
-  - **Haptics** (@capacitor/haptics@7.0.2) - Native vibration feedback with pattern support
-  - **Local Notifications** (@capacitor/local-notifications@7.0.3) - Native notifications with sound
-  - **Push Notifications** (@capacitor/push-notifications@7.0.3) - Remote push capability
-  - **App** (@capacitor/app@7.1.0) - App lifecycle and state management
-- Created service layer for Capacitor integration:
-  - `client/src/services/capacitorCamera.ts` - Native camera access with fallbacks
-  - `client/src/services/capacitorHaptics.ts` - Native haptic feedback (light/medium/heavy/patterns)
-  - `client/src/services/capacitorNotifications.ts` - Native notifications with permission handling
-- Updated WorkerDashboard to use native mobile features:
-  - Replaced `navigator.vibrate()` with `capacitorHaptics.taskAssigned()`
-  - Added native notification support with sound for task assignments
-  - Integrated permission requests for notifications
-- Build configuration for AppFlow cloud builds:
-  - Capacitor config: `capacitor.config.ts` (appId: com.budvanskarivijera.hotel)
-  - webDir: `dist/public` (Vite build output)
-  - Android platform added and synced
-- Hybrid UI strategy: Keeps existing Shadcn/Tailwind components wrapped in IonApp for Capacitor compatibility
-- AppFlow deployment ready: Code can be built to .apk/.ipa via Ionic AppFlow cloud service
-
-**Dynamic Dropdown Selectors in CreateTaskDialog** (November 8, 2025)
-- Added Hotel/Building dropdown with predefined options:
-  - Hotel Slovenska plaža
-  - Hotel Aleksandar
-  - Hotel Mogren
-  - Ostalo (custom input field appears)
-- Added Block/Room dropdown with 12 villa options:
-  - Vila Mirta A-blok through Vila Pinea O-blok
-  - Ostalo (custom input field appears)
-- Custom values save to database instead of "Ostalo" text
-- Validation ensures custom fields are filled when "Ostalo" selected
-
 ## System Architecture
 
 ### Frontend Architecture
 
-**Framework**: React with TypeScript, using Vite as the build tool
+**Framework**: React with TypeScript, using Vite.
 
-**UI Component System**: 
-- Shadcn/ui components built on Radix UI primitives
-- TailwindCSS for styling with custom design tokens
-- Material Design 3 principles for layout and typography
-- Design system defined in `design_guidelines.md` with Roboto font family
+**UI Component System**: Shadcn/ui components built on Radix UI primitives, TailwindCSS for styling, and Material Design 3 principles for design, layout, and typography (Roboto font).
 
-**State Management**:
-- React Context API for global state (AuthContext, ThemeContext)
-- TanStack Query (React Query) for server state management and caching
-- localStorage for user authentication persistence (mobile-compatible, replaced sessionStorage)
+**State Management**: React Context API for global state (AuthContext, ThemeContext) and TanStack Query (React Query) for server state management and caching. `localStorage` is used for user authentication persistence.
 
-**Routing**: Wouter for lightweight client-side routing
+**Routing**: Wouter for client-side routing.
 
-**Internationalization**: i18next for English/Serbian language support with localStorage persistence
+**Internationalization**: i18next for English/Serbian language support with `localStorage` persistence.
 
-**Key Design Patterns**:
-- Role-based dashboard rendering with separate components for each user type
-- Component composition with reusable UI primitives (StatCard, TaskCard, StatusBadge, PriorityBadge)
-- Theme system supporting light/dark modes with CSS custom properties
-- Mobile-first responsive design with Tailwind breakpoints
+**Key Design Patterns**: Role-based dashboard rendering, component composition with reusable UI primitives, a theme system supporting light/dark modes, and mobile-first responsive design.
 
 ### Backend Architecture
 
-**Server Framework**: Express.js running on Node.js
+**Server Framework**: Express.js running on Node.js.
 
-**API Design**: RESTful endpoints with JSON request/response bodies
+**API Design**: RESTful endpoints with JSON request/response.
 
-**Authentication**:
-- bcrypt for password hashing
-- Session-based authentication with HTTP-only cookies (credentials: 'include')
-- Username-based login (not email) for accessibility to workers without email addresses
-- Password validation on login with user role and department context
-- Server-side session validation via `/api/auth/me` endpoint
+**Authentication**: bcrypt for password hashing, session-based authentication with HTTP-only cookies, and username-based login. Server-side session validation is handled via `/api/auth/me`.
 
-**Error Handling**: Centralized error logging with request/response tracking middleware
+**Error Handling**: Centralized error logging and request/response tracking middleware.
 
-**Build System**: esbuild for production bundling with ESM module format
+**Build System**: esbuild for production bundling with ESM.
 
 ### Data Storage
 
-**Primary Database**: Supabase PostgreSQL
+**Primary Database**: Supabase PostgreSQL.
 
-**Database Client**: Supabase JS SDK (@supabase/supabase-js) for all data operations
+**Database Client**: Supabase JS SDK.
 
-**Session Storage**: Neon PostgreSQL (DATABASE_URL) via connect-pg-simple for Express session persistence
+**Session Storage**: Neon PostgreSQL via `connect-pg-simple` for Express session persistence.
 
-**Implementation**: 
-- `server/storage.ts` implements `SupabaseStorage` class using Supabase client
-- Type definitions in `shared/schema.ts` for TypeScript type safety
-- Environment variables: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+**Implementation**: `server/storage.ts` implements `SupabaseStorage`. Type definitions in `shared/schema.ts` ensure type safety.
 
-**Database Tables** (Supabase PostgreSQL):
-- departments - Department definitions
-- users - User accounts with username (UNIQUE), email, roles, and preferences
-- external_companies - Third-party service providers
-- tasks - Task management with status workflow
-- task_comments - Communication thread per task
-- task_photos - Image attachments
-- task_history - Audit trail
-- notifications - User notification queue
-- session - Express session store (stored in Neon PostgreSQL via DATABASE_URL)
+**Database Tables**: `departments`, `users`, `external_companies`, `tasks`, `task_comments`, `task_photos`, `task_history`, `notifications`, and `session`.
 
-**Data Types**:
-- User roles: admin, recepcioner, operater, radnik, sef, serviser, menadzer
-- Departments: recepcija, restoran, bazen, domacinstvo, tehnicka, eksterni
-- Task priorities: urgent, normal, can_wait
-- Task statuses: new, with_operator, assigned_to_radnik, with_sef, with_external, returned_to_operator, returned_to_sef, completed, cancelled
+**Data Types**: Comprehensive user roles, departments, task priorities, and task statuses.
 
-### External Dependencies
+### System Design Choices
 
-**Database**: 
-- Supabase PostgreSQL for primary data storage (tasks, users, history, notifications)
-- Neon Serverless PostgreSQL for session storage only (DATABASE_URL)
-- Supabase JS SDK for database operations
-- connect-pg-simple for Express session persistence
+1.  **Monorepo Structure**: Client, server, and shared code organized in a single repository for type sharing and simplified deployment.
+2.  **Shared Type Definitions**: Common types in `shared/` ensure consistency.
+3.  **Role-Based UI**: Tailored dashboard components for each user role.
+4.  **Real-time Capabilities**: Socket.IO integration for notifications and task updates.
+5.  **Environment-Specific Configuration**: Vite manages build configurations, with Replit-specific plugins.
+6.  **Design System First**: Comprehensive design guidelines ensure consistency.
+7.  **Bilingual Support**: i18n built-in from the start with locale stored in `localStorage`.
+8.  **Health Check Optimization**: Dedicated `/health` endpoint registered first, bypassing session middleware and database calls for ultra-fast responses (approx. 3.5ms).
+9.  **Cron Scheduler Optimization**: Delayed startup (20 seconds) and non-immediate job execution prevent resource contention during deployment and server startup.
+10. **Username-Based Authentication**: Full migration from email to username login to accommodate workers without email addresses.
+11. **Mobile App Persistence**: Switched from `sessionStorage` to `localStorage` in AuthContext for reliable user session persistence in Capacitor mobile apps.
+12. **Worker Task Forwarding**: Corrected task status mapping and cache invalidation to allow workers to return tasks to supervisors with reasons.
+13. **Hybrid Mobile App**: Integration of Ionic React and Capacitor for native mobile features (camera, haptics, local/push notifications).
+14. **Dynamic Dropdown Selectors**: Implemented dynamic dropdowns in `CreateTaskDialog` for hotel/building and block/room selection, with "Other" options allowing custom input.
 
-**Authentication Service**: 
-- Local authentication using bcrypt password hashing
-- Session persistence via Neon PostgreSQL (server-side sessions)
-- User data persistence via localStorage (mobile-compatible, client-side)
-- No external authentication service dependencies
+## External Dependencies
 
-**UI Component Libraries**:
-- Radix UI primitives (@radix-ui/react-*) for accessible component foundations
-- Shadcn/ui component patterns
-- Lucide React for iconography
+**Database**: Supabase PostgreSQL (primary data), Neon Serverless PostgreSQL (session storage), Supabase JS SDK, `connect-pg-simple`.
 
-**Development Tools**:
-- TypeScript for type safety across client/server/shared code
-- Replit-specific plugins for development environment integration
-- PostCSS with Autoprefixer for CSS processing
+**Authentication Service**: Local authentication using bcrypt.
 
-**Client-Side Libraries**:
-- date-fns for date formatting and manipulation
-- class-variance-authority for component variant management
-- react-hook-form with @hookform/resolvers for form validation
-- Zod for runtime schema validation
+**UI Component Libraries**: Radix UI primitives, Shadcn/ui, Lucide React (iconography), Ionic React (mobile UI).
 
-**Key Architectural Decisions**:
+**Development Tools**: TypeScript, Replit-specific plugins, PostCSS with Autoprefixer.
 
-1. **Monorepo Structure**: Single repository with client/server/shared code organization for type sharing and simplified deployment
+**Client-Side Libraries**: `date-fns`, `class-variance-authority`, `react-hook-form` with `@hookform/resolvers`, `Zod`.
 
-2. **Shared Type Definitions**: Common types defined in `shared/` directory used by both frontend and backend to ensure consistency
-
-3. **Role-Based UI**: Separate dashboard components for each user role to provide tailored experiences and reduce complexity
-
-4. **Real-time Capabilities**: Socket.IO integration enables real-time notifications and task updates
-
-5. **Environment-Specific Configuration**: Vite handles different build configurations for development vs production, with Replit-specific plugins
-
-6. **Design System First**: Comprehensive design guidelines established upfront to ensure consistency across the application
-
-7. **Bilingual Support**: Built-in i18n from the start rather than as an afterthought, with locale stored in localStorage
+**Mobile Development Libraries**: `@capacitor/camera`, `@capacitor/haptics`, `@capacitor/local-notifications`, `@capacitor/push-notifications`, `@capacitor/app`.

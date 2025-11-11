@@ -7,38 +7,43 @@ import { startCronScheduler } from "./cron";
 
 const app = express();
 
-// ✅ Health check endpoint - SAMO /health
-// Root endpoint '/' je rezervisan za React aplikaciju
-app.get("/health", (req, res) => {
+// ✅ CRITICAL: Health check endpoint - MUST be FIRST, BEFORE any middleware
+app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-// ✅ 2. Session validation check
+// ✅ Session validation check
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.error('FATAL: SESSION_SECRET must be set and at least 32 characters long');
   console.error('Generate a strong secret with: openssl rand -base64 32');
   process.exit(1);
 }
 
-// ✅ 3. Session middleware (nakon health check!)
+// ✅ Session middleware - but skip it for /health endpoint
 const PgSession = ConnectPgSimple(session);
-app.use(
-  session({
-    store: new PgSession({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-    }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
-      sameSite: "lax",
-    },
-  })
-);
+const sessionMiddleware = session({
+  store: new PgSession({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+  }),
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: "lax",
+  },
+});
+
+app.use((req, res, next) => {
+  // Skip session middleware for health check
+  if (req.path === '/health') {
+    return next();
+  }
+  sessionMiddleware(req, res, next);
+});
 
 // Extend session type
 declare module "express-session" {
@@ -54,7 +59,7 @@ declare module 'http' {
   }
 }
 
-// ✅ 4. Ostali middleware
+// ✅ Body parsing middleware
 app.use(express.json({
   limit: '50mb',
   verify: (req, _res, buf) => {
@@ -63,7 +68,7 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-// ✅ 5. Logging middleware
+// ✅ Logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -82,11 +87,9 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
-
       log(logLine);
     }
   });
@@ -94,7 +97,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ 6. Register routes i start server
+// ✅ Main startup
 (async () => {
   const server = await registerRoutes(app);
 
@@ -102,49 +105,38 @@ app.use((req, res, next) => {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
     throw err;
   });
 
-  // Vite ili static serving
+  // Vite or static serving
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   const PORT = Number(process.env.PORT) || 5000;
-  
-  // ❌ NE OVAKO (pre server.listen)
-  // await initializeDatabase();
-  // startCronScheduler();
-  
-  // ✅ Start server first, then initialize background tasks
+
+  // ✅ Start server FIRST
   server.listen({
     port: PORT,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
     log(`Server running on port ${PORT}`);
+    console.log('[STARTUP] Server is ready to accept health checks');
     
-    // ✅ Initialize cron scheduler AFTER server is listening
-    // Add delay to ensure health checks pass before any background operations
-    if (process.env.NODE_ENV === 'production') {
-      setTimeout(() => {
-        console.log('[STARTUP] Starting cron scheduler...');
-        try {
-          startCronScheduler();
-          console.log('[STARTUP] Cron scheduler started successfully');
-        } catch (error) {
-          console.error('[STARTUP] Failed to start cron scheduler:', error);
-          // Don't exit - let the app continue running
-        }
-      }, 5000); // 5 second delay - scheduler won't run jobs immediately anyway
-    }
+    // ✅ Wait before starting cron scheduler
+    setTimeout(() => {
+      console.log('[STARTUP] Starting cron scheduler...');
+      try {
+        startCronScheduler();
+        console.log('[STARTUP] Cron scheduler started successfully');
+      } catch (error) {
+        console.error('[STARTUP] Failed to start cron scheduler:', error);
+        // Don't exit - let the app continue running
+      }
+    }, 20000); // 20 second delay
   });
 })();

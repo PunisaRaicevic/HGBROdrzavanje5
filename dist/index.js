@@ -1038,7 +1038,7 @@ function startCronScheduler() {
 
 // server/index.ts
 var app = express2();
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
@@ -1047,25 +1047,28 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   process.exit(1);
 }
 var PgSession = ConnectPgSimple(session);
-app.use(
-  session({
-    store: new PgSession({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true
-    }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1e3,
-      // 30 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      // Secure cookies in production (HTTPS)
-      sameSite: "lax"
-    }
-  })
-);
+var sessionMiddleware = session({
+  store: new PgSession({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1e3,
+    // 30 days
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax"
+  }
+});
+app.use((req, res, next) => {
+  if (req.path === "/health") {
+    return next();
+  }
+  sessionMiddleware(req, res, next);
+});
 app.use(express2.json({
   limit: "50mb",
   verify: (req, _res, buf) => {
@@ -1117,16 +1120,15 @@ app.use((req, res, next) => {
     reusePort: true
   }, () => {
     log(`Server running on port ${PORT}`);
-    if (process.env.NODE_ENV === "production") {
-      setTimeout(() => {
-        console.log("[STARTUP] Starting cron scheduler...");
-        try {
-          startCronScheduler();
-          console.log("[STARTUP] Cron scheduler started successfully");
-        } catch (error) {
-          console.error("[STARTUP] Failed to start cron scheduler:", error);
-        }
-      }, 5e3);
-    }
+    console.log("[STARTUP] Server is ready to accept health checks");
+    setTimeout(() => {
+      console.log("[STARTUP] Starting cron scheduler...");
+      try {
+        startCronScheduler();
+        console.log("[STARTUP] Cron scheduler started successfully");
+      } catch (error) {
+        console.error("[STARTUP] Failed to start cron scheduler:", error);
+      }
+    }, 2e4);
   });
 })();
