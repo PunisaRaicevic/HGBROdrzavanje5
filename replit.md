@@ -12,6 +12,28 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (November 2025)
 
+### Production Deployment Build Fix (November 11, 2025)
+
+**Critical Fix: Production Deployment Not Using Supabase Database**
+- **Issue**: Production deployment (`hgbrtehnickasluzba.replit.app`) had outdated server code, causing API failures
+- **Root Cause**: `npm run build` only built frontend (Vite), not server - deployment used stale `dist/index.js`
+- **Fix**: Changed `package.json` build script to build **both frontend and server**:
+  ```json
+  "build": "npm run build:frontend && npm run build:server"
+  ```
+- **Impact**: Production deployments now use fresh server code with Supabase connection
+- **Deployment Process**: `.replit` runs `npm run build` → builds both frontend and server → `npm run start` runs production server
+- **Note**: Replit automatically syncs Workspace secrets to deployment environment (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, etc.)
+
+### Password Standardization (November 11, 2025)
+
+**All User Passwords Reset to `1111`**
+- **Objective**: Standardize all user passwords for easier testing and onboarding
+- **Implementation**: Updated all 8 users in Supabase with plaintext password `1111`
+- **Current Users**: admin, aleksandar, petar, jovan, marko, milica, strahinja, direktor
+- **Login Format**: username-based (not email) - example: `aleksandar` / `1111`
+- **Production Status**: All passwords working in both development and production environments
+
 ### Username-Based Authentication Migration (November 10, 2025)
 
 **Complete Migration from Email-Based to Username-Based Login**
