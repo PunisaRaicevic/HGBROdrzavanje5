@@ -39,19 +39,17 @@ export function startCronScheduler() {
     return;
   }
 
-  console.log(`[CRON SCHEDULER] Starting... Will run every ${CRON_INTERVAL / 1000 / 60} minutes`);
+  console.log(`[CRON SCHEDULER] Initializing... Will run every ${CRON_INTERVAL / 1000 / 60} minutes`);
   
-  // Run immediately on start
-  setTimeout(() => {
-    runRecurringTasksJob();
-  }, 5000); // Wait 5 seconds after server start
-
-  // Then run every 15 minutes
-  cronInterval = setInterval(() => {
-    runRecurringTasksJob();
+  // ✅ DON'T run immediately on startup in production
+  // Let health checks pass first, then wait for the first scheduled interval
+  
+  // Run every 15 minutes (first run will be after 15 minutes)
+  cronInterval = setInterval(async () => {
+    await runRecurringTasksJob();
   }, CRON_INTERVAL);
 
-  console.log('[CRON SCHEDULER] ✅ Started successfully');
+  console.log('[CRON SCHEDULER] ✅ Scheduler initialized (first run in 15 minutes)');
 }
 
 /**

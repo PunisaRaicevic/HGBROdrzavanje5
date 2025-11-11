@@ -1029,14 +1029,11 @@ function startCronScheduler() {
     console.log("[CRON SCHEDULER] Already running");
     return;
   }
-  console.log(`[CRON SCHEDULER] Starting... Will run every ${CRON_INTERVAL / 1e3 / 60} minutes`);
-  setTimeout(() => {
-    runRecurringTasksJob();
-  }, 5e3);
-  cronInterval = setInterval(() => {
-    runRecurringTasksJob();
+  console.log(`[CRON SCHEDULER] Initializing... Will run every ${CRON_INTERVAL / 1e3 / 60} minutes`);
+  cronInterval = setInterval(async () => {
+    await runRecurringTasksJob();
   }, CRON_INTERVAL);
-  console.log("[CRON SCHEDULER] \u2705 Started successfully");
+  console.log("[CRON SCHEDULER] \u2705 Scheduler initialized (first run in 15 minutes)");
 }
 
 // server/index.ts
@@ -1121,11 +1118,15 @@ app.use((req, res, next) => {
   }, () => {
     log(`Server running on port ${PORT}`);
     if (process.env.NODE_ENV === "production") {
-      console.log("[STARTUP] Delaying cron scheduler initialization for 10 seconds...");
       setTimeout(() => {
-        console.log("[STARTUP] Starting cron scheduler now...");
-        startCronScheduler();
-      }, 1e4);
+        console.log("[STARTUP] Starting cron scheduler...");
+        try {
+          startCronScheduler();
+          console.log("[STARTUP] Cron scheduler started successfully");
+        } catch (error) {
+          console.error("[STARTUP] Failed to start cron scheduler:", error);
+        }
+      }, 5e3);
     }
   });
 })();

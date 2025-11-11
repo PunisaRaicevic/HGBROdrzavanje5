@@ -124,7 +124,7 @@ app.use((req, res, next) => {
   // await initializeDatabase();
   // startCronScheduler();
   
-  // ✅ OVAKO (nakon server.listen)
+  // ✅ Start server first, then initialize background tasks
   server.listen({
     port: PORT,
     host: "0.0.0.0",
@@ -132,13 +132,19 @@ app.use((req, res, next) => {
   }, () => {
     log(`Server running on port ${PORT}`);
     
-    // ✅ Delay cron scheduler to ensure health checks pass first
+    // ✅ Initialize cron scheduler AFTER server is listening
+    // Add delay to ensure health checks pass before any background operations
     if (process.env.NODE_ENV === 'production') {
-      console.log('[STARTUP] Delaying cron scheduler initialization for 10 seconds...');
       setTimeout(() => {
-        console.log('[STARTUP] Starting cron scheduler now...');
-        startCronScheduler();
-      }, 10000); // 10 second delay
+        console.log('[STARTUP] Starting cron scheduler...');
+        try {
+          startCronScheduler();
+          console.log('[STARTUP] Cron scheduler started successfully');
+        } catch (error) {
+          console.error('[STARTUP] Failed to start cron scheduler:', error);
+          // Don't exit - let the app continue running
+        }
+      }, 5000); // 5 second delay - scheduler won't run jobs immediately anyway
     }
   });
 })();
