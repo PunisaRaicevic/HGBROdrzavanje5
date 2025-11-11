@@ -41,12 +41,10 @@ export function startCronScheduler() {
 
   console.log(`[CRON SCHEDULER] Starting... Will run every ${CRON_INTERVAL / 1000 / 60} minutes`);
   
-  // Delay first run in production to allow health checks to complete
-  const initialDelay = process.env.NODE_ENV === 'production' ? 60000 : 5000; // 60s in prod, 5s in dev
-  
+  // Run immediately on start
   setTimeout(() => {
     runRecurringTasksJob();
-  }, initialDelay);
+  }, 5000); // Wait 5 seconds after server start
 
   // Then run every 15 minutes
   cronInterval = setInterval(() => {

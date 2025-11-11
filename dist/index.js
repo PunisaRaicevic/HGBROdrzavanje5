@@ -470,12 +470,6 @@ function requireAdmin(req, res, next) {
 }
 async function registerRoutes(app2) {
   const server = createServer(app2);
-  app2.get("/", (req, res) => {
-    res.status(200).json({
-      status: "healthy",
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
-    });
-  });
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
   app2.post("/api/auth/login", async (req, res) => {
@@ -1036,10 +1030,9 @@ function startCronScheduler() {
     return;
   }
   console.log(`[CRON SCHEDULER] Starting... Will run every ${CRON_INTERVAL / 1e3 / 60} minutes`);
-  const initialDelay = process.env.NODE_ENV === "production" ? 6e4 : 5e3;
   setTimeout(() => {
     runRecurringTasksJob();
-  }, initialDelay);
+  }, 5e3);
   cronInterval = setInterval(() => {
     runRecurringTasksJob();
   }, CRON_INTERVAL);
