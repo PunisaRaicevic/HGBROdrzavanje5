@@ -22,6 +22,7 @@ export interface IStorage {
   getTasks(): Promise<Task[]>;
   getTaskById(id: string): Promise<Task | undefined>;
   getTasksByUserId(userId: string): Promise<Task[]>;
+  getTasksForUser(userId: string): Promise<Task[]>;
   getRecurringTasks(): Promise<Task[]>;
   createTask(task: Partial<InsertTask>): Promise<Task>;
   updateTask(id: string, data: Partial<Task>): Promise<Task | undefined>;
@@ -155,6 +156,19 @@ export class SupabaseStorage implements IStorage {
       .from('tasks')
       .select('*')
       .eq('created_by', userId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data as Task[];
+  }
+
+  async getTasksForUser(userId: string): Promise<Task[]> {
+    // Get tasks where user is creator OR assigned
+    // Since assigned_to is a comma-separated string, we use LIKE pattern
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .or(`created_by.eq.${userId},assigned_to.like.%${userId}%`)
       .order('created_at', { ascending: false });
     
     if (error) throw error;

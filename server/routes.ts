@@ -314,10 +314,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const tasks = await storage.getTasksByUserId(userId);
+      // Get tasks where user is creator OR assigned (optimized query)
+      const tasks = await storage.getTasksForUser(userId);
       res.json({ tasks });
     } catch (error) {
       console.error('Error fetching user tasks:', error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get single task by ID
+  app.get("/api/tasks/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.session.userId;
+      const userRole = req.session.userRole;
+
+      const task = await storage.getTaskById(id);
+
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      // Authorization check: only allow if user is creator, assignee, or has elevated role
+      const isCreator = task.created_by === userId;
+      const isAssigned = task.assigned_to && task.assigned_to.includes(userId);
+      const hasElevatedRole = ['admin', 'operater', 'menadzer', 'sef'].includes(userRole || '');
+
+      if (!isCreator && !isAssigned && !hasElevatedRole) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      res.json({ task });
+    } catch (error) {
+      console.error('Error fetching task:', error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
