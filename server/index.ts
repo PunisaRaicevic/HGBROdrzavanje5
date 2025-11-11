@@ -1,17 +1,25 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
+import crypto from "crypto";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startCronScheduler } from "./cron";
 
 const app = express();
 
-// Validate SESSION_SECRET on startup
-if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
-  console.error('FATAL: SESSION_SECRET must be set and at least 32 characters long');
-  console.error('Generate a strong secret with: openssl rand -base64 32');
-  process.exit(1);
+// Auto-generate SESSION_SECRET in development if not provided
+let sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret || sessionSecret.length < 32) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('FATAL: SESSION_SECRET must be set in production and at least 32 characters long');
+    console.error('Generate a strong secret with: openssl rand -base64 32');
+    process.exit(1);
+  } else {
+    sessionSecret = crypto.randomBytes(32).toString('base64');
+    console.warn('⚠️  WARNING: Auto-generated SESSION_SECRET for development. Sessions will reset on server restart.');
+    console.warn('   For persistent sessions, set SESSION_SECRET environment variable (min 32 chars)');
+  }
 }
 
 // Session store setup
@@ -22,7 +30,7 @@ app.use(
       conString: process.env.DATABASE_URL,
       createTableIfMissing: true,
     }),
-    secret: process.env.SESSION_SECRET,
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {
