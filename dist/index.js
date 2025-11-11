@@ -6,228 +6,144 @@ import ConnectPgSimple from "connect-pg-simple";
 // server/routes.ts
 import { createServer } from "http";
 
-// server/storage.ts
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { eq, desc, or, and, sql as sql2 } from "drizzle-orm";
-
-// shared/schema.ts
-import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, integer } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-var users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: text("email").notNull().unique(),
-  full_name: text("full_name").notNull(),
-  role: varchar("role").notNull(),
-  department: text("department"),
-  phone: varchar("phone"),
-  password_hash: text("password_hash").notNull(),
-  is_active: boolean("is_active").notNull().default(true),
-  shift: text("shift"),
-  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
-});
-var tasks = pgTable("tasks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: text("title").notNull(),
-  description: text("description"),
-  location: text("location"),
-  room_number: varchar("room_number"),
-  priority: varchar("priority").notNull(),
-  status: varchar("status").notNull(),
-  created_by: varchar("created_by").notNull(),
-  created_by_name: text("created_by_name").notNull(),
-  created_by_department: text("created_by_department").notNull(),
-  operator_id: varchar("operator_id"),
-  operator_name: text("operator_name"),
-  assigned_to: text("assigned_to"),
-  assigned_to_name: text("assigned_to_name"),
-  assigned_to_type: varchar("assigned_to_type"),
-  sef_id: varchar("sef_id"),
-  sef_name: text("sef_name"),
-  external_company_id: varchar("external_company_id"),
-  external_company_name: text("external_company_name"),
-  deadline_at: timestamp("deadline_at", { withTimezone: true }),
-  is_overdue: boolean("is_overdue").notNull().default(false),
-  estimated_arrival_time: timestamp("estimated_arrival_time", { withTimezone: true }),
-  actual_arrival_time: timestamp("actual_arrival_time", { withTimezone: true }),
-  estimated_completion_time: timestamp("estimated_completion_time", { withTimezone: true }),
-  actual_completion_time: timestamp("actual_completion_time", { withTimezone: true }),
-  time_spent_minutes: integer("time_spent_minutes").notNull().default(0),
-  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  completed_at: timestamp("completed_at", { withTimezone: true }),
-  completed_by: varchar("completed_by"),
-  completed_by_name: text("completed_by_name"),
-  images: text("images").array(),
-  is_recurring: boolean("is_recurring").notNull().default(false),
-  recurrence_pattern: varchar("recurrence_pattern").default("once"),
-  recurrence_end_date: timestamp("recurrence_end_date", { withTimezone: true }),
-  next_occurrence: timestamp("next_occurrence", { withTimezone: true }),
-  parent_task_id: varchar("parent_task_id"),
-  worker_report: text("worker_report"),
-  worker_images: text("worker_images").array()
-});
-var task_history = pgTable("task_history", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  task_id: varchar("task_id").notNull(),
-  user_id: varchar("user_id").notNull(),
-  user_name: text("user_name").notNull(),
-  user_role: text("user_role").notNull(),
-  action: text("action").notNull(),
-  original_message: text("original_message"),
-  notes: text("notes"),
-  status_from: varchar("status_from"),
-  status_to: varchar("status_to"),
-  timestamp: timestamp("timestamp", { withTimezone: true }).notNull().defaultNow(),
-  assigned_to: text("assigned_to"),
-  assigned_to_name: text("assigned_to_name")
-});
-var notifications = pgTable("notifications", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  user_id: varchar("user_id").notNull(),
-  task_id: varchar("task_id"),
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  type: varchar("type").notNull(),
-  is_read: boolean("is_read").notNull().default(false),
-  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  read_at: timestamp("read_at", { withTimezone: true })
-});
-var usersRelations = relations(users, ({ many }) => ({
-  createdTasks: many(tasks, { relationName: "created_by" }),
-  notifications: many(notifications),
-  taskHistoryChanges: many(task_history)
-}));
-var tasksRelations = relations(tasks, ({ one, many }) => ({
-  creator: one(users, {
-    fields: [tasks.created_by],
-    references: [users.id],
-    relationName: "created_by"
-  }),
-  parentTask: one(tasks, {
-    fields: [tasks.parent_task_id],
-    references: [tasks.id],
-    relationName: "recurring_tasks"
-  }),
-  childTasks: many(tasks, { relationName: "recurring_tasks" }),
-  history: many(task_history),
-  notifications: many(notifications)
-}));
-var taskHistoryRelations = relations(task_history, ({ one }) => ({
-  task: one(tasks, {
-    fields: [task_history.task_id],
-    references: [tasks.id]
-  }),
-  user: one(users, {
-    fields: [task_history.user_id],
-    references: [users.id]
-  })
-}));
-var notificationsRelations = relations(notifications, ({ one }) => ({
-  user: one(users, {
-    fields: [notifications.user_id],
-    references: [users.id]
-  }),
-  task: one(tasks, {
-    fields: [notifications.task_id],
-    references: [tasks.id]
-  })
-}));
-var insertUserSchema = createInsertSchema(users);
-var insertTaskSchema = createInsertSchema(tasks);
-var insertTaskHistorySchema = createInsertSchema(task_history);
-var insertNotificationSchema = createInsertSchema(notifications);
-
-// server/storage.ts
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is required");
+// server/lib/supabase.ts
+import { createClient } from "@supabase/supabase-js";
+if (!process.env.SUPABASE_URL) {
+  throw new Error("SUPABASE_URL environment variable is required");
 }
-var client = postgres(process.env.DATABASE_URL, {
-  prepare: false,
-  ssl: "require"
-});
-var db = drizzle(client);
-var DrizzleStorage = class {
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error("SUPABASE_SERVICE_ROLE_KEY environment variable is required");
+}
+var supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+);
+
+// server/storage.ts
+var SupabaseStorage = class {
   async getUserByEmail(email) {
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    return result[0];
+    const { data, error } = await supabase.from("users").select("*").eq("email", email).single();
+    if (error) {
+      if (error.code === "PGRST116") return void 0;
+      throw error;
+    }
+    return data;
+  }
+  async getUserByUsername(username) {
+    const { data, error } = await supabase.from("users").select("*").eq("username", username).single();
+    if (error) {
+      if (error.code === "PGRST116") return void 0;
+      throw error;
+    }
+    return data;
   }
   async getUserById(id) {
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    return result[0];
+    const { data, error } = await supabase.from("users").select("*").eq("id", id).single();
+    if (error) {
+      if (error.code === "PGRST116") return void 0;
+      throw error;
+    }
+    return data;
   }
   async createUser(userData) {
-    const result = await db.insert(users).values(userData).returning();
-    return result[0];
+    const { data, error } = await supabase.from("users").insert(userData).select().single();
+    if (error) throw error;
+    return data;
   }
   async updateUser(id, data) {
-    const result = await db.update(users).set(data).where(eq(users.id, id)).returning();
-    return result[0];
+    const { data: updated, error } = await supabase.from("users").update(data).eq("id", id).select().single();
+    if (error) {
+      if (error.code === "PGRST116") return void 0;
+      throw error;
+    }
+    return updated;
   }
   async getUsers() {
-    return await db.select().from(users).orderBy(desc(users.created_at));
+    const { data, error } = await supabase.from("users").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
   async getTechnicians() {
-    return await db.select().from(users).where(
-      and(
-        or(eq(users.role, "serviser"), eq(users.role, "radnik")),
-        eq(users.is_active, true)
-      )
-    ).orderBy(users.full_name);
+    const { data, error } = await supabase.from("users").select("*").in("role", ["serviser", "radnik"]).eq("is_active", true).order("full_name", { ascending: true });
+    if (error) throw error;
+    return data || [];
   }
   async getTasks() {
-    return await db.select().from(tasks).orderBy(desc(tasks.created_at));
+    const { data, error } = await supabase.from("tasks").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
   async getTaskById(id) {
-    const result = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
-    return result[0];
+    const { data, error } = await supabase.from("tasks").select("*").eq("id", id).single();
+    if (error) {
+      if (error.code === "PGRST116") return void 0;
+      throw error;
+    }
+    return data;
   }
   async getTasksByUserId(userId) {
-    return await db.select().from(tasks).where(eq(tasks.created_by, userId)).orderBy(desc(tasks.created_at));
+    const { data, error } = await supabase.from("tasks").select("*").eq("created_by", userId).order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
   async getRecurringTasks() {
-    return await db.select().from(tasks).where(
-      and(
-        eq(tasks.is_recurring, true),
-        sql2`${tasks.next_occurrence} IS NOT NULL`,
-        sql2`${tasks.recurrence_pattern} != 'once'`
-      )
-    );
+    const { data, error } = await supabase.from("tasks").select("*").eq("is_recurring", true).not("next_occurrence", "is", null).neq("recurrence_pattern", "once");
+    if (error) throw error;
+    return data || [];
   }
   async createTask(taskData) {
-    const result = await db.insert(tasks).values(taskData).returning();
-    return result[0];
+    const { data, error } = await supabase.from("tasks").insert(taskData).select().single();
+    if (error) throw error;
+    return data;
   }
   async updateTask(id, data) {
-    const result = await db.update(tasks).set(data).where(eq(tasks.id, id)).returning();
-    return result[0];
+    const { data: updated, error } = await supabase.from("tasks").update(data).eq("id", id).select().single();
+    if (error) {
+      if (error.code === "PGRST116") return void 0;
+      throw error;
+    }
+    return updated;
   }
   async deleteTask(id) {
-    await db.delete(tasks).where(eq(tasks.id, id));
+    const { error } = await supabase.from("tasks").delete().eq("id", id);
+    if (error) throw error;
   }
   async createTaskHistory(historyData) {
-    const result = await db.insert(task_history).values(historyData).returning();
-    return result[0];
+    const { data, error } = await supabase.from("task_history").insert(historyData).select().single();
+    if (error) throw error;
+    return data;
   }
   async getTaskHistory(taskId) {
-    return await db.select().from(task_history).where(eq(task_history.task_id, taskId)).orderBy(desc(task_history.timestamp));
+    const { data, error } = await supabase.from("task_history").select("*").eq("task_id", taskId).order("timestamp", { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
   async createNotification(notificationData) {
-    const result = await db.insert(notifications).values(notificationData).returning();
-    return result[0];
+    const { data, error } = await supabase.from("notifications").insert(notificationData).select().single();
+    if (error) throw error;
+    return data;
   }
   async getUserNotifications(userId) {
-    return await db.select().from(notifications).where(eq(notifications.user_id, userId)).orderBy(desc(notifications.created_at));
+    const { data, error } = await supabase.from("notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
   async markNotificationAsRead(id) {
-    await db.update(notifications).set({ is_read: true, read_at: /* @__PURE__ */ new Date() }).where(eq(notifications.id, id));
+    const { error } = await supabase.from("notifications").update({ is_read: true, read_at: (/* @__PURE__ */ new Date()).toISOString() }).eq("id", id);
+    if (error) throw error;
   }
   async markAllNotificationsAsRead(userId) {
-    await db.update(notifications).set({ is_read: true, read_at: /* @__PURE__ */ new Date() }).where(eq(notifications.user_id, userId));
+    const { error } = await supabase.from("notifications").update({ is_read: true, read_at: (/* @__PURE__ */ new Date()).toISOString() }).eq("user_id", userId);
+    if (error) throw error;
   }
 };
-var storage = new DrizzleStorage();
+var storage = new SupabaseStorage();
 
 // server/routes.ts
 import bcrypt from "bcryptjs";
@@ -371,7 +287,10 @@ async function processRecurringTasks() {
   for (const task of recurringTasks) {
     const nextOccurrenceDate = task.next_occurrence ? task.next_occurrence instanceof Date ? task.next_occurrence : new Date(task.next_occurrence) : null;
     const recurrenceEndDate = task.recurrence_end_date ? task.recurrence_end_date instanceof Date ? task.recurrence_end_date : new Date(task.recurrence_end_date) : null;
-    if (!shouldProcessRecurringTask(nextOccurrenceDate, recurrenceEndDate)) {
+    if (!shouldProcessRecurringTask(
+      nextOccurrenceDate ? nextOccurrenceDate.toISOString() : null,
+      recurrenceEndDate ? recurrenceEndDate.toISOString() : null
+    )) {
       continue;
     }
     try {
@@ -410,10 +329,10 @@ async function processRecurringTasks() {
       );
       const continueRecurrence = shouldContinueRecurrence(
         nextOccurrence,
-        recurrenceEndDate
+        recurrenceEndDate ? recurrenceEndDate.toISOString() : null
       );
       if (continueRecurrence) {
-        await storage.updateTask(task.id, { next_occurrence: nextOccurrence });
+        await storage.updateTask(task.id, { next_occurrence: nextOccurrence.toISOString() });
         results.push({
           taskId: task.id,
           status: "success",
@@ -515,6 +434,7 @@ function notifyTaskUpdate(taskId, status) {
 // server/routes.ts
 import { z } from "zod";
 var createUserSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   full_name: z.string().min(1, "Full name is required"),
@@ -524,6 +444,7 @@ var createUserSchema = z.object({
   is_active: z.boolean().optional()
 });
 var updateUserSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters").optional(),
   email: z.string().email().optional(),
   password: z.string().min(6, "Password must be at least 6 characters").optional(),
   full_name: z.string().min(1).optional(),
@@ -532,6 +453,12 @@ var updateUserSchema = z.object({
   phone: z.string().optional(),
   is_active: z.boolean().optional()
 });
+function requireAuth(req, res, next) {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  next();
+}
 function requireAdmin(req, res, next) {
   if (!req.session.userId) {
     return res.status(401).json({ error: "Authentication required" });
@@ -547,18 +474,18 @@ async function registerRoutes(app2) {
   console.log("[INIT] Socket.IO initialized for real-time notifications");
   app2.post("/api/auth/login", async (req, res) => {
     try {
-      const { email, password } = req.body;
-      console.log("Login attempt for:", email);
-      if (!email || !password) {
+      const { username, password } = req.body;
+      console.log("Login attempt for:", username);
+      if (!username || !password) {
         return res.status(400).json({
-          error: "Email and password are required"
+          error: "Username and password are required"
         });
       }
-      const user = await storage.getUserByEmail(email);
+      const user = await storage.getUserByUsername(username);
       if (!user || !user.is_active) {
-        console.log("User not found:", email);
+        console.log("User not found:", username);
         return res.status(401).json({
-          error: "Invalid email or password"
+          error: "Invalid username or password"
         });
       }
       console.log("User found, checking password...");
@@ -574,7 +501,7 @@ async function registerRoutes(app2) {
           const hashedPassword = await bcrypt.hash(password, 10);
           const updated = await storage.updateUser(user.id, { password_hash: hashedPassword });
           if (updated) {
-            console.log("\u2705 Plaintext password converted to bcrypt hash for user:", email);
+            console.log("\u2705 Plaintext password converted to bcrypt hash for user:", username);
           } else {
             console.error("\u26A0\uFE0F Failed to update password hash");
           }
@@ -582,7 +509,7 @@ async function registerRoutes(app2) {
       }
       if (!isValidPassword) {
         return res.status(401).json({
-          error: "Invalid email or password"
+          error: "Invalid username or password"
         });
       }
       req.session.regenerate((err) => {
@@ -640,8 +567,8 @@ async function registerRoutes(app2) {
   });
   app2.get("/api/users", requireAdmin, async (req, res) => {
     try {
-      const users2 = await storage.getUsers();
-      const usersWithoutPasswords = users2.map(({ password_hash, ...user }) => user);
+      const users = await storage.getUsers();
+      const usersWithoutPasswords = users.map(({ password_hash, ...user }) => user);
       res.json({ users: usersWithoutPasswords });
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -657,12 +584,17 @@ async function registerRoutes(app2) {
         });
       }
       const userData = validationResult.data;
+      const existingUsername = await storage.getUserByUsername(userData.username);
+      if (existingUsername) {
+        return res.status(409).json({ error: "Username already exists" });
+      }
       const existingUser = await storage.getUserByEmail(userData.email);
       if (existingUser) {
         return res.status(409).json({ error: "User with this email already exists" });
       }
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       const newUser = await storage.createUser({
+        username: userData.username,
         email: userData.email,
         full_name: userData.full_name,
         role: userData.role,
@@ -689,6 +621,7 @@ async function registerRoutes(app2) {
       }
       const validatedData = validationResult.data;
       const updates = {};
+      if (validatedData.username !== void 0) updates.username = validatedData.username;
       if (validatedData.email !== void 0) updates.email = validatedData.email;
       if (validatedData.full_name !== void 0) updates.full_name = validatedData.full_name;
       if (validatedData.role !== void 0) updates.role = validatedData.role;
@@ -711,8 +644,8 @@ async function registerRoutes(app2) {
   });
   app2.get("/api/tasks", async (req, res) => {
     try {
-      const tasks2 = await storage.getTasks();
-      res.json({ tasks: tasks2 });
+      const tasks = await storage.getTasks();
+      res.json({ tasks });
     } catch (error) {
       console.error("Error fetching tasks:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -724,8 +657,8 @@ async function registerRoutes(app2) {
       if (!userId) {
         return res.status(400).json({ error: "User ID is required" });
       }
-      const tasks2 = await storage.getTasksByUserId(userId);
-      res.json({ tasks: tasks2 });
+      const tasks = await storage.getTasksByUserId(userId);
+      res.json({ tasks });
     } catch (error) {
       console.error("Error fetching user tasks:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -812,27 +745,33 @@ async function registerRoutes(app2) {
       });
     }
   });
-  app2.patch("/api/tasks/:id", async (req, res) => {
+  app2.patch("/api/tasks/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const {
         status,
         assigned_to,
         assigned_to_name,
-        user_id,
-        user_name,
         worker_report,
         worker_images,
-        external_company_name
+        external_company_name,
+        receipt_confirmed_at
       } = req.body;
       if (!id) {
         return res.status(400).json({ error: "Task ID is required" });
       }
-      if (!status) {
-        return res.status(400).json({ error: "Status is required" });
+      const sessionUser = await storage.getUserById(req.session.userId);
+      if (!sessionUser) {
+        return res.status(401).json({ error: "Invalid session" });
       }
       const currentTask = await storage.getTaskById(id);
-      const updateData = { status };
+      if (!currentTask) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+      const updateData = {};
+      if (status !== void 0) {
+        updateData.status = status;
+      }
       if (assigned_to !== void 0) {
         updateData.assigned_to = assigned_to ? assigned_to.replace(/\s/g, "") : null;
       }
@@ -846,12 +785,33 @@ async function registerRoutes(app2) {
       if (external_company_name !== void 0) {
         updateData.external_company_name = external_company_name || null;
       }
+      if (receipt_confirmed_at) {
+        const assignedIds = currentTask?.assigned_to ? currentTask.assigned_to.split(",").map((id2) => id2.trim()) : [];
+        if (!assignedIds.includes(sessionUser.id)) {
+          return res.status(403).json({ error: "Only assigned worker can confirm receipt" });
+        }
+        updateData.receipt_confirmed_at = new Date(receipt_confirmed_at);
+        updateData.receipt_confirmed_by = sessionUser.id;
+        updateData.receipt_confirmed_by_name = sessionUser.full_name;
+      }
+      if (assigned_to !== void 0) {
+        const normalizedCurrentAssignment = currentTask?.assigned_to?.replace(/\s/g, "") || null;
+        const normalizedNewAssignment = assigned_to ? assigned_to.replace(/\s/g, "") : null;
+        if (normalizedCurrentAssignment !== normalizedNewAssignment) {
+          updateData.receipt_confirmed_at = null;
+          updateData.receipt_confirmed_by = null;
+          updateData.receipt_confirmed_by_name = null;
+        }
+      }
+      if (status !== void 0 && status !== "assigned_to_radnik" && currentTask?.status === "assigned_to_radnik") {
+        updateData.receipt_confirmed_at = null;
+        updateData.receipt_confirmed_by = null;
+        updateData.receipt_confirmed_by_name = null;
+      }
       if (status === "completed" && currentTask?.status !== "completed") {
         updateData.completed_at = /* @__PURE__ */ new Date();
-        if (user_id && user_name) {
-          updateData.completed_by = user_id;
-          updateData.completed_by_name = user_name;
-        }
+        updateData.completed_by = sessionUser.id;
+        updateData.completed_by_name = sessionUser.full_name;
       }
       if (status !== "completed" && currentTask?.status === "completed") {
         updateData.completed_at = null;
@@ -862,34 +822,32 @@ async function registerRoutes(app2) {
       if (!task) {
         return res.status(404).json({ error: "Task not found" });
       }
-      if (user_id && user_name) {
-        const updater = await storage.getUserById(user_id);
-        const userRole = updater?.role || "unknown";
-        let actionMessage = null;
-        if (worker_report) {
-          if (status === "completed") {
-            actionMessage = `Completed: ${worker_report}`;
-          } else if (status === "returned_to_sef") {
-            actionMessage = `Returned to Supervisor: ${worker_report}`;
-          } else if (status === "returned_to_operator") {
-            actionMessage = `Returned to Operator: ${worker_report}`;
-          }
-        } else if (assigned_to !== void 0) {
-          actionMessage = assigned_to ? `Assigned to ${assigned_to_name || "technician(s)"}` : "Cleared technician assignment";
+      let actionMessage = null;
+      if (receipt_confirmed_at) {
+        actionMessage = `Receipt confirmed by ${sessionUser.full_name}`;
+      } else if (worker_report) {
+        if (status === "completed") {
+          actionMessage = `Completed: ${worker_report}`;
+        } else if (status === "returned_to_sef") {
+          actionMessage = `Returned to Supervisor: ${worker_report}`;
+        } else if (status === "returned_to_operator") {
+          actionMessage = `Returned to Operator: ${worker_report}`;
         }
-        await storage.createTaskHistory({
-          task_id: id,
-          user_id,
-          user_name,
-          user_role: userRole,
-          action: "status_changed",
-          status_from: currentTask?.status,
-          status_to: status,
-          notes: actionMessage,
-          assigned_to: updateData.assigned_to || null,
-          assigned_to_name: updateData.assigned_to_name || null
-        });
+      } else if (assigned_to !== void 0) {
+        actionMessage = assigned_to ? `Assigned to ${assigned_to_name || "technician(s)"}` : "Cleared technician assignment";
       }
+      await storage.createTaskHistory({
+        task_id: id,
+        user_id: sessionUser.id,
+        user_name: sessionUser.full_name,
+        user_role: sessionUser.role,
+        action: "status_changed",
+        status_from: currentTask?.status,
+        status_to: status || currentTask.status,
+        notes: actionMessage,
+        assigned_to: updateData.assigned_to !== void 0 ? updateData.assigned_to : currentTask.assigned_to,
+        assigned_to_name: updateData.assigned_to_name !== void 0 ? updateData.assigned_to_name : currentTask.assigned_to_name
+      });
       if (assigned_to && (status === "assigned_to_radnik" || status === "with_sef")) {
         notifyWorkers(assigned_to, task);
       }
@@ -1103,6 +1061,7 @@ app.use(
       // 30 days
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      // Secure cookies in production (HTTPS)
       sameSite: "lax"
     }
   })
