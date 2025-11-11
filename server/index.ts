@@ -85,6 +85,38 @@ app.use((req, res, next) => {
   next();
 });
 
+// ✅ Health check endpoints MUST be registered FIRST (before routes and static serving)
+// This ensures Replit deployment can verify the server is running quickly
+app.get('/health', (req, res) => {
+  // NE koristi database ovde!
+  res.status(200).json({ status: 'ok' });
+});
+
+// Smart health check middleware for / endpoint
+// Returns JSON for health checks, but allows HTML/static serving for browsers
+app.get('/', (req, res, next) => {
+  // Check if this is a health check request (not a browser)
+  const acceptHeader = req.headers.accept || '';
+  const userAgent = req.headers['user-agent'] || '';
+  
+  // If Accept header prefers JSON or is generic (*/*), and not a browser
+  const isHealthCheck = (
+    (acceptHeader.includes('application/json') || acceptHeader === '*/*') &&
+    !acceptHeader.includes('text/html')
+  );
+  
+  if (isHealthCheck) {
+    // Respond immediately for health checks
+    return res.status(200).json({ 
+      status: 'ok',
+      message: 'Server is running'
+    });
+  }
+  
+  // Otherwise, continue to static file serving (React app)
+  next();
+});
+
 (async () => {
   const server = await registerRoutes(app);
 
