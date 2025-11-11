@@ -470,13 +470,6 @@ function requireAdmin(req, res, next) {
 }
 async function registerRoutes(app2) {
   const server = createServer(app2);
-  app2.get("/", (req, res) => {
-    res.status(200).json({
-      status: "healthy",
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-      uptime: process.uptime()
-    });
-  });
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
   app2.post("/api/auth/login", async (req, res) => {
@@ -1054,9 +1047,6 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   process.exit(1);
 }
 var PgSession = ConnectPgSimple(session);
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-}
 app.use(
   session({
     store: new PgSession({
