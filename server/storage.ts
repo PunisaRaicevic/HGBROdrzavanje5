@@ -48,8 +48,8 @@ export class DrizzleStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    // Username field doesn't exist in schema, returning undefined
-    return undefined;
+    const result = await db.select().from(users).where(eq(users.username, username));
+    return result[0];
   }
 
   async getUserById(id: string): Promise<User | undefined> {
