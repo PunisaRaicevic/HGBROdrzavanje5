@@ -1036,9 +1036,10 @@ function startCronScheduler() {
     return;
   }
   console.log(`[CRON SCHEDULER] Starting... Will run every ${CRON_INTERVAL / 1e3 / 60} minutes`);
+  const initialDelay = process.env.NODE_ENV === "production" ? 6e4 : 5e3;
   setTimeout(() => {
     runRecurringTasksJob();
-  }, 5e3);
+  }, initialDelay);
   cronInterval = setInterval(() => {
     runRecurringTasksJob();
   }, CRON_INTERVAL);
