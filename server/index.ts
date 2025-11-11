@@ -110,6 +110,12 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const PORT = Number(process.env.PORT) || 5000;
+  
+  // ❌ NE OVAKO (pre server.listen)
+  // await initializeDatabase();
+  // startCronScheduler();
+  
+  // ✅ OVAKO (nakon server.listen)
   server.listen({
     port: PORT,
     host: "0.0.0.0",
@@ -117,7 +123,7 @@ app.use((req, res, next) => {
   }, () => {
     log(`Server running on port ${PORT}`);
     
-    // ✅ Pokreni cron scheduler OVDE
+    // ✅ Pokreni cron scheduler OVDE (nakon što server počne da sluša)
     if (process.env.NODE_ENV === 'production') {
       startCronScheduler();
     }
