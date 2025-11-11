@@ -139,13 +139,13 @@ export class DrizzleStorage implements IStorage {
 
   async markNotificationAsRead(id: string): Promise<void> {
     await db.update(notifications)
-      .set({ isRead: true, readAt: new Date() } as any)
+      .set({ is_read: true, read_at: new Date() } as any)
       .where(eq(notifications.id, id));
   }
 
   async markAllNotificationsAsRead(userId: string): Promise<void> {
     await db.update(notifications)
-      .set({ isRead: true, readAt: new Date() } as any)
+      .set({ is_read: true, read_at: new Date() } as any)
       .where(eq(notifications.user_id, userId));
   }
 }
