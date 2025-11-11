@@ -7,10 +7,6 @@ import { startCronScheduler } from "./cron";
 
 const app = express();
 
-// Trust Replit's TLS proxy so secure cookies work in production
-// Without this, express-session silently drops Set-Cookie when behind HTTPS proxy
-app.set('trust proxy', 1);
-
 // Validate SESSION_SECRET on startup
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.error('FATAL: SESSION_SECRET must be set and at least 32 characters long');
@@ -20,31 +16,23 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
 
 // Session store setup
 const PgSession = ConnectPgSimple(session);
-
-// Session cookie configuration
-const sessionConfig = {
-  store: new PgSession({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true,
-  }),
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
-  },
-};
-
-console.log('[SESSION CONFIG]', {
-  environment: process.env.NODE_ENV,
-  secure: sessionConfig.cookie.secure,
-  sameSite: sessionConfig.cookie.sameSite,
-});
-
-app.use(session(sessionConfig));
+app.use(
+  session({
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
+      sameSite: "lax",
+    },
+  })
+);
 
 // Extend session type
 declare module "express-session" {
