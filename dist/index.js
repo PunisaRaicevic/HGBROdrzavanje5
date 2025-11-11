@@ -1029,46 +1029,43 @@ function startCronScheduler() {
     console.log("[CRON SCHEDULER] Already running");
     return;
   }
-  console.log(`[CRON SCHEDULER] Initializing... Will run every ${CRON_INTERVAL / 1e3 / 60} minutes`);
-  cronInterval = setInterval(async () => {
-    await runRecurringTasksJob();
+  console.log(`[CRON SCHEDULER] Starting... Will run every ${CRON_INTERVAL / 1e3 / 60} minutes`);
+  setTimeout(() => {
+    runRecurringTasksJob();
+  }, 5e3);
+  cronInterval = setInterval(() => {
+    runRecurringTasksJob();
   }, CRON_INTERVAL);
-  console.log("[CRON SCHEDULER] \u2705 Scheduler initialized (first run in 15 minutes)");
+  console.log("[CRON SCHEDULER] \u2705 Started successfully");
 }
 
 // server/index.ts
 var app = express2();
-app.get("/health", (_req, res) => {
-  res.status(200).json({ status: "ok" });
-});
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.error("FATAL: SESSION_SECRET must be set and at least 32 characters long");
   console.error("Generate a strong secret with: openssl rand -base64 32");
   process.exit(1);
 }
 var PgSession = ConnectPgSimple(session);
-var sessionMiddleware = session({
-  store: new PgSession({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true
-  }),
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1e3,
-    // 30 days
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax"
-  }
-});
-app.use((req, res, next) => {
-  if (req.path === "/health") {
-    return next();
-  }
-  sessionMiddleware(req, res, next);
-});
+app.use(
+  session({
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1e3,
+      // 30 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      // Secure cookies in production (HTTPS)
+      sameSite: "lax"
+    }
+  })
+);
 app.use(express2.json({
   limit: "50mb",
   verify: (req, _res, buf) => {
@@ -1113,22 +1110,13 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
-  const PORT = Number(process.env.PORT) || 5e3;
+  const port = parseInt(process.env.PORT || "5000", 10);
   server.listen({
-    port: PORT,
+    port,
     host: "0.0.0.0",
     reusePort: true
   }, () => {
-    log(`Server running on port ${PORT}`);
-    console.log("[STARTUP] Server is ready to accept health checks");
-    setImmediate(() => {
-      console.log("[STARTUP] Starting cron scheduler...");
-      try {
-        startCronScheduler();
-        console.log("[STARTUP] Cron scheduler started successfully");
-      } catch (error) {
-        console.error("[STARTUP] Failed to start cron scheduler:", error);
-      }
-    });
+    log(`serving on port ${port}`);
+    startCronScheduler();
   });
 })();

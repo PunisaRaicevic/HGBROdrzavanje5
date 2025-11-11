@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Globe, Building2 } from 'lucide-react';
+import { Globe } from 'lucide-react';
+import logoImage from '@assets/budvanska-color-centralno-transparent_1762428184467.png';
 
 interface LoginPageProps {
   onLogin: (username: string, password: string) => Promise<void>;
@@ -68,11 +69,15 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         </div>
 
         <CardHeader className="space-y-4">
-          <div className="flex flex-col items-center justify-center gap-3">
-            <div className="rounded-full bg-primary/10 p-4">
-              <Building2 className="h-12 w-12 text-primary" />
-            </div>
-            <CardTitle className="text-2xl text-center">
+          <div className="flex items-center justify-center">
+            <img 
+              src={logoImage} 
+              alt="Budvanska Rivijera Logo" 
+              className="h-24 w-auto object-contain"
+            />
+          </div>
+          <div className="text-center">
+            <CardTitle className="text-2xl">
               {i18n.language === 'sr' ? 'Tehnička Služba' : 'Technical Service'}
             </CardTitle>
           </div>

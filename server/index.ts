@@ -7,43 +7,32 @@ import { startCronScheduler } from "./cron";
 
 const app = express();
 
-// ✅ CRITICAL: Health check endpoint - MUST be FIRST, BEFORE any middleware
-app.get("/health", (_req, res) => {
-  res.status(200).json({ status: "ok" });
-});
-
-// ✅ Session validation check
+// Validate SESSION_SECRET on startup
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.error('FATAL: SESSION_SECRET must be set and at least 32 characters long');
   console.error('Generate a strong secret with: openssl rand -base64 32');
   process.exit(1);
 }
 
-// ✅ Session middleware - but skip it for /health endpoint
+// Session store setup
 const PgSession = ConnectPgSimple(session);
-const sessionMiddleware = session({
-  store: new PgSession({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true,
-  }),
-  secret: process.env.SESSION_SECRET!,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: "lax",
-  },
-});
-
-app.use((req, res, next) => {
-  // Skip session middleware for health check
-  if (req.path === '/health') {
-    return next();
-  }
-  sessionMiddleware(req, res, next);
-});
+app.use(
+  session({
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
+      sameSite: "lax",
+    },
+  })
+);
 
 // Extend session type
 declare module "express-session" {
@@ -58,8 +47,6 @@ declare module 'http' {
     rawBody: unknown
   }
 }
-
-// ✅ Body parsing middleware
 app.use(express.json({
   limit: '50mb',
   verify: (req, _res, buf) => {
@@ -68,7 +55,6 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-// ✅ Logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -87,9 +73,11 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
+
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
+
       log(logLine);
     }
   });
@@ -97,47 +85,39 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Main startup
 (async () => {
   const server = await registerRoutes(app);
 
-  // Error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+
     res.status(status).json({ message });
     throw err;
   });
 
-  // Vite or static serving
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  const PORT = Number(process.env.PORT) || 5000;
-
-  // ✅ Start server FIRST
+  // ALWAYS serve the app on the port specified in the environment variable PORT
+  // Other ports are firewalled. Default to 5000 if not specified.
+  // this serves both the API and the client.
+  // It is the only port that is not firewalled.
+  const port = parseInt(process.env.PORT || '5000', 10);
   server.listen({
-    port: PORT,
+    port,
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`Server running on port ${PORT}`);
-    console.log('[STARTUP] Server is ready to accept health checks');
+    log(`serving on port ${port}`);
     
-    // ✅ Start cron scheduler immediately after server starts
-    // Health checks will pass because /health endpoint is fast
-    setImmediate(() => {
-      console.log('[STARTUP] Starting cron scheduler...');
-      try {
-        startCronScheduler();
-        console.log('[STARTUP] Cron scheduler started successfully');
-      } catch (error) {
-        console.error('[STARTUP] Failed to start cron scheduler:', error);
-        // Don't exit - let the app continue running
-      }
-    });
+    // Start cron scheduler for recurring tasks
+    startCronScheduler();
   });
 })();
