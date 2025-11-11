@@ -1047,25 +1047,29 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   process.exit(1);
 }
 var PgSession = ConnectPgSimple(session);
-app.use(
-  session({
-    store: new PgSession({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true
-    }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1e3,
-      // 30 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      // Secure cookies in production (HTTPS)
-      sameSite: "lax"
-    }
-  })
-);
+var sessionConfig = {
+  store: new PgSession({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1e3,
+    // 30 days
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    // Secure cookies in production (HTTPS)
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+  }
+};
+console.log("[SESSION CONFIG]", {
+  environment: process.env.NODE_ENV,
+  secure: sessionConfig.cookie.secure,
+  sameSite: sessionConfig.cookie.sameSite
+});
+app.use(session(sessionConfig));
 app.use(express2.json({
   limit: "50mb",
   verify: (req, _res, buf) => {

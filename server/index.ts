@@ -16,23 +16,31 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
 
 // Session store setup
 const PgSession = ConnectPgSimple(session);
-app.use(
-  session({
-    store: new PgSession({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-    }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
-      sameSite: "lax",
-    },
-  })
-);
+
+// Session cookie configuration
+const sessionConfig = {
+  store: new PgSession({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+  }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
+  },
+};
+
+console.log('[SESSION CONFIG]', {
+  environment: process.env.NODE_ENV,
+  secure: sessionConfig.cookie.secure,
+  sameSite: sessionConfig.cookie.sameSite,
+});
+
+app.use(session(sessionConfig));
 
 // Extend session type
 declare module "express-session" {
