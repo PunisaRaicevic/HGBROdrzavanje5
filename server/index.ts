@@ -22,6 +22,10 @@ if (!sessionSecret || sessionSecret.length < 32) {
   }
 }
 
+// Trust first proxy (Replit's load balancer)
+// This is required for secure cookies to work properly in production
+app.set('trust proxy', 1);
+
 // Session store setup
 const PgSession = ConnectPgSimple(session);
 app.use(
