@@ -7,14 +7,24 @@ import { startCronScheduler } from "./cron";
 
 const app = express();
 
-// Validate SESSION_SECRET on startup
+// ✅ 1. PRVO - Health check endpoints (PRE session middleware!)
+// Moraju biti NA SAMOM VRHU da Replit deployment health check ne timeout-uje
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Server is running" });
+});
+
+// ✅ 2. Session validation check
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.error('FATAL: SESSION_SECRET must be set and at least 32 characters long');
   console.error('Generate a strong secret with: openssl rand -base64 32');
   process.exit(1);
 }
 
-// Session store setup
+// ✅ 3. Session middleware (nakon health check!)
 const PgSession = ConnectPgSimple(session);
 app.use(
   session({
@@ -47,6 +57,8 @@ declare module 'http' {
     rawBody: unknown
   }
 }
+
+// ✅ 4. Ostali middleware
 app.use(express.json({
   limit: '50mb',
   verify: (req, _res, buf) => {
@@ -55,6 +67,7 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
+// ✅ 5. Logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -85,9 +98,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// ✅ 6. Register routes i start server
 (async () => {
   const server = await registerRoutes(app);
 
+  // Error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -96,19 +111,7 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // ✅ CRITICAL: Health check endpoints MUST be registered BEFORE static serving!
-  // This ensures they respond immediately without being intercepted by catch-all routes
-  app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
-  });
-  
-  app.get('/', (req, res) => {
-    res.status(200).json({ status: 'ok', message: 'Server is running' });
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Vite ili static serving
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
