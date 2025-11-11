@@ -7,6 +7,10 @@ import { startCronScheduler } from "./cron";
 
 const app = express();
 
+// Trust Replit's TLS proxy so secure cookies work in production
+// Without this, express-session silently drops Set-Cookie when behind HTTPS proxy
+app.set('trust proxy', 1);
+
 // Validate SESSION_SECRET on startup
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.error('FATAL: SESSION_SECRET must be set and at least 32 characters long');

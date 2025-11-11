@@ -1041,6 +1041,7 @@ function startCronScheduler() {
 
 // server/index.ts
 var app = express2();
+app.set("trust proxy", 1);
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.error("FATAL: SESSION_SECRET must be set and at least 32 characters long");
   console.error("Generate a strong secret with: openssl rand -base64 32");
