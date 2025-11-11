@@ -51,18 +51,6 @@ function requireAdmin(req: any, res: any, next: any) {
 export async function registerRoutes(app: Express): Promise<Server> {
   const server = createServer(app);
   
-  // Health check endpoint to verify environment variables (TEMPORARY - for debugging deployment)
-  app.get("/api/health/env", requireAdmin, (_req, res) => {
-    res.json({
-      hasSupabaseUrl: !!process.env.SUPABASE_URL,
-      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      hasDatabaseUrl: !!process.env.DATABASE_URL,
-      hasSessionSecret: !!process.env.SESSION_SECRET,
-      nodeEnv: process.env.NODE_ENV,
-      isDeployment: process.env.REPLIT_DEPLOYMENT === "1",
-    });
-  });
-  
   // Initialize Socket.IO for real-time notifications
   initializeSocket(server);
   console.log('[INIT] Socket.IO initialized for real-time notifications');
