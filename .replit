@@ -9,6 +9,11 @@ channel = "stable-25_05"
 deploymentTarget = "vm"
 build = ["npm", "run", "build:full"]
 run = ["npm", "run", "start"]
+# ✅ CRITICAL: Configure health check endpoint
+healthCheckPath = "/health"
+healthCheckTimeout = 10
+# Wait for app to fully start before checking
+ignorePorts = false
 
 [[ports]]
 localPort = 5000
