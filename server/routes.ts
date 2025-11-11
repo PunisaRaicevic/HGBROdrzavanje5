@@ -295,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get tasks
-  app.get("/api/tasks", async (req, res) => {
+  app.get("/api/tasks", requireAuth, async (req, res) => {
     try {
       const tasks = await storage.getTasks();
       res.json({ tasks });
@@ -306,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user's own tasks/complaints
-  app.get("/api/tasks/my", async (req, res) => {
+  app.get("/api/tasks/my", requireAuth, async (req, res) => {
     try {
       const userId = req.query.userId as string;
 
