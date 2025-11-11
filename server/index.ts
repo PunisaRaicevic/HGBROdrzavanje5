@@ -16,6 +16,12 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
 
 // Session store setup
 const PgSession = ConnectPgSimple(session);
+
+// Trust Replit's reverse proxy for production deployments
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.use(
   session({
     store: new PgSession({

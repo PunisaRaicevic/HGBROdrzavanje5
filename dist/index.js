@@ -1047,6 +1047,9 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   process.exit(1);
 }
 var PgSession = ConnectPgSimple(session);
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 app.use(
   session({
     store: new PgSession({
