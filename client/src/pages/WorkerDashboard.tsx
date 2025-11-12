@@ -552,7 +552,7 @@ export default function WorkerDashboard() {
         </div>
         
         {task.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className="text-sm text-foreground line-clamp-2">
             {task.description}
           </p>
         )}
