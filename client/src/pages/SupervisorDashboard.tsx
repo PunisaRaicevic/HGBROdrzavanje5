@@ -31,6 +31,47 @@ const getElapsedTime = (createdAt: Date): string => {
   return `${days} day${days > 1 ? 's' : ''} ago`;
 };
 
+// Helper function to get unique user names from task history
+const getTaskAssignmentPath = (history: any[]): string => {
+  if (!history || history.length === 0) return '';
+  
+  // Extract unique user names in chronological order
+  const seenNames = new Set<string>();
+  const names: string[] = [];
+  
+  // Sort by timestamp (oldest first) to show chronological path
+  const sortedHistory = [...history].sort((a, b) => 
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+  
+  for (const entry of sortedHistory) {
+    if (entry.user_name && !seenNames.has(entry.user_name)) {
+      seenNames.add(entry.user_name);
+      names.push(entry.user_name);
+    }
+  }
+  
+  return names.join(' → ');
+};
+
+// Component to show task assignment history path
+function TaskAssignmentPath({ taskId }: { taskId: string }) {
+  const { data: historyResponse } = useQuery<{ history: any[] }>({
+    queryKey: [`/api/tasks/${taskId}/history`],
+    staleTime: 30000, // Cache for 30 seconds
+  });
+  
+  const path = getTaskAssignmentPath(historyResponse?.history || []);
+  
+  if (!path) return null;
+  
+  return (
+    <p className="text-xs text-muted-foreground mt-1">
+      Putanja: {path}
+    </p>
+  );
+}
+
 export default function SupervisorDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -362,6 +403,7 @@ export default function SupervisorDashboard() {
                               <p className="text-sm text-muted-foreground mt-1">
                                 From: {task.created_by_name || 'Unknown'}
                               </p>
+                              <TaskAssignmentPath taskId={task.id} />
                             </div>
                             <Badge 
                               variant={

@@ -305,6 +305,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get task history
+  app.get("/api/tasks/:id/history", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const history = await storage.getTaskHistory(id);
+      res.json({ history });
+    } catch (error) {
+      console.error('Error fetching task history:', error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get user's own tasks/complaints
   app.get("/api/tasks/my", async (req, res) => {
     try {
