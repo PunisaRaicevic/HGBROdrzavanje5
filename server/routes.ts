@@ -397,12 +397,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to extract return reasons from task history
+  function extractReturnReasons(history: any[]): Array<{user_name: string, reason: string, timestamp: string}> {
+    const reasons: Array<{user_name: string, reason: string, timestamp: string}> = [];
+    
+    for (const entry of history) {
+      if ((entry.status_to === 'returned_to_sef' || entry.status_to === 'returned_to_operator') && entry.notes) {
+        // Extract reason from "Returned to Supervisor: {reason}" or "Returned to Operator: {reason}"
+        // Use [\s\S]+ to capture multiline text
+        const match = entry.notes.match(/Returned to (?:Supervisor|Operator):\s*([\s\S]+)/);
+        if (match && match[1]) {
+          reasons.push({
+            user_name: entry.user_name || 'Unknown',
+            reason: match[1].trim(),
+            timestamp: entry.timestamp
+          });
+        }
+      }
+    }
+    
+    // Sort chronologically (oldest first)
+    return reasons.sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }
+
   // Get task history
   app.get("/api/tasks/:id/history", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const history = await storage.getTaskHistory(id);
-      res.json({ history });
+      
+      // Extract return reasons
+      const return_reasons = extractReturnReasons(history);
+      
+      res.json({ history, return_reasons });
     } catch (error) {
       console.error('Error fetching task history:', error);
       res.status(500).json({ error: "Internal server error" });

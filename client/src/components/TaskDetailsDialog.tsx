@@ -67,7 +67,10 @@ interface TaskDetailsDialogProps {
 
 export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDetailsDialogProps) {
   // Fetch task history only when dialog is open and task exists
-  const { data: historyResponse, isLoading: historyLoading, isError: historyError } = useQuery<{ history: any[] }>({
+  const { data: historyResponse, isLoading: historyLoading, isError: historyError } = useQuery<{ 
+    history: any[], 
+    return_reasons?: Array<{user_name: string, reason: string, timestamp: string}>
+  }>({
     queryKey: [`/api/tasks/${task?.id}/history`],
     enabled: open && !!task?.id, // Only fetch when dialog is open
   });
@@ -149,6 +152,24 @@ export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDeta
                   ) : (
                     <p className="text-sm text-muted-foreground">Nema dostupne putanje</p>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Return Reasons */}
+            {historyResponse?.return_reasons && historyResponse.return_reasons.length > 0 && (
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Razlozi vraćanja</p>
+                  <div className="space-y-2 mt-2">
+                    {historyResponse.return_reasons.map((returnReason, index) => (
+                      <div key={index} className="border-l-2 border-muted pl-3 py-1" data-testid={`return-reason-${index}`}>
+                        <p className="text-xs font-medium text-muted-foreground">{returnReason.user_name}</p>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">{returnReason.reason}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
