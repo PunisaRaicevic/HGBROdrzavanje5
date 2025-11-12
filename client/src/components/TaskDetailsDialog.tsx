@@ -135,27 +135,6 @@ export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDeta
               </div>
             </div>
 
-            {/* Assignment Path */}
-            {(historyLoading || historyResponse || historyError) && (
-              <div className="flex items-start gap-2">
-                <GitBranch className="w-5 h-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">Putanja zadatka</p>
-                  {historyLoading ? (
-                    <p className="text-sm text-muted-foreground">Učitavanje...</p>
-                  ) : historyError ? (
-                    <p className="text-sm text-destructive">Greška pri učitavanju putanje</p>
-                  ) : assignmentPath ? (
-                    <p className="text-sm text-muted-foreground" data-testid="text-task-details-path">
-                      {assignmentPath}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">Nema dostupne putanje</p>
-                  )}
-                </div>
-              </div>
-            )}
-
             {/* Return Reasons */}
             {historyResponse?.return_reasons && historyResponse.return_reasons.length > 0 && (
               <div className="flex items-start gap-2">
