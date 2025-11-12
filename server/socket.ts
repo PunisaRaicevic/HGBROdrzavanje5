@@ -1,13 +1,15 @@
 import { Server as SocketIOServer } from 'socket.io';
 import type { Server } from 'http';
+import type { RequestHandler } from 'express';
 
 let io: SocketIOServer | null = null;
 
 /**
  * Initialize Socket.IO server for real-time notifications
  * @param server - HTTP server instance
+ * @param sessionMiddleware - Express session middleware for authentication
  */
-export function initializeSocket(server: Server): SocketIOServer {
+export function initializeSocket(server: Server, sessionMiddleware: RequestHandler): SocketIOServer {
   io = new SocketIOServer(server, {
     cors: {
       origin: "*", // In production, specify your domain
@@ -16,8 +18,34 @@ export function initializeSocket(server: Server): SocketIOServer {
     transports: ['websocket', 'polling']
   });
 
+  // Inject session middleware into Socket.IO engine for session access
+  io.engine.use(sessionMiddleware);
+
+  // Authentication middleware - verify user is logged in
+  io.use((socket, next) => {
+    const req = socket.request as any;
+    
+    // Call session middleware to populate req.session
+    sessionMiddleware(req, {} as any, (err?: any) => {
+      if (err) {
+        console.error('[SOCKET.IO] Session middleware error:', err);
+        return next(new Error('Session error'));
+      }
+
+      // Check if user is authenticated
+      if (!req.session?.userId) {
+        console.warn('[SOCKET.IO] Unauthenticated socket connection attempt');
+        return next(new Error('Authentication required'));
+      }
+
+      console.log(`[SOCKET.IO] Authenticated socket connection for user: ${req.session.userId}`);
+      next();
+    });
+  });
+
   io.on('connection', (socket) => {
-    console.log(`[SOCKET.IO] Client connected: ${socket.id}`);
+    const userId = (socket.request as any).session?.userId;
+    console.log(`[SOCKET.IO] Client connected: ${socket.id} (User: ${userId})`);
 
     // When worker logs in, they join a room with their user ID
     socket.on('worker:join', (userId: string) => {

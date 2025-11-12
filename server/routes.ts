@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import { processRecurringTasks } from "./services/recurringTaskProcessor";
 import { initializeSocket, notifyWorkers, notifyTaskUpdate } from "./socket";
+import { sessionMiddleware } from "./index";
 import { z } from "zod";
 
 // Validation schemas
@@ -51,8 +52,8 @@ function requireAdmin(req: any, res: any, next: any) {
 export async function registerRoutes(app: Express): Promise<Server> {
   const server = createServer(app);
   
-  // Initialize Socket.IO for real-time notifications
-  initializeSocket(server);
+  // Initialize Socket.IO for real-time notifications with session middleware
+  initializeSocket(server, sessionMiddleware);
   console.log('[INIT] Socket.IO initialized for real-time notifications');
   // Authentication endpoint
   app.post("/api/auth/login", async (req, res) => {

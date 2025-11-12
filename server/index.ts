@@ -28,23 +28,23 @@ app.set('trust proxy', 1);
 
 // Session store setup
 const PgSession = ConnectPgSimple(session);
-app.use(
-  session({
-    store: new PgSession({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-    }),
-    secret: sessionSecret,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
-      sameSite: 'lax', // 'lax' works for same-domain requests (Replit deployment)
-    },
-  })
-);
+export const sessionMiddleware = session({
+  store: new PgSession({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+  }),
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
+    sameSite: 'lax', // 'lax' works for same-domain requests (Replit deployment)
+  },
+});
+
+app.use(sessionMiddleware);
 
 // Extend session type
 declare module "express-session" {
