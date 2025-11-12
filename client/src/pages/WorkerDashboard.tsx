@@ -544,12 +544,23 @@ export default function WorkerDashboard() {
       data-testid={`card-task-${task.id}`}
     >
       <div className="space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <h3 className="font-medium text-sm">{task.title}</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              From: {task.assignedBy}
-            </p>
+        <div>
+          <h3 className="font-medium text-base">{task.title}</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            From: {task.assignedBy}
+          </p>
+        </div>
+        
+        {task.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {task.description}
+          </p>
+        )}
+        
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Clock className="w-4 h-4" />
+            <span>{getElapsedTime(task.receivedAt)}</span>
           </div>
           <Badge 
             variant={
@@ -557,23 +568,12 @@ export default function WorkerDashboard() {
               task.priority === 'normal' ? 'default' : 
               'secondary'
             }
-            className="text-xs"
+            className="text-sm"
           >
             {task.priority === 'urgent' ? 'Hitno' : 
              task.priority === 'normal' ? 'Normalno' : 
              'Može Sačekati'}
           </Badge>
-        </div>
-        
-        {task.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
-            {task.description}
-          </p>
-        )}
-        
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Clock className="w-3 h-3" />
-          <span>{getElapsedTime(task.receivedAt)}</span>
         </div>
       </div>
     </Card>
@@ -659,8 +659,8 @@ export default function WorkerDashboard() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <p className="text-sm font-medium">{task.title}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="text-base font-medium">{task.title}</p>
+                            <p className="text-sm text-muted-foreground mt-1">
                               {task.location} • {t('completedAgo')} {getElapsedTime(task.receivedAt)} {t('ago')}
                             </p>
                           </div>
