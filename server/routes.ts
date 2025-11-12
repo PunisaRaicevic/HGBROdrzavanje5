@@ -295,6 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Helper function to calculate assignment path from task history
+  // Shows the owner of the task after each status change
   function calculateAssignmentPath(history: any[]): string {
     if (!history || history.length === 0) return '';
     
@@ -307,19 +308,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     );
     
     for (const entry of sortedHistory) {
-      // Skip task creator
+      // Skip task creator (shown separately as "From:")
       if (entry.action === 'task_created') continue;
       
-      // Determine which name to use
+      // Determine the OWNER after this status change
       let nameToAdd: string | null = null;
+      const statusTo = entry.status_to;
       
-      // For assignments, use assigned_to_name
-      if ((entry.status_to === 'assigned_to_radnik' || entry.status_to === 'with_external') && entry.assigned_to_name) {
-        nameToAdd = entry.assigned_to_name;
+      // Map status to the new owner
+      if (statusTo === 'with_operator' || statusTo === 'returned_to_operator') {
+        // Operator is the new owner
+        nameToAdd = entry.user_name; // The operator who took/received the task
       } 
-      // For other actions, use user_name
-      else if (entry.user_name) {
-        nameToAdd = entry.user_name;
+      else if (statusTo === 'with_sef' || statusTo === 'returned_to_sef') {
+        // Supervisor is the new owner
+        // If assigned_to_name is available, use it (when operator assigns to specific supervisor)
+        // Otherwise use user_name (when supervisor takes the task themselves)
+        nameToAdd = entry.assigned_to_name || entry.user_name;
+      } 
+      else if (statusTo === 'assigned_to_radnik' || statusTo === 'with_external') {
+        // Workers or external company are the new owners
+        nameToAdd = entry.assigned_to_name;
       }
       
       // Add name only if different from the last added name (consecutive deduplication)
