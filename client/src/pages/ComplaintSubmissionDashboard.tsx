@@ -111,8 +111,8 @@ export default function ComplaintSubmissionDashboard() {
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: "File Too Large",
-          description: "Image must be smaller than 5MB",
+          title: "Fajl previše velik",
+          description: "Moguće je uploadovati sliku samo do 5MB",
           variant: "destructive",
         });
         continue;
@@ -450,7 +450,6 @@ export default function ComplaintSubmissionDashboard() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-base">{t('photosOptional')}</Label>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -459,22 +458,16 @@ export default function ComplaintSubmissionDashboard() {
                 className="hidden"
                 onChange={handleFileChange}
               />
-              <div className="border-2 border-dashed rounded-md p-6 text-center">
-                <Camera className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground mb-3">
-                  {t('uploadPhotosHint')}
-                </p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handlePhotoUpload}
-                  type="button"
-                  data-testid="button-upload-photo"
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Upload Photo
-                </Button>
-              </div>
+              <Button 
+                variant="outline" 
+                onClick={handlePhotoUpload}
+                type="button"
+                data-testid="button-upload-photo"
+                className="w-full text-base"
+              >
+                <Camera className="w-5 h-5 mr-2" />
+                Upload Photo
+              </Button>
               
               {uploadedPhotos.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mt-3">
