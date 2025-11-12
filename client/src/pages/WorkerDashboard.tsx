@@ -60,29 +60,70 @@ export default function WorkerDashboard() {
     const saved = localStorage.getItem('soundNotificationsEnabled');
     return saved === 'true';
   });
+  
+  // Use refs to avoid stale closures in socket listener
+  const nativeNotificationsGrantedRef = useRef(false);
+  const permissionRequestedRef = useRef(false);
+  const soundEnabledRef = useRef(soundEnabled);
+  const browserNotificationsEnabledRef = useRef(browserNotificationsEnabled);
+  
+  // Sync refs with state
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
+  
+  useEffect(() => {
+    browserNotificationsEnabledRef.current = browserNotificationsEnabled;
+  }, [browserNotificationsEnabled]);
 
-  // Initialize Socket.IO connection and notifications
+  // Check notification permissions on mount (separate effect to avoid socket reconnect)
   useEffect(() => {
     if (!user?.id) return;
 
-    // Request Capacitor native notifications permission
-    capacitorNotifications.requestPermission().then(granted => {
-      if (granted) {
-        console.log('[NOTIFICATIONS] Capacitor notifications enabled');
-      }
-    });
-
-    // Request browser notification permission on mount (fallback for web)
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-          setBrowserNotificationsEnabled(true);
-          console.log('[NOTIFICATIONS] Browser notifications enabled');
-        }
+    // Check if Capacitor notifications are already granted (without requesting)
+    if (capacitorNotifications.isAvailable()) {
+      import('@capacitor/local-notifications').then(({ LocalNotifications }) => {
+        LocalNotifications.checkPermissions().then(status => {
+          const granted = status.display === 'granted';
+          nativeNotificationsGrantedRef.current = granted;
+          if (granted) {
+            // Permission already granted - mark as requested so we don't ask again
+            permissionRequestedRef.current = true;
+            localStorage.setItem('notificationPermissionRequested', 'true');
+            console.log('[NOTIFICATIONS] Native permission already granted');
+          }
+        }).catch(err => {
+          console.error('[NOTIFICATIONS] Failed to check permissions:', err);
+        });
       });
-    } else if (Notification.permission === 'granted') {
-      setBrowserNotificationsEnabled(true);
+    } else {
+      // Web platform - check browser notifications
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          setBrowserNotificationsEnabled(true);
+          console.log('[NOTIFICATIONS] Browser notifications already granted');
+        } else if (Notification.permission === 'default') {
+          // Request permission on mount for web (safe - won't crash like native)
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              setBrowserNotificationsEnabled(true);
+              console.log('[NOTIFICATIONS] Browser notifications enabled');
+            }
+          }).catch(err => {
+            console.error('[NOTIFICATIONS] Browser permission failed:', err);
+          });
+        }
+      }
     }
+    
+    // Check if we've already requested permission (localStorage persistence)
+    const requested = localStorage.getItem('notificationPermissionRequested') === 'true';
+    permissionRequestedRef.current = requested;
+  }, [user?.id]);
+
+  // Initialize Socket.IO connection (separate effect with stable dependencies)
+  useEffect(() => {
+    if (!user?.id) return;
 
     // Initialize audio element for sound notifications
     audioRef.current = new Audio('https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/sounds/bell_ring.mp3');
@@ -120,33 +161,67 @@ export default function WorkerDashboard() {
     socket.on('task:assigned', async (taskData) => {
       console.log('[SOCKET.IO] New task assigned:', taskData);
 
+      // AUTO-REQUEST PERMISSION FIRST TIME (Guard)
+      let localGranted = nativeNotificationsGrantedRef.current;
+      if (capacitorNotifications.isAvailable() && !permissionRequestedRef.current) {
+        try {
+          const granted = await capacitorNotifications.requestPermission();
+          localGranted = granted;
+          nativeNotificationsGrantedRef.current = granted;
+          permissionRequestedRef.current = true;
+          localStorage.setItem('notificationPermissionRequested', 'true');
+          
+          if (granted) {
+            console.log('[NOTIFICATIONS] Permission granted - native notifications enabled');
+          } else {
+            console.log('[NOTIFICATIONS] Permission denied - falling back to browser/audio');
+          }
+        } catch (error) {
+          console.error('[NOTIFICATIONS] Permission request failed:', error);
+          permissionRequestedRef.current = true;
+          localStorage.setItem('notificationPermissionRequested', 'true');
+        }
+      }
+
       // Haptic feedback - Native mobile vibration (with fallback)
       await capacitorHaptics.taskAssigned();
 
-      // Sound notification
-      if (soundEnabled) {
-        // Try native notification with sound first
-        await capacitorNotifications.showTaskAssigned(taskData.title, taskData.location);
-        
-        // Fallback: Play audio if native notifications not available
-        if (!capacitorNotifications.isAvailable() && audioRef.current) {
+      // Native notification (Only if granted)
+      if (soundEnabledRef.current) {
+        if (localGranted && capacitorNotifications.isAvailable()) {
+          await capacitorNotifications.showTaskAssigned(taskData.title, taskData.location);
+        }
+        // Fallback: Play audio if native not available/granted
+        else if (audioRef.current) {
           audioRef.current.play().catch(err => {
             console.warn('[AUDIO] Failed to play notification sound:', err);
           });
         }
       }
 
-      // Browser notification (fallback for web)
-      if (!capacitorNotifications.isAvailable() && browserNotificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('Nova reklamacija / New Task', {
-          body: `${taskData.title}\n${taskData.location}`,
-          icon: '/favicon.ico',
-          tag: taskData.taskId,
-          requireInteraction: true
-        });
+      // Browser notification (fallback for web - verify permission before showing)
+      if (!capacitorNotifications.isAvailable() && 'Notification' in window) {
+        if (Notification.permission === 'granted') {
+          browserNotificationsEnabledRef.current = true;
+          try {
+            new Notification('Nova reklamacija / New Task', {
+              body: `${taskData.title}\n${taskData.location}`,
+              icon: '/favicon.ico',
+              tag: taskData.taskId,
+              requireInteraction: true
+            });
+          } catch (error) {
+            console.error('[NOTIFICATIONS] Browser notification failed:', error);
+            browserNotificationsEnabledRef.current = false;
+            setBrowserNotificationsEnabled(false); // Sync state
+          }
+        } else {
+          browserNotificationsEnabledRef.current = false;
+          setBrowserNotificationsEnabled(false); // Sync state
+        }
       }
 
-      // Show in-app toast notification
+      // Show in-app toast notification (Always show)
       toast({
         title: t('newTaskAssigned') || 'Nova reklamacija dodeljena',
         description: `${taskData.title} - ${taskData.location}`,
@@ -203,7 +278,7 @@ export default function WorkerDashboard() {
         audioRef.current = null;
       }
     };
-  }, [user?.id, toast, t, browserNotificationsEnabled, soundEnabled]);
+  }, [user?.id, toast, t]); // Removed browserNotificationsEnabled and soundEnabled to prevent socket reconnect loop
 
   // Fetch all tasks from API (keeping as fallback + initial load)
   const { data: tasksResponse } = useQuery<{ tasks: any[] }>({

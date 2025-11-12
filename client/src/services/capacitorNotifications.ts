@@ -59,7 +59,7 @@ export const capacitorNotifications = {
             id: notificationId,
             schedule: { at: new Date(Date.now() + 100) }, // Almost instant
             sound: options?.sound || undefined,
-            smallIcon: options?.smallIcon || 'ic_stat_icon_config_sample',
+            smallIcon: options?.smallIcon || undefined,
             actionTypeId: '',
             extra: null
           }
