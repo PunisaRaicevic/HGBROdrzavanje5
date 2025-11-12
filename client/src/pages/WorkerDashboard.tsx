@@ -539,7 +539,7 @@ export default function WorkerDashboard() {
   const renderTaskCard = (task: Task) => (
     <Card 
       key={task.id} 
-      className="p-4 cursor-pointer hover-elevate active-elevate-2"
+      className="p-4 cursor-pointer hover-elevate active-elevate-2 bg-sky-100 dark:bg-sky-950"
       onClick={() => handleTaskClick(task.id)}
       data-testid={`card-task-${task.id}`}
     >
@@ -653,7 +653,7 @@ export default function WorkerDashboard() {
                     completedTasks.map((task) => (
                       <Card 
                         key={task.id} 
-                        className="p-4 cursor-pointer hover-elevate active-elevate-2"
+                        className="p-4 cursor-pointer hover-elevate active-elevate-2 bg-sky-100 dark:bg-sky-950"
                         onClick={() => handleTaskClick(task.id)}
                         data-testid={`card-task-${task.id}`}
                       >
