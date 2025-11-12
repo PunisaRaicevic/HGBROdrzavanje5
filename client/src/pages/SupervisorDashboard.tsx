@@ -135,9 +135,9 @@ export default function SupervisorDashboard() {
     }
   });
 
-  // Get tasks sent to supervisor (with_sef status OR with_external)
+  // Get tasks sent to supervisor (with_sef, with_external, OR returned_to_sef status)
   const tasksFromOperator = (tasksResponse?.tasks || []).filter(task => 
-    task.status === 'with_sef' || task.status === 'with_external'
+    task.status === 'with_sef' || task.status === 'with_external' || task.status === 'returned_to_sef'
   );
   
   // Get technicians
@@ -381,7 +381,7 @@ export default function SupervisorDashboard() {
                         </div>
 
                         <div className="space-y-2" data-testid={`assignment-section-${task.id}`}>
-                          {task.status === 'with_sef' ? (
+                          {(task.status === 'with_sef' || task.status === 'returned_to_sef') ? (
                             <>
                               <Button 
                                 size="sm" 
