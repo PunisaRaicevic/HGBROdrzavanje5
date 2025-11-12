@@ -2,9 +2,10 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.budvanskarivijera.hotel',
-  appName: 'Hotel Maintenance',
+  appName: 'HGBR Tehnička Služba',
   webDir: 'dist/public',
   server: {
+    url: 'https://HGBRTehnickaSluzba.replit.app',
     androidScheme: 'https',
     cleartext: true
   },
