@@ -130,7 +130,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDeta
               <div>
                 <p className="text-sm font-medium">Prijavio</p>
                 <p className="text-sm text-muted-foreground" data-testid="text-task-details-reporter">
-                  {task.fromName} ({task.from})
+                  {task.fromName}
                 </p>
               </div>
             </div>
