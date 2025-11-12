@@ -298,8 +298,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   function calculateAssignmentPath(history: any[]): string {
     if (!history || history.length === 0) return '';
     
-    const seenEntries = new Set<string>();
     const names: string[] = [];
+    let lastAddedName: string | null = null;
     
     // Sort by timestamp (oldest first)
     const sortedHistory = [...history].sort((a, b) => 
@@ -310,21 +310,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Skip task creator
       if (entry.action === 'task_created') continue;
       
+      // Determine which name to use
+      let nameToAdd: string | null = null;
+      
       // For assignments, use assigned_to_name
       if ((entry.status_to === 'assigned_to_radnik' || entry.status_to === 'with_external') && entry.assigned_to_name) {
-        const key = `assigned:${entry.assigned_to_name}`;
-        if (!seenEntries.has(key)) {
-          seenEntries.add(key);
-          names.push(entry.assigned_to_name);
-        }
+        nameToAdd = entry.assigned_to_name;
       } 
       // For other actions, use user_name
       else if (entry.user_name) {
-        const key = `user:${entry.user_name}`;
-        if (!seenEntries.has(key)) {
-          seenEntries.add(key);
-          names.push(entry.user_name);
-        }
+        nameToAdd = entry.user_name;
+      }
+      
+      // Add name only if different from the last added name (consecutive deduplication)
+      // This allows "A → B → A" but prevents "A → A → B"
+      if (nameToAdd && nameToAdd !== lastAddedName) {
+        names.push(nameToAdd);
+        lastAddedName = nameToAdd;
       }
     }
     
