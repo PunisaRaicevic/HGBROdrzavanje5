@@ -346,12 +346,12 @@ export default function ComplaintSubmissionDashboard() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="hotel">{t('hotelBuildingRequired')}</Label>
+              <Label htmlFor="hotel" className="text-base">{t('hotelBuildingRequired')}</Label>
               <Select value={hotel} onValueChange={(value) => {
                 setHotel(value);
                 if (value !== 'Ostalo') setCustomHotel('');
               }}>
-                <SelectTrigger data-testid="select-hotel">
+                <SelectTrigger data-testid="select-hotel" className="text-base">
                   <SelectValue placeholder={t('hotelPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -368,18 +368,18 @@ export default function ComplaintSubmissionDashboard() {
                   value={customHotel}
                   onChange={(e) => setCustomHotel(e.target.value)}
                   data-testid="input-custom-hotel"
-                  className="mt-2"
+                  className="mt-2 text-base"
                 />
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="blok">{t('blockRoomRequired')}</Label>
+              <Label htmlFor="blok" className="text-base">{t('blockRoomRequired')}</Label>
               <Select value={blok} onValueChange={(value) => {
                 setBlok(value);
                 if (value !== 'Ostalo') setCustomBlok('');
               }}>
-                <SelectTrigger data-testid="select-blok">
+                <SelectTrigger data-testid="select-blok" className="text-base">
                   <SelectValue placeholder={t('blockPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -405,26 +405,27 @@ export default function ComplaintSubmissionDashboard() {
                   value={customBlok}
                   onChange={(e) => setCustomBlok(e.target.value)}
                   data-testid="input-custom-blok"
-                  className="mt-2"
+                  className="mt-2 text-base"
                 />
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="soba">{t('roomOptional')}</Label>
+              <Label htmlFor="soba" className="text-base">{t('roomOptional')}</Label>
               <Input
                 id="soba"
                 placeholder={t('roomPlaceholder')}
                 value={soba}
                 onChange={(e) => setSoba(e.target.value)}
                 data-testid="input-soba"
+                className="text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="priority">{t('priority')}</Label>
+              <Label htmlFor="priority" className="text-base">{t('priority')}</Label>
               <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger data-testid="select-priority">
+                <SelectTrigger data-testid="select-priority" className="text-base">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -436,7 +437,7 @@ export default function ComplaintSubmissionDashboard() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{t('descriptionRequired')}</Label>
+              <Label htmlFor="description" className="text-base">{t('descriptionRequired')}</Label>
               <Textarea
                 id="description"
                 placeholder={t('describeComplaintPlaceholder')}
@@ -444,11 +445,12 @@ export default function ComplaintSubmissionDashboard() {
                 onChange={(e) => setDescription(e.target.value)}
                 rows={6}
                 data-testid="textarea-description"
+                className="text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>{t('photosOptional')}</Label>
+              <Label className="text-base">{t('photosOptional')}</Label>
               <input
                 ref={fileInputRef}
                 type="file"
