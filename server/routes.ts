@@ -295,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Helper function to calculate assignment path from task history
-  // Shows the owner of the task after each status change
+  // Shows the complete path of people who handled the task
   function calculateAssignmentPath(history: any[]): string {
     if (!history || history.length === 0) return '';
     
@@ -307,35 +307,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
     
-    for (const entry of sortedHistory) {
+    for (let i = 0; i < sortedHistory.length; i++) {
+      const entry = sortedHistory[i];
+      
       // Skip task creator (shown separately as "From:")
       if (entry.action === 'task_created') continue;
       
-      // Determine the OWNER after this status change
-      let nameToAdd: string | null = null;
       const statusTo = entry.status_to;
       
-      // Map status to the new owner
-      if (statusTo === 'with_operator' || statusTo === 'returned_to_operator') {
-        // Operator is the new owner
-        nameToAdd = entry.user_name; // The operator who took/received the task
-      } 
-      else if (statusTo === 'with_sef' || statusTo === 'returned_to_sef') {
-        // Supervisor is the new owner
-        // If assigned_to_name is available, use it (when operator assigns to specific supervisor)
-        // Otherwise use user_name (when supervisor takes the task themselves)
-        nameToAdd = entry.assigned_to_name || entry.user_name;
-      } 
-      else if (statusTo === 'assigned_to_radnik' || statusTo === 'with_external') {
-        // Workers or external company are the new owners
-        nameToAdd = entry.assigned_to_name;
+      // Determine who handled the task at this step
+      if (statusTo === 'assigned_to_radnik' || statusTo === 'with_external') {
+        // First add the person who assigned (operator/supervisor)
+        if (entry.user_name && entry.user_name !== lastAddedName) {
+          names.push(entry.user_name);
+          lastAddedName = entry.user_name;
+        }
+        // Then add the assignee(s) (workers)
+        if (entry.assigned_to_name && entry.assigned_to_name !== lastAddedName) {
+          names.push(entry.assigned_to_name);
+          lastAddedName = entry.assigned_to_name;
+        }
       }
-      
-      // Add name only if different from the last added name (consecutive deduplication)
-      // This allows "A → B → A" but prevents "A → A → B"
-      if (nameToAdd && nameToAdd !== lastAddedName) {
-        names.push(nameToAdd);
-        lastAddedName = nameToAdd;
+      else if (statusTo === 'returned_to_sef' || statusTo === 'returned_to_operator') {
+        // Worker returned the task - add worker's name
+        if (entry.user_name && entry.user_name !== lastAddedName) {
+          names.push(entry.user_name);
+          lastAddedName = entry.user_name;
+        }
+        // Look ahead to find the next person who took action (status change)
+        for (let j = i + 1; j < sortedHistory.length; j++) {
+          const nextEntry = sortedHistory[j];
+          // Only use next entry if it represents a real status transition (not another return)
+          if (nextEntry.status_to !== statusTo) {
+            if (nextEntry.user_name && nextEntry.user_name !== lastAddedName) {
+              names.push(nextEntry.user_name);
+              lastAddedName = nextEntry.user_name;
+            }
+            break;  // Found the recipient, stop looking
+          }
+        }
+      }
+      else if (statusTo === 'with_operator' || statusTo === 'with_sef') {
+        // Operator/supervisor took the task
+        if (entry.user_name && entry.user_name !== lastAddedName) {
+          names.push(entry.user_name);
+          lastAddedName = entry.user_name;
+        }
+      }
+      else if (statusTo === 'completed') {
+        // Task completed - add the person who completed it
+        if (entry.user_name && entry.user_name !== lastAddedName) {
+          names.push(entry.user_name);
+          lastAddedName = entry.user_name;
+        }
       }
     }
     
