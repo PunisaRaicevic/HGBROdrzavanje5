@@ -717,8 +717,8 @@ export default function WorkerDashboard() {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="text-sm font-medium">{t('reportedBy')}</p>
-                          <p className="text-sm text-muted-foreground">{selectedTask.reporterName}</p>
+                          <p className="text-base font-medium">{t('reportedBy')}</p>
+                          <p className="text-base text-muted-foreground">{selectedTask.reporterName}</p>
                         </div>
                       </div>
                       
@@ -744,7 +744,7 @@ export default function WorkerDashboard() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base">
                     <div className="min-w-0">
                       <span className="text-muted-foreground">{t('assignedByLabel')}</span>
                       <p className="font-medium break-words">{selectedTask.assignedBy}</p>
@@ -760,8 +760,8 @@ export default function WorkerDashboard() {
                   </div>
 
                   <div>
-                    <span className="text-sm text-muted-foreground">{t('descriptionLabel')}</span>
-                    <p className="text-sm mt-1">{selectedTask.description}</p>
+                    <span className="text-base text-muted-foreground">{t('descriptionLabel')}</span>
+                    <p className="text-base mt-1">{selectedTask.description}</p>
                   </div>
                 </div>
 
@@ -810,12 +810,12 @@ export default function WorkerDashboard() {
                 {/* Work Report Section for Assigned Tasks after action selected */}
                 {selectedTask.status === 'assigned_to_radnik' && actionType && (
                   <div className="space-y-4 pt-4 border-t">
-                    <h3 className="font-medium">
+                    <h3 className="font-medium text-base">
                       {actionType === 'completed' ? t('taskCompletionReport') : t('returnReason')}
                     </h3>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="new-task-report">
+                      <Label htmlFor="new-task-report" className="text-base">
                         {actionType === 'completed' 
                           ? t('whatDidYouDo')
                           : t('whyCantComplete')}
@@ -830,11 +830,12 @@ export default function WorkerDashboard() {
                         onChange={(e) => setWorkerReport(e.target.value)}
                         rows={6}
                         data-testid="textarea-new-task-report"
+                        className="text-base"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label>{t('fieldPhotos')}</Label>
+                      <Label className="text-base">{t('fieldPhotos')}</Label>
                       <input
                         ref={fileInputRef}
                         type="file"

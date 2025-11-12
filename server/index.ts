@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startCronScheduler } from "./cron";
@@ -47,13 +48,27 @@ declare module 'http' {
     rawBody: unknown
   }
 }
+
 app.use(express.json({
   limit: '50mb',
   verify: (req, _res, buf) => {
     req.rawBody = buf;
   }
 }));
+
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+// CORS middleware - DODATO
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['Set-Cookie']
+}));
+
+// Explicit OPTIONS handler
+app.options('*', cors());
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -91,7 +106,6 @@ app.use((req, res, next) => {
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
     throw err;
   });
@@ -116,7 +130,7 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
-    
+
     // Start cron scheduler for recurring tasks
     startCronScheduler();
   });

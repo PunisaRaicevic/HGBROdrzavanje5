@@ -5,9 +5,8 @@ const config: CapacitorConfig = {
   appName: 'HGBR Tehnička Služba',
   webDir: 'dist/public',
   server: {
-    url: 'https://HGBRTehnickaSluzba.replit.app',
-    androidScheme: 'https',
-    cleartext: true
+    androidScheme: 'https'
+    // UKLONI server.url! - Neka koristi lokalne build-ovane fajlove
   },
   plugins: {
     PushNotifications: {
