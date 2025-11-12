@@ -6,8 +6,48 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Clock, User, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
+
+// Helper function to get unique user names from task history
+const getTaskAssignmentPath = (history: any[]): string => {
+  if (!history || history.length === 0) return '';
+  
+  // Extract unique user names in chronological order (skip task creator)
+  const seenEntries = new Set<string>();
+  const names: string[] = [];
+  
+  // Sort by timestamp (oldest first) to show chronological path
+  const sortedHistory = [...history].sort((a, b) => 
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  );
+  
+  for (const entry of sortedHistory) {
+    // Skip the task creator (action: 'task_created')
+    if (entry.action === 'task_created') continue;
+    
+    // For task assignments (assigned_to_radnik or with_external), use assigned_to_name
+    if ((entry.status_to === 'assigned_to_radnik' || entry.status_to === 'with_external') && entry.assigned_to_name) {
+      const key = `assigned:${entry.assigned_to_name}`;
+      if (!seenEntries.has(key)) {
+        seenEntries.add(key);
+        names.push(entry.assigned_to_name);
+      }
+    } 
+    // For other actions, use user_name
+    else if (entry.user_name) {
+      const key = `user:${entry.user_name}`;
+      if (!seenEntries.has(key)) {
+        seenEntries.add(key);
+        names.push(entry.user_name);
+      }
+    }
+  }
+  
+  return names.join(' → ');
+};
 
 interface TaskDetailsDialogProps {
   open: boolean;
@@ -26,6 +66,18 @@ interface TaskDetailsDialogProps {
 }
 
 export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDetailsDialogProps) {
+  // Fetch task history only when dialog is open and task exists
+  const { data: historyResponse, isLoading: historyLoading, isError: historyError } = useQuery<{ history: any[] }>({
+    queryKey: [`/api/tasks/${task?.id}/history`],
+    enabled: open && !!task?.id, // Only fetch when dialog is open
+  });
+  
+  // Memoize assignment path calculation to avoid recomputation on re-renders
+  const assignmentPath = useMemo(() => {
+    if (!task || !historyResponse?.history) return '';
+    return getTaskAssignmentPath(historyResponse.history);
+  }, [task, historyResponse?.history]);
+  
   if (!task) return null;
 
   return (
@@ -79,6 +131,27 @@ export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDeta
                 </p>
               </div>
             </div>
+
+            {/* Assignment Path */}
+            {(historyLoading || historyResponse || historyError) && (
+              <div className="flex items-start gap-2">
+                <GitBranch className="w-5 h-5 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">Putanja zadatka</p>
+                  {historyLoading ? (
+                    <p className="text-sm text-muted-foreground">Učitavanje...</p>
+                  ) : historyError ? (
+                    <p className="text-sm text-destructive">Greška pri učitavanju putanje</p>
+                  ) : assignmentPath ? (
+                    <p className="text-sm text-muted-foreground" data-testid="text-task-details-path">
+                      {assignmentPath}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Nema dostupne putanje</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Time */}
             <div className="flex items-start gap-2">
