@@ -362,6 +362,11 @@ export default function SupervisorDashboard() {
                               <p className="text-sm text-muted-foreground mt-1">
                                 From: {task.created_by_name || 'Unknown'}
                               </p>
+                              {task.assignment_path && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Putanja: {task.assignment_path}
+                                </p>
+                              )}
                             </div>
                             <Badge 
                               variant={

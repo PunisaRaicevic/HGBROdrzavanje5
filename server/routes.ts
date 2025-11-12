@@ -294,11 +294,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get tasks
+  // Helper function to calculate assignment path from task history
+  function calculateAssignmentPath(history: any[]): string {
+    if (!history || history.length === 0) return '';
+    
+    const seenEntries = new Set<string>();
+    const names: string[] = [];
+    
+    // Sort by timestamp (oldest first)
+    const sortedHistory = [...history].sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+    
+    for (const entry of sortedHistory) {
+      // Skip task creator
+      if (entry.action === 'task_created') continue;
+      
+      // For assignments, use assigned_to_name
+      if ((entry.status_to === 'assigned_to_radnik' || entry.status_to === 'with_external') && entry.assigned_to_name) {
+        const key = `assigned:${entry.assigned_to_name}`;
+        if (!seenEntries.has(key)) {
+          seenEntries.add(key);
+          names.push(entry.assigned_to_name);
+        }
+      } 
+      // For other actions, use user_name
+      else if (entry.user_name) {
+        const key = `user:${entry.user_name}`;
+        if (!seenEntries.has(key)) {
+          seenEntries.add(key);
+          names.push(entry.user_name);
+        }
+      }
+    }
+    
+    return names.join(' → ');
+  }
+
+  // Get tasks with assignment paths
   app.get("/api/tasks", async (req, res) => {
     try {
       const tasks = await storage.getTasks();
-      res.json({ tasks });
+      
+      // Fetch ALL task histories in ONE query
+      const taskIds = tasks.map(task => task.id);
+      const allHistories = await storage.getTaskHistoriesForTasks(taskIds);
+      
+      // Group histories by task_id
+      const historiesByTaskId = new Map<string, any[]>();
+      for (const history of allHistories) {
+        if (!historiesByTaskId.has(history.task_id)) {
+          historiesByTaskId.set(history.task_id, []);
+        }
+        historiesByTaskId.get(history.task_id)!.push(history);
+      }
+      
+      // Add assignment_path to each task
+      const tasksWithPaths = tasks.map(task => ({
+        ...task,
+        assignment_path: calculateAssignmentPath(historiesByTaskId.get(task.id) || [])
+      }));
+      
+      res.json({ tasks: tasksWithPaths });
     } catch (error) {
       console.error('Error fetching tasks:', error);
       res.status(500).json({ error: "Internal server error" });

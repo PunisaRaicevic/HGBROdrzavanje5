@@ -29,6 +29,7 @@ export interface IStorage {
   
   createTaskHistory(history: Partial<InsertTaskHistory>): Promise<TaskHistory>;
   getTaskHistory(taskId: string): Promise<TaskHistory[]>;
+  getTaskHistoriesForTasks(taskIds: string[]): Promise<TaskHistory[]>;
   
   createNotification(notification: Partial<InsertNotification>): Promise<Notification>;
   getUserNotifications(userId: string): Promise<Notification[]>;
@@ -226,6 +227,19 @@ export class SupabaseStorage implements IStorage {
       .select('*')
       .eq('task_id', taskId)
       .order('timestamp', { ascending: false });
+    
+    if (error) throw error;
+    return (data || []) as TaskHistory[];
+  }
+
+  async getTaskHistoriesForTasks(taskIds: string[]): Promise<TaskHistory[]> {
+    if (taskIds.length === 0) return [];
+    
+    const { data, error } = await supabase
+      .from('task_history')
+      .select('*')
+      .in('task_id', taskIds)
+      .order('timestamp', { ascending: true });
     
     if (error) throw error;
     return (data || []) as TaskHistory[];
