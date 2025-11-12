@@ -36,7 +36,7 @@ const getTaskAssignmentPath = (history: any[]): string => {
   if (!history || history.length === 0) return '';
   
   // Extract unique user names in chronological order
-  const seenNames = new Set<string>();
+  const seenEntries = new Set<string>();
   const names: string[] = [];
   
   // Sort by timestamp (oldest first) to show chronological path
@@ -45,9 +45,21 @@ const getTaskAssignmentPath = (history: any[]): string => {
   );
   
   for (const entry of sortedHistory) {
-    if (entry.user_name && !seenNames.has(entry.user_name)) {
-      seenNames.add(entry.user_name);
-      names.push(entry.user_name);
+    // For task assignments (assigned_to_radnik or with_external), use assigned_to_name
+    if ((entry.status_to === 'assigned_to_radnik' || entry.status_to === 'with_external') && entry.assigned_to_name) {
+      const key = `assigned:${entry.assigned_to_name}`;
+      if (!seenEntries.has(key)) {
+        seenEntries.add(key);
+        names.push(entry.assigned_to_name);
+      }
+    } 
+    // For other actions, use user_name
+    else if (entry.user_name) {
+      const key = `user:${entry.user_name}`;
+      if (!seenEntries.has(key)) {
+        seenEntries.add(key);
+        names.push(entry.user_name);
+      }
     }
   }
   
