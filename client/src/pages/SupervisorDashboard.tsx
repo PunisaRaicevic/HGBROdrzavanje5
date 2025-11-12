@@ -346,7 +346,7 @@ export default function SupervisorDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="max-h-[500px] pr-4">
+              <ScrollArea className="h-[600px] pr-4">
                 <div className="space-y-4">
                   {tasksFromOperator.map((task) => (
                     <Card key={task.id} className="p-4">
