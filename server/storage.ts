@@ -1,13 +1,13 @@
 import { supabase } from "./lib/supabase";
-import type { 
-  User, 
-  InsertUser,
-  Task,
-  InsertTask,
-  TaskHistory,
-  InsertTaskHistory,
-  Notification,
-  InsertNotification
+import { 
+  type User, 
+  type InsertUser,
+  type Task,
+  type InsertTask,
+  type TaskHistory,
+  type InsertTaskHistory,
+  type Notification,
+  type InsertNotification
 } from "@shared/schema";
 
 export interface IStorage {
@@ -22,7 +22,6 @@ export interface IStorage {
   getTasks(): Promise<Task[]>;
   getTaskById(id: string): Promise<Task | undefined>;
   getTasksByUserId(userId: string): Promise<Task[]>;
-  getTasksForUser(userId: string): Promise<Task[]>;
   getRecurringTasks(): Promise<Task[]>;
   createTask(task: Partial<InsertTask>): Promise<Task>;
   updateTask(id: string, data: Partial<Task>): Promise<Task | undefined>;
@@ -46,7 +45,7 @@ export class SupabaseStorage implements IStorage {
       .single();
     
     if (error) {
-      if (error.code === 'PGRST116') return undefined; // No rows returned
+      if (error.code === 'PGRST116') return undefined; // Not found
       throw error;
     }
     return data as User;
@@ -60,7 +59,7 @@ export class SupabaseStorage implements IStorage {
       .single();
     
     if (error) {
-      if (error.code === 'PGRST116') return undefined; // No rows returned
+      if (error.code === 'PGRST116') return undefined; // Not found
       throw error;
     }
     return data as User;
@@ -74,7 +73,7 @@ export class SupabaseStorage implements IStorage {
       .single();
     
     if (error) {
-      if (error.code === 'PGRST116') return undefined;
+      if (error.code === 'PGRST116') return undefined; // Not found
       throw error;
     }
     return data as User;
@@ -91,19 +90,19 @@ export class SupabaseStorage implements IStorage {
     return data as User;
   }
 
-  async updateUser(id: string, userData: Partial<User>): Promise<User | undefined> {
-    const { data, error } = await supabase
+  async updateUser(id: string, data: Partial<User>): Promise<User | undefined> {
+    const { data: updated, error } = await supabase
       .from('users')
-      .update(userData)
+      .update(data)
       .eq('id', id)
       .select()
       .single();
     
     if (error) {
-      if (error.code === 'PGRST116') return undefined;
+      if (error.code === 'PGRST116') return undefined; // Not found
       throw error;
     }
-    return data as User;
+    return updated as User;
   }
 
   async getUsers(): Promise<User[]> {
@@ -113,7 +112,7 @@ export class SupabaseStorage implements IStorage {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data as User[];
+    return (data || []) as User[];
   }
 
   async getTechnicians(): Promise<User[]> {
@@ -121,10 +120,11 @@ export class SupabaseStorage implements IStorage {
       .from('users')
       .select('*')
       .in('role', ['serviser', 'radnik'])
+      .eq('is_active', true)
       .order('full_name', { ascending: true });
     
     if (error) throw error;
-    return data as User[];
+    return (data || []) as User[];
   }
 
   async getTasks(): Promise<Task[]> {
@@ -134,7 +134,7 @@ export class SupabaseStorage implements IStorage {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data as Task[];
+    return (data || []) as Task[];
   }
 
   async getTaskById(id: string): Promise<Task | undefined> {
@@ -145,7 +145,7 @@ export class SupabaseStorage implements IStorage {
       .single();
     
     if (error) {
-      if (error.code === 'PGRST116') return undefined;
+      if (error.code === 'PGRST116') return undefined; // Not found
       throw error;
     }
     return data as Task;
@@ -159,20 +159,7 @@ export class SupabaseStorage implements IStorage {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data as Task[];
-  }
-
-  async getTasksForUser(userId: string): Promise<Task[]> {
-    // Get tasks where user is creator OR assigned
-    // Since assigned_to is a comma-separated string, we use LIKE pattern
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .or(`created_by.eq.${userId},assigned_to.like.%${userId}%`)
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return data as Task[];
+    return (data || []) as Task[];
   }
 
   async getRecurringTasks(): Promise<Task[]> {
@@ -184,7 +171,7 @@ export class SupabaseStorage implements IStorage {
       .neq('recurrence_pattern', 'once');
     
     if (error) throw error;
-    return data as Task[];
+    return (data || []) as Task[];
   }
 
   async createTask(taskData: Partial<InsertTask>): Promise<Task> {
@@ -198,19 +185,19 @@ export class SupabaseStorage implements IStorage {
     return data as Task;
   }
 
-  async updateTask(id: string, taskData: Partial<Task>): Promise<Task | undefined> {
-    const { data, error } = await supabase
+  async updateTask(id: string, data: Partial<Task>): Promise<Task | undefined> {
+    const { data: updated, error } = await supabase
       .from('tasks')
-      .update(taskData)
+      .update(data)
       .eq('id', id)
       .select()
       .single();
     
     if (error) {
-      if (error.code === 'PGRST116') return undefined;
+      if (error.code === 'PGRST116') return undefined; // Not found
       throw error;
     }
-    return data as Task;
+    return updated as Task;
   }
 
   async deleteTask(id: string): Promise<void> {
@@ -241,7 +228,7 @@ export class SupabaseStorage implements IStorage {
       .order('timestamp', { ascending: false });
     
     if (error) throw error;
-    return data as TaskHistory[];
+    return (data || []) as TaskHistory[];
   }
 
   async createNotification(notificationData: Partial<InsertNotification>): Promise<Notification> {
@@ -263,7 +250,7 @@ export class SupabaseStorage implements IStorage {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data as Notification[];
+    return (data || []) as Notification[];
   }
 
   async markNotificationAsRead(id: string): Promise<void> {

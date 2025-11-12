@@ -73,12 +73,11 @@ export default function OperatorDashboard() {
       assigned_to?: string;
       assigned_to_name?: string;
     }) => {
-      const response = await apiRequest('PATCH', `/api/tasks/${taskId}`, { 
+      return apiRequest('PATCH', `/api/tasks/${taskId}`, { 
         status, 
         assigned_to, 
         assigned_to_name
       });
-      return await response.json();
     },
     onSuccess: () => {
       // Invalidate and refetch tasks
@@ -477,6 +476,19 @@ export default function OperatorDashboard() {
                                 {task.status === 'completed' && 'Završeno'}
                                 {task.status === 'cancelled' && 'Otkazano'}
                               </Badge>
+                              {task.sentTo === 'technician' && (
+                                <Badge 
+                                  variant="outline"
+                                  className={`text-xs ${
+                                    task.receipt_confirmed_at 
+                                      ? 'bg-green-50 dark:bg-green-950 border-green-600 dark:border-green-400 text-green-700 dark:text-green-400' 
+                                      : 'bg-orange-50 dark:bg-orange-950 border-orange-600 dark:border-orange-400 text-orange-700 dark:text-orange-400'
+                                  }`}
+                                  data-testid={`receipt-status-${task.id}`}
+                                >
+                                  {task.receipt_confirmed_at ? t('receiptConfirmed') : t('receiptNotConfirmed')}
+                                </Badge>
+                              )}
                             </div>
                           )}
                         </div>

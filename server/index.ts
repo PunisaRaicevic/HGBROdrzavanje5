@@ -1,50 +1,38 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
-import crypto from "crypto";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startCronScheduler } from "./cron";
 
 const app = express();
 
-// Auto-generate SESSION_SECRET in development if not provided
-let sessionSecret = process.env.SESSION_SECRET;
-if (!sessionSecret || sessionSecret.length < 32) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('FATAL: SESSION_SECRET must be set in production and at least 32 characters long');
-    console.error('Generate a strong secret with: openssl rand -base64 32');
-    process.exit(1);
-  } else {
-    sessionSecret = crypto.randomBytes(32).toString('base64');
-    console.warn('⚠️  WARNING: Auto-generated SESSION_SECRET for development. Sessions will reset on server restart.');
-    console.warn('   For persistent sessions, set SESSION_SECRET environment variable (min 32 chars)');
-  }
+// Validate SESSION_SECRET on startup
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+  console.error('FATAL: SESSION_SECRET must be set and at least 32 characters long');
+  console.error('Generate a strong secret with: openssl rand -base64 32');
+  process.exit(1);
 }
-
-// Trust first proxy (Replit's load balancer)
-// This is required for secure cookies to work properly in production
-app.set('trust proxy', 1);
 
 // Session store setup
 const PgSession = ConnectPgSimple(session);
-export const sessionMiddleware = session({
-  store: new PgSession({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true,
-  }),
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
-    sameSite: 'lax', // 'lax' works for same-domain requests (Replit deployment)
-  },
-});
-
-app.use(sessionMiddleware);
+app.use(
+  session({
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Secure cookies in production (HTTPS)
+      sameSite: "lax",
+    },
+  })
+);
 
 // Extend session type
 declare module "express-session" {

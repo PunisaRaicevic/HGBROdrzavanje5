@@ -4,7 +4,6 @@ import { storage } from "./storage";
 import bcrypt from "bcryptjs";
 import { processRecurringTasks } from "./services/recurringTaskProcessor";
 import { initializeSocket, notifyWorkers, notifyTaskUpdate } from "./socket";
-import { sessionMiddleware } from "./index";
 import { z } from "zod";
 
 // Validation schemas
@@ -52,8 +51,8 @@ function requireAdmin(req: any, res: any, next: any) {
 export async function registerRoutes(app: Express): Promise<Server> {
   const server = createServer(app);
   
-  // Initialize Socket.IO for real-time notifications with session middleware
-  initializeSocket(server, sessionMiddleware);
+  // Initialize Socket.IO for real-time notifications
+  initializeSocket(server);
   console.log('[INIT] Socket.IO initialized for real-time notifications');
   // Authentication endpoint
   app.post("/api/auth/login", async (req, res) => {
@@ -296,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get tasks
-  app.get("/api/tasks", requireAuth, async (req, res) => {
+  app.get("/api/tasks", async (req, res) => {
     try {
       const tasks = await storage.getTasks();
       res.json({ tasks });
@@ -307,16 +306,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user's own tasks/complaints
-  app.get("/api/tasks/my", requireAuth, async (req, res) => {
+  app.get("/api/tasks/my", async (req, res) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.query.userId as string;
 
       if (!userId) {
-        return res.status(401).json({ error: "Not authenticated" });
+        return res.status(400).json({ error: "User ID is required" });
       }
 
-      // Get tasks where user is creator OR assigned (optimized query)
-      const tasks = await storage.getTasksForUser(userId);
+      const tasks = await storage.getTasksByUserId(userId);
       res.json({ tasks });
     } catch (error) {
       console.error('Error fetching user tasks:', error);
@@ -324,37 +322,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get single task by ID
-  app.get("/api/tasks/:id", requireAuth, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const userId = req.session.userId;
-      const userRole = req.session.userRole;
-
-      const task = await storage.getTaskById(id);
-
-      if (!task) {
-        return res.status(404).json({ error: "Task not found" });
-      }
-
-      // Authorization check: only allow if user is creator, assignee, or has elevated role
-      const isCreator = task.created_by === userId;
-      const isAssigned = task.assigned_to && task.assigned_to.includes(userId);
-      const hasElevatedRole = ['admin', 'operater', 'menadzer', 'sef'].includes(userRole || '');
-
-      if (!isCreator && !isAssigned && !hasElevatedRole) {
-        return res.status(403).json({ error: "Access denied" });
-      }
-
-      res.json({ task });
-    } catch (error) {
-      console.error('Error fetching task:', error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
   // Create new task/complaint
-  app.post("/api/tasks", requireAuth, async (req, res) => {
+  app.post("/api/tasks", async (req, res) => {
     console.log('📥 [POST /api/tasks] Request received');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     try {
@@ -365,6 +334,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         blok, 
         soba, 
         priority, 
+        userId, 
+        userName, 
+        userDepartment,
         images,
         status,
         assigned_to,
@@ -374,25 +346,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recurrence_end_date
       } = req.body;
 
-      // Get user info from session
-      const sessionUserId = req.session.userId;
-      if (!sessionUserId) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
-      const user = await storage.getUserById(sessionUserId);
-      if (!user) {
-        return res.status(401).json({ error: "User not found" });
-      }
-
-      const userId = user.id;
-      const userName = user.full_name;
-      const userDepartment = user.department || 'N/A';
-
-      // Validation - only require task details, not user info
-      if (!title || !description || !hotel || !blok) {
+      // Validation
+      if (!title || !description || !hotel || !blok || !userId || !userName || !userDepartment) {
         return res.status(400).json({ 
-          error: "Missing required fields (title, description, hotel, blok)" 
+          error: "Missing required fields" 
         });
       }
 
