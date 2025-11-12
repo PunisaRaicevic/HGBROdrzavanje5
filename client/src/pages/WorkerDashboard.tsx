@@ -221,9 +221,6 @@ export default function WorkerDashboard() {
            checkDate.getFullYear() === today.getFullYear();
   };
 
-  // DEBUG: Log all tasks from API
-  console.log(`[WORKER API] Received ${tasksResponse?.tasks?.length || 0} tasks from API`);
-  
   // Filter tasks assigned to this worker and map to UI format
   const allTasks: Task[] = (tasksResponse?.tasks || [])
     .filter(task => {
@@ -232,20 +229,7 @@ export default function WorkerDashboard() {
       
       // Handle multiple technicians (comma-separated IDs)
       const assignedIds = task.assigned_to.split(',').map((id: string) => id.trim());
-      const isAssigned = assignedIds.includes(user.id);
-      
-      // DEBUG: Log filtered tasks
-      if (isAssigned) {
-        console.log(`[WORKER FILTER] ✅ Task assigned to me:`, {
-          taskId: task.id,
-          title: task.title,
-          status: task.status,
-          assigned_to: task.assigned_to,
-          assigned_to_name: task.assigned_to_name
-        });
-      }
-      
-      return isAssigned;
+      return assignedIds.includes(user.id);
     })
     .map(task => ({
       id: task.id,
@@ -268,13 +252,6 @@ export default function WorkerDashboard() {
     t.status === 'with_sef' || 
     t.status === 'with_external'
   );
-  
-  // DEBUG: Log active tasks filter
-  console.log(`[WORKER ACTIVE] Filtered ${activeTasks.length} active tasks from ${allTasks.length} total assigned tasks`);
-  activeTasks.forEach(task => {
-    console.log(`  - [${task.status}] ${task.title}`);
-  });
-  
   const completedTasks = allTasks.filter(t => t.status === 'completed' && isToday(t.completedAt));
 
   const selectedTask = allTasks.find(t => t.id === selectedTaskId);
