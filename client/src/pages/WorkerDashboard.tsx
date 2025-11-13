@@ -328,6 +328,7 @@ export default function WorkerDashboard() {
     t.status === 'with_external'
   );
   const completedTasks = allTasks.filter(t => t.status === 'completed' && isToday(t.completedAt));
+  const returnedTasks = allTasks.filter(t => t.status === 'returned_to_sef');
 
   const selectedTask = allTasks.find(t => t.id === selectedTaskId);
 
@@ -697,9 +698,12 @@ export default function WorkerDashboard() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="active" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-8">
+            <TabsList className="grid w-full grid-cols-3 h-8">
               <TabsTrigger value="active" className="text-xs" data-testid="tab-active-tasks">
                 {t('activeTasks')}
+              </TabsTrigger>
+              <TabsTrigger value="returned" className="text-xs" data-testid="tab-returned">
+                {t('returnedTasks') || 'Vraćeni'}
               </TabsTrigger>
               <TabsTrigger value="completed" className="text-xs" data-testid="tab-completed">
                 {t('completedToday')}
@@ -715,6 +719,38 @@ export default function WorkerDashboard() {
                     <div className="text-center py-8 text-muted-foreground">
                       <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
                       <p className="text-sm">{t('noActiveTasks')}</p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="returned" className="mt-4">
+              <ScrollArea className="h-[500px] pr-4">
+                <div className="space-y-3">
+                  {returnedTasks.length > 0 ? (
+                    returnedTasks.map((task) => (
+                      <Card 
+                        key={task.id} 
+                        className="p-4 cursor-pointer hover-elevate active-elevate-2 bg-orange-100 dark:bg-orange-950"
+                        onClick={() => handleTaskClick(task.id)}
+                        data-testid={`card-task-${task.id}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="text-base font-medium">{task.title}</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {task.location} • {t('returnedToSupervisor')}
+                            </p>
+                          </div>
+                          <XCircle className="w-5 h-5 text-orange-500" />
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">{t('noReturnedTasks') || 'Nema vraćenih zadataka'}</p>
                     </div>
                   )}
                 </div>
