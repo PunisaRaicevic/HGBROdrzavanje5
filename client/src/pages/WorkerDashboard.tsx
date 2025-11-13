@@ -752,10 +752,7 @@ export default function WorkerDashboard() {
 
       {/* My Tasks with Tabs */}
       <Card>
-        <CardHeader>
-          <CardTitle>{t('myTasks')}</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <Tabs defaultValue="active" className="w-full">
             <TabsList className="grid w-full grid-cols-3 h-8">
               <TabsTrigger value="active" className="text-xs" data-testid="tab-active-tasks">
