@@ -62,6 +62,7 @@ interface TaskDetailsDialogProps {
     fromName: string;
     from: string;
     images?: string[];
+    worker_images?: string[];
   } | null;
 }
 
@@ -182,7 +183,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDeta
               <div className="flex items-start gap-2">
                 <ImageIcon className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium mb-2">Slike</p>
+                  <p className="text-sm font-medium mb-2">Slike prijave</p>
                   <div className="grid grid-cols-2 gap-2">
                     {task.images.map((image, index) => (
                       <img 
@@ -198,7 +199,28 @@ export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDeta
               </div>
             )}
 
-            {!task.description && (!task.images || task.images.length === 0) && (
+            {/* Worker Images */}
+            {task.worker_images && task.worker_images.length > 0 && (
+              <div className="flex items-start gap-2">
+                <ImageIcon className="w-5 h-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium mb-2">Slike majstora</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {task.worker_images.map((image, index) => (
+                      <img 
+                        key={index}
+                        src={image}
+                        alt={`Worker image ${index + 1}`}
+                        className="rounded-md border w-full h-auto object-cover"
+                        data-testid={`img-worker-details-${index}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!task.description && (!task.images || task.images.length === 0) && (!task.worker_images || task.worker_images.length === 0) && (
               <p className="text-sm text-muted-foreground text-center py-4">
                 Nema dodatnih informacija
               </p>

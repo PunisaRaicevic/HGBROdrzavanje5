@@ -260,7 +260,8 @@ export default function SupervisorDashboard() {
           }),
           fromName: selectedTaskForDetails.created_by_name || 'Unknown',
           from: selectedTaskForDetails.created_by || 'operator',
-          images: parseTaskImages(selectedTaskForDetails.images)
+          images: parseTaskImages(selectedTaskForDetails.images),
+          worker_images: parseTaskImages(selectedTaskForDetails.worker_images)
         } : null}
       />
     <div className="space-y-6">

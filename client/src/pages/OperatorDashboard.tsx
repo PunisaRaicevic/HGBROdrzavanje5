@@ -24,6 +24,7 @@ type Task = {
   time: string;
   location: string;
   images?: string[];
+  worker_images?: string[];
   sentTo?: 'supervisor' | 'technician';
   sentAt?: string;
   assignedToName?: string; // Name of the technician(s) assigned
@@ -93,6 +94,21 @@ export default function OperatorDashboard() {
     }
   });
 
+  // Helper function to parse task images (handles string arrays or JSON strings)
+  const parseTaskImages = (images: any): string[] => {
+    if (!images) return [];
+    if (Array.isArray(images)) return images;
+    if (typeof images === 'string') {
+      try {
+        const parsed = JSON.parse(images);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
   // Map database tasks to UI format
   const mapApiTaskToUiTask = (task: any): Task => ({
     id: task.id,
@@ -103,7 +119,8 @@ export default function OperatorDashboard() {
     priority: task.priority as 'urgent' | 'normal' | 'can_wait',
     time: getElapsedTime(new Date(task.created_at)),
     location: task.location,
-    images: task.images || [],
+    images: parseTaskImages(task.images),
+    worker_images: parseTaskImages(task.worker_images),
     status: task.status as Task['status'],
     sentTo: task.status === 'with_sef' ? 'supervisor' : 
             task.status === 'assigned_to_radnik' ? 'technician' : undefined,
