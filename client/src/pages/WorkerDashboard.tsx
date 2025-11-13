@@ -535,43 +535,6 @@ export default function WorkerDashboard() {
     }
   };
 
-  // Test sound notification
-  const testSound = async () => {
-    if (!audioRef.current) {
-      toast({
-        title: 'Greška / Error',
-        description: 'Audio nije inicijalizovan / Audio not initialized',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    try {
-      // Reset audio to beginning
-      audioRef.current.currentTime = 0;
-      await audioRef.current.play();
-      
-      // Vibrate as well
-      if ('vibrate' in navigator) {
-        navigator.vibrate([200, 100, 200]);
-      }
-      
-      toast({
-        title: 'Test uspešan / Test Successful',
-        description: 'Čuli ste zvuk? Telefon je vibrirao? / Did you hear the sound? Did phone vibrate?',
-        duration: 3000,
-      });
-    } catch (err) {
-      console.error('[AUDIO TEST] Failed:', err);
-      toast({
-        title: 'Zvuk nije dostupan / Sound Not Available',
-        description: 'Mobilni browser-i blokiraju automatski zvuk. Koristite vibracije. / Mobile browsers block auto-sound. Use vibrations.',
-        variant: 'destructive',
-        duration: 5000,
-      });
-    }
-  };
-
   // Mutation to update task status with optimistic updates
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, status, report, images }: { 
