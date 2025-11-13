@@ -755,13 +755,25 @@ export default function WorkerDashboard() {
         <CardContent className="pt-6">
           <Tabs defaultValue="active" className="w-full">
             <TabsList className="grid w-full grid-cols-3 h-10">
-              <TabsTrigger value="active" className="text-sm" data-testid="tab-active-tasks">
+              <TabsTrigger 
+                value="active" 
+                className="text-sm data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
+                data-testid="tab-active-tasks"
+              >
                 {t('activeTasks')}
               </TabsTrigger>
-              <TabsTrigger value="returned" className="text-sm" data-testid="tab-returned">
+              <TabsTrigger 
+                value="returned" 
+                className="text-sm data-[state=active]:bg-orange-100 dark:data-[state=active]:bg-orange-950 data-[state=active]:text-foreground" 
+                data-testid="tab-returned"
+              >
                 {t('returnedTasks') || 'Vraćeni'}
               </TabsTrigger>
-              <TabsTrigger value="completed" className="text-sm" data-testid="tab-completed">
+              <TabsTrigger 
+                value="completed" 
+                className="text-sm data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
+                data-testid="tab-completed"
+              >
                 {t('completedToday')}
               </TabsTrigger>
             </TabsList>
