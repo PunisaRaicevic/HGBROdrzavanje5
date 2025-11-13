@@ -737,16 +737,6 @@ export default function WorkerDashboard() {
               {soundEnabled ? 'Zvuk ON / Sound ON' : 'Zvuk OFF / Sound OFF'}
             </span>
           </Button>
-          
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={testSound}
-            data-testid="button-test-sound"
-          >
-            <Volume2 className="w-4 h-4 sm:mr-2" />
-            <span className="hidden sm:inline">Test</span>
-          </Button>
         </div>
       </div>
 
