@@ -643,21 +643,21 @@ export default function WorkerDashboard() {
     >
       <div className="space-y-3">
         <div>
-          <h3 className="font-medium text-base">{task.title}</h3>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h3 className="font-medium text-xl">{task.title}</h3>
+          <p className="text-base text-foreground/70 mt-1">
             From: {task.assignedBy}
           </p>
         </div>
         
         {task.description && (
-          <p className="text-sm text-foreground line-clamp-2">
+          <p className="text-base text-foreground line-clamp-2">
             {task.description}
           </p>
         )}
         
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
+          <div className="flex items-center gap-1 text-base text-foreground/70">
+            <Clock className="w-5 h-5" />
             <span>{getElapsedTime(task.receivedAt)}</span>
           </div>
           <Badge 
@@ -666,7 +666,7 @@ export default function WorkerDashboard() {
               task.priority === 'normal' ? 'default' : 
               'secondary'
             }
-            className="text-sm"
+            className="text-base"
           >
             {task.priority === 'urgent' ? 'Hitno' : 
              task.priority === 'normal' ? 'Normalno' : 
@@ -681,8 +681,8 @@ export default function WorkerDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-medium">{t('myTasks')}</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-4xl font-medium">{t('myTasks')}</h1>
+          <p className="text-muted-foreground mt-1 text-lg">
             {user?.fullName} - {user?.role}
           </p>
         </div>
@@ -691,12 +691,13 @@ export default function WorkerDashboard() {
         <div className="flex gap-2">
           <Button
             variant={soundEnabled ? "default" : "outline"}
-            size="sm"
+            size="lg"
             onClick={toggleSound}
             data-testid="button-toggle-sound"
+            className="min-h-[44px]"
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 mr-2" /> : <VolumeX className="w-4 h-4 mr-2" />}
-            <span className="hidden sm:inline">
+            {soundEnabled ? <Volume2 className="w-5 h-5 mr-2" /> : <VolumeX className="w-5 h-5 mr-2" />}
+            <span className="hidden sm:inline text-base">
               {soundEnabled ? 'Zvuk ON / Sound ON' : 'Zvuk OFF / Sound OFF'}
             </span>
           </Button>
@@ -707,24 +708,24 @@ export default function WorkerDashboard() {
       <Card>
         <CardContent className="pt-6">
           <Tabs defaultValue="active" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-10">
+            <TabsList className="grid w-full grid-cols-3 h-14">
               <TabsTrigger 
                 value="active" 
-                className="text-sm data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
+                className="text-lg data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
                 data-testid="tab-active-tasks"
               >
                 {t('activeTasks')}
               </TabsTrigger>
               <TabsTrigger 
                 value="returned" 
-                className="text-sm data-[state=active]:bg-orange-100 dark:data-[state=active]:bg-orange-950 data-[state=active]:text-foreground" 
+                className="text-lg data-[state=active]:bg-orange-100 dark:data-[state=active]:bg-orange-950 data-[state=active]:text-foreground" 
                 data-testid="tab-returned"
               >
                 {t('returnedTasks') || 'Vraćeni'}
               </TabsTrigger>
               <TabsTrigger 
                 value="completed" 
-                className="text-sm data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
+                className="text-lg data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
                 data-testid="tab-completed"
               >
                 {t('completedToday')}
@@ -739,7 +740,7 @@ export default function WorkerDashboard() {
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">{t('noActiveTasks')}</p>
+                      <p className="text-base">{t('noActiveTasks')}</p>
                     </div>
                   )}
                 </div>
@@ -759,22 +760,22 @@ export default function WorkerDashboard() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <p className="text-base font-medium">{task.title}</p>
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-xl font-medium">{task.title}</p>
+                            <p className="text-base text-foreground/70 mt-1">
                               {task.description}
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="text-base text-foreground/70 mt-1">
                               {getElapsedTime(task.receivedAt)} {t('ago')}
                             </p>
                           </div>
-                          <XCircle className="w-5 h-5 text-orange-500" />
+                          <XCircle className="w-6 h-6 text-orange-500" />
                         </div>
                       </Card>
                     ))
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">{t('noReturnedTasks') || 'Nema vraćenih zadataka'}</p>
+                      <p className="text-base">{t('noReturnedTasks') || 'Nema vraćenih zadataka'}</p>
                     </div>
                   )}
                 </div>
@@ -794,19 +795,19 @@ export default function WorkerDashboard() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <p className="text-base font-medium">{task.title}</p>
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-xl font-medium">{task.title}</p>
+                            <p className="text-base text-foreground/70 mt-1">
                               {task.location} • {t('completedAgo')} {getElapsedTime(task.receivedAt)} {t('ago')}
                             </p>
                           </div>
-                          <CheckCircle className="w-5 h-5 text-green-500" />
+                          <CheckCircle className="w-6 h-6 text-green-500" />
                         </div>
                       </Card>
                     ))
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">{t('noCompletedTasksToday')}</p>
+                      <p className="text-base">{t('noCompletedTasksToday')}</p>
                     </div>
                   )}
                 </div>
@@ -835,6 +836,7 @@ export default function WorkerDashboard() {
                         selectedTask.priority === 'normal' ? 'default' : 
                         'secondary'
                       }
+                      className="text-base"
                     >
                       {selectedTask.priority === 'urgent' ? t('urgent') : 
                        selectedTask.priority === 'normal' ? t('normal') : 
@@ -981,17 +983,17 @@ export default function WorkerDashboard() {
                       />
                       <div className="border-2 border-dashed rounded-md p-6 text-center">
                         <Camera className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground mb-3">
+                        <p className="text-base text-muted-foreground mb-3">
                           {t('uploadFieldPhotos')}
                         </p>
                         <Button 
                           variant="outline" 
-                          size="sm" 
                           onClick={handlePhotoUpload}
                           type="button"
                           data-testid="button-upload-photo"
+                          className="min-h-[44px]"
                         >
-                          <Camera className="w-4 h-4 mr-2" />
+                          <Camera className="w-5 h-5 mr-2" />
                           {t('uploadPhoto')}
                         </Button>
                       </div>

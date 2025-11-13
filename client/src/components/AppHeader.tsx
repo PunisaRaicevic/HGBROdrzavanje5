@@ -17,7 +17,7 @@ export default function AppHeader() {
   const { toast } = useToast();
   const [audioEnabled, setAudioEnabled] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const previousTasksCountRef = useRef<number>(-1); // Start with -1 to skip first fetch notification
+  const previousTasksCountRef = useRef<number>(-1);
   const [acknowledgedTaskIds, setAcknowledgedTaskIds] = useState<Set<string>>(new Set());
 
   const handleLanguageToggle = () => {
