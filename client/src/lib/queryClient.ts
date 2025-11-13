@@ -47,12 +47,17 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
-      refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      refetchOnWindowFocus: true,
+      staleTime: 1000 * 30,
+      gcTime: 1000 * 60 * 5,
+      retry: 1,
+      retryDelay: 500,
+      networkMode: 'online',
     },
     mutations: {
-      retry: false,
+      retry: 1,
+      retryDelay: 500,
+      networkMode: 'online',
     },
   },
 });
