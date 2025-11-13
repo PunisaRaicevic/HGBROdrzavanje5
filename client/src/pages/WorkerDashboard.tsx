@@ -18,6 +18,7 @@ import { io, Socket } from 'socket.io-client';
 import type { TaskStatus, Priority } from '@shared/types';
 import { capacitorHaptics } from '@/services/capacitorHaptics';
 import { capacitorNotifications } from '@/services/capacitorNotifications';
+import { upsertTaskInCache, scheduleBackgroundHydration, optimisticUpdateTask, removeTaskFromCache } from '@/lib/taskCache';
 
 type PhotoPreview = {
   id: string;
@@ -158,92 +159,119 @@ export default function WorkerDashboard() {
       console.log('[SOCKET.IO] Worker connected to room:', data);
     });
 
-    socket.on('task:assigned', async (taskData) => {
+    socket.on('task:assigned', (taskData) => {
       console.log('[SOCKET.IO] New task assigned:', taskData);
 
-      // AUTO-REQUEST PERMISSION FIRST TIME (Guard)
-      let localGranted = nativeNotificationsGrantedRef.current;
-      if (capacitorNotifications.isAvailable() && !permissionRequestedRef.current) {
-        try {
-          const granted = await capacitorNotifications.requestPermission();
-          localGranted = granted;
-          nativeNotificationsGrantedRef.current = granted;
-          permissionRequestedRef.current = true;
-          localStorage.setItem('notificationPermissionRequested', 'true');
-          
-          if (granted) {
-            console.log('[NOTIFICATIONS] Permission granted - native notifications enabled');
-          } else {
-            console.log('[NOTIFICATIONS] Permission denied - falling back to browser/audio');
-          }
-        } catch (error) {
-          console.error('[NOTIFICATIONS] Permission request failed:', error);
-          permissionRequestedRef.current = true;
-          localStorage.setItem('notificationPermissionRequested', 'true');
-        }
+      // INSTANT CACHE UPDATE - Update UI immediately with socket data
+      // taskCache will auto-detect if payload is complete based on assigned_to + status fields
+      upsertTaskInCache(taskData, { 
+        markForHydration: false, // Will be overridden if payload is incomplete
+        prepend: true
+      });
+
+      // Schedule background hydration ONLY if payload was incomplete
+      // (taskCache sets needsHydration flag if critical fields are missing)
+      const hasRequiredFields = taskData.assigned_to && taskData.status;
+      if (!hasRequiredFields) {
+        console.log('[SOCKET.IO] Incomplete payload detected, scheduling hydration');
+        scheduleBackgroundHydration(2000);
+      } else {
+        console.log('[SOCKET.IO] Complete payload received, skipping hydration');
       }
 
-      // Haptic feedback - Native mobile vibration (with fallback)
-      await capacitorHaptics.taskAssigned();
-
-      // Native notification (Only if granted)
-      if (soundEnabledRef.current) {
-        if (localGranted && capacitorNotifications.isAvailable()) {
-          await capacitorNotifications.showTaskAssigned(taskData.title, taskData.location);
-        }
-        // Fallback: Play audio if native not available/granted
-        else if (audioRef.current) {
-          audioRef.current.play().catch(err => {
-            console.warn('[AUDIO] Failed to play notification sound:', err);
-          });
-        }
-      }
-
-      // Browser notification (fallback for web - verify permission before showing)
-      if (!capacitorNotifications.isAvailable() && 'Notification' in window) {
-        if (Notification.permission === 'granted') {
-          browserNotificationsEnabledRef.current = true;
-          try {
-            new Notification('Nova reklamacija / New Task', {
-              body: `${taskData.title}\n${taskData.location}`,
-              icon: '/favicon.ico',
-              tag: taskData.taskId,
-              requireInteraction: true
-            });
-          } catch (error) {
-            console.error('[NOTIFICATIONS] Browser notification failed:', error);
-            browserNotificationsEnabledRef.current = false;
-            setBrowserNotificationsEnabled(false); // Sync state
-          }
-        } else {
-          browserNotificationsEnabledRef.current = false;
-          setBrowserNotificationsEnabled(false); // Sync state
-        }
-      }
-
-      // Show in-app toast notification (Always show)
+      // Show in-app toast notification (Always show - synchronous, fast)
       toast({
         title: t('newTaskAssigned') || 'Nova reklamacija dodeljena',
         description: `${taskData.title} - ${taskData.location}`,
         duration: 8000,
       });
 
-      // Refresh task list - force immediate refetch
-      queryClient.invalidateQueries({ 
-        queryKey: ['/api/tasks'],
-        exact: true,
-        refetchType: 'active'
-      });
+      // NON-BLOCKING NOTIFICATIONS - Run in background, don't block UI
+      void (async () => {
+        try {
+          // AUTO-REQUEST PERMISSION FIRST TIME (Guard)
+          let localGranted = nativeNotificationsGrantedRef.current;
+          if (capacitorNotifications.isAvailable() && !permissionRequestedRef.current) {
+            try {
+              const granted = await capacitorNotifications.requestPermission();
+              localGranted = granted;
+              nativeNotificationsGrantedRef.current = granted;
+              permissionRequestedRef.current = true;
+              localStorage.setItem('notificationPermissionRequested', 'true');
+              
+              if (granted) {
+                console.log('[NOTIFICATIONS] Permission granted - native notifications enabled');
+              } else {
+                console.log('[NOTIFICATIONS] Permission denied - falling back to browser/audio');
+              }
+            } catch (error) {
+              console.error('[NOTIFICATIONS] Permission request failed:', error);
+              permissionRequestedRef.current = true;
+              localStorage.setItem('notificationPermissionRequested', 'true');
+            }
+          }
+
+          // Haptic feedback - Native mobile vibration (with fallback)
+          await capacitorHaptics.taskAssigned();
+
+          // Native notification (Only if granted)
+          if (soundEnabledRef.current) {
+            if (localGranted && capacitorNotifications.isAvailable()) {
+              await capacitorNotifications.showTaskAssigned(taskData.title, taskData.location);
+            }
+            // Fallback: Play audio if native not available/granted
+            else if (audioRef.current) {
+              audioRef.current.play().catch(err => {
+                console.warn('[AUDIO] Failed to play notification sound:', err);
+              });
+            }
+          }
+
+          // Browser notification (fallback for web - verify permission before showing)
+          if (!capacitorNotifications.isAvailable() && 'Notification' in window) {
+            if (Notification.permission === 'granted') {
+              browserNotificationsEnabledRef.current = true;
+              try {
+                new Notification('Nova reklamacija / New Task', {
+                  body: `${taskData.title}\n${taskData.location}`,
+                  icon: '/favicon.ico',
+                  tag: taskData.taskId,
+                  requireInteraction: true
+                });
+              } catch (error) {
+                console.error('[NOTIFICATIONS] Browser notification failed:', error);
+                browserNotificationsEnabledRef.current = false;
+                setBrowserNotificationsEnabled(false); // Sync state
+              }
+            } else {
+              browserNotificationsEnabledRef.current = false;
+              setBrowserNotificationsEnabled(false); // Sync state
+            }
+          }
+        } catch (error) {
+          console.error('[NOTIFICATIONS] Error in background notification handling:', error);
+        }
+      })();
     });
 
     socket.on('task:updated', (data) => {
       console.log('[SOCKET.IO] Task updated:', data);
-      // Refresh task list on any task update - force immediate refetch
-      queryClient.invalidateQueries({ 
-        queryKey: ['/api/tasks'],
-        exact: true,
-        refetchType: 'active'
+      
+      // INSTANT CACHE UPDATE - Update existing task with new data
+      // taskCache will auto-detect if payload is complete
+      upsertTaskInCache(data, { 
+        markForHydration: false, // Will be overridden if payload is incomplete
+        prepend: false
       });
+
+      // Schedule background hydration ONLY if payload was incomplete
+      const hasRequiredFields = data.assigned_to && data.status;
+      if (!hasRequiredFields) {
+        console.log('[SOCKET.IO] Incomplete payload detected, scheduling hydration');
+        scheduleBackgroundHydration(2000);
+      } else {
+        console.log('[SOCKET.IO] Complete payload received, skipping hydration');
+      }
     });
 
     socket.on('disconnect', (reason) => {
@@ -390,6 +418,13 @@ export default function WorkerDashboard() {
     
     setIsConfirmingReceipt(true);
     
+    // OPTIMISTIC UPDATE - Update UI immediately
+    const optimisticUpdate = optimisticUpdateTask(selectedTask.id, {
+      status: 'assigned_to_radnik',
+      worker_report: 'Prijem reklamacije potvrđen / Receipt confirmed',
+      receipt_confirmed_at: new Date().toISOString(),
+    });
+    
     try {
       const response = await fetch(`/api/tasks/${selectedTask.id}`, {
         method: 'PATCH',
@@ -406,13 +441,17 @@ export default function WorkerDashboard() {
         throw new Error('Failed to confirm receipt');
       }
 
+      // Schedule background hydration
+      scheduleBackgroundHydration(1000);
+
       toast({
         title: t('success'),
         description: t('taskUpdated'),
       });
-
-      await queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     } catch (error) {
+      // ROLLBACK on error
+      optimisticUpdate.rollback();
+      
       toast({
         title: t('errorOccurred'),
         description: 'Failed to confirm task receipt',
@@ -533,7 +572,7 @@ export default function WorkerDashboard() {
     }
   };
 
-  // Mutation to update task status
+  // Mutation to update task status with optimistic updates
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, status, report, images }: { 
       taskId: string; 
@@ -544,6 +583,7 @@ export default function WorkerDashboard() {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ 
           status, 
           user_id: user?.id,
@@ -560,12 +600,24 @@ export default function WorkerDashboard() {
 
       return response.json();
     },
-    onSuccess: async () => {
-      // Wait for cache invalidation and refetch to complete before closing dialog
-      await queryClient.invalidateQueries({ 
-        queryKey: ['/api/tasks'],
-        refetchType: 'active'
+    onMutate: async ({ taskId, status, report, images }) => {
+      console.log('[OPTIMISTIC UPDATE] Starting for task:', taskId, 'status:', status);
+      
+      // OPTIMISTIC UPDATE - Update UI immediately before API call completes
+      const optimisticUpdate = optimisticUpdateTask(taskId, {
+        status: status as TaskStatus,
+        worker_report: report,
+        reporterImages: images,
+        completedAt: status === 'completed' ? new Date() : undefined,
       });
+      
+      return { rollback: optimisticUpdate.rollback };
+    },
+    onSuccess: async (data, variables, context) => {
+      console.log('[OPTIMISTIC UPDATE] Success - scheduling background hydration');
+      
+      // Schedule background hydration to ensure all fields are synced
+      scheduleBackgroundHydration(1000);
       
       toast({
         title: "Success",
@@ -574,7 +626,14 @@ export default function WorkerDashboard() {
       
       handleCloseDialog();
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      console.error('[OPTIMISTIC UPDATE] Failed - rolling back:', error);
+      
+      // ROLLBACK optimistic update on error
+      if (context?.rollback) {
+        context.rollback();
+      }
+      
       toast({
         title: "Error",
         description: error.message,

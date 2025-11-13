@@ -717,8 +717,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notifyWorkers(assigned_to, task);
       }
 
-      // Broadcast task update to all clients
-      notifyTaskUpdate(id, status);
+      // Broadcast FULL task update to all clients (with complete data for instant UI updates)
+      notifyTaskUpdate(task);
 
       res.json({ task });
     } catch (error) {
