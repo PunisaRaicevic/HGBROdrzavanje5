@@ -197,23 +197,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get current user session
+  // Get current user session (JWT or session-based)
   app.get("/api/auth/me", async (req, res) => {
     try {
-      if (!req.session.userId) {
+      // Check JWT token first (for mobile)
+      const authHeader = req.headers.authorization;
+      const token = extractTokenFromHeader(authHeader);
+      
+      let userId: string | undefined;
+      
+      if (token) {
+        const payload = verifyToken(token);
+        if (payload) {
+          userId = payload.userId;
+          // Populate session-like data for compatibility
+          req.session.userId = payload.userId;
+          req.session.userRole = payload.role;
+          req.session.username = payload.username;
+          req.session.fullName = payload.fullName;
+        }
+      } else if (req.session.userId) {
+        // Fallback to session (for web)
+        userId = req.session.userId;
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUserById(userId);
       
       if (!user || !user.is_active) {
-        // Clear invalid session
-        req.session.destroy(() => {});
+        // Clear invalid session (for web only)
+        if (!token && req.session.userId) {
+          req.session.destroy(() => {});
+        }
         return res.status(401).json({ error: "Session invalid" });
       }
 
-      // Refresh session activity
-      req.session.touch();
+      // Refresh session activity (for web only)
+      if (!token && req.session.userId) {
+        req.session.touch();
+      }
 
       // Return user data (without password hash)
       const { password_hash, ...userWithoutPassword } = user;
