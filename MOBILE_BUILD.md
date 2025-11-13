@@ -39,8 +39,20 @@ Prvo commit-uj sledeće promene na GitHub:
    - **Commit**: Latest (ili specifičan commit)
 5. Klikni **Start Build**
 
-### 3. AppFlow Konfiguracija (ako je potrebno)
+### 3. AppFlow Konfiguracija
 
+**OBAVEZNO - Proveri Build Stack:**
+U AppFlow-u, idi na **Build** → **Settings** → **Build Stack** i osiguraj da je podešeno:
+- **Build Stack**: Node 20 (ili noviji)
+
+Aplikacija **MORA koristiti Node 20+** jer koristi moderne JavaScript feature-e:
+- Built-in `fetch()`
+- `structuredClone()`
+- Top-level `await`
+
+Ako koristiš Node 18, build će **PASTI** sa ReferenceError!
+
+**Environment Variables:**
 U AppFlow-u, pod **Settings** → **Environments**, osiguraj da postoje:
 
 ```

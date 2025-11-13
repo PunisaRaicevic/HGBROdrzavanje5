@@ -2,6 +2,7 @@
 import express2 from "express";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
+import cors from "cors";
 
 // server/routes.ts
 import { createServer } from "http";
@@ -121,6 +122,12 @@ var SupabaseStorage = class {
   }
   async getTaskHistory(taskId) {
     const { data, error } = await supabase.from("task_history").select("*").eq("task_id", taskId).order("timestamp", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  }
+  async getTaskHistoriesForTasks(taskIds) {
+    if (taskIds.length === 0) return [];
+    const { data, error } = await supabase.from("task_history").select("*").in("task_id", taskIds).order("timestamp", { ascending: true });
     if (error) throw error;
     return data || [];
   }
@@ -407,28 +414,120 @@ function notifyWorkers(workerIds, task) {
     console.warn("[SOCKET.IO] No worker IDs provided, skipping notification");
     return;
   }
-  console.log(`[SOCKET.IO] Sending notification to ${ids.length} worker(s): ${ids.join(", ")}`);
+  console.log(`[SOCKET.IO] Sending FULL task payload to ${ids.length} worker(s): ${ids.join(", ")}`);
   ids.forEach((userId) => {
     const room = `user:${userId}`;
     console.log(`[SOCKET.IO] Emitting task:assigned to room: ${room}`);
     io.to(room).emit("task:assigned", {
+      // Core task identification
+      id: task.id,
       taskId: task.id,
+      // Keep for backward compatibility
+      // Task content
       title: task.title,
       description: task.description,
-      priority: task.priority,
       location: task.location,
       hotel: task.hotel,
       blok: task.blok,
       soba: task.soba,
+      room_number: task.room_number,
+      // Priority and status
+      priority: task.priority,
+      status: task.status,
+      // Assignment fields - CRITICAL for filtering!
+      assigned_to: task.assigned_to,
+      // ✅ REQUIRED by WorkerDashboard filter
+      assigned_to_name: task.assigned_to_name,
+      assigned_to_type: task.assigned_to_type,
+      // Creator fields
+      created_by: task.created_by,
+      created_by_name: task.created_by_name,
+      created_by_department: task.created_by_department,
       assignedBy: task.created_by_name,
+      // Keep for backward compatibility
+      // Operator/Supervisor fields
+      operator_id: task.operator_id,
+      operator_name: task.operator_name,
+      sef_id: task.sef_id,
+      sef_name: task.sef_name,
+      // External company
+      external_company_id: task.external_company_id,
+      external_company_name: task.external_company_name,
+      // Timing fields
+      created_at: task.created_at,
+      updated_at: task.updated_at,
+      completed_at: task.completed_at,
+      deadline_at: task.deadline_at,
+      estimated_arrival_time: task.estimated_arrival_time,
+      actual_arrival_time: task.actual_arrival_time,
+      estimated_completion_time: task.estimated_completion_time,
+      actual_completion_time: task.actual_completion_time,
+      time_spent_minutes: task.time_spent_minutes,
+      // Worker fields
+      worker_report: task.worker_report,
+      worker_images: task.worker_images,
+      receipt_confirmed_at: task.receipt_confirmed_at,
+      // Media
+      images: task.images,
+      // Flags
+      is_overdue: task.is_overdue,
+      is_recurring: task.is_recurring,
+      recurrence_pattern: task.recurrence_pattern,
+      recurrence_end_date: task.recurrence_end_date,
+      // Timestamp for event ordering
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
     });
   });
 }
-function notifyTaskUpdate(taskId, status) {
+function notifyTaskUpdate(task) {
   if (!io) return;
-  console.log(`[SOCKET.IO] Broadcasting task update: ${taskId} -> ${status}`);
-  io.emit("task:updated", { taskId, status, timestamp: (/* @__PURE__ */ new Date()).toISOString() });
+  console.log(`[SOCKET.IO] Broadcasting FULL task update: ${task.id} -> ${task.status}`);
+  io.emit("task:updated", {
+    // Core task identification
+    id: task.id,
+    taskId: task.id,
+    // Keep for backward compatibility
+    // All task fields (same as task:assigned)
+    title: task.title,
+    description: task.description,
+    location: task.location,
+    hotel: task.hotel,
+    blok: task.blok,
+    soba: task.soba,
+    room_number: task.room_number,
+    priority: task.priority,
+    status: task.status,
+    assigned_to: task.assigned_to,
+    assigned_to_name: task.assigned_to_name,
+    assigned_to_type: task.assigned_to_type,
+    created_by: task.created_by,
+    created_by_name: task.created_by_name,
+    created_by_department: task.created_by_department,
+    operator_id: task.operator_id,
+    operator_name: task.operator_name,
+    sef_id: task.sef_id,
+    sef_name: task.sef_name,
+    external_company_id: task.external_company_id,
+    external_company_name: task.external_company_name,
+    created_at: task.created_at,
+    updated_at: task.updated_at,
+    completed_at: task.completed_at,
+    deadline_at: task.deadline_at,
+    estimated_arrival_time: task.estimated_arrival_time,
+    actual_arrival_time: task.actual_arrival_time,
+    estimated_completion_time: task.estimated_completion_time,
+    actual_completion_time: task.actual_completion_time,
+    time_spent_minutes: task.time_spent_minutes,
+    worker_report: task.worker_report,
+    worker_images: task.worker_images,
+    receipt_confirmed_at: task.receipt_confirmed_at,
+    images: task.images,
+    is_overdue: task.is_overdue,
+    is_recurring: task.is_recurring,
+    recurrence_pattern: task.recurrence_pattern,
+    recurrence_end_date: task.recurrence_end_date,
+    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+  });
 }
 
 // server/routes.ts
@@ -642,12 +741,103 @@ async function registerRoutes(app2) {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+  function calculateAssignmentPath(history) {
+    if (!history || history.length === 0) return "";
+    const names = [];
+    let lastAddedName = null;
+    const sortedHistory = [...history].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+    for (let i = 0; i < sortedHistory.length; i++) {
+      const entry = sortedHistory[i];
+      if (entry.action === "task_created") continue;
+      const statusTo = entry.status_to;
+      if (statusTo === "assigned_to_radnik" || statusTo === "with_external") {
+        if (entry.user_name && entry.user_name !== lastAddedName) {
+          names.push(entry.user_name);
+          lastAddedName = entry.user_name;
+        }
+        if (entry.assigned_to_name && entry.assigned_to_name !== lastAddedName) {
+          names.push(entry.assigned_to_name);
+          lastAddedName = entry.assigned_to_name;
+        }
+      } else if (statusTo === "returned_to_sef" || statusTo === "returned_to_operator") {
+        if (entry.user_name && entry.user_name !== lastAddedName) {
+          names.push(entry.user_name);
+          lastAddedName = entry.user_name;
+        }
+        for (let j = i + 1; j < sortedHistory.length; j++) {
+          const nextEntry = sortedHistory[j];
+          if (nextEntry.status_to !== statusTo) {
+            if (nextEntry.user_name && nextEntry.user_name !== lastAddedName) {
+              names.push(nextEntry.user_name);
+              lastAddedName = nextEntry.user_name;
+            }
+            break;
+          }
+        }
+      } else if (statusTo === "with_operator" || statusTo === "with_sef") {
+        if (entry.user_name && entry.user_name !== lastAddedName) {
+          names.push(entry.user_name);
+          lastAddedName = entry.user_name;
+        }
+      } else if (statusTo === "completed") {
+        if (entry.user_name && entry.user_name !== lastAddedName) {
+          names.push(entry.user_name);
+          lastAddedName = entry.user_name;
+        }
+      }
+    }
+    return names.join(" \u2192 ");
+  }
   app2.get("/api/tasks", async (req, res) => {
     try {
       const tasks = await storage.getTasks();
-      res.json({ tasks });
+      const taskIds = tasks.map((task) => task.id);
+      const allHistories = await storage.getTaskHistoriesForTasks(taskIds);
+      const historiesByTaskId = /* @__PURE__ */ new Map();
+      for (const history of allHistories) {
+        if (!historiesByTaskId.has(history.task_id)) {
+          historiesByTaskId.set(history.task_id, []);
+        }
+        historiesByTaskId.get(history.task_id).push(history);
+      }
+      const tasksWithPaths = tasks.map((task) => ({
+        ...task,
+        assignment_path: calculateAssignmentPath(historiesByTaskId.get(task.id) || [])
+      }));
+      res.json({ tasks: tasksWithPaths });
     } catch (error) {
       console.error("Error fetching tasks:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  function extractReturnReasons(history) {
+    const reasons = [];
+    for (const entry of history) {
+      if ((entry.status_to === "returned_to_sef" || entry.status_to === "returned_to_operator") && entry.notes) {
+        const match = entry.notes.match(/Returned to (?:Supervisor|Operator):\s*([\s\S]+)/);
+        if (match && match[1]) {
+          reasons.push({
+            user_name: entry.user_name || "Unknown",
+            reason: match[1].trim(),
+            timestamp: entry.timestamp
+          });
+        }
+      }
+    }
+    return reasons.sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+  }
+  app2.get("/api/tasks/:id/history", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const history = await storage.getTaskHistory(id);
+      const return_reasons = extractReturnReasons(history);
+      res.json({ history, return_reasons });
+    } catch (error) {
+      console.error("Error fetching task history:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -851,7 +1041,7 @@ async function registerRoutes(app2) {
       if (assigned_to && (status === "assigned_to_radnik" || status === "with_sef")) {
         notifyWorkers(assigned_to, task);
       }
-      notifyTaskUpdate(id, status);
+      notifyTaskUpdate(task);
       res.json({ task });
     } catch (error) {
       console.error("Error updating task:", error);
@@ -1073,6 +1263,14 @@ app.use(express2.json({
   }
 }));
 app.use(express2.urlencoded({ extended: false, limit: "50mb" }));
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+  exposedHeaders: ["Set-Cookie"]
+}));
+app.options("*", cors());
 app.use((req, res, next) => {
   const start = Date.now();
   const path3 = req.path;
