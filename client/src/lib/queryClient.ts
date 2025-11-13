@@ -8,6 +8,16 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Helper to get JWT token from localStorage
+function getAuthHeaders(additionalHeaders: HeadersInit = {}): HeadersInit {
+  const headers: HeadersInit = { ...additionalHeaders };
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -15,7 +25,7 @@ export async function apiRequest(
 ): Promise<Response> {
   const res = await fetch(getApiUrl(url), {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: getAuthHeaders(data ? { "Content-Type": "application/json" } : {}),
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -32,6 +42,7 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const res = await fetch(getApiUrl(queryKey.join("/") as string), {
       credentials: "include",
+      headers: getAuthHeaders()
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

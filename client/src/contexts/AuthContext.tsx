@@ -28,11 +28,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const validateSession = async () => {
       const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem('authToken');
+      
       if (storedUser) {
         try {
-          // Verify session with server
+          // Prepare headers with JWT token if available (for mobile)
+          const headers: HeadersInit = {};
+          if (storedToken) {
+            headers['Authorization'] = `Bearer ${storedToken}`;
+          }
+          
+          // Verify session with server (JWT or session-based)
           const response = await fetch(getApiUrl('/api/auth/me'), {
-            credentials: 'include'
+            credentials: 'include',  // For web session cookies
+            headers
           });
           
           if (response.ok) {
@@ -54,11 +63,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           } else {
             // Session expired or invalid, clear localStorage
             localStorage.removeItem('user');
+            localStorage.removeItem('authToken');
             setUser(null);
           }
         } catch (error) {
           // Network error or server down, clear session
           localStorage.removeItem('user');
+          localStorage.removeItem('authToken');
           setUser(null);
         }
       }
@@ -104,6 +115,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(userSession);
       localStorage.setItem('user', JSON.stringify(userSession));
+      
+      // Store JWT token for mobile authentication (if provided)
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+        console.log('[AUTH] JWT token stored for mobile authentication');
+      }
 
       toast({
         title: 'Uspešna prijava',
@@ -122,10 +139,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      const storedToken = localStorage.getItem('authToken');
+      const headers: HeadersInit = {};
+      if (storedToken) {
+        headers['Authorization'] = `Bearer ${storedToken}`;
+      }
+      
       // Destroy server session
       await fetch(getApiUrl('/api/auth/logout'), {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
     } catch (error) {
       console.error('Logout error:', error);
@@ -133,6 +157,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Always clear client state
       setUser(null);
       localStorage.removeItem('user');
+      localStorage.removeItem('authToken');
       toast({
         title: 'Odjavljeni ste',
         description: 'Uspešno ste se odjavili sa sistema.'
