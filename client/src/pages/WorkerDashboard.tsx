@@ -740,7 +740,7 @@ export default function WorkerDashboard() {
                           <div className="flex-1">
                             <p className="text-base font-medium">{task.title}</p>
                             <p className="text-sm text-muted-foreground mt-1">
-                              {task.location} • {t('returnedToSupervisor')}
+                              {task.description}
                             </p>
                           </div>
                           <XCircle className="w-5 h-5 text-orange-500" />
