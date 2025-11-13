@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { processRecurringTasks } from "./services/recurringTaskProcessor";
 import { initializeSocket, notifyWorkers, notifyTaskUpdate } from "./socket";
 import { z } from "zod";
+import { generateToken, verifyToken, extractTokenFromHeader } from "./auth";
 
 // Validation schemas
 const createUserSchema = z.object({
@@ -29,16 +30,56 @@ const updateUserSchema = z.object({
   is_active: z.boolean().optional()
 });
 
-// Authentication middleware
-function requireAuth(req: any, res: any, next: any) {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: "Authentication required" });
+// Authentication middleware - supports both JWT and Session
+async function requireAuth(req: any, res: any, next: any) {
+  // First, check for JWT token in Authorization header
+  const authHeader = req.headers.authorization;
+  const token = extractTokenFromHeader(authHeader);
+  
+  if (token) {
+    const payload = verifyToken(token);
+    if (payload) {
+      // Valid JWT token - set session-like data for compatibility
+      req.session.userId = payload.userId;
+      req.session.userRole = payload.role;
+      req.session.username = payload.username;
+      req.session.fullName = payload.fullName;
+      return next();
+    }
   }
-  next();
+  
+  // Fallback to session-based auth (for web app)
+  if (req.session.userId) {
+    return next();
+  }
+  
+  return res.status(401).json({ error: "Authentication required" });
 }
 
-// Admin authorization middleware
-function requireAdmin(req: any, res: any, next: any) {
+// Admin authorization middleware - supports both JWT and Session
+async function requireAdmin(req: any, res: any, next: any) {
+  // First, check for JWT token in Authorization header
+  const authHeader = req.headers.authorization;
+  const token = extractTokenFromHeader(authHeader);
+  
+  if (token) {
+    const payload = verifyToken(token);
+    if (payload) {
+      // Valid JWT token - set session-like data for compatibility
+      req.session.userId = payload.userId;
+      req.session.userRole = payload.role;
+      req.session.username = payload.username;
+      req.session.fullName = payload.fullName;
+      
+      // Check admin role
+      if (payload.role !== "admin") {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      return next();
+    }
+  }
+  
+  // Fallback to session-based auth (for web app)
   if (!req.session.userId) {
     return res.status(401).json({ error: "Authentication required" });
   }
@@ -131,11 +172,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             return res.status(500).json({ error: "Internal server error" });
           }
 
-          // Return user data (without password hash)
+          // Generate JWT token for mobile clients
+          const jwtToken = generateToken({
+            userId: user.id,
+            username: user.username,
+            role: user.role,
+            fullName: user.full_name
+          });
+
+          // Return user data (without password hash) + JWT token
           const { password_hash, ...userWithoutPassword } = user;
           
           res.json({ 
-            user: userWithoutPassword 
+            user: userWithoutPassword,
+            token: jwtToken  // JWT token for mobile clients
           });
         });
       });
