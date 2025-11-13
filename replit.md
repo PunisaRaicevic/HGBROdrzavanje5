@@ -88,6 +88,32 @@ Preferred communication style: Simple, everyday language.
 - Hybrid UI strategy: Keeps existing Shadcn/Tailwind components wrapped in IonApp for Capacitor compatibility
 - AppFlow deployment ready: Code can be built to .apk/.ipa via Ionic AppFlow cloud service
 
+**Mobile App Icon Configuration** (November 13, 2025)
+- **Objective**: Set custom app icon for Android APK builds via Ionic AppFlow
+- **Implementation**:
+  - Created `assets/icon-only.png` (1024x1024px) - source icon with colorful geometric shapes
+  - Installed `@capacitor/assets` package for automatic icon generation
+  - Generated all Android mipmap resources (ldpi, mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)
+  - Synced with Capacitor Android project via `npx cap sync`
+  - Created `MOBILE_BUILD.md` documentation for AppFlow build process
+- **Icon Design**: Colorful geometric shapes representing hotel management:
+  - Blue figure (person/worker)
+  - Red heart (guest care)
+  - Green tool (technical service)
+  - Yellow sun (positive experience)
+- **AppFlow Ready**: All generated icons committed and ready for cloud builds
+- **Documentation**: See `MOBILE_BUILD.md` for complete build instructions
+- **Status**: Production ready, all Android icon resolutions generated
+
+**WorkerDashboard Returned Tasks Enhancement** (November 13, 2025)
+- **Objective**: Improve visibility of returned task information in "Vraćeni" tab
+- **Changes**:
+  - Replaced location display with task description for better context
+  - Added elapsed time since task was received (e.g., "2h 15m ago")
+  - Visual hierarchy: title (text-base) → description (text-sm) → time (text-xs)
+- **Impact**: Workers can now see why task was returned and how long it's been pending without clicking
+- **Status**: Production ready, tested and verified
+
 **Dynamic Dropdown Selectors in CreateTaskDialog** (November 8, 2025)
 - Added Hotel/Building dropdown with predefined options:
   - Hotel Slovenska plaža

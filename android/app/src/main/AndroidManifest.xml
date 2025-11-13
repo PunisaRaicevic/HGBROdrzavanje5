@@ -1,19 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools">
-
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
     <!-- Permissions - force single declaration -->
-    <uses-permission 
-        android:name="android.permission.INTERNET"
-        tools:node="replace" />
+    <uses-permission android:name="android.permission.INTERNET" tools:node="replace" />
 
-    <uses-permission 
-        android:name="android.permission.POST_NOTIFICATIONS"
-        tools:node="replace" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" tools:node="replace" />
 
-    <uses-permission 
-        android:name="android.permission.VIBRATE"
-        tools:node="replace" />
+    <uses-permission android:name="android.permission.VIBRATE" tools:node="replace" />
 
     <application
         android:allowBackup="true"
@@ -23,7 +15,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:allowBackup,android:theme,android:label">
-
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
@@ -32,7 +23,6 @@
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:windowSoftInputMode="adjustResize">
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -44,9 +34,7 @@
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
     </application>
 </manifest>
