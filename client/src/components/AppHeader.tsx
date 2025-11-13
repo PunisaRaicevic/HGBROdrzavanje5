@@ -1,12 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Moon, Sun, LogOut, Globe, Bell, Volume2 } from 'lucide-react';
+import { Moon, Sun, LogOut, Globe, Volume2 } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -16,7 +15,6 @@ export default function AppHeader() {
   const { user, logout } = useAuth();
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const [newTasksCount, setNewTasksCount] = useState(0);
   const [audioEnabled, setAudioEnabled] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const previousTasksCountRef = useRef<number>(-1); // Start with -1 to skip first fetch notification
@@ -116,7 +114,6 @@ export default function AppHeader() {
         }
       }
       
-      setNewTasksCount(currentCount);
       previousTasksCountRef.current = currentCount;
     }
   }, [tasks, user, t, toast, acknowledgedTaskIds, audioEnabled]);
@@ -214,22 +211,6 @@ export default function AppHeader() {
                 <span className="text-xs hidden sm:inline">{t('enableSoundNotifications')}</span>
               </Button>
             )}
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="relative"
-              data-testid="button-notifications"
-            >
-              <Bell className="h-5 w-5" />
-              {newTasksCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                >
-                  {newTasksCount}
-                </Badge>
-              )}
-            </Button>
           </>
         )}
 
