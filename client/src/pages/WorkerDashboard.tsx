@@ -742,6 +742,9 @@ export default function WorkerDashboard() {
                             <p className="text-sm text-muted-foreground mt-1">
                               {task.description}
                             </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {getElapsedTime(task.receivedAt)} {t('ago')}
+                            </p>
                           </div>
                           <XCircle className="w-5 h-5 text-orange-500" />
                         </div>
