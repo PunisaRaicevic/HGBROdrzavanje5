@@ -395,10 +395,7 @@ export default function AdminDashboard() {
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <h3 className="font-medium text-base">{task.title}</h3>
-                                  {getStatusBadge(task.status)}
-                                </div>
+                                <h3 className="font-medium text-base mb-2">{task.title}</h3>
                                 <div className="space-y-1 text-sm text-muted-foreground">
                                   {task.created_by_name && (
                                     <p>Prijavio: {task.created_by_name}</p>
@@ -408,8 +405,11 @@ export default function AdminDashboard() {
                                   )}
                                 </div>
                               </div>
-                              <div className="text-right text-sm text-muted-foreground whitespace-nowrap">
-                                {formatDate(task.created_at)}
+                              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                                {getStatusBadge(task.status)}
+                                <div className="text-sm text-muted-foreground whitespace-nowrap">
+                                  {formatDate(task.created_at)}
+                                </div>
                               </div>
                             </div>
                           </div>
