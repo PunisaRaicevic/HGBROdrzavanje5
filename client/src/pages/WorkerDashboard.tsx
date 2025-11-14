@@ -588,10 +588,22 @@ export default function WorkerDashboard() {
     },
   });
 
-  const handleSubmitReport = async () => {
-    if (!selectedTaskId) return;
+  const handleSubmitReport = async (e?: React.MouseEvent | React.TouchEvent) => {
+    // Prevent any default behavior
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    console.log('[SUBMIT REPORT] Button clicked/touched');
+    
+    if (!selectedTaskId) {
+      console.log('[SUBMIT REPORT] No selected task ID');
+      return;
+    }
 
     if (!workerReport.trim()) {
+      console.log('[SUBMIT REPORT] Report is empty');
       toast({
         title: "Error",
         description: "Please provide a report description",
@@ -599,6 +611,8 @@ export default function WorkerDashboard() {
       });
       return;
     }
+
+    console.log('[SUBMIT REPORT] Submitting...', { selectedTaskId, actionType, reportLength: workerReport.length });
 
     // Convert photo previews to data URLs
     const photoDataUrls = uploadedPhotos.map(photo => photo.dataUrl);
@@ -609,12 +623,17 @@ export default function WorkerDashboard() {
       newStatus = 'returned_to_sef';
     }
 
-    await updateTaskMutation.mutateAsync({
-      taskId: selectedTaskId,
-      status: newStatus,
-      report: workerReport,
-      images: photoDataUrls.length > 0 ? photoDataUrls : undefined,
-    });
+    try {
+      await updateTaskMutation.mutateAsync({
+        taskId: selectedTaskId,
+        status: newStatus,
+        report: workerReport,
+        images: photoDataUrls.length > 0 ? photoDataUrls : undefined,
+      });
+      console.log('[SUBMIT REPORT] Success!');
+    } catch (error) {
+      console.error('[SUBMIT REPORT] Error:', error);
+    }
   };
 
   const renderTaskCard = (task: Task) => (
@@ -878,13 +897,22 @@ export default function WorkerDashboard() {
                       const isReceiptConfirmed = selectedTask.worker_report?.includes('Prijem reklamacije potvrđen') || isConfirmingReceipt || !!selectedTask.receipt_confirmed_at;
                       return (
                         <Button 
-                          className={`w-full min-h-11 ${isReceiptConfirmed ? 'bg-gray-400 hover:bg-gray-400 text-gray-700 border-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white border-green-700'}`}
-                          onClick={handleConfirmReceipt}
+                          className={`w-full min-h-14 touch-manipulation ${isReceiptConfirmed ? 'bg-gray-400 hover:bg-gray-400 text-gray-700 border-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white border-green-700'}`}
+                          onClick={(e) => {
+                            console.log('[BUTTON] Confirm Receipt clicked');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleConfirmReceipt();
+                          }}
+                          onTouchStart={() => console.log('[BUTTON] Confirm Receipt touched')}
                           disabled={isReceiptConfirmed}
                           data-testid={`button-confirm-receipt-${selectedTask.id}`}
+                          type="button"
                         >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          {isReceiptConfirmed ? '✓ ' + t('confirmReceipt') : t('confirmReceipt')}
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          <span className="text-lg">
+                            {isReceiptConfirmed ? '✓ ' + t('confirmReceipt') : t('confirmReceipt')}
+                          </span>
                         </Button>
                       );
                     })()}
@@ -892,21 +920,35 @@ export default function WorkerDashboard() {
                     {/* Task Completion and Return Buttons */}
                     <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
                       <Button 
-                        className="flex-1 min-h-11"
-                        onClick={handleTaskCompleted}
+                        className="flex-1 min-h-14 touch-manipulation"
+                        onClick={(e) => {
+                          console.log('[BUTTON] Task Completed clicked');
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleTaskCompleted();
+                        }}
+                        onTouchStart={() => console.log('[BUTTON] Task Completed touched')}
                         data-testid={`button-task-completed-${selectedTask.id}`}
+                        type="button"
                       >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        {t('taskCompleted')}
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        <span className="text-lg">{t('taskCompleted')}</span>
                       </Button>
                       <Button 
                         variant="destructive"
-                        className="sm:flex-1 min-h-11"
-                        onClick={handleReturnTask}
+                        className="sm:flex-1 min-h-14 touch-manipulation"
+                        onClick={(e) => {
+                          console.log('[BUTTON] Return Task clicked');
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleReturnTask();
+                        }}
+                        onTouchStart={() => console.log('[BUTTON] Return Task touched')}
                         data-testid={`button-return-task-${selectedTask.id}`}
+                        type="button"
                       >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        {t('returnToSupervisor')}
+                        <XCircle className="w-5 h-5 mr-2" />
+                        <span className="text-lg">{t('returnToSupervisor')}</span>
                       </Button>
                     </div>
                   </div>
@@ -995,15 +1037,24 @@ export default function WorkerDashboard() {
                     </div>
 
                     <Button 
-                      className="w-full min-h-11"
-                      onClick={handleSubmitReport}
+                      className="w-full min-h-14 touch-manipulation"
+                      onClick={(e) => {
+                        console.log('[BUTTON] onClick triggered');
+                        handleSubmitReport(e);
+                      }}
+                      onTouchStart={(e) => {
+                        console.log('[BUTTON] onTouchStart triggered');
+                      }}
                       disabled={updateTaskMutation.isPending}
                       data-testid={`button-submit-report-${selectedTask.id}`}
+                      type="button"
                     >
-                      <Send className="w-4 h-4 mr-2" />
-                      {updateTaskMutation.isPending 
-                        ? t('submitting') 
-                        : actionType === 'completed' ? t('submitCompletionReport') : t('submitReturnReason')}
+                      <Send className="w-5 h-5 mr-2" />
+                      <span className="text-lg">
+                        {updateTaskMutation.isPending 
+                          ? t('submitting') 
+                          : actionType === 'completed' ? t('submitCompletionReport') : t('submitReturnReason')}
+                      </span>
                     </Button>
                   </div>
                 )}
