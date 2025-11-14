@@ -11,7 +11,6 @@ import { ClipboardList, Send, Plus, Clock, AlertCircle, MapPin, CheckCircle, Pla
 import { useToast } from '@/hooks/use-toast';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import SelectTechnicianDialog from '@/components/SelectTechnicianDialog';
-import NotificationBell from '@/components/NotificationBell';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
 
 type Task = {
@@ -313,31 +312,6 @@ export default function OperatorDashboard() {
     setViewMode('new');
   };
 
-  // Get new tasks for notification bell
-  const newTasksForBell = allTasks
-    .filter(task => 
-      task.status === 'new' || 
-      task.status === 'with_operator' || 
-      task.status === 'returned_to_operator'
-    )
-    .map(task => ({
-      id: task.id,
-      title: task.title,
-      from: task.from,
-      fromName: task.fromName,
-      priority: task.priority,
-      location: task.location,
-      time: task.time
-    }));
-
-  const handleViewTaskFromBell = (taskId: string) => {
-    const task = allTasks.find(t => t.id === taskId);
-    if (task) {
-      setSelectedTask(task);
-      setTaskDetailsOpen(true);
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div>
@@ -345,11 +319,7 @@ export default function OperatorDashboard() {
         <p className="text-muted-foreground mt-1">
           {user?.fullName} - {user?.role}
         </p>
-        <div className="flex items-center gap-2 mt-4">
-          <NotificationBell 
-            newTasks={newTasksForBell}
-            onViewTask={handleViewTaskFromBell}
-          />
+        <div className="mt-4">
           <CreateTaskDialog />
         </div>
       </div>
