@@ -637,11 +637,11 @@ export default function WorkerDashboard() {
   const renderTaskCard = (task: Task) => (
     <Card 
       key={task.id} 
-      className="p-4 cursor-pointer hover-elevate active-elevate-2 bg-sky-100 dark:bg-sky-950"
+      className="p-5 cursor-pointer hover-elevate active-elevate-2 bg-secondary/30"
       onClick={() => handleTaskClick(task.id)}
       data-testid={`card-task-${task.id}`}
     >
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
           <h3 className="font-medium text-xl">{task.title}</h3>
           <p className="text-base text-foreground/70 mt-1">
@@ -708,10 +708,10 @@ export default function WorkerDashboard() {
       <Card>
         <CardContent className="pt-6">
           <Tabs defaultValue="active" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-11 gap-1">
+            <TabsList className="grid w-full grid-cols-3 h-11 gap-2">
               <TabsTrigger 
                 value="active" 
-                className="text-base px-2 data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
+                className="text-base data-[state=active]:bg-secondary/50 data-[state=active]:text-foreground w-full" 
                 data-testid="tab-active-tasks"
               >
                 <span className="hidden sm:inline">{t('activeTasks')}</span>
@@ -719,7 +719,7 @@ export default function WorkerDashboard() {
               </TabsTrigger>
               <TabsTrigger 
                 value="returned" 
-                className="text-base px-2 data-[state=active]:bg-orange-100 dark:data-[state=active]:bg-orange-950 data-[state=active]:text-foreground" 
+                className="text-base data-[state=active]:bg-destructive/20 data-[state=active]:text-foreground w-full" 
                 data-testid="tab-returned"
               >
                 <span className="hidden sm:inline">{t('returnedTasks') || 'Vraćeni'}</span>
@@ -727,7 +727,7 @@ export default function WorkerDashboard() {
               </TabsTrigger>
               <TabsTrigger 
                 value="completed" 
-                className="text-base px-2 data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
+                className="text-base data-[state=active]:bg-secondary/50 data-[state=active]:text-foreground w-full" 
                 data-testid="tab-completed"
               >
                 <span className="hidden sm:inline">{t('completedToday')}</span>
@@ -737,7 +737,7 @@ export default function WorkerDashboard() {
 
             <TabsContent value="active" className="mt-4">
               <ScrollArea className="h-[500px] pr-4">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {activeTasks.length > 0 ? (
                     activeTasks.map(renderTaskCard)
                   ) : (
@@ -752,12 +752,12 @@ export default function WorkerDashboard() {
 
             <TabsContent value="returned" className="mt-4">
               <ScrollArea className="h-[500px] pr-4">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {returnedTasks.length > 0 ? (
                     returnedTasks.map((task) => (
                       <Card 
                         key={task.id} 
-                        className="p-4 cursor-pointer hover-elevate active-elevate-2 bg-orange-100 dark:bg-orange-950"
+                        className="p-5 cursor-pointer hover-elevate active-elevate-2 bg-destructive/10"
                         onClick={() => handleTaskClick(task.id)}
                         data-testid={`card-task-${task.id}`}
                       >
@@ -787,12 +787,12 @@ export default function WorkerDashboard() {
 
             <TabsContent value="completed" className="mt-4">
               <ScrollArea className="h-[500px] pr-4">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {completedTasks.length > 0 ? (
                     completedTasks.map((task) => (
                       <Card 
                         key={task.id} 
-                        className="p-4 cursor-pointer hover-elevate active-elevate-2 bg-sky-100 dark:bg-sky-950"
+                        className="p-5 cursor-pointer hover-elevate active-elevate-2 bg-secondary/30"
                         onClick={() => handleTaskClick(task.id)}
                         data-testid={`card-task-${task.id}`}
                       >
@@ -822,7 +822,7 @@ export default function WorkerDashboard() {
 
       {/* Task Details Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto px-4 py-6 sm:p-6" data-testid="dialog-task-details">
+        <DialogContent className="w-[95vw] sm:max-w-lg max-h-[85vh] overflow-y-auto p-6" data-testid="dialog-task-details">
           {selectedTask && (
             <>
               <DialogHeader>
@@ -864,11 +864,11 @@ export default function WorkerDashboard() {
                       
                       {/* Display reporter's uploaded images */}
                       {selectedTask.reporterImages && selectedTask.reporterImages.length > 0 && (
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                           {selectedTask.reporterImages.map((imageUrl, index) => (
                             <div 
                               key={index} 
-                              className="relative aspect-square bg-muted rounded-md overflow-hidden cursor-pointer hover-elevate"
+                              className="relative aspect-square bg-muted rounded-md overflow-hidden cursor-pointer hover-elevate min-w-[96px] min-h-[96px]"
                               onClick={() => setSelectedImage(imageUrl)}
                               data-testid={`img-reporter-${index}`}
                             >
@@ -913,7 +913,7 @@ export default function WorkerDashboard() {
                       const isReceiptConfirmed = selectedTask.worker_report?.includes('Prijem reklamacije potvrđen') || isConfirmingReceipt || !!selectedTask.receipt_confirmed_at;
                       return (
                         <Button 
-                          className={`w-full ${isReceiptConfirmed ? 'bg-gray-400 hover:bg-gray-400 text-gray-700 border-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white border-green-700'}`}
+                          className={`w-full min-h-11 ${isReceiptConfirmed ? 'bg-gray-400 hover:bg-gray-400 text-gray-700 border-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white border-green-700'}`}
                           onClick={handleConfirmReceipt}
                           disabled={isReceiptConfirmed}
                           data-testid={`button-confirm-receipt-${selectedTask.id}`}
@@ -925,9 +925,9 @@ export default function WorkerDashboard() {
                     })()}
                     
                     {/* Task Completion and Return Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
                       <Button 
-                        className="flex-1"
+                        className="flex-1 min-h-11"
                         onClick={handleTaskCompleted}
                         data-testid={`button-task-completed-${selectedTask.id}`}
                       >
@@ -936,7 +936,7 @@ export default function WorkerDashboard() {
                       </Button>
                       <Button 
                         variant="destructive"
-                        className="sm:flex-1"
+                        className="sm:flex-1 min-h-11"
                         onClick={handleReturnTask}
                         data-testid={`button-return-task-${selectedTask.id}`}
                       >
@@ -994,20 +994,20 @@ export default function WorkerDashboard() {
                           onClick={handlePhotoUpload}
                           type="button"
                           data-testid="button-upload-photo"
-                          className="min-h-[44px]"
+                          className="min-h-24"
                         >
-                          <Camera className="w-5 h-5 mr-2" />
+                          <Camera className="w-6 h-6 mr-2" />
                           {t('uploadPhoto')}
                         </Button>
                       </div>
                       
                       {/* Display uploaded photos */}
                       {uploadedPhotos.length > 0 && (
-                        <div className="grid grid-cols-3 gap-2 mt-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                           {uploadedPhotos.map((photo) => (
                             <div 
                               key={photo.id} 
-                              className="relative aspect-square bg-muted rounded-md overflow-hidden cursor-pointer"
+                              className="relative aspect-square bg-muted rounded-md overflow-hidden cursor-pointer min-w-[96px] min-h-[96px]"
                               onClick={() => setSelectedImage(photo.dataUrl)}
                             >
                               <img 
@@ -1019,7 +1019,7 @@ export default function WorkerDashboard() {
                               <Button
                                 variant="destructive"
                                 size="icon"
-                                className="absolute top-1 right-1 h-6 w-6 z-10"
+                                className="absolute top-1 right-1 min-h-11 min-w-11 z-10"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleRemovePhoto(photo.id);
@@ -1027,7 +1027,7 @@ export default function WorkerDashboard() {
                                 type="button"
                                 data-testid={`button-remove-photo-${photo.id}`}
                               >
-                                <X className="w-4 h-4" />
+                                <X className="w-5 h-5" />
                               </Button>
                             </div>
                           ))}
@@ -1036,7 +1036,7 @@ export default function WorkerDashboard() {
                     </div>
 
                     <Button 
-                      className="w-full"
+                      className="w-full min-h-11"
                       onClick={handleSubmitReport}
                       disabled={updateTaskMutation.isPending}
                       data-testid={`button-submit-report-${selectedTask.id}`}
@@ -1053,13 +1053,13 @@ export default function WorkerDashboard() {
                 {/* View Details for Completed Tasks */}
                 {selectedTask.status === 'completed' && (
                   <div className="pt-4 border-t">
-                    <div className="flex items-center gap-2 text-green-600 dark:text-green-500 mb-4">
+                    <div className="flex items-center gap-2 text-green-600 mb-4">
                       <CheckCircle className="w-5 h-5" />
-                      <span className="font-medium">{t('taskCompleted')}</span>
+                      <span className="font-medium text-base">{t('taskCompleted')}</span>
                     </div>
                     <Button 
                       variant="outline" 
-                      className="w-full"
+                      className="w-full min-h-11"
                       onClick={handleCloseDialog}
                       data-testid="button-close-dialog"
                     >
@@ -1092,7 +1092,7 @@ export default function WorkerDashboard() {
           <Button 
             variant="outline" 
             onClick={() => setSelectedImage(null)}
-            className="w-full mt-2"
+            className="w-full mt-2 min-h-11"
             data-testid="button-close-image"
           >
             {t('close')}
