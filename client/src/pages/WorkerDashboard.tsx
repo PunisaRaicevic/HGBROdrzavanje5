@@ -984,22 +984,16 @@ export default function WorkerDashboard() {
                         className="hidden"
                         onChange={handleFileChange}
                       />
-                      <div className="border-2 border-dashed rounded-md p-6 text-center">
-                        <Camera className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
-                        <p className="text-base text-muted-foreground mb-3">
-                          {t('uploadFieldPhotos')}
-                        </p>
-                        <Button 
-                          variant="outline" 
-                          onClick={handlePhotoUpload}
-                          type="button"
-                          data-testid="button-upload-photo"
-                          className="min-h-24"
-                        >
-                          <Camera className="w-6 h-6 mr-2" />
-                          {t('uploadPhoto')}
-                        </Button>
-                      </div>
+                      <Button 
+                        variant="outline" 
+                        onClick={handlePhotoUpload}
+                        type="button"
+                        data-testid="button-upload-photo"
+                        className="w-full min-h-11"
+                      >
+                        <Camera className="w-5 h-5 mr-2" />
+                        {t('uploadPhoto')}
+                      </Button>
                       
                       {/* Display uploaded photos */}
                       {uploadedPhotos.length > 0 && (
