@@ -324,7 +324,7 @@ export default function OperatorDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* New Tasks from Users - Dynamic size */}
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -369,33 +369,33 @@ export default function OperatorDashboard() {
                   {filteredTasks.map((task) => (
                   <Card 
                     key={task.id} 
-                    className="p-4 cursor-pointer hover-elevate transition-all" 
+                    className="p-5 cursor-pointer hover-elevate transition-all" 
                     onClick={() => {
                       setSelectedTask(task);
                       setTaskDetailsOpen(true);
                     }}
                     data-testid={`card-task-${task.id}`}
                   >
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div>
-                        <h3 className="font-medium" data-testid={`text-task-title-${task.id}`}>{task.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1" data-testid={`text-task-from-${task.id}`}>
+                        <h3 className="text-lg font-medium" data-testid={`text-task-title-${task.id}`}>{task.title}</h3>
+                        <p className="text-base text-muted-foreground mt-1" data-testid={`text-task-from-${task.id}`}>
                           {t('from')}: {task.fromName} ({task.from})
                         </p>
                         {task.assignedToName && (
-                          <p className="text-sm text-muted-foreground mt-1" data-testid={`text-task-assigned-to-${task.id}`}>
+                          <p className="text-base text-muted-foreground mt-1" data-testid={`text-task-assigned-to-${task.id}`}>
                             <span className="font-medium">{t('assignedTo')}:</span> {task.assignedToName}
                           </p>
                         )}
                         {task.description && (
-                          <p className="text-sm text-muted-foreground mt-2" data-testid={`text-task-description-${task.id}`}>
+                          <p className="text-base text-muted-foreground mt-2" data-testid={`text-task-description-${task.id}`}>
                             {task.description}
                           </p>
                         )}
                       </div>
                       
-                      <div className="flex items-center justify-between pt-1">
-                        <p className="text-xs text-muted-foreground">{task.time}</p>
+                      <div className="flex items-center justify-between pt-1 gap-2">
+                        <p className="text-sm text-muted-foreground">{task.time}</p>
                         <Badge 
                           variant={
                             task.priority === 'urgent' ? 'destructive' : 
@@ -408,10 +408,9 @@ export default function OperatorDashboard() {
                       </div>
 
                       {(task.status === 'new' || task.status === 'with_operator' || task.status === 'returned_to_operator') ? (
-                        <div className="flex gap-2" data-testid={`actions-task-${task.id}`} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-2 flex-wrap" data-testid={`actions-task-${task.id}`} onClick={(e) => e.stopPropagation()}>
                           <Button 
-                            size="sm" 
-                            className="flex-1" 
+                            className="flex-1 min-h-11 min-w-[160px]" 
                             data-testid={`button-send-to-supervisor-${task.id}`}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -419,12 +418,11 @@ export default function OperatorDashboard() {
                             }}
                             disabled={processingTaskId === task.id}
                           >
-                            <Send className="w-3 h-3 mr-1" />
+                            <Send className="w-4 h-4 mr-2" />
                             {t('sendToSupervisor')}
                           </Button>
                           <Button 
-                            size="sm" 
-                            className="flex-1"
+                            className="flex-1 min-h-11 min-w-[160px]"
                             data-testid={`button-send-to-technician-${task.id}`}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -438,11 +436,11 @@ export default function OperatorDashboard() {
                       ) : (
                         <div className="space-y-1">
                           {task.sentTo && (
-                            <div className="flex items-center justify-between text-sm" data-testid={`sent-info-${task.id}`}>
+                            <div className="flex items-center justify-between text-base" data-testid={`sent-info-${task.id}`}>
                               <span className="text-muted-foreground">
                                 Prosleđeno: {task.sentTo === 'supervisor' ? 'Šef' : task.assignedToName || 'Majstor'}
                               </span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-base text-muted-foreground">
                                 {task.sentAt && new Date(task.sentAt).toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
@@ -456,7 +454,6 @@ export default function OperatorDashboard() {
                                   task.status === 'cancelled' ? 'destructive' : 
                                   'outline'
                                 }
-                                className="text-xs"
                               >
                                 {(task.status === 'with_sef' || task.status === 'assigned_to_radnik') && 'Prosleđeno'}
                                 {task.status === 'returned_to_sef' && 'U Toku'}
@@ -466,10 +463,10 @@ export default function OperatorDashboard() {
                               {task.sentTo === 'technician' && (
                                 <Badge 
                                   variant="outline"
-                                  className={`text-xs ${
+                                  className={`${
                                     task.receipt_confirmed_at 
-                                      ? 'bg-green-50 dark:bg-green-950 border-green-600 dark:border-green-400 text-green-700 dark:text-green-400' 
-                                      : 'bg-orange-50 dark:bg-orange-950 border-orange-600 dark:border-orange-400 text-orange-700 dark:text-orange-400'
+                                      ? 'bg-green-50 border-green-600 text-green-700' 
+                                      : 'bg-orange-50 border-orange-600 text-orange-700'
                                   }`}
                                   data-testid={`receipt-status-${task.id}`}
                                 >
@@ -498,49 +495,49 @@ export default function OperatorDashboard() {
             <CardContent className="space-y-3">
               {viewMode !== 'new' && (
                 <Button 
-                  className="w-full justify-start" 
+                  className="w-full justify-start min-h-11" 
                   variant="default" 
                   onClick={handleBackToNewTasks}
                   data-testid="button-back-to-new-tasks"
                 >
-                  <ClipboardList className="w-4 h-4 mr-2" />
+                  <ClipboardList className="w-5 h-5 mr-2" />
                   {t('newTasks')}
                 </Button>
               )}
               <Button 
-                className="w-full justify-start" 
+                className="w-full justify-start min-h-11" 
                 variant={viewMode === 'forwarded' ? 'default' : 'outline'}
                 onClick={handleViewForwardedTasks}
                 data-testid="button-view-forwarded-tasks"
               >
-                <Send className="w-4 h-4 mr-2" />
+                <Send className="w-5 h-5 mr-2" />
                 {t('forwardedTasks')}
               </Button>
               <Button 
-                className="w-full justify-start" 
+                className="w-full justify-start min-h-11" 
                 variant={viewMode === 'in-progress' ? 'default' : 'outline'}
                 onClick={handleViewInProgressTasks}
                 data-testid="button-view-in-progress-tasks"
               >
-                <PlayCircle className="w-4 h-4 mr-2" />
+                <PlayCircle className="w-5 h-5 mr-2" />
                 {t('tasksInProgress')}
               </Button>
               <Button 
-                className="w-full justify-start" 
+                className="w-full justify-start min-h-11" 
                 variant={viewMode === 'completed' ? 'default' : 'outline'}
                 onClick={handleViewCompletedTasks}
                 data-testid="button-view-completed-tasks"
               >
-                <CheckCircle className="w-4 h-4 mr-2" />
+                <CheckCircle className="w-5 h-5 mr-2" />
                 {t('completedTasks')}
               </Button>
               <Button 
-                className="w-full justify-start" 
+                className="w-full justify-start min-h-11" 
                 variant={viewMode === 'overdue' ? 'default' : 'outline'}
                 onClick={handleViewOverdueTasks}
                 data-testid="button-view-overdue-tasks"
               >
-                <XCircle className="w-4 h-4 mr-2" />
+                <XCircle className="w-5 h-5 mr-2" />
                 {t('overdueHistory')}
               </Button>
             </CardContent>
@@ -551,32 +548,32 @@ export default function OperatorDashboard() {
               <CardTitle>{t('status')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-2 hover-elevate rounded-md">
-                  <div className="flex items-center gap-2">
-                    <Send className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm">{t('forwarded')}</span>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 hover-elevate rounded-md">
+                  <div className="flex items-center gap-3">
+                    <Send className="w-5 h-5 text-blue-500" />
+                    <span className="text-base">{t('forwarded')}</span>
                   </div>
                   <Badge variant="secondary">{forwardedCount}</Badge>
                 </div>
-                <div className="flex items-center justify-between p-2 hover-elevate rounded-md">
-                  <div className="flex items-center gap-2">
-                    <PlayCircle className="w-4 h-4 text-yellow-500" />
-                    <span className="text-sm">{t('inProgress')}</span>
+                <div className="flex items-center justify-between p-3 hover-elevate rounded-md">
+                  <div className="flex items-center gap-3">
+                    <PlayCircle className="w-5 h-5 text-yellow-500" />
+                    <span className="text-base">{t('inProgress')}</span>
                   </div>
                   <Badge variant="secondary">{inProgressCount}</Badge>
                 </div>
-                <div className="flex items-center justify-between p-2 hover-elevate rounded-md">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span className="text-sm">{t('completed')}</span>
+                <div className="flex items-center justify-between p-3 hover-elevate rounded-md">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-base">{t('completed')}</span>
                   </div>
                   <Badge variant="secondary">{completedCount}</Badge>
                 </div>
-                <div className="flex items-center justify-between p-2 hover-elevate rounded-md">
-                  <div className="flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-red-500" />
-                    <span className="text-sm">{t('overdue')}</span>
+                <div className="flex items-center justify-between p-3 hover-elevate rounded-md">
+                  <div className="flex items-center gap-3">
+                    <XCircle className="w-5 h-5 text-red-500" />
+                    <span className="text-base">{t('overdue')}</span>
                   </div>
                   <Badge variant="secondary">{overdueCount}</Badge>
                 </div>
