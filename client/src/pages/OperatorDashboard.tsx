@@ -376,9 +376,9 @@ export default function OperatorDashboard() {
                 height: filteredTasks.length === 0 
                   ? '200px' 
                   : filteredTasks.length <= 2 
-                    ? `${filteredTasks.length * 180}px` 
-                    : '600px',
-                maxHeight: '600px'
+                    ? `${filteredTasks.length * 250}px` 
+                    : 'calc(100vh - 280px)',
+                maxHeight: 'calc(100vh - 280px)'
               }}
               data-testid="tasks-scroll-area"
             >
@@ -419,7 +419,7 @@ export default function OperatorDashboard() {
                             </p>
                           )}
                           {task.description && (
-                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2" data-testid={`text-task-description-${task.id}`}>
+                            <p className="text-sm text-muted-foreground mt-2" data-testid={`text-task-description-${task.id}`}>
                               {task.description}
                             </p>
                           )}
