@@ -626,8 +626,8 @@ export default function WorkerDashboard() {
     >
       <div className="space-y-4">
         <div>
-          <h3 className="font-medium text-xl">{task.title}</h3>
-          <p className="text-base text-foreground/70 mt-1">
+          <h3 className="font-medium text-xl text-foreground">{task.title}</h3>
+          <p className="text-base text-foreground mt-1">
             From: {task.assignedBy}
           </p>
         </div>
@@ -639,7 +639,7 @@ export default function WorkerDashboard() {
         )}
         
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 text-base text-foreground/70">
+          <div className="flex items-center gap-1 text-base text-foreground">
             <Clock className="w-5 h-5" />
             <span>{getElapsedTime(task.receivedAt)}</span>
           </div>
@@ -728,11 +728,11 @@ export default function WorkerDashboard() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <p className="text-xl font-medium">{task.title}</p>
-                            <p className="text-base text-foreground/70 mt-1">
+                            <p className="text-xl font-medium text-foreground">{task.title}</p>
+                            <p className="text-base text-foreground mt-1">
                               {task.description}
                             </p>
-                            <p className="text-base text-foreground/70 mt-1">
+                            <p className="text-base text-foreground mt-1">
                               {getElapsedTime(task.receivedAt)} {t('ago')}
                             </p>
                           </div>
@@ -763,8 +763,8 @@ export default function WorkerDashboard() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <p className="text-xl font-medium">{task.title}</p>
-                            <p className="text-base text-foreground/70 mt-1">
+                            <p className="text-xl font-medium text-foreground">{task.title}</p>
+                            <p className="text-base text-foreground mt-1">
                               {task.location} • {t('completedAgo')} {getElapsedTime(task.receivedAt)} {t('ago')}
                             </p>
                           </div>
