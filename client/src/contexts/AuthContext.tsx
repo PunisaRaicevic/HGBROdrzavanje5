@@ -83,6 +83,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       
+      // IMPORTANT: Clear old tokens BEFORE login to prevent stale data
+      console.log('[AUTH] Clearing old authentication data before login...');
+      localStorage.removeItem('user');
+      localStorage.removeItem('authToken');
+      
+      console.log('[AUTH] Attempting login for:', username);
+      
       const response = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: {
@@ -95,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (!response.ok) {
+        console.error('[AUTH] Login failed:', data);
         toast({
           title: 'Neuspešna prijava',
           description: 'Neispravno korisničko ime ili lozinka.',
@@ -113,13 +121,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         department: dbUser.department
       };
 
+      console.log('[AUTH] Login successful for:', dbUser.full_name, 'Role:', dbUser.role);
+      
       setUser(userSession);
       localStorage.setItem('user', JSON.stringify(userSession));
       
       // Store JWT token for mobile authentication (if provided)
       if (data.token) {
         localStorage.setItem('authToken', data.token);
-        console.log('[AUTH] JWT token stored for mobile authentication');
+        console.log('[AUTH] ✅ NEW JWT token stored:', data.token.substring(0, 50) + '...');
+      } else {
+        console.warn('[AUTH] ⚠️ No JWT token received from server');
       }
 
       toast({
@@ -139,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      console.log('[AUTH] Logging out...');
       const storedToken = localStorage.getItem('authToken');
       const headers: HeadersInit = {};
       if (storedToken) {
@@ -152,12 +165,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('[AUTH] Logout error:', error);
     } finally {
       // Always clear client state
+      console.log('[AUTH] Clearing localStorage and session...');
       setUser(null);
       localStorage.removeItem('user');
       localStorage.removeItem('authToken');
+      console.log('[AUTH] ✅ Logout complete - all tokens cleared');
       toast({
         title: 'Odjavljeni ste',
         description: 'Uspešno ste se odjavili sa sistema.'
