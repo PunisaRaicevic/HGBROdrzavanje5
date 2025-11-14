@@ -13,6 +13,7 @@ import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit } from 'lucide
 import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
+import TaskDetailsDialog from '@/components/TaskDetailsDialog';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -37,10 +38,13 @@ interface Task {
   status: string;
   priority?: string;
   created_at: string;
+  created_by?: string;
   created_by_name?: string;
   assigned_to_name?: string;
   location?: string;
   completed_at?: string | null;
+  images?: string[];
+  worker_images?: string[];
 }
 
 export default function AdminDashboard() {
@@ -55,6 +59,7 @@ export default function AdminDashboard() {
   const [newUserRole, setNewUserRole] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [tasksPerPage, setTasksPerPage] = useState<number>(10);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -391,8 +396,9 @@ export default function AdminDashboard() {
                         return (
                           <div 
                             key={task.id} 
-                            className="p-4 border rounded-md hover-elevate"
+                            className="p-4 border rounded-md hover-elevate cursor-pointer"
                             data-testid={`task-item-${task.id}`}
+                            onClick={() => setSelectedTask(task)}
                           >
                             <div className="space-y-2">
                               <div className="flex items-start justify-between gap-3">
@@ -466,6 +472,24 @@ export default function AdminDashboard() {
         user={editingUser}
         open={editingUser !== null}
         onOpenChange={(open) => !open && setEditingUser(null)}
+      />
+
+      {/* Task Details Dialog */}
+      <TaskDetailsDialog
+        open={selectedTask !== null}
+        onOpenChange={(open) => !open && setSelectedTask(null)}
+        task={selectedTask ? {
+          id: selectedTask.id,
+          title: selectedTask.title,
+          description: selectedTask.description,
+          location: selectedTask.location || '',
+          priority: (selectedTask.priority || 'normal') as 'urgent' | 'normal' | 'can_wait',
+          time: selectedTask.created_at,
+          fromName: selectedTask.created_by_name || '',
+          from: selectedTask.created_by || '',
+          images: selectedTask.images,
+          worker_images: selectedTask.worker_images
+        } : null}
       />
     </div>
   );
