@@ -166,7 +166,7 @@ export function PhotoUpload({
               <Button
                 variant="destructive"
                 size="icon"
-                className="absolute top-1 right-1 min-h-11 min-w-11 z-10"
+                className="absolute top-1 right-1 h-14 w-14 z-10"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleRemovePhoto(photo.id);

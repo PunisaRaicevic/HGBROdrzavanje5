@@ -20,6 +20,7 @@ import { capacitorHaptics } from '@/services/capacitorHaptics';
 import { capacitorNotifications } from '@/services/capacitorNotifications';
 import { upsertTaskInCache, scheduleBackgroundHydration, optimisticUpdateTask, removeTaskFromCache } from '@/lib/taskCache';
 import { apiRequest } from '@/lib/queryClient';
+import { ImagePreviewModal } from '@/components/ImagePreviewModal';
 
 type PhotoPreview = {
   id: string;
@@ -1075,32 +1076,11 @@ export default function WorkerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Image Lightbox Modal */}
-      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="w-[95vw] max-w-5xl h-[95vh] max-h-[95vh] p-2 sm:p-4">
-          <DialogHeader>
-            <DialogTitle>{t('imagePreview') || 'Prikaz slike / Image Preview'}</DialogTitle>
-          </DialogHeader>
-          <div className="relative w-full h-full flex items-center justify-center bg-black/5 rounded-md overflow-hidden">
-            {selectedImage && (
-              <img 
-                src={selectedImage} 
-                alt="Enlarged view" 
-                className="max-w-full max-h-[75vh] object-contain"
-                data-testid="img-enlarged"
-              />
-            )}
-          </div>
-          <Button 
-            variant="outline" 
-            onClick={() => setSelectedImage(null)}
-            className="w-full mt-2 min-h-11"
-            data-testid="button-close-image"
-          >
-            {t('close')}
-          </Button>
-        </DialogContent>
-      </Dialog>
+      {/* Image Preview Modal */}
+      <ImagePreviewModal 
+        imageUrl={selectedImage} 
+        onClose={() => setSelectedImage(null)} 
+      />
     </div>
   );
 }
