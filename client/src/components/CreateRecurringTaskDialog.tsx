@@ -318,57 +318,11 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
 
               <div className="space-y-2">
                 <Label>Fotografije (opcionalno)</Label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileChange}
+                <PhotoUpload 
+                  photos={uploadedPhotos}
+                  onPhotosChange={setUploadedPhotos}
+                  label="Upload fotografije problema (max 5MB po slici)"
                 />
-                <div className="border-2 border-dashed rounded-md p-4 text-center">
-                  <Camera className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Upload fotografije (max 5MB po slici)
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handlePhotoUpload}
-                    type="button"
-                    data-testid="button-upload-photo"
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Upload Fotografiju
-                  </Button>
-                </div>
-                
-                {uploadedPhotos.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 mt-3">
-                    {uploadedPhotos.map((photo) => (
-                      <div 
-                        key={photo.id} 
-                        className="relative aspect-square bg-muted rounded-md overflow-hidden"
-                      >
-                        <img 
-                          src={photo.dataUrl} 
-                          alt="Preview" 
-                          className="w-full h-full object-cover"
-                        />
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 h-6 w-6"
-                          onClick={() => handleRemovePhoto(photo.id)}
-                          type="button"
-                          data-testid={`button-remove-photo-${photo.id}`}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
 

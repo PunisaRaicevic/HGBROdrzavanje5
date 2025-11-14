@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { ImagePreviewModal } from './ImagePreviewModal';
 
 // Helper function to get unique user names from task history
 const getTaskAssignmentPath = (history: any[]): string => {
@@ -67,6 +68,8 @@ interface TaskDetailsDialogProps {
 }
 
 export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDetailsDialogProps) {
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   // Fetch task history only when dialog is open and task exists
   const { data: historyResponse, isLoading: historyLoading, isError: historyError } = useQuery<{ 
     history: any[], 
@@ -190,7 +193,8 @@ export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDeta
                         key={index}
                         src={image}
                         alt={`Task image ${index + 1}`}
-                        className="rounded-md border w-full h-auto object-cover"
+                        className="rounded-md border w-full h-auto object-cover cursor-pointer hover-elevate"
+                        onClick={() => setPreviewImage(image)}
                         data-testid={`img-task-details-${index}`}
                       />
                     ))}
@@ -211,7 +215,8 @@ export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDeta
                         key={index}
                         src={image}
                         alt={`Worker image ${index + 1}`}
-                        className="rounded-md border w-full h-auto object-cover"
+                        className="rounded-md border w-full h-auto object-cover cursor-pointer hover-elevate"
+                        onClick={() => setPreviewImage(image)}
                         data-testid={`img-worker-details-${index}`}
                       />
                     ))}
@@ -228,6 +233,11 @@ export default function TaskDetailsDialog({ open, onOpenChange, task }: TaskDeta
           </div>
         </ScrollArea>
       </DialogContent>
+
+      <ImagePreviewModal 
+        imageUrl={previewImage} 
+        onClose={() => setPreviewImage(null)} 
+      />
     </Dialog>
   );
 }
