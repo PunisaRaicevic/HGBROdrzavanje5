@@ -19,7 +19,7 @@ import type { TaskStatus, Priority } from '@shared/types';
 import { capacitorHaptics } from '@/services/capacitorHaptics';
 import { capacitorNotifications } from '@/services/capacitorNotifications';
 import { upsertTaskInCache, scheduleBackgroundHydration, optimisticUpdateTask, removeTaskFromCache } from '@/lib/taskCache';
-import { getApiUrl } from '@/lib/apiUrl';
+import { apiRequest } from '@/lib/queryClient';
 
 type PhotoPreview = {
   id: string;
@@ -430,33 +430,15 @@ export default function WorkerDashboard() {
     });
     
     try {
-      console.log('[CONFIRM RECEIPT] Sending request to:', getApiUrl(`api/tasks/${selectedTask.id}`));
+      console.log('[CONFIRM RECEIPT] Sending request for task:', selectedTask.id);
       
-      // Get auth headers for mobile
-      const headers: HeadersInit = { 'Content-Type': 'application/json' };
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(getApiUrl(`api/tasks/${selectedTask.id}`), {
-        method: 'PATCH',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({ 
-          status: 'assigned_to_radnik',
-          worker_report: 'Prijem reklamacije potvrđen / Receipt confirmed',
-          receipt_confirmed_at: new Date().toISOString()
-        }),
+      const response = await apiRequest('PATCH', `/api/tasks/${selectedTask.id}`, {
+        status: 'assigned_to_radnik',
+        worker_report: 'Prijem reklamacije potvrđen / Receipt confirmed',
+        receipt_confirmed_at: new Date().toISOString()
       });
 
       console.log('[CONFIRM RECEIPT] Response status:', response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[CONFIRM RECEIPT] Error:', errorText);
-        throw new Error('Failed to confirm receipt');
-      }
 
       // Schedule background hydration
       scheduleBackgroundHydration(1000);
@@ -541,41 +523,17 @@ export default function WorkerDashboard() {
       report: string;
       images?: string[];
     }) => {
-      console.log('[MUTATION] Starting fetch to:', getApiUrl(`api/tasks/${taskId}`));
+      console.log('[MUTATION] Updating task:', taskId, 'to status:', status);
       
-      // Get auth headers for mobile
-      const headers: HeadersInit = { 'Content-Type': 'application/json' };
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(getApiUrl(`api/tasks/${taskId}`), {
-        method: 'PATCH',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({ 
-          status, 
-          user_id: user?.id,
-          user_name: user?.fullName,
-          worker_report: report,
-          worker_images: images || []
-        }),
+      const response = await apiRequest('PATCH', `/api/tasks/${taskId}`, {
+        status, 
+        user_id: user?.id,
+        user_name: user?.fullName,
+        worker_report: report,
+        worker_images: images || []
       });
 
       console.log('[MUTATION] Response status:', response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[MUTATION] Error response:', errorText);
-        try {
-          const errorData = JSON.parse(errorText);
-          throw new Error(errorData.error || 'Failed to update task');
-        } catch {
-          throw new Error(`Server error: ${response.status} - ${errorText.substring(0, 100)}`);
-        }
-      }
-
       const result = await response.json();
       console.log('[MUTATION] Success:', result);
       return result;

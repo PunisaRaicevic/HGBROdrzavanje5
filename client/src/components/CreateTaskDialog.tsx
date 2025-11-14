@@ -10,8 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Camera, X, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
-import { getApiUrl } from '@/lib/apiUrl';
+import { queryClient, apiRequest } from '@/lib/queryClient';
 
 interface CreateTaskDialogProps {
   trigger?: React.ReactNode;
@@ -38,25 +37,25 @@ export default function CreateTaskDialog({ trigger, onSubmit }: CreateTaskDialog
   const [description, setDescription] = useState('');
   const [uploadedPhotos, setUploadedPhotos] = useState<PhotoPreview[]>([]);
 
-  // Create task mutation
+  // Create task mutation using centralized apiRequest
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: any) => {
-      const response = await fetch(getApiUrl('/api/tasks'), {
-        method: 'POST',
-        body: JSON.stringify(taskData),
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || `Server error: ${response.status}`;
-        throw new Error(errorMessage);
-      }
-      
-      return response.json();
+      console.log('[CREATE TASK] Sending request with data:', taskData);
+      const response = await apiRequest('POST', '/api/tasks', taskData);
+      const result = await response.json();
+      console.log('[CREATE TASK] Success:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+    onError: (error: Error) => {
+      console.error('[CREATE TASK] Error:', error);
+      toast({
+        title: t('error') || 'Greška',
+        description: error.message,
+        variant: 'destructive',
+      });
     },
   });
 

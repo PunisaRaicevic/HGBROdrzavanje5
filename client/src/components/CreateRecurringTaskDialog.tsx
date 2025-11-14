@@ -9,10 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Camera, X, Send, Calendar, Repeat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
+import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getApiUrl } from '@/lib/apiUrl';
 
 interface CreateRecurringTaskDialogProps {
   trigger?: React.ReactNode;
@@ -51,22 +50,22 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
   // Create task mutation
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: any) => {
-      const response = await fetch(getApiUrl('/api/tasks'), {
-        method: 'POST',
-        body: JSON.stringify(taskData),
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || `Server error: ${response.status}`;
-        throw new Error(errorMessage);
-      }
-      
-      return response.json();
+      console.log('[CREATE RECURRING TASK] Sending request with data:', taskData);
+      const response = await apiRequest('POST', '/api/tasks', taskData);
+      const result = await response.json();
+      console.log('[CREATE RECURRING TASK] Success:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+    },
+    onError: (error: Error) => {
+      console.error('[CREATE RECURRING TASK] Error:', error);
+      toast({
+        title: 'Greška / Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     },
   });
 

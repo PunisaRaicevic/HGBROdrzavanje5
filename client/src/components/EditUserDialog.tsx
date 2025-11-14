@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
+import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Save, X } from 'lucide-react';
 
@@ -66,20 +66,11 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
         payload.password = data.password;
       }
 
-      const response = await fetch(`/api/users/${user.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update user');
-      }
-
-      return await response.json();
+      console.log('[EDIT USER] Sending request for user:', user.id);
+      const response = await apiRequest('PATCH', `/api/users/${user.id}`, payload);
+      const result = await response.json();
+      console.log('[EDIT USER] Success:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
