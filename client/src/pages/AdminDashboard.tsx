@@ -45,7 +45,6 @@ export default function AdminDashboard() {
   const [newUserPassword, setNewUserPassword] = useState('');
   const [newUserPhone, setNewUserPhone] = useState('');
   const [newUserRole, setNewUserRole] = useState('');
-  const [newUserDepartment, setNewUserDepartment] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   // Fetch users (auto-refresh every 10 seconds)
@@ -94,7 +93,6 @@ export default function AdminDashboard() {
       setNewUserPassword('');
       setNewUserPhone('');
       setNewUserRole('');
-      setNewUserDepartment('');
     },
     onError: (error: Error) => {
       toast({
@@ -123,7 +121,6 @@ export default function AdminDashboard() {
       full_name: newUserName,
       password: newUserPassword,
       role: newUserRole,
-      department: newUserDepartment || undefined,
       phone: newUserPhone || undefined
     });
   };
@@ -304,16 +301,6 @@ export default function AdminDashboard() {
                       className="min-h-11"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="user-department">Zanimanje/Pozicija</Label>
-                    <Input
-                      id="user-department"
-                      value={newUserDepartment}
-                      onChange={(e) => setNewUserDepartment(e.target.value)}
-                      data-testid="input-user-department"
-                      placeholder="npr. Recepcioner, Šef sale, Direktor hotela..."
-                    />
-                  </div>
                 </div>
                 <Button 
                   type="submit" 
@@ -353,7 +340,6 @@ export default function AdminDashboard() {
                         <p className="font-medium">{u.full_name}</p>
                         <p className="text-sm text-muted-foreground">
                           {u.email} - {u.role}
-                          {u.department && ` - ${u.department}`}
                         </p>
                       </div>
                       <Button 

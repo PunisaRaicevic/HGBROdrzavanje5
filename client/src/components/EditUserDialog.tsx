@@ -57,7 +57,6 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
         email: data.email,
         full_name: data.full_name,
         role: data.role,
-        department: data.department || null,
         phone: data.phone || null
       };
 
@@ -145,17 +144,6 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 data-testid="input-edit-user-role"
                 className="min-h-11"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-user-department">Zanimanje/Pozicija</Label>
-              <Input
-                id="edit-user-department"
-                value={formData.department}
-                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                data-testid="input-edit-user-department"
-                placeholder="npr. Recepcioner, Šef sale, Direktor hotela..."
               />
             </div>
 
