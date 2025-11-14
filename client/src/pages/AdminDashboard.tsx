@@ -33,6 +33,7 @@ interface User {
 interface Task {
   id: string;
   title: string;
+  description?: string;
   status: string;
   priority?: string;
   created_at: string;
@@ -402,6 +403,9 @@ export default function AdminDashboard() {
                               </div>
                               <div>
                                 <h3 className="font-medium text-base mb-2">{task.title}</h3>
+                                {task.description && (
+                                  <p className="text-sm mb-2">{task.description}</p>
+                                )}
                                 <div className="space-y-1 text-sm text-muted-foreground">
                                   {task.created_by_name && (
                                     <p>Prijavio: {task.created_by_name}</p>
