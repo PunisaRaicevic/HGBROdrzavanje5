@@ -400,9 +400,6 @@ export default function AdminDashboard() {
                                   {getStatusBadge(task.status)}
                                 </div>
                                 <div className="space-y-1 text-sm text-muted-foreground">
-                                  {task.location && (
-                                    <p>Lokacija: {task.location}</p>
-                                  )}
                                   {task.created_by_name && (
                                     <p>Prijavio: {task.created_by_name}</p>
                                   )}
