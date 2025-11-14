@@ -131,7 +131,6 @@ export default function AdminDashboard() {
   // Calculate statistics
   const totalUsers = users.length;
   const totalTasks = tasks.length;
-  const activeTasks = tasks.filter(t => t.status === 'in_progress' || t.status === 'assigned').length;
   
   // My Tasks Status calculations
   const urgentTasks = tasks.filter(t => 
@@ -157,9 +156,6 @@ export default function AdminDashboard() {
            completedDate.getMonth() === today.getMonth() &&
            completedDate.getFullYear() === today.getFullYear();
   }).length;
-  
-  // For main stats - simplified completed today (all completed)
-  const completedToday = tasks.filter(t => t.status === 'completed').length;
 
   return (
     <div className="space-y-6">
@@ -178,8 +174,6 @@ export default function AdminDashboard() {
           <>
             <Skeleton className="h-32" />
             <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
           </>
         ) : (
           <>
@@ -192,16 +186,6 @@ export default function AdminDashboard() {
               title={t('totalTasks')} 
               value={totalTasks} 
               icon={ClipboardList}
-            />
-            <StatCard 
-              title={t('activeTasks')} 
-              value={activeTasks} 
-              icon={Clock}
-            />
-            <StatCard 
-              title={t('completedToday')} 
-              value={completedToday} 
-              icon={CheckCircle}
             />
           </>
         )}
