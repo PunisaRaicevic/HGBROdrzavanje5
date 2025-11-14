@@ -403,13 +403,13 @@ export default function AdminDashboard() {
                                   {task.assigned_to_name && (
                                     <p>Dodeljeno: {task.assigned_to_name}</p>
                                   )}
+                                  <div className="mt-2">
+                                    {getStatusBadge(task.status)}
+                                  </div>
                                 </div>
                               </div>
-                              <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                                {getStatusBadge(task.status)}
-                                <div className="text-sm text-muted-foreground whitespace-nowrap">
-                                  {formatDate(task.created_at)}
-                                </div>
+                              <div className="text-sm text-muted-foreground whitespace-nowrap flex-shrink-0">
+                                {formatDate(task.created_at)}
                               </div>
                             </div>
                           </div>
