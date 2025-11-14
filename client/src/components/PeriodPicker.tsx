@@ -102,9 +102,9 @@ export function PeriodPicker({
   };
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex flex-col gap-2", className)}>
       {/* Mode Toggle Buttons */}
-      <div className="flex items-center border rounded-md">
+      <div className="flex items-center border rounded-md w-fit">
         <Button
           variant="ghost"
           size="sm"
@@ -150,7 +150,7 @@ export function PeriodPicker({
             variant="outline"
             size="sm"
             className={cn(
-              "h-8 justify-start text-left font-normal text-xs min-w-[180px]",
+              "h-8 justify-start text-left font-normal text-xs w-fit min-w-[180px]",
               !selectedDate && "text-muted-foreground"
             )}
             data-testid={testId}
