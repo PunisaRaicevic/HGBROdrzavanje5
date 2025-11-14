@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -7,26 +7,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Camera, X, Send } from 'lucide-react';
+import { Plus, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
+import { PhotoUpload, PhotoPreview } from './PhotoUpload';
 
 interface CreateTaskDialogProps {
   trigger?: React.ReactNode;
   onSubmit?: (task: any) => void;
 }
 
-type PhotoPreview = {
-  id: string;
-  dataUrl: string;
-};
-
 export default function CreateTaskDialog({ trigger, onSubmit }: CreateTaskDialogProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [hotel, setHotel] = useState('');
   const [customHotel, setCustomHotel] = useState('');
@@ -59,53 +54,6 @@ export default function CreateTaskDialog({ trigger, onSubmit }: CreateTaskDialog
     },
   });
 
-  const handlePhotoUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid File",
-          description: "Please select an image file (JPG, PNG, etc.)",
-          variant: "destructive",
-        });
-        continue;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File Too Large",
-          description: "Image must be smaller than 5MB",
-          variant: "destructive",
-        });
-        continue;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        const newPhoto: PhotoPreview = {
-          id: `photo-${Date.now()}-${i}`,
-          dataUrl,
-        };
-        setUploadedPhotos(prev => [...prev, newPhoto]);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    event.target.value = '';
-  };
-
-  const handleRemovePhoto = (photoId: string) => {
-    setUploadedPhotos(uploadedPhotos.filter(p => p.id !== photoId));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -325,57 +273,11 @@ export default function CreateTaskDialog({ trigger, onSubmit }: CreateTaskDialog
 
             <div className="space-y-2">
               <Label>Fotografije (opcionalno)</Label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleFileChange}
+              <PhotoUpload 
+                photos={uploadedPhotos}
+                onPhotosChange={setUploadedPhotos}
+                label="Upload fotografije problema (max 5MB po slici)"
               />
-              <div className="border-2 border-dashed rounded-md p-6 text-center">
-                <Camera className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground mb-3">
-                  Upload fotografije problema (max 5MB po slici)
-                </p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handlePhotoUpload}
-                  type="button"
-                  data-testid="button-upload-photo"
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  Upload Fotografiju
-                </Button>
-              </div>
-              
-              {uploadedPhotos.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-3">
-                  {uploadedPhotos.map((photo) => (
-                    <div 
-                      key={photo.id} 
-                      className="relative aspect-square bg-muted rounded-md overflow-hidden"
-                    >
-                      <img 
-                        src={photo.dataUrl} 
-                        alt="Preview" 
-                        className="w-full h-full object-cover"
-                      />
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-1 right-1 h-6 w-6"
-                        onClick={() => handleRemovePhoto(photo.id)}
-                        type="button"
-                        data-testid={`button-remove-photo-${photo.id}`}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 
