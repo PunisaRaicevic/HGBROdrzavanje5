@@ -23,15 +23,29 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(getApiUrl(url), {
-    method,
-    headers: getAuthHeaders(data ? { "Content-Type": "application/json" } : {}),
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  try {
+    const fullUrl = getApiUrl(url);
+    const headers = getAuthHeaders(data ? { "Content-Type": "application/json" } : {});
+    
+    console.log(`[API REQUEST] ${method} ${fullUrl}`);
+    console.log('[API REQUEST] Headers:', headers);
+    if (data) console.log('[API REQUEST] Body:', data);
+    
+    const res = await fetch(fullUrl, {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    console.log('[API REQUEST] Response status:', res.status);
+    
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error) {
+    console.error('[API REQUEST] Failed:', error);
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
