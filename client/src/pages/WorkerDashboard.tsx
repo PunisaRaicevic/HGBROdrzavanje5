@@ -19,6 +19,7 @@ import type { TaskStatus, Priority } from '@shared/types';
 import { capacitorHaptics } from '@/services/capacitorHaptics';
 import { capacitorNotifications } from '@/services/capacitorNotifications';
 import { upsertTaskInCache, scheduleBackgroundHydration, optimisticUpdateTask, removeTaskFromCache } from '@/lib/taskCache';
+import { getApiUrl } from '@/lib/apiUrl';
 
 type PhotoPreview = {
   id: string;
@@ -429,9 +430,18 @@ export default function WorkerDashboard() {
     });
     
     try {
-      const response = await fetch(`/api/tasks/${selectedTask.id}`, {
+      console.log('[CONFIRM RECEIPT] Sending request to:', getApiUrl(`api/tasks/${selectedTask.id}`));
+      
+      // Get auth headers for mobile
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(getApiUrl(`api/tasks/${selectedTask.id}`), {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify({ 
           status: 'assigned_to_radnik',
@@ -440,7 +450,11 @@ export default function WorkerDashboard() {
         }),
       });
 
+      console.log('[CONFIRM RECEIPT] Response status:', response.status);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[CONFIRM RECEIPT] Error:', errorText);
         throw new Error('Failed to confirm receipt');
       }
 
@@ -453,6 +467,7 @@ export default function WorkerDashboard() {
       });
     } catch (error) {
       // ROLLBACK on error
+      console.error('[CONFIRM RECEIPT] Exception:', error);
       optimisticUpdate.rollback();
       
       toast({
@@ -526,9 +541,18 @@ export default function WorkerDashboard() {
       report: string;
       images?: string[];
     }) => {
-      const response = await fetch(`/api/tasks/${taskId}`, {
+      console.log('[MUTATION] Starting fetch to:', getApiUrl(`api/tasks/${taskId}`));
+      
+      // Get auth headers for mobile
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch(getApiUrl(`api/tasks/${taskId}`), {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         credentials: 'include',
         body: JSON.stringify({ 
           status, 
@@ -539,12 +563,22 @@ export default function WorkerDashboard() {
         }),
       });
 
+      console.log('[MUTATION] Response status:', response.status);
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to update task');
+        const errorText = await response.text();
+        console.error('[MUTATION] Error response:', errorText);
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.error || 'Failed to update task');
+        } catch {
+          throw new Error(`Server error: ${response.status} - ${errorText.substring(0, 100)}`);
+        }
       }
 
-      return response.json();
+      const result = await response.json();
+      console.log('[MUTATION] Success:', result);
+      return result;
     },
     onMutate: async ({ taskId, status, report, images }) => {
       console.log('[OPTIMISTIC UPDATE] Starting for task:', taskId, 'status:', status);
