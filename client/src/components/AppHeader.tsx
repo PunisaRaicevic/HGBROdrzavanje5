@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { Moon, Sun, LogOut, Globe, Volume2 } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { LogOut, Globe, Volume2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -11,7 +10,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AppHeader() {
-  const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -184,15 +182,6 @@ export default function AppHeader() {
         >
           <Globe className="h-5 w-5" />
           <span className="text-base font-medium">{i18n.language.toUpperCase()}</span>
-        </Button>
-
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleTheme}
-          data-testid="button-theme-toggle"
-        >
-          {theme === 'light' ? <Moon className="h-6 w-6" /> : <Sun className="h-6 w-6" />}
         </Button>
 
         {/* Bell notification icon - only for workers */}

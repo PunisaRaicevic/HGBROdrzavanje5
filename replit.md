@@ -13,12 +13,13 @@ Preferred communication style: Simple, everyday language.
 ### Frontend
 
 **Frameworks**: React with TypeScript, Vite.
-**UI/UX**: Shadcn/ui (Radix UI primitives), TailwindCSS, Material Design 3 principles, Roboto font.
+**UI/UX**: Shadcn/ui (Radix UI primitives), TailwindCSS, Material Design 3 principles, Roboto font, "Calm Bay" light theme for optimal readability.
+**Color Palette**: Professional teal primary (188 60% 32%), muted navy secondary (220 30% 42%), brick red destructive (6 72% 42%), all WCAG AA compliant (≥4.5:1 contrast) for elderly users.
 **State Management**: React Context API for global state, TanStack Query for server state and caching.
 **Routing**: Wouter.
 **Internationalization**: i18next (English/Serbian) with localStorage persistence.
 **Mobile**: Ionic React and Capacitor for hybrid mobile app, integrating native features (Camera, Haptics, Local/Push Notifications).
-**Key Design Patterns**: Role-based dashboards, component composition, light/dark mode theme system, mobile-first responsive design.
+**Key Design Patterns**: Role-based dashboards, component composition, light-only theme system (dark mode removed for simplicity), mobile-first responsive design.
 
 ### Backend
 
