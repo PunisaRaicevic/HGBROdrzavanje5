@@ -708,27 +708,30 @@ export default function WorkerDashboard() {
       <Card>
         <CardContent className="pt-6">
           <Tabs defaultValue="active" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-11">
+            <TabsList className="grid w-full grid-cols-3 h-11 gap-1">
               <TabsTrigger 
                 value="active" 
-                className="text-base data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
+                className="text-base px-2 data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
                 data-testid="tab-active-tasks"
               >
-                {t('activeTasks')}
+                <span className="hidden sm:inline">{t('activeTasks')}</span>
+                <span className="sm:hidden">Aktivni</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="returned" 
-                className="text-base data-[state=active]:bg-orange-100 dark:data-[state=active]:bg-orange-950 data-[state=active]:text-foreground" 
+                className="text-base px-2 data-[state=active]:bg-orange-100 dark:data-[state=active]:bg-orange-950 data-[state=active]:text-foreground" 
                 data-testid="tab-returned"
               >
-                {t('returnedTasks') || 'Vraćeni'}
+                <span className="hidden sm:inline">{t('returnedTasks') || 'Vraćeni'}</span>
+                <span className="sm:hidden">Vraćeni</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="completed" 
-                className="text-base data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
+                className="text-base px-2 data-[state=active]:bg-sky-100 dark:data-[state=active]:bg-sky-950 data-[state=active]:text-foreground" 
                 data-testid="tab-completed"
               >
-                {t('completedToday')}
+                <span className="hidden sm:inline">{t('completedToday')}</span>
+                <span className="sm:hidden">Završeno</span>
               </TabsTrigger>
             </TabsList>
 
