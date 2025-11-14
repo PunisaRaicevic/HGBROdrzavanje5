@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3 } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
@@ -203,14 +203,17 @@ export default function AdminDashboard() {
 
       {/* Main Admin Features */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="h-9 w-full justify-start">
-          <TabsTrigger value="users" data-testid="tab-users" className="text-sm px-3">
+        <TabsList className="h-9 w-full grid grid-cols-3">
+          <TabsTrigger value="users" data-testid="tab-users" className="text-sm">
+            <Users className="w-3.5 h-3.5 mr-1.5" />
             Korisnici
           </TabsTrigger>
-          <TabsTrigger value="tasks" data-testid="tab-tasks" className="text-sm px-3">
+          <TabsTrigger value="tasks" data-testid="tab-tasks" className="text-sm">
+            <ClipboardList className="w-3.5 h-3.5 mr-1.5" />
             Zadaci
           </TabsTrigger>
-          <TabsTrigger value="stats" data-testid="tab-stats" className="text-sm px-3">
+          <TabsTrigger value="stats" data-testid="tab-stats" className="text-sm">
+            <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
             Statistike
           </TabsTrigger>
         </TabsList>
