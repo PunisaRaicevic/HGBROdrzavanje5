@@ -476,16 +476,11 @@ export default function SupervisorDashboard() {
                         <Badge variant="default">
                           Aktivan
                         </Badge>
-                        {worker.shift && (
-                          <Badge variant={worker.shift === currentShift ? "default" : "secondary"}>
-                            {worker.shift === 'day' ? '☀️' : '🌙'}
-                          </Badge>
-                        )}
                       </div>
                     </div>
                     {worker.phone && (
                       <p className="text-sm text-muted-foreground mb-1">
-                        📱 {worker.phone}
+                        {worker.phone}
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
