@@ -393,8 +393,14 @@ export default function AdminDashboard() {
                             className="p-4 border rounded-md hover-elevate"
                             data-testid={`task-item-${task.id}`}
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
+                            <div className="space-y-2">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="text-sm text-muted-foreground whitespace-nowrap">
+                                  {formatDate(task.created_at)}
+                                </div>
+                                {getStatusBadge(task.status)}
+                              </div>
+                              <div>
                                 <h3 className="font-medium text-base mb-2">{task.title}</h3>
                                 <div className="space-y-1 text-sm text-muted-foreground">
                                   {task.created_by_name && (
@@ -403,13 +409,7 @@ export default function AdminDashboard() {
                                   {task.assigned_to_name && (
                                     <p>Dodeljeno: {task.assigned_to_name}</p>
                                   )}
-                                  <div className="mt-2">
-                                    {getStatusBadge(task.status)}
-                                  </div>
                                 </div>
-                              </div>
-                              <div className="text-sm text-muted-foreground whitespace-nowrap flex-shrink-0">
-                                {formatDate(task.created_at)}
                               </div>
                             </div>
                           </div>
