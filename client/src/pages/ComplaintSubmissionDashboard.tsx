@@ -40,9 +40,11 @@ export default function ComplaintSubmissionDashboard() {
     queryKey: ['/api/tasks/my', user?.id],
     queryFn: async () => {
       if (!user?.id) throw new Error('User ID is required');
-      const response = await fetch(`/api/tasks/my?userId=${user.id}`);
-      if (!response.ok) throw new Error('Failed to fetch tasks');
-      return response.json();
+      console.log('[MY TASKS] Fetching tasks for user:', user.id);
+      const response = await apiRequest('GET', `/api/tasks/my?userId=${user.id}`);
+      const data = await response.json();
+      console.log('[MY TASKS] Success, tasks count:', data.tasks?.length || 0);
+      return data;
     },
     enabled: !!user?.id,
   });
@@ -57,30 +59,14 @@ export default function ComplaintSubmissionDashboard() {
   // Create task mutation
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: any) => {
-      console.log('🚀 [Frontend] Sending task creation request:', taskData);
-      
-      const response = await fetch(getApiUrl('/api/tasks'), {
-        method: 'POST',
-        body: JSON.stringify(taskData),
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // FIXED: Include session cookies
-      });
-      
-      console.log('📨 [Frontend] Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ [Frontend] Error response:', errorData);
-        const errorMessage = errorData.details || errorData.error || `Server error: ${response.status}`;
-        throw new Error(errorMessage);
-      }
-      
+      console.log('[CREATE TASK] Sending request with data:', taskData);
+      const response = await apiRequest('POST', '/api/tasks', taskData);
       const result = await response.json();
-      console.log('✅ [Frontend] Task created successfully:', result);
+      console.log('[CREATE TASK] Success:', result);
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/tasks/my', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks', 'my', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     },
   });

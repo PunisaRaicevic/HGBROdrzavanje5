@@ -25,16 +25,16 @@ export async function apiRequest(
 ): Promise<Response> {
   try {
     const fullUrl = getApiUrl(url);
-    const headers = getAuthHeaders(data ? { "Content-Type": "application/json" } : {});
+    const headers = getAuthHeaders(data && method !== 'GET' ? { "Content-Type": "application/json" } : {});
     
     console.log(`[API REQUEST] ${method} ${fullUrl}`);
     console.log('[API REQUEST] Headers:', headers);
-    if (data) console.log('[API REQUEST] Body:', data);
+    if (data && method !== 'GET') console.log('[API REQUEST] Body:', data);
     
     const res = await fetch(fullUrl, {
       method,
       headers,
-      body: data ? JSON.stringify(data) : undefined,
+      body: data && method !== 'GET' ? JSON.stringify(data) : undefined,
       credentials: "include",
     });
 

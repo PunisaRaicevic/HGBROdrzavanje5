@@ -133,6 +133,12 @@ export default function OperatorDashboard() {
   
   // Get all tasks from API
   const allTasks = (tasksResponse?.tasks || []).map(mapApiTaskToUiTask);
+  
+  // Filter tasks created by this operator (for "My Submitted Complaints" section)
+  const mySubmittedTasks = allTasks.filter(task => {
+    const dbTask = tasksResponse?.tasks.find(t => t.id === task.id);
+    return dbTask?.created_by === user?.id;
+  });
 
   // Play notification sound using Web Audio API
   const playNotificationSound = () => {
