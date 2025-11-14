@@ -203,7 +203,7 @@ export default function AdminDashboard() {
 
       {/* Main Admin Features */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="h-9">
+        <TabsList className="h-9 w-full justify-start">
           <TabsTrigger value="users" data-testid="tab-users" className="text-sm px-3">
             Korisnici
           </TabsTrigger>
