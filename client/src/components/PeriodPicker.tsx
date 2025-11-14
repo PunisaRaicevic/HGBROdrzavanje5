@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar as CalendarIcon, ChevronDown } from "lucide-react";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, addMonths, startOfDay } from "date-fns";
 import { sr } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -36,21 +36,32 @@ export function PeriodPicker({
     value ? value.start : new Date()
   );
 
+  // Sync selectedDate with controlled value
+  useEffect(() => {
+    if (value) {
+      setSelectedDate(value.start);
+    }
+  }, [value]);
+
   const calculateRange = (date: Date, gran: PeriodGranularity): PeriodRange => {
     switch (gran) {
       case 'day':
+        const dayStart = startOfDay(date);
         return {
-          start: new Date(date.getFullYear(), date.getMonth(), date.getDate()),
-          end: new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1)
+          start: dayStart,
+          end: startOfDay(addDays(dayStart, 1))
         };
       case 'week':
         const weekStart = startOfWeek(date, { weekStartsOn: 1 });
-        const weekEnd = addDays(endOfWeek(date, { weekStartsOn: 1 }), 1);
-        return { start: weekStart, end: weekEnd };
+        return { 
+          start: weekStart, 
+          end: startOfDay(addDays(weekStart, 7))
+        };
       case 'month':
+        const monthStart = startOfMonth(date);
         return {
-          start: startOfMonth(date),
-          end: addDays(endOfMonth(date), 1)
+          start: monthStart,
+          end: startOfMonth(addMonths(monthStart, 1))
         };
     }
   };

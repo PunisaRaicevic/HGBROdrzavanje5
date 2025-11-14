@@ -14,6 +14,7 @@ import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
+import { PeriodPicker } from '@/components/PeriodPicker';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -60,9 +61,26 @@ export default function AdminDashboard() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [tasksPerPage, setTasksPerPage] = useState<number>(10);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [statsPeriod, setStatsPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
-  const [analysisPeriod, setAnalysisPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
-  const [reportPeriod, setReportPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  
+  // Period states with date ranges
+  const now = new Date();
+  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month'>('day');
+  const [statsRange, setStatsRange] = useState({
+    start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+    end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+  });
+  
+  const [analysisGranularity, setAnalysisGranularity] = useState<'day' | 'week' | 'month'>('day');
+  const [analysisRange, setAnalysisRange] = useState({
+    start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+    end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+  });
+  
+  const [reportGranularity, setReportGranularity] = useState<'day' | 'week' | 'month'>('day');
+  const [reportRange, setReportRange] = useState({
+    start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+    end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+  });
 
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -446,19 +464,13 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
               <CardTitle>Statistika realizacije zadataka</CardTitle>
-              <Select 
-                value={statsPeriod} 
-                onValueChange={(val) => setStatsPeriod(val as 'daily' | 'weekly' | 'monthly')}
-              >
-                <SelectTrigger className="w-40" data-testid="select-stats-period">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Dnevna</SelectItem>
-                  <SelectItem value="weekly">Nedeljnja</SelectItem>
-                  <SelectItem value="monthly">Mjesečna</SelectItem>
-                </SelectContent>
-              </Select>
+              <PeriodPicker
+                value={statsRange}
+                onChange={setStatsRange}
+                granularity={statsGranularity}
+                onGranularityChange={setStatsGranularity}
+                data-testid="period-picker-stats"
+              />
             </CardHeader>
             <CardContent>
               {tasksLoading ? (
@@ -468,30 +480,9 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 (() => {
-                  const now = new Date();
-                  let startDate: Date;
-                  let endDate: Date;
-                  let periodLabel: string;
-
-                  if (statsPeriod === 'daily') {
-                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-                    periodLabel = 'Danas';
-                  } else if (statsPeriod === 'weekly') {
-                    const dayOfWeek = now.getDay();
-                    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
-                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff + 7);
-                    periodLabel = 'Ova sedmica';
-                  } else {
-                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-                    periodLabel = 'Ovaj mjesec';
-                  }
-
                   const periodTasks = tasks.filter(t => {
                     const taskDate = new Date(t.created_at);
-                    return taskDate >= startDate && taskDate < endDate;
+                    return taskDate >= statsRange.start && taskDate < statsRange.end;
                   });
                   const completedTasks = periodTasks.filter(t => t.status === 'completed');
                   const inProgressTasks = periodTasks.filter(t => 
@@ -514,7 +505,7 @@ export default function AdminDashboard() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex-1 p-3 border rounded-md bg-muted/30">
-                          <p className="text-xs text-muted-foreground">{periodLabel}</p>
+                          <p className="text-xs text-muted-foreground">Izabrani period</p>
                           <p className="text-xl font-bold mt-0.5">{periodTasks.length}</p>
                           <p className="text-xs text-muted-foreground">Ukupno</p>
                         </div>
@@ -554,19 +545,13 @@ export default function AdminDashboard() {
             <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-3">
               <CardTitle className="text-base">Generisanje izvještaja</CardTitle>
               <div className="flex items-center gap-2">
-                <Select 
-                  value={reportPeriod}
-                  onValueChange={(val) => setReportPeriod(val as 'daily' | 'weekly' | 'monthly')}
-                >
-                  <SelectTrigger className="w-32 h-9" data-testid="select-report-period">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="daily">Dnevni</SelectItem>
-                    <SelectItem value="weekly">Nedeljni</SelectItem>
-                    <SelectItem value="monthly">Mjesečni</SelectItem>
-                  </SelectContent>
-                </Select>
+                <PeriodPicker
+                  value={reportRange}
+                  onChange={setReportRange}
+                  granularity={reportGranularity}
+                  onGranularityChange={setReportGranularity}
+                  data-testid="period-picker-report"
+                />
                 <Button size="sm" data-testid="button-generate-report">
                   Generiši
                 </Button>
@@ -577,30 +562,9 @@ export default function AdminDashboard() {
                 <Skeleton className="h-20" />
               ) : (
                 (() => {
-                  const now = new Date();
-                  let startDate: Date;
-                  let endDate: Date;
-                  let periodLabel: string;
-
-                  if (reportPeriod === 'daily') {
-                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-                    periodLabel = 'danas';
-                  } else if (reportPeriod === 'weekly') {
-                    const dayOfWeek = now.getDay();
-                    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
-                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff + 7);
-                    periodLabel = 'ove sedmice';
-                  } else {
-                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-                    periodLabel = 'ovog mjeseca';
-                  }
-
                   const periodTasks = tasks.filter(t => {
                     const taskDate = new Date(t.created_at);
-                    return taskDate >= startDate && taskDate < endDate;
+                    return taskDate >= reportRange.start && taskDate < reportRange.end;
                   });
 
                   const completedReportTasks = periodTasks.filter(t => t.status === 'completed');
@@ -612,11 +576,11 @@ export default function AdminDashboard() {
                       </p>
                       <div className="flex gap-2">
                         <div className="flex-1 p-2.5 border rounded-md bg-muted/30">
-                          <p className="text-xs text-muted-foreground">Ukupno {periodLabel}</p>
+                          <p className="text-xs text-muted-foreground">Ukupno zadataka</p>
                           <p className="text-lg font-bold mt-0.5">{periodTasks.length}</p>
                         </div>
                         <div className="flex-1 p-2.5 border rounded-md bg-muted/30">
-                          <p className="text-xs text-muted-foreground">Završeno {periodLabel}</p>
+                          <p className="text-xs text-muted-foreground">Završeno zadataka</p>
                           <p className="text-lg font-bold text-green-600 mt-0.5">{completedReportTasks.length}</p>
                         </div>
                       </div>
@@ -631,53 +595,30 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
               <CardTitle>Analiza vremena prijave zadataka</CardTitle>
-              <Select 
-                value={analysisPeriod} 
-                onValueChange={(val) => setAnalysisPeriod(val as 'daily' | 'weekly' | 'monthly')}
-              >
-                <SelectTrigger className="w-40" data-testid="select-analysis-period">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Dan</SelectItem>
-                  <SelectItem value="weekly">Nedjelja</SelectItem>
-                  <SelectItem value="monthly">Mjesec</SelectItem>
-                </SelectContent>
-              </Select>
+              <PeriodPicker
+                value={analysisRange}
+                onChange={setAnalysisRange}
+                granularity={analysisGranularity}
+                onGranularityChange={setAnalysisGranularity}
+                data-testid="period-picker-analysis"
+              />
             </CardHeader>
             <CardContent>
               {tasksLoading ? (
                 <Skeleton className="h-64" />
               ) : (
                 (() => {
-                  const now = new Date();
-                  let startDate: Date;
-                  let endDate: Date;
-                  let periodLabel: string;
-
-                  if (analysisPeriod === 'daily') {
-                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-                    periodLabel = 'po satima';
-                  } else if (analysisPeriod === 'weekly') {
-                    const dayOfWeek = now.getDay();
-                    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
-                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff + 7);
-                    periodLabel = 'po danima';
-                  } else {
-                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-                    periodLabel = 'po danima mjeseca';
-                  }
+                  const periodLabel = analysisGranularity === 'day' ? 'po satima' 
+                    : analysisGranularity === 'week' ? 'po danima' 
+                    : 'po danima mjeseca';
 
                   const periodTasks = tasks.filter(t => {
                     const taskDate = new Date(t.created_at);
-                    return taskDate >= startDate && taskDate < endDate;
+                    return taskDate >= analysisRange.start && taskDate < analysisRange.end;
                   });
 
                   // Grupiranje po satima za dnevni period (radno vrijeme 7-23h)
-                  if (analysisPeriod === 'daily') {
+                  if (analysisGranularity === 'day') {
                     const hourIntervals: { [key: string]: number } = {};
                     
                     // Kreiraj intervale za radno vrijeme 7-23h
@@ -734,7 +675,7 @@ export default function AdminDashboard() {
                   
                   periodTasks.forEach(task => {
                     const date = new Date(task.created_at);
-                    const key = analysisPeriod === 'weekly' 
+                    const key = analysisGranularity === 'week' 
                       ? ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'][date.getDay() === 0 ? 6 : date.getDay() - 1]
                       : date.getDate().toString();
                     dayCounts[key] = (dayCounts[key] || 0) + 1;
@@ -750,7 +691,7 @@ export default function AdminDashboard() {
                       <div className="space-y-2">
                         {Object.entries(dayCounts)
                           .sort((a, b) => {
-                            if (analysisPeriod === 'weekly') {
+                            if (analysisGranularity === 'week') {
                               const days = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
                               return days.indexOf(a[0]) - days.indexOf(b[0]);
                             }
