@@ -676,44 +676,52 @@ export default function AdminDashboard() {
                     return taskDate >= startDate && taskDate < endDate;
                   });
 
-                  // Grupiranje po satima za dnevni period
+                  // Grupiranje po satima za dnevni period (radno vrijeme 7-23h)
                   if (analysisPeriod === 'daily') {
-                    const hourCounts: { [key: string]: number } = {};
-                    for (let i = 0; i < 24; i++) {
-                      hourCounts[`${i}:00`] = 0;
+                    const hourIntervals: { [key: string]: number } = {};
+                    
+                    // Kreiraj intervale za radno vrijeme 7-23h
+                    for (let i = 7; i < 23; i++) {
+                      const startHour = i.toString().padStart(2, '0');
+                      const endHour = (i + 1).toString().padStart(2, '0');
+                      hourIntervals[`${startHour}-${endHour}`] = 0;
                     }
 
                     periodTasks.forEach(task => {
                       const hour = new Date(task.created_at).getHours();
-                      hourCounts[`${hour}:00`]++;
+                      // Brojimo samo zadatke u radnom vremenu
+                      if (hour >= 7 && hour < 23) {
+                        const startHour = hour.toString().padStart(2, '0');
+                        const endHour = (hour + 1).toString().padStart(2, '0');
+                        const interval = `${startHour}-${endHour}`;
+                        hourIntervals[interval]++;
+                      }
                     });
 
-                    const maxCount = Math.max(...Object.values(hourCounts), 1);
+                    const maxCount = Math.max(...Object.values(hourIntervals), 1);
 
                     return (
-                      <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                          Distribucija prijavljenih zadataka {periodLabel}
+                      <div className="space-y-3">
+                        <p className="text-xs text-muted-foreground">
+                          Distribucija prijavljenih zadataka {periodLabel} (radno vrijeme 07-23h)
                         </p>
-                        <div className="space-y-2">
-                          {Object.entries(hourCounts)
-                            .filter(([_, count]) => count > 0)
-                            .map(([hour, count]) => (
-                              <div key={hour} className="flex items-center gap-3">
-                                <span className="text-sm w-16 text-muted-foreground">{hour}</span>
-                                <div className="flex-1 bg-muted rounded-md h-8 relative overflow-hidden">
-                                  <div 
-                                    className="bg-primary h-full flex items-center px-3 text-primary-foreground text-sm font-medium"
-                                    style={{ width: `${(count / maxCount) * 100}%` }}
-                                  >
-                                    {count > 0 && count}
-                                  </div>
+                        <div className="space-y-1.5">
+                          {Object.entries(hourIntervals).map(([interval, count]) => (
+                            <div key={interval} className="flex items-center gap-2">
+                              <span className="text-xs w-14 text-muted-foreground font-medium">{interval}</span>
+                              <div className="flex-1 bg-muted rounded-md h-7 relative overflow-hidden">
+                                <div 
+                                  className="bg-primary h-full flex items-center px-2 text-primary-foreground text-xs font-medium"
+                                  style={{ width: `${(count / maxCount) * 100}%`, minWidth: count > 0 ? '24px' : '0' }}
+                                >
+                                  {count > 0 && count}
                                 </div>
                               </div>
-                            ))}
+                            </div>
+                          ))}
                         </div>
                         {periodTasks.length === 0 && (
-                          <p className="text-center text-muted-foreground py-8">
+                          <p className="text-center text-muted-foreground py-6 text-xs">
                             Nema zadataka za danas
                           </p>
                         )}
