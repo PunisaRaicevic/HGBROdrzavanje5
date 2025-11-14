@@ -407,23 +407,25 @@ export default function OperatorDashboard() {
                     data-testid={`card-task-${task.id}`}
                   >
                     <div className="space-y-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <h3 className="font-medium" data-testid={`text-task-title-${task.id}`}>{task.title}</h3>
-                          <p className="text-sm text-muted-foreground mt-1" data-testid={`text-task-from-${task.id}`}>
-                            {t('from')}: {task.fromName} ({task.from})
+                      <div>
+                        <h3 className="font-medium" data-testid={`text-task-title-${task.id}`}>{task.title}</h3>
+                        <p className="text-sm text-muted-foreground mt-1" data-testid={`text-task-from-${task.id}`}>
+                          {t('from')}: {task.fromName} ({task.from})
+                        </p>
+                        {task.assignedToName && (
+                          <p className="text-sm text-muted-foreground mt-1" data-testid={`text-task-assigned-to-${task.id}`}>
+                            <span className="font-medium">{t('assignedTo')}:</span> {task.assignedToName}
                           </p>
-                          {task.assignedToName && (
-                            <p className="text-sm text-muted-foreground mt-1" data-testid={`text-task-assigned-to-${task.id}`}>
-                              <span className="font-medium">{t('assignedTo')}:</span> {task.assignedToName}
-                            </p>
-                          )}
-                          {task.description && (
-                            <p className="text-sm text-muted-foreground mt-2" data-testid={`text-task-description-${task.id}`}>
-                              {task.description}
-                            </p>
-                          )}
-                        </div>
+                        )}
+                        {task.description && (
+                          <p className="text-sm text-muted-foreground mt-2" data-testid={`text-task-description-${task.id}`}>
+                            {task.description}
+                          </p>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between pt-1">
+                        <p className="text-xs text-muted-foreground">{task.time}</p>
                         <Badge 
                           variant={
                             task.priority === 'urgent' ? 'destructive' : 
@@ -434,8 +436,6 @@ export default function OperatorDashboard() {
                           {t(task.priority)}
                         </Badge>
                       </div>
-                      
-                      <p className="text-xs text-muted-foreground">{task.time}</p>
 
                       {(task.status === 'new' || task.status === 'with_operator' || task.status === 'returned_to_operator') ? (
                         <div className="flex gap-2" data-testid={`actions-task-${task.id}`} onClick={(e) => e.stopPropagation()}>
