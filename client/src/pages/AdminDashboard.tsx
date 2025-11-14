@@ -60,6 +60,9 @@ export default function AdminDashboard() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [tasksPerPage, setTasksPerPage] = useState<number>(10);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [statsPeriod, setStatsPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [analysisPeriod, setAnalysisPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [reportPeriod, setReportPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -439,29 +442,334 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-4">
+          {/* Statistika realizacije zadataka */}
           <Card>
-            <CardHeader>
-              <CardTitle>System Statistics</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
+              <CardTitle>Statistika realizacije zadataka</CardTitle>
+              <Select 
+                value={statsPeriod} 
+                onValueChange={(val) => setStatsPeriod(val as 'daily' | 'weekly' | 'monthly')}
+              >
+                <SelectTrigger className="w-40" data-testid="select-stats-period">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Dnevna</SelectItem>
+                  <SelectItem value="weekly">Nedeljnja</SelectItem>
+                  <SelectItem value="monthly">Mjesečna</SelectItem>
+                </SelectContent>
+              </Select>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 border rounded-md">
-                  <p className="text-sm text-muted-foreground">Average Task Completion Time</p>
-                  <p className="text-2xl font-bold mt-1">2.5 hours</p>
+              {tasksLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-20" />
+                  <Skeleton className="h-20" />
                 </div>
-                <div className="p-4 border rounded-md">
-                  <p className="text-sm text-muted-foreground">Task Completion Rate</p>
-                  <p className="text-2xl font-bold mt-1">87%</p>
-                </div>
-                <div className="p-4 border rounded-md">
-                  <p className="text-sm text-muted-foreground">Most Active Department</p>
-                  <p className="text-2xl font-bold mt-1">Tehnička</p>
-                </div>
-                <div className="p-4 border rounded-md">
-                  <p className="text-sm text-muted-foreground">User Satisfaction</p>
-                  <p className="text-2xl font-bold mt-1">4.5 / 5.0</p>
-                </div>
+              ) : (
+                (() => {
+                  const now = new Date();
+                  let startDate: Date;
+                  let endDate: Date;
+                  let periodLabel: string;
+
+                  if (statsPeriod === 'daily') {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    periodLabel = 'Danas';
+                  } else if (statsPeriod === 'weekly') {
+                    const dayOfWeek = now.getDay();
+                    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff + 7);
+                    periodLabel = 'Ova sedmica';
+                  } else {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    periodLabel = 'Ovaj mjesec';
+                  }
+
+                  const periodTasks = tasks.filter(t => {
+                    const taskDate = new Date(t.created_at);
+                    return taskDate >= startDate && taskDate < endDate;
+                  });
+                  const completedTasks = periodTasks.filter(t => t.status === 'completed');
+                  const inProgressTasks = periodTasks.filter(t => 
+                    t.status === 'assigned_to_radnik' || 
+                    t.status === 'with_operator' || 
+                    t.status === 'in_progress'
+                  );
+                  const pendingTasks = periodTasks.filter(t => 
+                    t.status === 'new' || 
+                    t.status === 'pending' || 
+                    t.status === 'assigned_to_operator'
+                  );
+                  const externalTasks = periodTasks.filter(t => t.status === 'with_external');
+
+                  const completionRate = periodTasks.length > 0 
+                    ? Math.round((completedTasks.length / periodTasks.length) * 100) 
+                    : 0;
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="p-4 border rounded-md bg-muted/30">
+                        <p className="text-sm text-muted-foreground mb-1">{periodLabel}</p>
+                        <p className="text-3xl font-bold">{periodTasks.length}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Ukupno zadataka</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 border rounded-md">
+                          <p className="text-sm text-muted-foreground">Završeno</p>
+                          <p className="text-2xl font-bold text-green-600">{completedTasks.length}</p>
+                        </div>
+                        <div className="p-4 border rounded-md">
+                          <p className="text-sm text-muted-foreground">U toku</p>
+                          <p className="text-2xl font-bold text-blue-600">{inProgressTasks.length}</p>
+                        </div>
+                        <div className="p-4 border rounded-md">
+                          <p className="text-sm text-muted-foreground">Na čekanju</p>
+                          <p className="text-2xl font-bold text-yellow-600">{pendingTasks.length}</p>
+                        </div>
+                        <div className="p-4 border rounded-md">
+                          <p className="text-sm text-muted-foreground">Eksterna firma</p>
+                          <p className="text-2xl font-bold text-purple-600">{externalTasks.length}</p>
+                        </div>
+                      </div>
+
+                      <div className="p-4 border rounded-md bg-muted/30">
+                        <p className="text-sm text-muted-foreground mb-1">Stopa realizacije</p>
+                        <p className="text-3xl font-bold text-green-600">{completionRate}%</p>
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Generisanje izvještaja */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
+              <CardTitle>Generisanje izvještaja</CardTitle>
+              <div className="flex items-center gap-3">
+                <Select 
+                  value={reportPeriod}
+                  onValueChange={(val) => setReportPeriod(val as 'daily' | 'weekly' | 'monthly')}
+                >
+                  <SelectTrigger className="w-40" data-testid="select-report-period">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Dnevni</SelectItem>
+                    <SelectItem value="weekly">Nedeljni</SelectItem>
+                    <SelectItem value="monthly">Mjesečni</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button data-testid="button-generate-report">
+                  Generiši izvještaj
+                </Button>
               </div>
+            </CardHeader>
+            <CardContent>
+              {tasksLoading ? (
+                <Skeleton className="h-24" />
+              ) : (
+                (() => {
+                  const now = new Date();
+                  let startDate: Date;
+                  let endDate: Date;
+                  let periodLabel: string;
+
+                  if (reportPeriod === 'daily') {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    periodLabel = 'danas';
+                  } else if (reportPeriod === 'weekly') {
+                    const dayOfWeek = now.getDay();
+                    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff + 7);
+                    periodLabel = 'ove sedmice';
+                  } else {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    periodLabel = 'ovog mjeseca';
+                  }
+
+                  const periodTasks = tasks.filter(t => {
+                    const taskDate = new Date(t.created_at);
+                    return taskDate >= startDate && taskDate < endDate;
+                  });
+
+                  const completedReportTasks = periodTasks.filter(t => t.status === 'completed');
+
+                  return (
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Izvještaj će sadržati sve realizovane zadatke za izabrani period sa detaljima o radnicima i vremenu realizacije.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 border rounded-md bg-muted/30">
+                          <p className="text-sm text-muted-foreground">Ukupno zadataka {periodLabel}</p>
+                          <p className="text-2xl font-bold mt-1">{periodTasks.length}</p>
+                        </div>
+                        <div className="p-4 border rounded-md bg-muted/30">
+                          <p className="text-sm text-muted-foreground">Završeno {periodLabel}</p>
+                          <p className="text-2xl font-bold text-green-600 mt-1">{completedReportTasks.length}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Analiza vremena prijave zadataka */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
+              <CardTitle>Analiza vremena prijave zadataka</CardTitle>
+              <Select 
+                value={analysisPeriod} 
+                onValueChange={(val) => setAnalysisPeriod(val as 'daily' | 'weekly' | 'monthly')}
+              >
+                <SelectTrigger className="w-40" data-testid="select-analysis-period">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Dan</SelectItem>
+                  <SelectItem value="weekly">Nedjelja</SelectItem>
+                  <SelectItem value="monthly">Mjesec</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardHeader>
+            <CardContent>
+              {tasksLoading ? (
+                <Skeleton className="h-64" />
+              ) : (
+                (() => {
+                  const now = new Date();
+                  let startDate: Date;
+                  let endDate: Date;
+                  let periodLabel: string;
+
+                  if (analysisPeriod === 'daily') {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    periodLabel = 'po satima';
+                  } else if (analysisPeriod === 'weekly') {
+                    const dayOfWeek = now.getDay();
+                    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff + 7);
+                    periodLabel = 'po danima';
+                  } else {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    periodLabel = 'po danima mjeseca';
+                  }
+
+                  const periodTasks = tasks.filter(t => {
+                    const taskDate = new Date(t.created_at);
+                    return taskDate >= startDate && taskDate < endDate;
+                  });
+
+                  // Grupiranje po satima za dnevni period
+                  if (analysisPeriod === 'daily') {
+                    const hourCounts: { [key: string]: number } = {};
+                    for (let i = 0; i < 24; i++) {
+                      hourCounts[`${i}:00`] = 0;
+                    }
+
+                    periodTasks.forEach(task => {
+                      const hour = new Date(task.created_at).getHours();
+                      hourCounts[`${hour}:00`]++;
+                    });
+
+                    const maxCount = Math.max(...Object.values(hourCounts), 1);
+
+                    return (
+                      <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Distribucija prijavljenih zadataka {periodLabel}
+                        </p>
+                        <div className="space-y-2">
+                          {Object.entries(hourCounts)
+                            .filter(([_, count]) => count > 0)
+                            .map(([hour, count]) => (
+                              <div key={hour} className="flex items-center gap-3">
+                                <span className="text-sm w-16 text-muted-foreground">{hour}</span>
+                                <div className="flex-1 bg-muted rounded-md h-8 relative overflow-hidden">
+                                  <div 
+                                    className="bg-primary h-full flex items-center px-3 text-primary-foreground text-sm font-medium"
+                                    style={{ width: `${(count / maxCount) * 100}%` }}
+                                  >
+                                    {count > 0 && count}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                        {periodTasks.length === 0 && (
+                          <p className="text-center text-muted-foreground py-8">
+                            Nema zadataka za danas
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // Grupiranje po danima za sedmični/mjesečni period
+                  const dayCounts: { [key: string]: number } = {};
+                  
+                  periodTasks.forEach(task => {
+                    const date = new Date(task.created_at);
+                    const key = analysisPeriod === 'weekly' 
+                      ? ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'][date.getDay() === 0 ? 6 : date.getDay() - 1]
+                      : date.getDate().toString();
+                    dayCounts[key] = (dayCounts[key] || 0) + 1;
+                  });
+
+                  const maxCount = Math.max(...Object.values(dayCounts), 1);
+
+                  return (
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Distribucija prijavljenih zadataka {periodLabel}
+                      </p>
+                      <div className="space-y-2">
+                        {Object.entries(dayCounts)
+                          .sort((a, b) => {
+                            if (analysisPeriod === 'weekly') {
+                              const days = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
+                              return days.indexOf(a[0]) - days.indexOf(b[0]);
+                            }
+                            return parseInt(a[0]) - parseInt(b[0]);
+                          })
+                          .map(([day, count]) => (
+                            <div key={day} className="flex items-center gap-3">
+                              <span className="text-sm w-16 text-muted-foreground">{day}</span>
+                              <div className="flex-1 bg-muted rounded-md h-8 relative overflow-hidden">
+                                <div 
+                                  className="bg-primary h-full flex items-center px-3 text-primary-foreground text-sm font-medium"
+                                  style={{ width: `${(count / maxCount) * 100}%` }}
+                                >
+                                  {count}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                      {periodTasks.length === 0 && (
+                        <p className="text-center text-muted-foreground py-8">
+                          Nema zadataka za izabrani period
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()
+              )}
             </CardContent>
           </Card>
         </TabsContent>
