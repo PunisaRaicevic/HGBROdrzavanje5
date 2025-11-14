@@ -183,7 +183,7 @@ export default function AppHeader() {
           className="gap-1.5"
         >
           <Globe className="h-5 w-5" />
-          <span className="text-sm font-medium">{i18n.language.toUpperCase()}</span>
+          <span className="text-base font-medium">{i18n.language.toUpperCase()}</span>
         </Button>
 
         <Button 
@@ -208,7 +208,7 @@ export default function AppHeader() {
                 title={t('clickToEnableSound')}
               >
                 <Volume2 className="h-5 w-5" />
-                <span className="text-sm hidden sm:inline">{t('enableSoundNotifications')}</span>
+                <span className="text-base hidden sm:inline">{t('enableSoundNotifications')}</span>
               </Button>
             )}
           </>
@@ -227,7 +227,7 @@ export default function AppHeader() {
             <DropdownMenuContent align="end" className="w-56">
               <div className="px-3 py-3">
                 <p className="text-base font-medium">{user.fullName}</p>
-                <p className="text-sm text-muted-foreground">{t(user.role)}</p>
+                <p className="text-base text-muted-foreground">{t(user.role)}</p>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} data-testid="button-logout" className="text-base py-2">
