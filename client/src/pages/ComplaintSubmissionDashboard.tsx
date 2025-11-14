@@ -337,7 +337,7 @@ export default function ComplaintSubmissionDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Submit New Complaint Form */}
-        <Card className="bg-sky-100 dark:bg-sky-950">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
@@ -463,18 +463,18 @@ export default function ComplaintSubmissionDashboard() {
                 onClick={handlePhotoUpload}
                 type="button"
                 data-testid="button-upload-photo"
-                className="w-full text-base"
+                className="w-full text-base min-h-11"
               >
                 <Camera className="w-5 h-5 mr-2" />
                 Upload Photo
               </Button>
               
               {uploadedPhotos.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
                   {uploadedPhotos.map((photo) => (
                     <div 
                       key={photo.id} 
-                      className="relative aspect-square bg-muted rounded-md overflow-hidden"
+                      className="relative aspect-square bg-muted rounded-md overflow-hidden min-w-[96px] min-h-[96px]"
                     >
                       <img 
                         src={photo.dataUrl} 
@@ -484,12 +484,12 @@ export default function ComplaintSubmissionDashboard() {
                       <Button
                         variant="destructive"
                         size="icon"
-                        className="absolute top-1 right-1 h-6 w-6"
+                        className="absolute top-1 right-1 min-h-11 min-w-11 z-10"
                         onClick={() => handleRemovePhoto(photo.id)}
                         type="button"
                         data-testid={`button-remove-photo-${photo.id}`}
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-5 h-5" />
                       </Button>
                     </div>
                   ))}
@@ -498,7 +498,7 @@ export default function ComplaintSubmissionDashboard() {
             </div>
 
             <Button 
-              className="w-full"
+              className="w-full min-h-11"
               onClick={handleSubmitComplaint}
               disabled={isSubmitting || createTaskMutation.isPending}
               data-testid="button-submit-complaint"
