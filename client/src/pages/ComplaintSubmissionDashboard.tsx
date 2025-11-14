@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,22 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Camera, Send, AlertCircle, CheckCircle, Clock, X } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
-import { getApiUrl } from '@/lib/apiUrl';
-
-type PhotoPreview = {
-  id: string;
-  dataUrl: string;
-};
+import { PhotoUpload, PhotoPreview } from '@/components/PhotoUpload';
 
 export default function ComplaintSubmissionDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [hotel, setHotel] = useState('');
   const [customHotel, setCustomHotel] = useState('');
   const [blok, setBlok] = useState('');
@@ -71,59 +65,6 @@ export default function ComplaintSubmissionDashboard() {
     },
   });
 
-  const handlePhotoUpload = () => {
-    // Trigger file input click
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    // Process each selected file
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid File",
-          description: "Please select an image file (JPG, PNG, etc.)",
-          variant: "destructive",
-        });
-        continue;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Fajl previše velik",
-          description: "Moguće je uploadovati sliku samo do 5MB",
-          variant: "destructive",
-        });
-        continue;
-      }
-
-      // Read file as data URL for preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        const newPhoto: PhotoPreview = {
-          id: `photo-${Date.now()}-${i}`,
-          dataUrl,
-        };
-        setUploadedPhotos(prev => [...prev, newPhoto]);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // Reset input value so same file can be selected again
-    event.target.value = '';
-  };
-
-  const handleRemovePhoto = (photoId: string) => {
-    setUploadedPhotos(uploadedPhotos.filter(p => p.id !== photoId));
-  };
 
   const handleSubmitComplaint = async () => {
     // Prevent double submission
@@ -436,51 +377,12 @@ export default function ComplaintSubmissionDashboard() {
             </div>
 
             <div className="space-y-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleFileChange}
+              <Label className="text-base">Fotografije (opcionalno)</Label>
+              <PhotoUpload 
+                photos={uploadedPhotos}
+                onPhotosChange={setUploadedPhotos}
+                label="Upload fotografije problema (max 5MB po slici)"
               />
-              <Button 
-                variant="outline" 
-                onClick={handlePhotoUpload}
-                type="button"
-                data-testid="button-upload-photo"
-                className="w-full text-base min-h-11"
-              >
-                <Camera className="w-5 h-5 mr-2" />
-                Upload Photo
-              </Button>
-              
-              {uploadedPhotos.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
-                  {uploadedPhotos.map((photo) => (
-                    <div 
-                      key={photo.id} 
-                      className="relative aspect-square bg-muted rounded-md overflow-hidden min-w-[96px] min-h-[96px]"
-                    >
-                      <img 
-                        src={photo.dataUrl} 
-                        alt="Preview" 
-                        className="w-full h-full object-cover"
-                      />
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-1 right-1 min-h-11 min-w-11 z-10"
-                        onClick={() => handleRemovePhoto(photo.id)}
-                        type="button"
-                        data-testid={`button-remove-photo-${photo.id}`}
-                      >
-                        <X className="w-5 h-5" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
 
             <Button 
