@@ -442,7 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Get tasks with assignment paths
-  app.get("/api/tasks", async (req, res) => {
+  app.get("/api/tasks", requireAuth, async (req, res) => {
     try {
       const tasks = await storage.getTasks();
       
@@ -514,7 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user's own tasks/complaints
-  app.get("/api/tasks/my", async (req, res) => {
+  app.get("/api/tasks/my", requireAuth, async (req, res) => {
     try {
       const userId = req.query.userId as string;
 
@@ -531,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create new task/complaint
-  app.post("/api/tasks", async (req, res) => {
+  app.post("/api/tasks", requireAuth, async (req, res) => {
     console.log('📥 [POST /api/tasks] Request received');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     try {
@@ -803,7 +803,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get technicians (serviser and radnik roles)
-  app.get("/api/technicians", async (req, res) => {
+  app.get("/api/technicians", requireAuth, async (req, res) => {
     try {
       const technicians = await storage.getTechnicians();
       res.json({ technicians });
@@ -814,7 +814,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Manual trigger for cron job (for testing)
-  app.post("/api/cron/trigger-now", async (req, res) => {
+  app.post("/api/cron/trigger-now", requireAdmin, async (req, res) => {
     try {
       console.log('[MANUAL TRIGGER] Triggering recurring tasks processing NOW...');
       
@@ -827,7 +827,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Process recurring tasks (cron job endpoint)
-  app.post("/api/cron/process-recurring-tasks", async (req, res) => {
+  app.post("/api/cron/process-recurring-tasks", requireAdmin, async (req, res) => {
     try {
       const result = await processRecurringTasks();
       res.json(result);
