@@ -166,8 +166,8 @@ export default function AppHeader() {
   }, []);
 
   return (
-    <header className="flex items-center justify-between px-4 py-3 border-b bg-background sticky top-0 z-50">
-      <div className="flex items-center gap-2">
+    <header className="flex items-center justify-between px-4 py-4 border-b bg-background sticky top-0 z-50">
+      <div className="flex items-center gap-3">
         <SidebarTrigger data-testid="button-sidebar-toggle" />
         <h1 className="text-xl font-semibold hidden sm:block">{t('hotelManagement')}</h1>
       </div>
@@ -175,10 +175,9 @@ export default function AppHeader() {
       <div className="flex items-center gap-2">
         <Button 
           variant="ghost" 
-          size="sm" 
           onClick={handleLanguageToggle}
           data-testid="button-language-toggle"
-          className="gap-1.5"
+          className="gap-2 min-h-11"
         >
           <Globe className="h-5 w-5" />
           <span className="text-base font-medium">{i18n.language.toUpperCase()}</span>
@@ -190,9 +189,8 @@ export default function AppHeader() {
             {!audioEnabled && (
               <Button 
                 variant="outline" 
-                size="sm"
                 onClick={enableAudio}
-                className="gap-2"
+                className="gap-2 min-h-11"
                 data-testid="button-enable-audio"
                 title={t('clickToEnableSound')}
               >
