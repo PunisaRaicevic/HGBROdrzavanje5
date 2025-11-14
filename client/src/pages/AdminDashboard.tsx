@@ -511,35 +511,36 @@ export default function AdminDashboard() {
                     : 0;
 
                   return (
-                    <div className="space-y-4">
-                      <div className="p-4 border rounded-md bg-muted/30">
-                        <p className="text-sm text-muted-foreground mb-1">{periodLabel}</p>
-                        <p className="text-3xl font-bold">{periodTasks.length}</p>
-                        <p className="text-sm text-muted-foreground mt-1">Ukupno zadataka</p>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 border rounded-md">
-                          <p className="text-sm text-muted-foreground">Završeno</p>
-                          <p className="text-2xl font-bold text-green-600">{completedTasks.length}</p>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 p-3 border rounded-md bg-muted/30">
+                          <p className="text-xs text-muted-foreground">{periodLabel}</p>
+                          <p className="text-xl font-bold mt-0.5">{periodTasks.length}</p>
+                          <p className="text-xs text-muted-foreground">Ukupno</p>
                         </div>
-                        <div className="p-4 border rounded-md">
-                          <p className="text-sm text-muted-foreground">U toku</p>
-                          <p className="text-2xl font-bold text-blue-600">{inProgressTasks.length}</p>
-                        </div>
-                        <div className="p-4 border rounded-md">
-                          <p className="text-sm text-muted-foreground">Na čekanju</p>
-                          <p className="text-2xl font-bold text-yellow-600">{pendingTasks.length}</p>
-                        </div>
-                        <div className="p-4 border rounded-md">
-                          <p className="text-sm text-muted-foreground">Eksterna firma</p>
-                          <p className="text-2xl font-bold text-purple-600">{externalTasks.length}</p>
+                        <div className="flex-1 p-3 border rounded-md bg-muted/30">
+                          <p className="text-xs text-muted-foreground">Stopa realizacije</p>
+                          <p className="text-xl font-bold text-green-600 mt-0.5">{completionRate}%</p>
                         </div>
                       </div>
 
-                      <div className="p-4 border rounded-md bg-muted/30">
-                        <p className="text-sm text-muted-foreground mb-1">Stopa realizacije</p>
-                        <p className="text-3xl font-bold text-green-600">{completionRate}%</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div className="p-2.5 border rounded-md">
+                          <p className="text-xs text-muted-foreground">Završeno</p>
+                          <p className="text-lg font-bold text-green-600 mt-0.5">{completedTasks.length}</p>
+                        </div>
+                        <div className="p-2.5 border rounded-md">
+                          <p className="text-xs text-muted-foreground">U toku</p>
+                          <p className="text-lg font-bold text-blue-600 mt-0.5">{inProgressTasks.length}</p>
+                        </div>
+                        <div className="p-2.5 border rounded-md">
+                          <p className="text-xs text-muted-foreground">Na čekanju</p>
+                          <p className="text-lg font-bold text-yellow-600 mt-0.5">{pendingTasks.length}</p>
+                        </div>
+                        <div className="p-2.5 border rounded-md">
+                          <p className="text-xs text-muted-foreground">Eksterna</p>
+                          <p className="text-lg font-bold text-purple-600 mt-0.5">{externalTasks.length}</p>
+                        </div>
                       </div>
                     </div>
                   );
