@@ -620,27 +620,27 @@ export default function WorkerDashboard() {
   const renderTaskCard = (task: Task) => (
     <Card 
       key={task.id} 
-      className="p-5 cursor-pointer hover-elevate active-elevate-2 bg-secondary/30"
+      className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-secondary/30"
       onClick={() => handleTaskClick(task.id)}
       data-testid={`card-task-${task.id}`}
     >
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div>
-          <h3 className="font-medium text-xl text-foreground">{task.title}</h3>
-          <p className="text-base text-foreground mt-1">
+          <h3 className="font-medium text-2xl text-foreground">{task.title}</h3>
+          <p className="text-lg text-foreground mt-2">
             From: {task.assignedBy}
           </p>
         </div>
         
         {task.description && (
-          <p className="text-base text-foreground line-clamp-2">
+          <p className="text-lg text-foreground line-clamp-2">
             {task.description}
           </p>
         )}
         
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 text-base text-foreground">
-            <Clock className="w-5 h-5" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-lg text-foreground">
+            <Clock className="w-6 h-6" />
             <span>{getElapsedTime(task.receivedAt)}</span>
           </div>
           <Badge 
@@ -649,7 +649,7 @@ export default function WorkerDashboard() {
               task.priority === 'normal' ? 'default' : 
               'secondary'
             }
-            className="text-base"
+            className="text-lg px-3 py-1"
           >
             {task.priority === 'urgent' ? 'Hitno' : 
              task.priority === 'normal' ? 'Normalno' : 
@@ -722,21 +722,21 @@ export default function WorkerDashboard() {
                     returnedTasks.map((task) => (
                       <Card 
                         key={task.id} 
-                        className="p-5 cursor-pointer hover-elevate active-elevate-2 bg-destructive/10"
+                        className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-destructive/10"
                         onClick={() => handleTaskClick(task.id)}
                         data-testid={`card-task-${task.id}`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="text-xl font-medium text-foreground">{task.title}</p>
-                            <p className="text-base text-foreground mt-1">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex-1 space-y-2">
+                            <p className="text-2xl font-medium text-foreground">{task.title}</p>
+                            <p className="text-lg text-foreground">
                               {task.description}
                             </p>
-                            <p className="text-base text-foreground mt-1">
+                            <p className="text-lg text-foreground">
                               {getElapsedTime(task.receivedAt)} {t('ago')}
                             </p>
                           </div>
-                          <XCircle className="w-6 h-6 text-orange-500" />
+                          <XCircle className="w-8 h-8 text-orange-500 flex-shrink-0" />
                         </div>
                       </Card>
                     ))
@@ -757,18 +757,18 @@ export default function WorkerDashboard() {
                     completedTasks.map((task) => (
                       <Card 
                         key={task.id} 
-                        className="p-5 cursor-pointer hover-elevate active-elevate-2 bg-secondary/30"
+                        className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-secondary/30"
                         onClick={() => handleTaskClick(task.id)}
                         data-testid={`card-task-${task.id}`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="text-xl font-medium text-foreground">{task.title}</p>
-                            <p className="text-base text-foreground mt-1">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex-1 space-y-2">
+                            <p className="text-2xl font-medium text-foreground">{task.title}</p>
+                            <p className="text-lg text-foreground">
                               {task.location} • {t('completedAgo')} {getElapsedTime(task.receivedAt)} {t('ago')}
                             </p>
                           </div>
-                          <CheckCircle className="w-6 h-6 text-green-500" />
+                          <CheckCircle className="w-8 h-8 text-green-500 flex-shrink-0" />
                         </div>
                       </Card>
                     ))
