@@ -203,17 +203,15 @@ export default function AdminDashboard() {
 
       {/* Main Admin Features */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="users" data-testid="tab-users">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Manage Users
+        <TabsList className="h-9">
+          <TabsTrigger value="users" data-testid="tab-users" className="text-sm px-3">
+            Korisnici
           </TabsTrigger>
-          <TabsTrigger value="tasks" data-testid="tab-tasks">
-            <ClipboardList className="w-4 h-4 mr-2" />
-            Manage Tasks
+          <TabsTrigger value="tasks" data-testid="tab-tasks" className="text-sm px-3">
+            Zadaci
           </TabsTrigger>
-          <TabsTrigger value="stats" data-testid="tab-stats">
-            Statistics
+          <TabsTrigger value="stats" data-testid="tab-stats" className="text-sm px-3">
+            Statistike
           </TabsTrigger>
         </TabsList>
 
