@@ -315,7 +315,7 @@ export default function OperatorDashboard() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-3xl font-medium">Operator Dashboard</h1>
+        <h1 className="text-3xl font-medium">Panel Operatera</h1>
         <p className="text-muted-foreground mt-1">
           {user?.fullName} - {user?.role}
         </p>
