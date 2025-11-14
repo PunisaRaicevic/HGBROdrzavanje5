@@ -156,46 +156,13 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
 
             <div className="space-y-2">
               <Label htmlFor="edit-user-department">Zanimanje/Pozicija</Label>
-              <Select 
-                value={formData.department || 'custom'} 
-                onValueChange={(value) => {
-                  if (value === 'custom') {
-                    setFormData({ ...formData, department: '' });
-                  } else {
-                    setFormData({ ...formData, department: value });
-                  }
-                }}
-              >
-                <SelectTrigger data-testid="select-edit-user-department">
-                  <SelectValue placeholder="Izaberi zanimanje" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Recepcioner">Recepcioner</SelectItem>
-                  <SelectItem value="Direktor hotela">Direktor hotela</SelectItem>
-                  <SelectItem value="Šef sale">Šef sale</SelectItem>
-                  <SelectItem value="Glavni kuvar">Glavni kuvar</SelectItem>
-                  <SelectItem value="Pomoćni kuvar">Pomoćni kuvar</SelectItem>
-                  <SelectItem value="Konobar">Konobar</SelectItem>
-                  <SelectItem value="Sobarica">Sobarica</SelectItem>
-                  <SelectItem value="Šef tehničke službe">Šef tehničke službe</SelectItem>
-                  <SelectItem value="Majstor">Majstor</SelectItem>
-                  <SelectItem value="Servis tehničar">Servis tehničar</SelectItem>
-                  <SelectItem value="Bazen održavanje">Bazen održavanje</SelectItem>
-                  <SelectItem value="Spašilac">Spašilac</SelectItem>
-                  <SelectItem value="Wellness terapeut">Wellness terapeut</SelectItem>
-                  <SelectItem value="custom">✏️ Drugo (unesite sami)</SelectItem>
-                </SelectContent>
-              </Select>
-              {(formData.department === '' || !['Recepcioner', 'Direktor hotela', 'Šef sale', 'Glavni kuvar', 'Pomoćni kuvar', 'Konobar', 'Sobarica', 'Šef tehničke službe', 'Majstor', 'Servis tehničar', 'Bazen održavanje', 'Spašilac', 'Wellness terapeut'].includes(formData.department || '')) && (
-                <Input
-                  id="edit-user-department-custom"
-                  value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  data-testid="input-edit-user-department-custom"
-                  placeholder="Unesite zanimanje..."
-                  className="mt-2"
-                />
-              )}
+              <Input
+                id="edit-user-department"
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                data-testid="input-edit-user-department"
+                placeholder="npr. Recepcioner, Šef sale, Direktor hotela..."
+              />
             </div>
 
             <div className="space-y-2">
