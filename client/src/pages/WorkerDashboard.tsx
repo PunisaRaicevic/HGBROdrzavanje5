@@ -661,10 +661,10 @@ export default function WorkerDashboard() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-4xl font-medium">{t('myTasks')}</h1>
-        <p className="text-muted-foreground mt-1 text-lg">
+        <h1 className="text-3xl font-medium">{t('myTasks')}</h1>
+        <p className="text-muted-foreground mt-0.5 text-base">
           {user?.fullName} - {user?.role}
         </p>
       </div>
