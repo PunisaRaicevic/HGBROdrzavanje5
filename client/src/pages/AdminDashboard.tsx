@@ -311,16 +311,46 @@ export default function AdminDashboard() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="user-department">Zanimanje/Pozicija</Label>
-                    <Input
-                      id="user-department"
-                      value={newUserDepartment}
-                      onChange={(e) => setNewUserDepartment(e.target.value)}
-                      data-testid="input-user-department"
-                      placeholder="npr. Recepcioner, Šef sale, Glavni kuvar..."
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Unesite zanimanje korisnika (Recepcioner, Direktor hotela, Šef sale, Glavni kuvar, Sobarica, itd.)
-                    </p>
+                    <Select 
+                      value={newUserDepartment || 'custom'} 
+                      onValueChange={(value) => {
+                        if (value === 'custom') {
+                          setNewUserDepartment('');
+                        } else {
+                          setNewUserDepartment(value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger data-testid="select-user-department">
+                        <SelectValue placeholder="Izaberi zanimanje" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Recepcioner">Recepcioner</SelectItem>
+                        <SelectItem value="Direktor hotela">Direktor hotela</SelectItem>
+                        <SelectItem value="Šef sale">Šef sale</SelectItem>
+                        <SelectItem value="Glavni kuvar">Glavni kuvar</SelectItem>
+                        <SelectItem value="Pomoćni kuvar">Pomoćni kuvar</SelectItem>
+                        <SelectItem value="Konobar">Konobar</SelectItem>
+                        <SelectItem value="Sobarica">Sobarica</SelectItem>
+                        <SelectItem value="Šef tehničke službe">Šef tehničke službe</SelectItem>
+                        <SelectItem value="Majstor">Majstor</SelectItem>
+                        <SelectItem value="Servis tehničar">Servis tehničar</SelectItem>
+                        <SelectItem value="Bazen održavanje">Bazen održavanje</SelectItem>
+                        <SelectItem value="Spašilac">Spašilac</SelectItem>
+                        <SelectItem value="Wellness terapeut">Wellness terapeut</SelectItem>
+                        <SelectItem value="custom">✏️ Drugo (unesite sami)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {(newUserDepartment === '' || !['Recepcioner', 'Direktor hotela', 'Šef sale', 'Glavni kuvar', 'Pomoćni kuvar', 'Konobar', 'Sobarica', 'Šef tehničke službe', 'Majstor', 'Servis tehničar', 'Bazen održavanje', 'Spašilac', 'Wellness terapeut'].includes(newUserDepartment)) && (
+                      <Input
+                        id="user-department-custom"
+                        value={newUserDepartment}
+                        onChange={(e) => setNewUserDepartment(e.target.value)}
+                        data-testid="input-user-department-custom"
+                        placeholder="Unesite zanimanje..."
+                        className="mt-2"
+                      />
+                    )}
                   </div>
                 </div>
                 <Button 
