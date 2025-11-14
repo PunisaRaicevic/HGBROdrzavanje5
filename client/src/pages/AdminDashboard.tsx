@@ -462,7 +462,7 @@ export default function AdminDashboard() {
         <TabsContent value="stats" className="space-y-4">
           {/* Statistika realizacije zadataka */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
+            <CardHeader className="space-y-3 pb-4">
               <CardTitle>Statistika realizacije zadataka</CardTitle>
               <PeriodPicker
                 value={statsRange}
@@ -542,8 +542,8 @@ export default function AdminDashboard() {
 
           {/* Generisanje izvještaja */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-3">
-              <CardTitle className="text-base">Generisanje izvještaja</CardTitle>
+            <CardHeader className="space-y-3 pb-3">
+              <CardTitle>Generisanje izvještaja</CardTitle>
               <div className="flex items-center gap-2">
                 <PeriodPicker
                   value={reportRange}
@@ -593,7 +593,7 @@ export default function AdminDashboard() {
 
           {/* Analiza vremena prijave zadataka */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
+            <CardHeader className="space-y-3 pb-4">
               <CardTitle>Analiza vremena prijave zadataka</CardTitle>
               <PeriodPicker
                 value={analysisRange}
