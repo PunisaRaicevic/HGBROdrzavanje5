@@ -12,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, Camera, Send, ClipboardList, Clock, XCircle, X, Volume2, VolumeX } from 'lucide-react';
+import { CheckCircle, Camera, Send, ClipboardList, Clock, XCircle, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { io, Socket } from 'socket.io-client';
 import type { TaskStatus, Priority } from '@shared/types';
@@ -56,22 +56,25 @@ export default function WorkerDashboard() {
   const [isConfirmingReceipt, setIsConfirmingReceipt] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [browserNotificationsEnabled, setBrowserNotificationsEnabled] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(() => {
-    // Load sound preference from localStorage
-    const saved = localStorage.getItem('soundNotificationsEnabled');
-    return saved === 'true';
-  });
   
   // Use refs to avoid stale closures in socket listener
   const nativeNotificationsGrantedRef = useRef(false);
   const permissionRequestedRef = useRef(false);
-  const soundEnabledRef = useRef(soundEnabled);
+  const soundEnabledRef = useRef(
+    localStorage.getItem('soundNotificationsEnabled') === 'true'
+  );
   const browserNotificationsEnabledRef = useRef(browserNotificationsEnabled);
   
-  // Sync refs with state
+  // Sync sound enabled ref with localStorage changes
   useEffect(() => {
-    soundEnabledRef.current = soundEnabled;
-  }, [soundEnabled]);
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('soundNotificationsEnabled');
+      soundEnabledRef.current = saved === 'true';
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
   
   useEffect(() => {
     browserNotificationsEnabledRef.current = browserNotificationsEnabled;
@@ -515,26 +518,6 @@ export default function WorkerDashboard() {
     setUploadedPhotos(uploadedPhotos.filter(p => p.id !== photoId));
   };
 
-  // Toggle sound notifications
-  const toggleSound = () => {
-    const newValue = !soundEnabled;
-    setSoundEnabled(newValue);
-    localStorage.setItem('soundNotificationsEnabled', String(newValue));
-    
-    // If enabling sound, try to initialize audio (requires user interaction)
-    if (newValue && audioRef.current) {
-      // Load and prepare the audio
-      audioRef.current.load();
-      toast({
-        title: newValue ? 'Zvuk omogućen / Sound Enabled' : 'Zvuk onemogućen / Sound Disabled',
-        description: newValue 
-          ? 'Zvučne notifikacije su omogućene. Testirajte klikom na dugme. / Sound notifications enabled. Test with the button.'
-          : 'Zvučne notifikacije su onemogućene. / Sound notifications disabled.',
-        duration: 3000,
-      });
-    }
-  };
-
   // Mutation to update task status with optimistic updates
   const updateTaskMutation = useMutation({
     mutationFn: async ({ taskId, status, report, images }: { 
@@ -679,29 +662,11 @@ export default function WorkerDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-4xl font-medium">{t('myTasks')}</h1>
-          <p className="text-muted-foreground mt-1 text-lg">
-            {user?.fullName} - {user?.role}
-          </p>
-        </div>
-        
-        {/* Notification Controls */}
-        <div className="flex gap-2">
-          <Button
-            variant={soundEnabled ? "default" : "outline"}
-            size="lg"
-            onClick={toggleSound}
-            data-testid="button-toggle-sound"
-            className="min-h-[44px]"
-          >
-            {soundEnabled ? <Volume2 className="w-5 h-5 mr-2" /> : <VolumeX className="w-5 h-5 mr-2" />}
-            <span className="hidden sm:inline text-base">
-              {soundEnabled ? 'Zvuk ON / Sound ON' : 'Zvuk OFF / Sound OFF'}
-            </span>
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-4xl font-medium">{t('myTasks')}</h1>
+        <p className="text-muted-foreground mt-1 text-lg">
+          {user?.fullName} - {user?.role}
+        </p>
       </div>
 
       {/* My Tasks with Tabs */}

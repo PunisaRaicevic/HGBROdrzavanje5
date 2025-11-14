@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { LogOut, Globe, Volume2 } from 'lucide-react';
+import { LogOut, Globe, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -13,7 +13,10 @@ export default function AppHeader() {
   const { user, logout } = useAuth();
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(() => {
+    const saved = localStorage.getItem('soundNotificationsEnabled');
+    return saved === 'true';
+  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const previousTasksCountRef = useRef<number>(-1);
   const [acknowledgedTaskIds, setAcknowledgedTaskIds] = useState<Set<string>>(new Set());
@@ -28,15 +31,20 @@ export default function AppHeader() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
-  const enableAudio = () => {
-    // Try to resume AudioContext on user interaction
-    if (audioRef.current) {
+  const toggleAudio = () => {
+    const newValue = !audioEnabled;
+    setAudioEnabled(newValue);
+    localStorage.setItem('soundNotificationsEnabled', String(newValue));
+    
+    if (newValue && audioRef.current) {
       audioRef.current.play().catch(() => {});
     }
-    setAudioEnabled(true);
-    localStorage.setItem('audioNotificationsEnabled', 'true');
+    
     toast({
-      title: t('soundNotificationsEnabled'),
+      title: newValue ? 'Zvuk omogućen / Sound Enabled' : 'Zvuk onemogućen / Sound Disabled',
+      description: newValue 
+        ? 'Zvučne notifikacije su omogućene. / Sound notifications enabled.'
+        : 'Zvučne notifikacije su onemogućene. / Sound notifications disabled.',
       duration: 3000,
     });
   };
@@ -59,10 +67,6 @@ export default function AppHeader() {
       };
       
       loadAcknowledgedTasks();
-      
-      // Load audio enabled state
-      const audioEnabledStored = localStorage.getItem('audioNotificationsEnabled');
-      setAudioEnabled(audioEnabledStored === 'true');
       
       // Listen for storage changes (when worker clicks on task)
       window.addEventListener('storage', loadAcknowledgedTasks);
@@ -183,22 +187,19 @@ export default function AppHeader() {
           <span className="text-base font-medium">{i18n.language.toUpperCase()}</span>
         </Button>
 
-        {/* Bell notification icon - only for workers */}
+        {/* Sound toggle - only for workers */}
         {user?.role === 'radnik' && (
-          <>
-            {!audioEnabled && (
-              <Button 
-                variant="outline" 
-                onClick={enableAudio}
-                className="gap-2 min-h-11"
-                data-testid="button-enable-audio"
-                title={t('clickToEnableSound')}
-              >
-                <Volume2 className="h-5 w-5" />
-                <span className="text-base hidden sm:inline">{t('enableSoundNotifications')}</span>
-              </Button>
-            )}
-          </>
+          <Button
+            variant={audioEnabled ? "default" : "outline"}
+            onClick={toggleAudio}
+            data-testid="button-toggle-sound"
+            className="gap-2 min-h-11"
+          >
+            {audioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+            <span className="hidden sm:inline text-base">
+              {audioEnabled ? 'Zvuk ON / Sound ON' : 'Zvuk OFF / Sound OFF'}
+            </span>
+          </Button>
         )}
 
         {user && (
