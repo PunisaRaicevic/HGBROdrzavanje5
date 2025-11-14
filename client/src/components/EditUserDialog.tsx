@@ -155,19 +155,17 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-user-department">Odjeljenje</Label>
-              <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
-                <SelectTrigger data-testid="select-edit-user-department">
-                  <SelectValue placeholder="Izaberi odjeljenje" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="tehnicka">Tehnička služba</SelectItem>
-                  <SelectItem value="domacinstvo">Domaćinstvo</SelectItem>
-                  <SelectItem value="recepcija">Recepcija</SelectItem>
-                  <SelectItem value="restoran">Restoran</SelectItem>
-                  <SelectItem value="bazen">Bazen</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="edit-user-department">Zanimanje/Pozicija</Label>
+              <Input
+                id="edit-user-department"
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                data-testid="input-edit-user-department"
+                placeholder="npr. Recepcioner, Šef sale, Glavni kuvar..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Unesite zanimanje korisnika (Recepcioner, Direktor hotela, Šef sale, Glavni kuvar, Sobarica, itd.)
+              </p>
             </div>
 
             <div className="space-y-2">
