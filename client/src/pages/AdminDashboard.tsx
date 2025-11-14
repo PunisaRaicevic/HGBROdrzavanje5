@@ -294,20 +294,15 @@ export default function AdminDashboard() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="user-role">Uloga</Label>
-                    <Select value={newUserRole} onValueChange={setNewUserRole} required>
-                      <SelectTrigger data-testid="select-user-role">
-                        <SelectValue placeholder="Izaberi ulogu" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="operater">Operater</SelectItem>
-                        <SelectItem value="sef">Šef</SelectItem>
-                        <SelectItem value="radnik">Radnik</SelectItem>
-                        <SelectItem value="serviser">Serviser</SelectItem>
-                        <SelectItem value="recepcioner">Recepcioner</SelectItem>
-                        <SelectItem value="menadzer">Menadžer</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Input
+                      id="user-role"
+                      placeholder="Npr: Admin, Operater, Šef, Radnik..."
+                      value={newUserRole}
+                      onChange={(e) => setNewUserRole(e.target.value)}
+                      required
+                      data-testid="input-user-role"
+                      className="min-h-11"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="user-department">Zanimanje/Pozicija</Label>

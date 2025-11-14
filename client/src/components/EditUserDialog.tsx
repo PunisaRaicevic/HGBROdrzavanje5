@@ -138,20 +138,14 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
 
             <div className="space-y-2">
               <Label htmlFor="edit-user-role">Uloga</Label>
-              <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
-                <SelectTrigger data-testid="select-edit-user-role">
-                  <SelectValue placeholder="Izaberi ulogu" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="operater">Operater</SelectItem>
-                  <SelectItem value="sef">Šef</SelectItem>
-                  <SelectItem value="radnik">Radnik</SelectItem>
-                  <SelectItem value="serviser">Serviser</SelectItem>
-                  <SelectItem value="recepcioner">Recepcioner</SelectItem>
-                  <SelectItem value="menadzer">Menadžer</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                id="edit-user-role"
+                placeholder="Npr: Admin, Operater, Šef, Radnik..."
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                data-testid="input-edit-user-role"
+                className="min-h-11"
+              />
             </div>
 
             <div className="space-y-2">
