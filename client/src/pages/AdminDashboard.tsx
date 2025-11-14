@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit } from 'lucide-react';
 import StatCard from '@/components/StatCard';
@@ -30,8 +32,13 @@ interface User {
 
 interface Task {
   id: string;
+  title: string;
   status: string;
   priority?: string;
+  created_at: string;
+  created_by_name?: string;
+  assigned_to_name?: string;
+  location?: string;
   completed_at?: string | null;
 }
 
@@ -46,6 +53,7 @@ export default function AdminDashboard() {
   const [newUserPhone, setNewUserPhone] = useState('');
   const [newUserRole, setNewUserRole] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [tasksPerPage, setTasksPerPage] = useState<number>(10);
 
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -131,31 +139,6 @@ export default function AdminDashboard() {
   // Calculate statistics
   const totalUsers = users.length;
   const totalTasks = tasks.length;
-  
-  // My Tasks Status calculations
-  const urgentTasks = tasks.filter(t => 
-    t.priority === 'urgent' || t.priority === 'high'
-  ).length;
-  
-  const inProgressTasks = tasks.filter(t => 
-    t.status === 'in_progress'
-  ).length;
-  
-  const awaitingAssignmentTasks = tasks.filter(t => 
-    t.status === 'assigned_to_operator' || t.status === 'pending' || t.status === 'new'
-  ).length;
-  
-  const completedTodayTasks = tasks.filter(t => {
-    if (t.status !== 'completed') return false;
-    if (!t.completed_at) return false;
-    
-    const completedDate = new Date(t.completed_at);
-    const today = new Date();
-    
-    return completedDate.getDate() === today.getDate() &&
-           completedDate.getMonth() === today.getMonth() &&
-           completedDate.getFullYear() === today.getFullYear();
-  }).length;
 
   return (
     <div className="space-y-6">
@@ -350,48 +333,99 @@ export default function AdminDashboard() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>My Tasks Status</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
+              <CardTitle>Sve reklamacije</CardTitle>
+              <Select 
+                value={tasksPerPage === 999999 ? 'all' : String(tasksPerPage)} 
+                onValueChange={(val) => setTasksPerPage(val === 'all' ? 999999 : parseInt(val))}
+              >
+                <SelectTrigger className="w-32" data-testid="select-tasks-per-page">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="30">30</SelectItem>
+                  <SelectItem value="all">Sve</SelectItem>
+                </SelectContent>
+              </Select>
             </CardHeader>
             <CardContent>
               {tasksLoading ? (
                 <div className="space-y-3">
-                  <Skeleton className="h-16" />
-                  <Skeleton className="h-16" />
-                  <Skeleton className="h-16" />
-                  <Skeleton className="h-16" />
+                  <Skeleton className="h-20" />
+                  <Skeleton className="h-20" />
+                  <Skeleton className="h-20" />
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 border-l-4 border-l-red-500 bg-muted/50 rounded">
-                    <div>
-                      <p className="font-medium">Urgent Tasks</p>
-                      <p className="text-sm text-muted-foreground">Need immediate attention</p>
-                    </div>
-                    <span className="text-2xl font-bold" data-testid="text-urgent-tasks">{urgentTasks}</span>
+                <ScrollArea className="h-[500px] pr-4">
+                  <div className="space-y-3">
+                    {tasks
+                      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                      .slice(0, tasksPerPage)
+                      .map((task) => {
+                        const getStatusBadge = (status: string) => {
+                          if (status === 'completed') {
+                            return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                          } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
+                            return <Badge variant="secondary">U toku</Badge>;
+                          } else if (status === 'with_external') {
+                            return <Badge variant="outline">Eksterna firma</Badge>;
+                          }
+                          return <Badge variant="secondary">{status}</Badge>;
+                        };
+
+                        const formatDate = (dateStr: string) => {
+                          const date = new Date(dateStr);
+                          return date.toLocaleDateString('sr-RS', { 
+                            day: '2-digit', 
+                            month: '2-digit', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          });
+                        };
+
+                        return (
+                          <div 
+                            key={task.id} 
+                            className="p-4 border rounded-md hover-elevate"
+                            data-testid={`task-item-${task.id}`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h3 className="font-medium text-base">{task.title}</h3>
+                                  {getStatusBadge(task.status)}
+                                </div>
+                                <div className="space-y-1 text-sm text-muted-foreground">
+                                  {task.location && (
+                                    <p>Lokacija: {task.location}</p>
+                                  )}
+                                  {task.created_by_name && (
+                                    <p>Prijavio: {task.created_by_name}</p>
+                                  )}
+                                  {task.assigned_to_name && (
+                                    <p>Dodeljeno: {task.assigned_to_name}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right text-sm text-muted-foreground whitespace-nowrap">
+                                {formatDate(task.created_at)}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    
+                    {tasks.length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">
+                        Nema zadataka
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-center justify-between p-3 border-l-4 border-l-yellow-500 bg-muted/50 rounded">
-                    <div>
-                      <p className="font-medium">In Progress</p>
-                      <p className="text-sm text-muted-foreground">Currently being worked on</p>
-                    </div>
-                    <span className="text-2xl font-bold" data-testid="text-in-progress-tasks">{inProgressTasks}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 border-l-4 border-l-blue-500 bg-muted/50 rounded">
-                    <div>
-                      <p className="font-medium">Awaiting Assignment</p>
-                      <p className="text-sm text-muted-foreground">With operator</p>
-                    </div>
-                    <span className="text-2xl font-bold" data-testid="text-awaiting-assignment-tasks">{awaitingAssignmentTasks}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 border-l-4 border-l-green-500 bg-muted/50 rounded">
-                    <div>
-                      <p className="font-medium">Completed Today</p>
-                      <p className="text-sm text-muted-foreground">Finished tasks</p>
-                    </div>
-                    <span className="text-2xl font-bold" data-testid="text-completed-today-tasks">{completedTodayTasks}</span>
-                  </div>
-                </div>
+                </ScrollArea>
               )}
             </CardContent>
           </Card>
