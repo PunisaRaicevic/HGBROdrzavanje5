@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,26 +6,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Camera, X, Send, Calendar, Repeat } from 'lucide-react';
+import { Plus, Send, Calendar, Repeat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { PhotoUpload, PhotoPreview } from './PhotoUpload';
 
 interface CreateRecurringTaskDialogProps {
   trigger?: React.ReactNode;
 }
 
-type PhotoPreview = {
-  id: string;
-  dataUrl: string;
-};
-
 export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTaskDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [hotel, setHotel] = useState('');
   const [blok, setBlok] = useState('');
@@ -69,53 +64,6 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
     },
   });
 
-  const handlePhotoUpload = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Neispravna datoteka",
-          description: "Molim Vas izaberite sliku (JPG, PNG, itd.)",
-          variant: "destructive",
-        });
-        continue;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Datoteka prevelika",
-          description: "Slika mora biti manja od 5MB",
-          variant: "destructive",
-        });
-        continue;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        const newPhoto: PhotoPreview = {
-          id: `photo-${Date.now()}-${i}`,
-          dataUrl,
-        };
-        setUploadedPhotos(prev => [...prev, newPhoto]);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    event.target.value = '';
-  };
-
-  const handleRemovePhoto = (photoId: string) => {
-    setUploadedPhotos(uploadedPhotos.filter(p => p.id !== photoId));
-  };
 
   const toggleTechnician = (techId: string) => {
     setSelectedTechnicians(prev => 
