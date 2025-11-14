@@ -551,14 +551,14 @@ export default function AdminDashboard() {
 
           {/* Generisanje izvještaja */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
-              <CardTitle>Generisanje izvještaja</CardTitle>
-              <div className="flex items-center gap-3">
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-3">
+              <CardTitle className="text-base">Generisanje izvještaja</CardTitle>
+              <div className="flex items-center gap-2">
                 <Select 
                   value={reportPeriod}
                   onValueChange={(val) => setReportPeriod(val as 'daily' | 'weekly' | 'monthly')}
                 >
-                  <SelectTrigger className="w-40" data-testid="select-report-period">
+                  <SelectTrigger className="w-32 h-9" data-testid="select-report-period">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -567,14 +567,14 @@ export default function AdminDashboard() {
                     <SelectItem value="monthly">Mjesečni</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button data-testid="button-generate-report">
-                  Generiši izvještaj
+                <Button size="sm" data-testid="button-generate-report">
+                  Generiši
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-3">
               {tasksLoading ? (
-                <Skeleton className="h-24" />
+                <Skeleton className="h-20" />
               ) : (
                 (() => {
                   const now = new Date();
@@ -606,18 +606,18 @@ export default function AdminDashboard() {
                   const completedReportTasks = periodTasks.filter(t => t.status === 'completed');
 
                   return (
-                    <div className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        Izvještaj će sadržati sve realizovane zadatke za izabrani period sa detaljima o radnicima i vremenu realizacije.
+                    <div className="space-y-3">
+                      <p className="text-xs text-muted-foreground">
+                        Izvještaj sadrži realizovane zadatke sa detaljima o radnicima i vremenu.
                       </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 border rounded-md bg-muted/30">
-                          <p className="text-sm text-muted-foreground">Ukupno zadataka {periodLabel}</p>
-                          <p className="text-2xl font-bold mt-1">{periodTasks.length}</p>
+                      <div className="flex gap-2">
+                        <div className="flex-1 p-2.5 border rounded-md bg-muted/30">
+                          <p className="text-xs text-muted-foreground">Ukupno {periodLabel}</p>
+                          <p className="text-lg font-bold mt-0.5">{periodTasks.length}</p>
                         </div>
-                        <div className="p-4 border rounded-md bg-muted/30">
-                          <p className="text-sm text-muted-foreground">Završeno {periodLabel}</p>
-                          <p className="text-2xl font-bold text-green-600 mt-1">{completedReportTasks.length}</p>
+                        <div className="flex-1 p-2.5 border rounded-md bg-muted/30">
+                          <p className="text-xs text-muted-foreground">Završeno {periodLabel}</p>
+                          <p className="text-lg font-bold text-green-600 mt-0.5">{completedReportTasks.length}</p>
                         </div>
                       </div>
                     </div>
