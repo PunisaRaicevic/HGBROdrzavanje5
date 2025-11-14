@@ -470,13 +470,8 @@ export default function SupervisorDashboard() {
                     onClick={() => handleViewWorkerProfile(worker)}
                     data-testid={`worker-card-${worker.id}`}
                   >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="mb-2">
                       <span className="font-medium">{worker.full_name}</span>
-                      <div className="flex gap-1">
-                        <Badge variant="default">
-                          Aktivan
-                        </Badge>
-                      </div>
                     </div>
                     {worker.phone && (
                       <p className="text-sm text-muted-foreground mb-1">
