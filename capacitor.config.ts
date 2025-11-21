@@ -3,10 +3,12 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.budvanskarivijera.hotel',
   appName: 'HGBR Tehnička Služba',
-  webDir: 'dist/public', // <--- OVO MORA BITI 'dist/public' zbog tvog vite.config.ts
+  webDir: 'dist/public', 
   server: {
-    androidScheme: 'https'
-    // OBAVEZNO: NEMA 'url' linije. Ovo osigurava da je aplikacija Native.
+    androidScheme: 'https',
+    cleartext: true
+    // ❌ OBAVEZNO: Ovde NE SME biti linija 'url': '...'
+    // Ako postoji 'url', OBRISI JE! To je ono što kvari sve.
   },
   plugins: {
     Camera: {
