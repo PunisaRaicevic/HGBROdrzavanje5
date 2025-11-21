@@ -11,14 +11,13 @@
     <!-- DOZVOLE ZA NOTIFIKACIJE (Obavezno za Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- DOZVOLE ZA KAMERU I GALERIJU (Ovo ti je falilo!) -->
+    <!-- DOZVOLE ZA KAMERU I GALERIJU -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!-- Za novije Android verzije (13+) za slike -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
-    <!-- Ovo kaže Google Play-u da aplikacija koristi kameru, ali da nije obavezna (da ne crashuje ako nema kamere) -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
@@ -28,6 +27,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup,android:theme,android:label">
 
         <activity
@@ -45,6 +45,7 @@
             </intent-filter>
         </activity>
 
+        <!-- ISPRAVLJENA SLOVNA GREŠKA U 'authorities' (rivjera -> rivijera) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.budvanskarivijera.hotel.fileprovider"
@@ -55,7 +56,6 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- OneSignal Receiver -->
         <receiver
             android:name="com.getcapacitor.plugin.notification.LocalNotificationRestoreReceiver"
             android:exported="false">
