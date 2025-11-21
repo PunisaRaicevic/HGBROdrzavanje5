@@ -27,36 +27,57 @@ function Router() {
   const { user, login, loading } = useAuth();
 
   // ============================================================
-  // PODEŠAVANJE NOTIFIKACIJA (BEZ ZAŠTITE - FORSIRANO POKRETANJE)
+  // PODEŠAVANJE NOTIFIKACIJA SA DETALJNOM PROVEROM (DEBUG)
   // ============================================================
   useEffect(() => {
     const setupOneSignal = async () => {
-      // Uklonili smo proveru platforme da vidimo šta se tačno dešava
-      console.log("🚀 [App.tsx] Pokušavam inicijalizaciju OneSignal-a...");
+      console.log("🚀 [App.tsx] Pokrećem OneSignal inicijalizaciju...");
 
       try {
-        // 1. Inicijalizacija (Tvoj tačan App ID)
+        // 1. Inicijalizacija
         OneSignal.initialize("754437c4-5e06-4b48-aa51-c5ccb77767a5");
 
-        // 2. Traženje dozvole (Ovo mora da izbaci prozor na telefonu)
+        // 2. Traženje dozvole
         await OneSignal.Notifications.requestPermission(true);
-        console.log("📱 [App.tsx] Dozvola za notifikacije zatražena.");
+        console.log("📱 [App.tsx] Dozvola zatražena.");
 
-        // 3. Povezivanje korisnika
+        // 3. Login korisnika
         if (user && user.id) {
           OneSignal.login(user.id);
-          console.log(`✅ [App.tsx] OneSignal LOGIN USPEŠAN. ID: ${user.id}`);
-        } else {
-          console.warn("⚠️ [App.tsx] OneSignal preskočio login (nema user ID-a).");
+          console.log(`✅ [App.tsx] OneSignal LOGIN pozvan za: ${user.id}`);
         }
 
+        // ---------------------------------------------------------
+        // 🕵️‍♂️ DETEKTIVSKI DEO - PROVERA STATUSA PRETPLATE
+        // ---------------------------------------------------------
+
+        // Proveri trenutno stanje (može biti null na početku)
+        const currentId = OneSignal.User.PushSubscription.id;
+        const currentToken = OneSignal.User.PushSubscription.token;
+        const isOptedIn = OneSignal.User.PushSubscription.optedIn;
+
+        console.log(`🕵️‍♂️ [OneSignal DEBUG] Trenutni status:
+          - ID: ${currentId}
+          - Token: ${currentToken}
+          - OptedIn: ${isOptedIn}
+        `);
+
+        // Slušaj promene (ovo se okida kada OneSignal dobije odgovor od Google-a)
+        OneSignal.User.PushSubscription.addEventListener("change", (event) => {
+            console.log("🔄 [OneSignal EVENT] Promena statusa pretplate:", JSON.stringify(event));
+
+            if (event.current.id) {
+                console.log(`🏆 [OneSignal SUCCESS] DOBIO SAM ID: ${event.current.id}`);
+                console.log("👉 OVO ZNAČI DA JE UREĐAJ USPEŠNO REGISTROVAN I MOŽE DA PRIMA PORUKE!");
+            }
+        });
+        // ---------------------------------------------------------
+
       } catch (error) {
-        // Ako ovo vidimo u logu, znamo da plugin nije učitan kako treba
         console.error("❌ [App.tsx] OneSignal CRITICAL ERROR:", JSON.stringify(error));
       }
     };
 
-    // Pokrećemo samo kada se korisnik uloguje
     if (user) {
       setupOneSignal();
     }
