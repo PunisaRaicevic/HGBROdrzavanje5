@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HGBR Tehnička Služba</string>
+    <string name="title_activity_main">HGBR Tehnička Služba</string>
+    <string name="package_name">com.budvanskarivijera.hotel</string>
+    <string name="custom_url_scheme">com.budvanskarivijera.hotel</string>
+</resources>
