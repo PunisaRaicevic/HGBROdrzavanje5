@@ -12,7 +12,7 @@
     "build": "vite build",
     "build:server": "esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "build:full": "npm run build && npm run build:server",
-    "ionic:build": "vite build",
+    "ionic:build": "vite build --emptyOutDir",
     "build:android": "npm run build && npx cap sync android",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
