@@ -1,16 +1,19 @@
 {
   "appId": "com.budvanskarivijera.hotel",
-  "appName": "Budvanska Rivijera Hotel",
+  "appName": "HGBR Tehnička Služba",
   "webDir": "dist/public",
+  "bundledWebRuntime": false,
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "cleartext": true
   },
   "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 0
-    },
     "PushNotifications": {
-      "presentationOptions": ["badge", "sound", "alert"]
+      "presentationOptions": [
+        "badge",
+        "sound",
+        "alert"
+      ]
     }
   }
 }
