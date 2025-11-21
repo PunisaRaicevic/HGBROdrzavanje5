@@ -1,0 +1,257 @@
+Builds
+Package Build #45
+Failed
+Rerun build
+Running with gitlab-runner 18.2.0 (c24769e8)
+  on Ionic Package Android Runner 8edcfcad2, system ID: r_grBV51LLoFR2
+  feature flags: FF_USE_POD_ACTIVE_DEADLINE_SECONDS:false
+Preparing the "kubernetes" executor
+Using Kubernetes namespace: ionic-runners
+Using Kubernetes executor with image 319312831725.dkr.ecr.us-west-2.amazonaws.com/appflow-runners/linux:2025.06 ...
+Using attach strategy to execute scripts...
+Using effective pull policy of [Always] for container build
+Using effective pull policy of [Always] for container helper
+Using effective pull policy of [Always] for container init-permissions
+Using effective pull policy of [Always] for container metrics
+Preparing environment
+Waiting for pod ionic-runners/runner-8edcfcad2-project-0-concurrent-1-yh9l5rsd to be running, status is Pending
+Running on runner-8edcfcad2-project-0-concurrent-1-yh9l5rsd via gitlab-runner-7dffd7b966-798h4...
+
+Getting source from Git repository
+Gitaly correlation ID: 
+Fetching changes...
+Initialized empty Git repository in /builds/PunisaRaicevic/HGBROdrzavanje5/.git/
+Created fresh repository.
+Checking out a932ba4d as detached HEAD (ref is main)...
+
+Updating/initializing submodules...
+Updated submodules
+
+Executing "step_script" stage of the job script
+$ pre-build
+[01:42:52]: Building project....
+$ run "fetch-updates"
+Checking for build process updates...
+$ run "build-android"
+[01:42:54]: ---------------------------------
+[01:42:54]: --- Step: add_extra_platforms ---
+[01:42:54]: ---------------------------------
+[01:42:54]: Setting '[:web]' as extra SupportedPlatforms
+/builds/PunisaRaicevic/HGBROdrzavanje5/fastlane/outsystems/errors/detectors/pdm_plugins.rb:8: warning: character class has '-' without escape
+/builds/PunisaRaicevic/HGBROdrzavanje5/fastlane/outsystems/errors/detectors/pdm_plugins.rb:15: warning: character class has '-' without escape
+[01:42:54]: ------------------------------
+[01:42:54]: --- Step: default_platform ---
+[01:42:54]: ------------------------------
+[01:42:54]: Driving the lane 'android build_capacitor' 🚀
+[01:42:54]: ---------------------------------
+[01:42:54]: --- Step: prepare_environment ---
+[01:42:54]: ---------------------------------
+[01:42:54]: Setting default environment variables to tidy up logs. These can be overridden by setting them in Appflow.
+[01:42:54]: 
+[01:42:54]: Set COREPACK_ENABLE_AUTO_PIN=0 (Suppress yarn warnings)
+[01:42:54]: -------------------------
+[01:42:54]: --- Step: sentry_init ---
+[01:42:54]: -------------------------
+[01:42:54]: ----------------------------
+[01:42:54]: --- Step: begin_building ---
+[01:42:54]: ----------------------------
+[01:42:54]: Began building @ 2025-11-19T01:42:54
+[01:42:54]: ---------------------------
+[01:42:54]: --- Step: build_summary ---
+[01:42:54]: ---------------------------
+
++---------------------------------------------------+
+|                   Build Summary                   |
++---------------------+-----------------------------+
+| Runners Revision    | Latest                      |
+| Job ID              | 10576966                    |
+| Node.js version     | v20.19.3                    |
+| Cordova CLI version | 12.0.0 (cordova-lib@12.0.2) |
+| npm version         | 10.8.2                      |
+| yarn version        | 1.22.22                     |
++---------------------+-----------------------------+
+
+[01:42:55]: No build credential specified
+[01:42:55]: ---------------------------
+[01:42:55]: --- Step: set_ionic_cli ---
+[01:42:55]: ---------------------------
+[01:42:56]: Preinstalled @ionic/cli compatible with project `react`
+[01:42:56]: ------------------------------------
+[01:42:56]: --- Step: detect_package_manager ---
+[01:42:56]: ------------------------------------
+[01:42:56]: Detecting package manager
+[01:42:56]: Defaulting to npm
+[01:42:56]: ---------------------------------
+[01:42:56]: --- Step: add_git_credentials ---
+[01:42:56]: ---------------------------------
+[01:42:56]: Writing git-credentials files
+[01:42:56]: git-credentials successfully added to project
+[01:42:56]: --------------------------------
+[01:42:56]: --- Step: get_appflow_config ---
+[01:42:56]: --------------------------------
+[01:42:56]: Checking for appflow.config.json
+[01:42:56]: Appflow config not detected
+[01:42:56]: --------------------------------
+[01:42:56]: --- Step: dependency_install ---
+[01:42:56]: --------------------------------
+[01:42:56]: Installing Dependencies (in /builds/PunisaRaicevic/HGBROdrzavanje5)
+[01:42:56]: $ npm ci --quiet 
+[01:42:59]: ▸ npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+[01:42:59]: ▸ npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+[01:42:59]: ▸ npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[01:43:00]: ▸ npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+[01:43:00]: ▸ npm warn deprecated
+[01:43:00]: ▸ npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+[01:43:03]: ▸ npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+[01:43:04]: ▸ npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[01:43:05]: ▸ npm warn deprecated @xmldom/xmldom@0.7.13: this version is no longer supported, please update to at least 0.8.*
+[01:43:05]: ▸ npm warn deprecated @xmldom/xmldom@0.7.13: this version is no longer supported, please update to at least 0.8.*
+[01:43:14]: ▸ added 972 packages, and audited 973 packages in 18s
+[01:43:14]: ▸ 114 packages are looking for funding
+[01:43:14]: ▸ run `npm fund` for details
+[01:43:14]: ▸ 9 vulnerabilities (3 low, 5 moderate, 1 high)
+[01:43:14]: ▸ To address issues that do not require attention, run:
+[01:43:14]: ▸ npm audit fix
+[01:43:14]: ▸ To address all issues (including breaking changes), run:
+[01:43:14]: ▸ npm audit fix --force
+[01:43:14]: ▸ Run `npm audit` for details.
+[01:43:14]: -------------------------------------
+[01:43:14]: --- Step: create_capacitor_config ---
+[01:43:14]: -------------------------------------
+[01:43:15]: Created capacitor.config.json from capacitor.config.ts/js
+[01:43:15]: -------------------------
+[01:43:15]: --- Step: get_web_dir ---
+[01:43:15]: -------------------------
+[01:43:15]: webDir is `dist/public`
+[01:43:15]: -----------------------------------
+[01:43:15]: --- Step: modify_cap_web_config ---
+[01:43:15]: -----------------------------------
+[01:43:15]: No custom native config detected.
+[01:43:15]: ---------------------------
+[01:43:15]: --- Step: set_java_home ---
+[01:43:15]: ---------------------------
+[01:43:15]: Try to detect the android gradle plugin version
+[01:43:15]: Project Android Gradle Plug-in version is 8.7.2: set Java to 21
+[01:43:15]: ---------------------------
+[01:43:15]: --- Step: build_pro_app ---
+[01:43:15]: ---------------------------
+[01:43:15]: Building app from /builds/PunisaRaicevic/HGBROdrzavanje5
+[01:43:15]: Build script detected...
+[01:43:15]: $ npm run build
+[01:43:16]: ▸ > rest-express@1.0.0 build
+[01:43:16]: ▸ > vite build
+[01:43:16]: ▸ vite v5.4.20 building for production...
+[01:43:16]: ▸ transforming...
+[01:43:16]: ▸ ✓ 3 modules transformed.
+[01:43:16]: ▸ x Build failed in 314ms
+[01:43:16]: ▸ error during build:
+[01:43:16]: ▸ [vite]: Rollup failed to resolve import "@capawesome/capacitor-badge" from "/builds/PunisaRaicevic/HGBROdrzavanje5/client/src/main.tsx".
+[01:43:16]: ▸ This is most likely unintended because it can break your application at runtime.
+[01:43:16]: ▸ If you do want to externalize this module explicitly add it to
+[01:43:16]: ▸ `build.rollupOptions.external`
+[01:43:16]: ▸ at viteWarn (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65854:17)
+[01:43:16]: ▸ at onwarn (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@vitejs/plugin-react/dist/index.js:90:7)
+[01:43:16]: ▸ at onRollupWarning (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65884:5)
+[01:43:16]: ▸ at onwarn (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65549:7)
+[01:43:16]: ▸ at file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:19452:13
+[01:43:16]: ▸ at Object.logger [as onLog] (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:21178:9)
+[01:43:16]: ▸ at ModuleLoader.handleInvalidResolvedId (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:20067:26)
+[01:43:16]: ▸ at file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:20025:26
+[01:43:16]: -------------------------
+[01:43:16]: --- Step: upload_logs ---
+[01:43:16]: -------------------------
+[01:43:20]: --------------------------------------
+[01:43:20]: --- Step: sentry_capture_exception ---
+[01:43:20]: --------------------------------------
++-------------------------------------------------------------------+
+|                           Lane Context                            |
++----------------------+--------------------------------------------+
+| DEFAULT_PLATFORM     | ios                                        |
+| PLATFORM_NAME        | android                                    |
+| LANE_NAME            | android build_capacitor                    |
+| IONIC_CLI_VERSION    | 7.2.1                                      |
+| NODE_PACKAGE_MANAGER | npm                                        |
+| CAP_IOS_PATH         | /builds/PunisaRaicevic/HGBROdrzavanje5/ios |
+| PROJECT_WEB_DIR      | dist/public                                |
++----------------------+--------------------------------------------+
+[01:43:20]: Exit status of command 'npm run build' was 1 instead of 0.
+
+> rest-express@1.0.0 build
+> vite build
+
+vite v5.4.20 building for production...
+transforming...
+✓ 3 modules transformed.
+x Build failed in 314ms
+error during build:
+[vite]: Rollup failed to resolve import "@capawesome/capacitor-badge" from "/builds/PunisaRaicevic/HGBROdrzavanje5/client/src/main.tsx".
+This is most likely unintended because it can break your application at runtime.
+If you do want to externalize this module explicitly add it to
+`build.rollupOptions.external`
+    at viteWarn (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65854:17)
+    at onwarn (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@vitejs/plugin-react/dist/index.js:90:7)
+    at onRollupWarning (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65884:5)
+    at onwarn (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65549:7)
+    at file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:19452:13
+    at Object.logger [as onLog] (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:21178:9)
+    at ModuleLoader.handleInvalidResolvedId (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:20067:26)
+    at file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:20025:26
+
+
++-----------------------------------------------+
+|               fastlane summary                |
++------+--------------------------+-------------+
+| Step | Action                   | Time (in s) |
++------+--------------------------+-------------+
+| 1    | add_extra_platforms      | 0           |
+| 2    | default_platform         | 0           |
+| 3    | prepare_environment      | 0           |
+| 4    | sentry_init              | 0           |
+| 5    | begin_building           | 0           |
+| 6    | build_summary            | 1           |
+| 7    | set_ionic_cli            | 1           |
+| 8    | detect_package_manager   | 0           |
+| 9    | add_git_credentials      | 0           |
+| 10   | get_appflow_config       | 0           |
+| 11   | dependency_install       | 18          |
+| 12   | create_capacitor_config  | 0           |
+| 13   | get_web_dir              | 0           |
+| 14   | modify_cap_web_config    | 0           |
+| 15   | set_java_home            | 0           |
+| 💥   | build_pro_app            | 0           |
+| 17   | upload_logs              | 3           |
+| 18   | sentry_capture_exception | 0           |
++------+--------------------------+-------------+
+
+[01:43:20]: fastlane finished with errors
+/usr/local/bundle/bin/fastlane: [!] Exit status of command 'npm run build' was 1 instead of 0. (FastlaneCore::Interface::FastlaneShellError)
+
+> rest-express@1.0.0 build
+> vite build
+
+vite v5.4.20 building for production...
+transforming...
+✓ 3 modules transformed.
+x Build failed in 314ms
+error during build:
+[vite]: Rollup failed to resolve import "@capawesome/capacitor-badge" from "/builds/PunisaRaicevic/HGBROdrzavanje5/client/src/main.tsx".
+This is most likely unintended because it can break your application at runtime.
+If you do want to externalize this module explicitly add it to
+`build.rollupOptions.external`
+    at viteWarn (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65854:17)
+    at onwarn (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@vitejs/plugin-react/dist/index.js:90:7)
+    at onRollupWarning (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65884:5)
+    at onwarn (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:65549:7)
+    at file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:19452:13
+    at Object.logger [as onLog] (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:21178:9)
+    at ModuleLoader.handleInvalidResolvedId (file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:20067:26)
+    at file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/rollup/dist/es/shared/node-entry.js:20025:26
+
+
+Running after_script
+Running after script...
+$ run "clean-up"
+
+Cleaning up project directory and file based variables
+
+ERROR: Job failed: command terminated with exit code 1

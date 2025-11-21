@@ -1,0 +1,912 @@
+QL kod za Supabase - sve tabele:
+sql-- ============================================
+-- 1. DEPARTMENTS
+-- ============================================
+CREATE TABLE departments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  code TEXT UNIQUE NOT NULL,
+  description TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Insert osnovnih odeljenja
+INSERT INTO departments (name, code, description) VALUES
+('Recepcija', 'recepcija', 'Prijem i informacije'),
+('Restoran', 'restoran', 'Restoran i kuhinja'),
+('Bazen', 'bazen', 'Bazen i spa'),
+('Domaćinstvo', 'domacinstvo', 'Sobarice i čišćenje'),
+('Tehnička služba', 'tehnicka', 'Održavanje i popravke'),
+('Eksterni', 'eksterni', 'Eksterne firme');
+
+-- ============================================
+-- 2. USERS
+-- ============================================
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('admin', 'recepcioner', 'operater', 'radnik', 'sef', 'serviser', 'menadzer')),
+  department TEXT CHECK (department IN ('recepcija', 'restoran', 'bazen', 'domacinstvo', 'tehnicka', 'eksterni')),
+  phone TEXT,
+  company_name TEXT,
+  is_active BOOLEAN DEFAULT true,
+  first_login BOOLEAN DEFAULT true,
+  notification_preference TEXT DEFAULT 'instant' CHECK (notification_preference IN ('instant', 'hourly', 'daily')),
+  quiet_hours_start TIME,
+  quiet_hours_end TIME,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_department ON users(department);
+
+-- ============================================
+-- 3. EXTERNAL_COMPANIES
+-- ============================================
+CREATE TABLE external_companies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_name TEXT NOT NULL,
+  service_type TEXT NOT NULL,
+  contact_person TEXT,
+  phone TEXT,
+  email TEXT,
+  address TEXT,
+  average_rating DECIMAL(3,2) DEFAULT 0,
+  total_jobs INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_external_companies_service_type ON external_companies(service_type);
+
+-- ============================================
+-- 4. TASKS
+-- ============================================
+CREATE TABLE tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  location TEXT,
+  room_number TEXT,
+  priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('normal', 'urgent', 'can_wait')),
+  status TEXT NOT NULL DEFAULT 'new' CHECK (status IN (
+    'new', 
+    'with_operator', 
+    'assigned_to_radnik', 
+    'with_sef', 
+    'with_external', 
+    'returned_to_operator', 
+    'returned_to_sef', 
+    'completed', 
+    'cancelled'
+  )),
+  
+  -- Ko je kreirao
+  created_by UUID NOT NULL REFERENCES users(id),
+  created_by_name TEXT NOT NULL,
+  created_by_department TEXT NOT NULL,
+  
+  -- Operater
+  operator_id UUID REFERENCES users(id),
+  operator_name TEXT,
+  
+  -- Radnik/Serviser
+  assigned_to UUID REFERENCES users(id),
+  assigned_to_name TEXT,
+  assigned_to_type TEXT CHECK (assigned_to_type IN ('radnik', 'serviser')),
+  
+  -- Šef
+  sef_id UUID REFERENCES users(id),
+  sef_name TEXT,
+  
+  -- Eksterni servis
+  external_company_id UUID REFERENCES external_companies(id),
+  external_company_name TEXT,
+  
+  -- Deadline i vremena
+  deadline_at TIMESTAMPTZ,
+  is_overdue BOOLEAN DEFAULT false,
+  estimated_arrival_time TIMESTAMPTZ,
+  actual_arrival_time TIMESTAMPTZ,
+  estimated_completion_time TIMESTAMPTZ,
+  actual_completion_time TIMESTAMPTZ,
+  time_spent_minutes INTEGER DEFAULT 0,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  completed_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_tasks_status ON tasks(status);
+CREATE INDEX idx_tasks_priority ON tasks(priority);
+CREATE INDEX idx_tasks_created_by ON tasks(created_by);
+CREATE INDEX idx_tasks_operator_id ON tasks(operator_id);
+CREATE INDEX idx_tasks_assigned_to ON tasks(assigned_to);
+CREATE INDEX idx_tasks_sef_id ON tasks(sef_id);
+CREATE INDEX idx_tasks_deadline ON tasks(deadline_at);
+CREATE INDEX idx_tasks_created_at ON tasks(created_at);
+
+-- ============================================
+-- 5. TASK_HISTORY
+-- ============================================
+CREATE TABLE task_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id),
+  user_name TEXT NOT NULL,
+  user_role TEXT NOT NULL,
+  action TEXT NOT NULL,
+  original_message TEXT,
+  notes TEXT,
+  status_from TEXT,
+  status_to TEXT,
+  timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_task_history_task_id ON task_history(task_id);
+CREATE INDEX idx_task_history_user_id ON task_history(user_id);
+CREATE INDEX idx_task_history_timestamp ON task_history(timestamp);
+
+-- ============================================
+-- 6. TASK_TIMELINE
+-- ============================================
+CREATE TABLE task_timeline (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  timestamp TIMESTAMPTZ DEFAULT NOW(),
+  user_name TEXT NOT NULL,
+  user_role TEXT NOT NULL,
+  action_type TEXT NOT NULL,
+  action_description TEXT NOT NULL
+);
+
+CREATE INDEX idx_task_timeline_task_id ON task_timeline(task_id);
+CREATE INDEX idx_task_timeline_timestamp ON task_timeline(timestamp);
+
+-- ============================================
+-- 7. NOTIFICATIONS
+-- ============================================
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('task_created', 'task_assigned', 'task_returned', 'task_completed', 'info', 'warning')),
+  priority TEXT DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'urgent')),
+  is_read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX idx_notifications_task_id ON notifications(task_id);
+CREATE INDEX idx_notifications_is_read ON notifications(is_read);
+CREATE INDEX idx_notifications_created_at ON notifications(created_at);
+
+-- ============================================
+-- 8. TASK_PHOTOS
+-- ============================================
+CREATE TABLE task_photos (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  task_history_id UUID REFERENCES task_history(id),
+  photo_url TEXT NOT NULL,
+  uploaded_by UUID NOT NULL REFERENCES users(id),
+  uploaded_by_name TEXT NOT NULL,
+  description TEXT,
+  uploaded_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_task_photos_task_id ON task_photos(task_id);
+CREATE INDEX idx_task_photos_uploaded_by ON task_photos(uploaded_by);
+
+-- ============================================
+-- 9. TASK_MESSAGES
+-- ============================================
+CREATE TABLE task_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id),
+  user_name TEXT NOT NULL,
+  user_role TEXT NOT NULL,
+  message TEXT NOT NULL,
+  photo_url TEXT,
+  is_read BOOLEAN DEFAULT false,
+  timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_task_messages_task_id ON task_messages(task_id);
+CREATE INDEX idx_task_messages_user_id ON task_messages(user_id);
+CREATE INDEX idx_task_messages_timestamp ON task_messages(timestamp);
+
+-- ============================================
+-- 10. WORK_SESSIONS
+-- ============================================
+CREATE TABLE work_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id),
+  user_name TEXT NOT NULL,
+  task_id UUID REFERENCES tasks(id),
+  check_in_time TIMESTAMPTZ DEFAULT NOW(),
+  check_out_time TIMESTAMPTZ,
+  location_lat DECIMAL(10, 8),
+  location_lon DECIMAL(11, 8),
+  duration_minutes INTEGER
+);
+
+CREATE INDEX idx_work_sessions_user_id ON work_sessions(user_id);
+CREATE INDEX idx_work_sessions_task_id ON work_sessions(task_id);
+CREATE INDEX idx_work_sessions_check_in ON work_sessions(check_in_time);
+
+-- ============================================
+-- 11. TASK_COSTS
+-- ============================================
+CREATE TABLE task_costs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  cost_type TEXT NOT NULL CHECK (cost_type IN ('labor', 'material', 'external_service', 'other')),
+  item_name TEXT NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
+  currency TEXT DEFAULT 'EUR',
+  description TEXT,
+  invoice_photo_url TEXT,
+  added_by UUID NOT NULL REFERENCES users(id),
+  added_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_task_costs_task_id ON task_costs(task_id);
+CREATE INDEX idx_task_costs_cost_type ON task_costs(cost_type);
+
+-- ============================================
+-- 12. SERVICE_RATINGS
+-- ============================================
+CREATE TABLE service_ratings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  rated_user_id UUID NOT NULL REFERENCES users(id),
+  rated_user_name TEXT NOT NULL,
+  rated_by_user_id UUID NOT NULL REFERENCES users(id),
+  rated_by_user_name TEXT NOT NULL,
+  speed_rating INTEGER CHECK (speed_rating BETWEEN 1 AND 5),
+  quality_rating INTEGER CHECK (quality_rating BETWEEN 1 AND 5),
+  communication_rating INTEGER CHECK (communication_rating BETWEEN 1 AND 5),
+  overall_rating DECIMAL(3, 2),
+  comment TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_service_ratings_task_id ON service_ratings(task_id);
+CREATE INDEX idx_service_ratings_rated_user_id ON service_ratings(rated_user_id);
+
+-- ============================================
+-- 13. TASK_ASSIGNMENTS
+-- ============================================
+CREATE TABLE task_assignments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  from_user_id UUID NOT NULL REFERENCES users(id),
+  from_user_name TEXT NOT NULL,
+  to_user_id UUID NOT NULL REFERENCES users(id),
+  to_user_name TEXT NOT NULL,
+  to_user_role TEXT NOT NULL,
+  assignment_type TEXT CHECK (assignment_type IN ('initial', 'reassignment', 'escalation')),
+  assigned_role TEXT CHECK (assigned_role IN ('primary', 'helper')),
+  notes TEXT,
+  assigned_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_task_assignments_task_id ON task_assignments(task_id);
+CREATE INDEX idx_task_assignments_from_user ON task_assignments(from_user_id);
+CREATE INDEX idx_task_assignments_to_user ON task_assignments(to_user_id);
+
+-- ============================================
+-- 14. TASK_TEMPLATES
+-- ============================================
+CREATE TABLE task_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  location TEXT,
+  priority TEXT DEFAULT 'normal' CHECK (priority IN ('normal', 'urgent', 'can_wait')),
+  recurrence_type TEXT CHECK (recurrence_type IN ('daily', 'weekly', 'monthly', 'quarterly', 'yearly')),
+  recurrence_interval INTEGER DEFAULT 1,
+  auto_assign_to UUID REFERENCES users(id),
+  auto_assign_to_name TEXT,
+  checklist_json JSONB,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- 15. MAINTENANCE_PLANS
+-- ============================================
+CREATE TABLE maintenance_plans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  equipment_name TEXT NOT NULL,
+  equipment_type TEXT NOT NULL,
+  location TEXT NOT NULL,
+  frequency_days INTEGER NOT NULL,
+  last_service_date DATE,
+  next_service_date DATE NOT NULL,
+  assigned_to UUID REFERENCES users(id),
+  assigned_to_name TEXT,
+  checklist_json JSONB,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_maintenance_plans_next_service ON maintenance_plans(next_service_date);
+
+-- ============================================
+-- 16. INVENTORY_ITEMS
+-- ============================================
+CREATE TABLE inventory_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  item_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  quantity INTEGER DEFAULT 0,
+  unit TEXT NOT NULL,
+  min_quantity INTEGER DEFAULT 0,
+  max_quantity INTEGER,
+  unit_price DECIMAL(10, 2),
+  supplier TEXT,
+  location TEXT,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_inventory_items_category ON inventory_items(category);
+
+-- ============================================
+-- 17. INVENTORY_REQUESTS
+-- ============================================
+CREATE TABLE inventory_requests (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID REFERENCES tasks(id),
+  requested_by UUID NOT NULL REFERENCES users(id),
+  requested_by_name TEXT NOT NULL,
+  items_json JSONB NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'completed')),
+  approved_by UUID REFERENCES users(id),
+  approved_at TIMESTAMPTZ,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_inventory_requests_task_id ON inventory_requests(task_id);
+CREATE INDEX idx_inventory_requests_status ON inventory_requests(status);
+
+-- ============================================
+-- 18. INVENTORY_TRANSACTIONS
+-- ============================================
+CREATE TABLE inventory_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  item_id UUID NOT NULL REFERENCES inventory_items(id),
+  item_name TEXT NOT NULL,
+  task_id UUID REFERENCES tasks(id),
+  user_id UUID NOT NULL REFERENCES users(id),
+  user_name TEXT NOT NULL,
+  transaction_type TEXT NOT NULL CHECK (transaction_type IN ('in', 'out', 'adjustment')),
+  quantity INTEGER NOT NULL,
+  unit_price DECIMAL(10, 2),
+  total_price DECIMAL(10, 2),
+  notes TEXT,
+  timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_inventory_transactions_item_id ON inventory_transactions(item_id);
+CREATE INDEX idx_inventory_transactions_task_id ON inventory_transactions(task_id);
+CREATE INDEX idx_inventory_transactions_timestamp ON inventory_transactions(timestamp);
+
+-- ============================================
+-- 19. GUEST_REPORTS
+-- ============================================
+CREATE TABLE guest_reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_number TEXT NOT NULL,
+  problem_type TEXT NOT NULL,
+  description TEXT NOT NULL,
+  guest_name TEXT,
+  guest_phone TEXT,
+  task_id UUID REFERENCES tasks(id),
+  status TEXT DEFAULT 'new' CHECK (status IN ('new', 'converted_to_task', 'resolved')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  resolved_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_guest_reports_room_number ON guest_reports(room_number);
+CREATE INDEX idx_guest_reports_status ON guest_reports(status);
+
+-- ============================================
+-- 20. DAILY_STATS
+-- ============================================
+CREATE TABLE daily_stats (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  date DATE NOT NULL UNIQUE,
+  total_tasks INTEGER DEFAULT 0,
+  completed_tasks INTEGER DEFAULT 0,
+  in_progress_tasks INTEGER DEFAULT 0,
+  overdue_tasks INTEGER DEFAULT 0,
+  avg_completion_time_minutes INTEGER,
+  total_cost DECIMAL(10, 2) DEFAULT 0,
+  tasks_by_priority_json JSONB,
+  tasks_by_department_json JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_daily_stats_date ON daily_stats(date);
+
+-- ============================================
+-- 21. USER_SESSIONS
+-- ============================================
+CREATE TABLE user_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token TEXT NOT NULL UNIQUE,
+  device_info TEXT,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_activity_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_sessions_user_id ON user_sessions(user_id);
+CREATE INDEX idx_user_sessions_token ON user_sessions(token);
+CREATE INDEX idx_user_sessions_expires_at ON user_sessions(expires_at);
+
+-- ============================================
+-- 22. USER_ACTIVITY_LOG
+-- ============================================
+CREATE TABLE user_activity_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  user_name TEXT NOT NULL,
+  action_type TEXT NOT NULL,
+  description TEXT NOT NULL,
+  ip_address TEXT,
+  device_info TEXT,
+  timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_user_activity_log_user_id ON user_activity_log(user_id);
+CREATE INDEX idx_user_activity_log_timestamp ON user_activity_log(timestamp);
+
+-- ============================================
+-- TRIGGERS ZA AUTO UPDATE
+-- ============================================
+
+-- Trigger za users.updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_tasks_updated_at BEFORE UPDATE ON tasks
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_inventory_items_updated_at BEFORE UPDATE ON inventory_items
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- ROW LEVEL SECURITY (RLS) - Primer
+-- ============================================
+
+-- Enable RLS na svim tabelama
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+-- Primer policy: Korisnici vide samo svoje notifikacije
+CREATE POLICY "Users can view own notifications" ON notifications
+    FOR SELECT
+    USING (auth.uid() = user_id);
+
+-- Primer policy: Radnici vide samo svoje zadatke
+CREATE POLICY "Radnici view assigned tasks" ON tasks
+    FOR SELECT
+    USING (
+        assigned_to = auth.uid() OR
+        created_by = auth.uid() OR
+        operator_id = auth.uid() OR
+        sef_id = auth.uid()
+    );
+
+-- ============================================
+-- DEMO PODACI
+-- ============================================
+
+-- Demo korisnici (lozinke se hashuju u aplikaciji)
+INSERT INTO users (email, password_hash, full_name, role, department) VALUES
+('admin@hotel.me', '$2b$10$demo_hash', 'Administrator', 'admin', 'tehnicka'),
+('milica@hotel.me', '$2b$10$demo_hash', 'Milica Petrović', 'recepcioner', 'recepcija'),
+('aleksandar@hotel.me', '$2b$10$demo_hash', 'Aleksandar Jović', 'operater', 'tehnicka'),
+('marko@hotel.me', '$2b$10$demo_hash', 'Marko Nikolić', 'radnik', 'tehnicka'),
+('jovan@hotel.me', '$2b$10$demo_hash', 'Jovan Đurić', 'radnik', 'tehnicka'),
+('petar@hotel.me', '$2b$10$demo_hash', 'Petar Đukanović', 'sef', 'tehnicka'),
+('direktor@hotel.me', '$2b$10$demo_hash', 'Direktor Hotela', 'menadzer', 'tehnicka');
+
+-- Demo eksterne firme
+INSERT INTO external_companies (company_name, service_type, contact_person, phone, email) VALUES
+('Klima Servis d.o.o.', 'Klima uređaji', 'Milan Simić', '+382 67 111 222', 'info@klimaservis.me'),
+('Elektro Experts', 'Električar', 'Nikola Vukić', '+382 67 333 444', 'info@elektro.me'),
+('Aqua Tech', 'Vodoinstalater', 'Stefan Radović', '+382 67 555 666', 'info@aquatech.me');
+
+Kako koristiti:
+
+Idi u Supabase Dashboard
+SQL Editor
+Kopiraj i pokreni ceo SQL kod
+Gotovo!
+
+Sve tabele, indeksi, triggeri i demo podaci su kreirani.
+Napomena: Password hash-evi u demo podacima su placeholder. U pravoj aplikaciji ćeš koristiti bcrypt za hashovanje lozinki.RetryPdaj mi prompt za replit agenta sa kojim cu da napravim ovu aplikaciju, ukljuci i sql za tabele u supabase, poslacu mu i sliku organiyacije prozora aplikacije koju i tebi sada saljemEvo kompletnog prompta za Replit agenta:
+# Hotel Maintenance Management System - Prompt za Replit Agent
+
+Napravi kompletnu web aplikaciju za upravljanje tehničkim održavanjem hotela.
+
+## TEHNOLOGIJE:
+- Backend: Node.js + Express
+- Frontend: React
+- Baza podataka: Supabase (PostgreSQL)
+- Autentifikacija: JWT
+- Styling: TailwindCSS
+
+## STRUKTURA PROJEKTA:
+```
+/hotel-maintenance
+  /backend
+    server.js
+    /routes
+      auth.js
+      tasks.js
+      notifications.js
+      users.js
+    /middleware
+      authenticate.js
+    /config
+      supabase.js
+  /frontend
+    /src
+      /components
+        Login.js
+        AdminDashboard.js
+        RecepcionerDashboard.js
+        OperaterDashboard.js
+        RadnikDashboard.js
+        SefDashboard.js
+        ServiserDashboard.js
+        MenadzerDashboard.js
+      /api
+        api.js
+      App.js
+      index.js
+```
+
+## KORISNIČKE ULOGE I FUNKCIONALNOSTI:
+
+### 1. ADMIN
+- Dodaje nove korisnike (Add New User)
+- Unosi: email, password, full_name, role, department, phone, company_name
+- Vidi sve korisnike u sistemu
+
+### 2. RECEPCIONER / RESTORAN / BAZEN / DOMAĆINSTVO
+- Kreira nove reklamacije/zadatke
+- Forma: lokacija (hotel/location/room), opis problema, prioritet (normal/urgent/can_wait)
+- Upload fotografija (opciono)
+- Vidi status svojih kreiranih reklamacija
+- Dobija notifikacije kada je zadatak završen ili vraćen
+
+### 3. OPERATER (Tehnička služba)
+- Prima SVE nove reklamacije sa svih odeljenja
+- Vidi listu novih zadataka sa:
+  - Ko je kreirao (ime + odeljenje)
+  - Opis problema
+  - Lokacija/soba
+  - Prioritet
+  - Vreme prijave
+  
+- ODLUČUJE:
+  - Jednostavne zadatke → Dodeljuje direktno radniku (Marko, Jovan, Dragan)
+  - Složenije zadatke → Prosleđuje šefu (1 KLIK - automatski prenosi originalnu poruku)
+  
+- Dashboard sekcije:
+  - Nove reklamacije (broj)
+  - Kod radnika (broj zadataka po radniku)
+  - Kod šefa (broj zadataka)
+  - Moje dnevne statistike
+
+### 4. RADNIK (Tehnička služba - Marko, Jovan, Dragan)
+- Vidi samo SVOJE dodeljene zadatke
+- Za svaki zadatak vidi:
+  - Originalnu poruku (ko je prijavio + opis)
+  - Lokaciju/sobu
+  - Prioritet
+  - Vreme kada je dobio zadatak
+  
+- Opcije za zadatak:
+  1. **Task Accept** - Prihvata zadatak
+     - Unosi procenu vremena dolaska
+     - Check-in na lokaciju (opciono GPS)
+  
+  2. **Task Report** - Tokom rada
+     - Piše izveštaj šta radi
+     - Upload fotografija
+     - Vreme utrošeno
+  
+  3. **Task turn back to operator** - Ne može da završi
+     - Automatski prosleđuje: originalna poruka + njegov izveštaj + slike
+     - Razlog vraćanja
+     - Operater dobija notifikaciju
+  
+  4. **Submit** - Završava zadatak
+     - Finalni izveštaj
+     - Fotografije završenog posla
+     - Check-out
+     - Status → "completed"
+
+### 5. ŠEF TEHNIČKE SLUŽBE
+- Vidi SVE zadatke u sistemu
+- Dashboard sekcije:
+  - Hitni zadaci
+  - Novi od operatera
+  - Vraćeni od radnika
+  - U toku (kod radnika)
+  - U toku (eksterni servisi)
+  - Završeni danas
+  
+- Za svaki zadatak vidi KOMPLETAN HISTORY:
+  - Ko je kreirao (originalna poruka)
+  - Šta je operater uradio
+  - Šta je radnik pokušao (ako je vraćen)
+  - Sve fotografije
+  - Ceo timeline
+  
+- ODLUKE:
+  1. **Dodeli radniku** - Šalje radniku sa uputstvima
+  2. **Eksterni servis** - Bira firmu iz liste (Klima Servis, Aqua Tech, itd.)
+  3. **Obavesti izvorno odeljenje** - Automatska poruka sa statusom
+     - Šalje originalna poruka + update + procena vremena
+  
+- NOTIFIKACIJE šalje kada:
+  - Zadatak ne može brzo da se reši
+  - Treba skupi servis (>500€)
+  - Soba mora biti van upotrebe
+  - Potrebna akcija od izvornog odeljenja
+
+### 6. EKSTERNI SERVISER
+- Vidi samo zadatke dodeljene njegovoj firmi
+- Za svaki zadatak:
+  - Originalna prijava
+  - Napomene šefa
+  - Sve fotografije
+  - Lokacija/soba
+  
+- Opcije:
+  - **Task Accept** - Prihvata + procena dolaska
+  - **Task Decline** - Odbija (razlog)
+  - **Task Report** - Izveštaj + fotografije
+  - **Cost Entry** - Unos troškova (delovi, rad, dolazak)
+  - **Submit** - Završava + faktura
+
+### 7. MENADŽER
+- Vidi sve + statistike
+- Dashboard:
+  - Dnevne/mesečne statistike
+  - Troškovi (interni/eksterni)
+  - Prosečno vreme rešavanja
+  - Najčešći problemi
+  - Performanse radnika
+  - Ocena eksternih servisa
+
+---
+
+## KLJUČNI WORKFLOW (NAJVAŽNIJE!):
+
+### Scenario 1: Jednostavan zadatak
+```
+1. Milica (Recepcija) kreira: "Sijalica ne radi - hodnik 3"
+2. Aleksandar (Operater) prima → Vidi da je jednostavno → [1 KLIK] Dodeljuje Marku
+3. Marko dobija notifikaciju → Prihvata → Rešava → Submit sa slikom
+4. Milica dobija notifikaciju: "Završeno"
+```
+
+### Scenario 2: Zadatak koji radnik ne može
+```
+1. Milica kreira: "Klima ne hladi - S.308"
+2. Aleksandar → [1 KLIK] Šalje šefu
+3. Petar (Šef) prima sa ORIGINALNOM PORUKOM od Milice
+4. Petar dodeljuje Marku: "Proveri prvo"
+5. Marko pokušava → [VRATI ZADATAK] "Ne mogu, elektronika kvar" + slike
+6. Petar dobija: Milicina originalna poruka + Markov izveštaj + slike
+7. Petar klikne: [OBAVESTI MILICU] + [EKSTERNI SERVIS]
+8. Milica AUTOMATSKI dobija poruku:
+   - Njena originalna prijava
+   - Markov izveštaj
+   - Status: "Zovemo eksterni servis"
+   - Procena: "2-3 dana"
+```
+
+### Scenario 3: Hitno + skupo
+```
+1. Stefan (Restoran) kreira: "Ventilacija kuhinje - DIM!"
+2. Aleksandar → [1 KLIK HITNO] Šefu
+3. Petar → Odmah eksterni + obaveštava: Stefan, Direktor, Operater
+4. Svi dobijaju automatsku poruku sa kompletnim kontekstom
+```
+
+---
+
+## BAZA PODATAKA - SUPABASE SQL:
+```sql
+-- Kopiraj kompletan SQL kod koji sam ti dao ranije (22 tabele)
+-- Kreće sa CREATE TABLE departments...
+-- Završava sa demo podacima
+```
+
+---
+
+## FEATURES KOJE MORA DA IMA:
+
+1. **Automatsko prosleđivanje originalnih poruka** - NE GUBITI KONTEKST
+2. **Timeline view** - Kompletan history svakog zadatka
+3. **Real-time notifikacije** - Koristiti Supabase Realtime
+4. **Upload fotografija** - Supabase Storage
+5. **Responsive dizajn** - Mora raditi na telefonu
+6. **Deadline tracking** - Automatski izračunava rokove po prioritetu
+7. **Cost tracking** - Praćenje troškova po zadatku
+8. **Rating system** - Ocenjivanje eksternih servisa
+9. **Multi-language support** - Latinica/ćirilica (opciono)
+
+---
+
+## SUPABASE KONFIGURACIJA:
+```javascript
+// .env file
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+JWT_SECRET=your_jwt_secret
+PORT=3000
+```
+
+---
+
+## API ENDPOINTS:
+
+### Auth
+- POST /api/login - Login
+- POST /api/logout - Logout
+- POST /api/change-password - Promena lozinke
+
+### Users (samo admin)
+- POST /api/users - Kreiranje novog korisnika
+- GET /api/users - Lista svih korisnika
+- PUT /api/users/:id - Update korisnika
+
+### Tasks
+- GET /api/tasks - Lista zadataka (filtrirano po ulozi)
+- POST /api/tasks - Kreiranje novog zadatka
+- GET /api/tasks/:id - Detalji zadatka + history
+- PUT /api/tasks/:id/assign - Dodela zadatka
+- PUT /api/tasks/:id/return - Vraćanje zadatka
+- PUT /api/tasks/:id/complete - Završavanje zadatka
+- PUT /api/tasks/:id/accept - Prihvatanje zadatka (radnik/serviser)
+- PUT /api/tasks/:id/decline - Odbijanje zadatka
+
+### Notifications
+- GET /api/notifications - Notifikacije za korisnika
+- PUT /api/notifications/:id/read - Označavanje kao pročitano
+
+### Photos
+- POST /api/photos/upload - Upload fotografije
+- GET /api/photos/:taskId - Fotografije zadatka
+
+### Messages (chat)
+- POST /api/tasks/:id/messages - Nova poruka
+- GET /api/tasks/:id/messages - Poruke za zadatak
+
+### Stats (samo menadžer)
+- GET /api/stats/daily - Dnevna statistika
+- GET /api/stats/costs - Troškovi po periodu
+- GET /api/stats/performance - Performanse radnika
+
+---
+
+## DIZAJN - TailwindCSS:
+
+- **Boje po ulogama:**
+  - Admin: Plava
+  - Recepcioner/Odeljenja: Siva
+  - Operater: Zelena
+  - Radnik: Narandžasta
+  - Šef: Ljubičasta
+  - Serviser: Tirkizna
+  - Menadžer: Tamno plava
+
+- **Prioriteti:**
+  - Urgent: Crvena pozadina
+  - Normal: Žuta pozadina
+  - Can wait: Zelena pozadina
+
+- **Statusi:**
+  - New: Svetlo žuta
+  - In progress: Plava
+  - Returned: Narandžasta
+  - Completed: Zelena
+  - Cancelled: Siva
+
+---
+
+## SIGURNOST:
+
+1. JWT tokeni sa expiracijom
+2. Row Level Security (RLS) na Supabase
+3. Validacija svih inputa
+4. SQL injection zaštita
+5. XSS zaštita
+6. Rate limiting na API
+7. CORS konfiguracija
+8. Password hashing (bcrypt)
+
+---
+
+## TESTIRANJE:
+
+Kreiraj demo naloge:
+- admin@hotel.me / admin123
+- milica@hotel.me / milica123 (recepcioner)
+- aleksandar@hotel.me / aleks123 (operater)
+- marko@hotel.me / marko123 (radnik)
+- petar@hotel.me / petar123 (sef)
+- milan@klimaservis.me / milan123 (serviser)
+- direktor@hotel.me / direktor123 (menadžer)
+
+---
+
+## DEPLOYMENT:
+
+1. Backend na Replit (Node.js)
+2. Frontend build u /frontend/build
+3. Supabase kao baza
+4. Environment variables u Replit Secrets
+
+---
+
+## PRIORITET IMPLEMENTACIJE:
+
+**FAZA 1 (MVP):**
+1. Login sistem
+2. Kreiranje zadataka (recepcioner)
+3. Operater dashboard - dodela zadataka
+4. Radnik dashboard - prihvatanje i završavanje
+5. Šef dashboard - pregled svih
+6. Automatsko prosleđivanje poruka
+
+**FAZA 2:**
+7. Notifikacije
+8. Upload fotografija
+9. Timeline/history zadataka
+10. Eksterni serviseri
+
+**FAZA 3:**
+11. Cost tracking
+12. Statistics dashboard
+13. Rating system
+14. Advanced filtering
+
+---
+
+NAPRAVI KOMPLETNU FUNKCIONALNU APLIKACIJU SA SVIM OVIM FUNKCIJAMA. 
+PRILAŽEM WIREFRAME SLIKE KAKO TREBA DA IZGLEDA.
+FOKUSIRAJ SE NA AUTOMATSKO PROSLEĐIVANJE ORIGINALNIH PORUKA - TO JE KLJUČNO!

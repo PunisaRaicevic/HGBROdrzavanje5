@@ -1,0 +1,88 @@
+import express from "express";
+import cors from "cors";
+import { createClient } from "@supabase/supabase-js";
+import admin from "firebase-admin";
+
+// --- Firebase admin init ---
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
+
+// --- Supabase init ---
+const supabase = createClient(
+  process.env.DATABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// ========================================
+// 1) Save FCM token for user
+// ========================================
+app.post("/save-token", async (req, res) => {
+  try {
+    const { user_id, fcm_token } = req.body;
+
+    if (!user_id || !fcm_token) {
+      return res.status(400).json({ error: "Missing user_id or fcm_token" });
+    }
+
+    const { error } = await supabase
+      .from("public_users")
+      .update({ fcm_token })
+      .eq("id", user_id);
+
+    if (error) return res.status(400).json({ error });
+
+    res.json({ success: true });
+  } catch (e) {
+    console.error("Save token error:", e);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ========================================
+// 2) Send push notification to a user
+// ========================================
+app.post("/send-notification", async (req, res) => {
+  try {
+    const { user_id, title, body } = req.body;
+
+    const { data: user, error } = await supabase
+      .from("public_users")
+      .select("fcm_token")
+      .eq("id", user_id)
+      .single();
+
+    if (error || !user?.fcm_token) {
+      return res.status(404).json({ error: "User FCM token not found" });
+    }
+
+    const message = {
+      notification: { title, body },
+      token: user.fcm_token,
+    };
+
+    const response = await admin.messaging().send(message);
+
+    res.json({ success: true, response });
+  } catch (e) {
+    console.error("Notification error:", e);
+    res.status(500).json({ error: "Failed to send notification" });
+  }
+});
+
+// ========================================
+app.get("/", (req, res) => {
+  res.send("Backend radi! 🎉");
+});
+
+app.listen(3000, () => {
+  console.log("Server startovan na portu 3000...");
+});

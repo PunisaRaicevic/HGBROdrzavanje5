@@ -1,0 +1,288 @@
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import "./index.css";
+import "./lib/i18n";
+
+import '@ionic/react/css/core.css';
+import '@ionic/react/css/normalize.css';
+import '@ionic/react/css/structure.css';
+import '@ionic/react/css/typography.css';
+import '@ionic/react/css/padding.css';
+import '@ionic/react/css/float-elements.css';
+import '@ionic/react/css/text-alignment.css';
+import '@ionic/react/css/text-transformation.css';
+import '@ionic/react/css/flex-utils.css';
+import '@ionic/react/css/display.css';
+
+import { PushNotifications } from '@capacitor/push-notifications';
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { Badge } from '@capawesome/capacitor-badge';
+import { Capacitor } from '@capacitor/core';
+
+// ═══════════════════════════════════════════════════════════════
+// JAKA VIBRACIJA - ERROR tip notifikacije + Heavy Impact
+// ═══════════════════════════════════════════════════════════════
+async function vibrateStrong() {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await Haptics.notification({ type: NotificationType.Error });
+      await Haptics.impact({ style: ImpactStyle.Heavy });
+    } catch (error) {
+      console.error('Greška pri vibraciji:', error);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOKALNA POPUP NOTIFIKACIJA SA CUSTOM ZVUKOM
+// ═══════════════════════════════════════════════════════════════
+async function showLocal(title: string, body: string) {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const isAndroid = Capacitor.getPlatform() === 'android';
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: Date.now(),
+            title,
+            body,
+            sound: isAndroid ? "alert1" : "alert1.mp3", // Android bez ekstenzije, iOS sa ekstenzijom
+            channelId: isAndroid ? 'reklamacije-alert' : undefined,
+            smallIcon: "ic_launcher"
+          }
+        ]
+      });
+    } catch (error) {
+      console.error('Greška pri prikazivanju notifikacije:', error);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KREIRANJE ANDROID NOTIFICATION KANALA SA CUSTOM ZVUKOM
+// ═══════════════════════════════════════════════════════════════
+async function createNotificationChannel() {
+  if (Capacitor.getPlatform() === 'android') {
+    try {
+      await LocalNotifications.createChannel({
+        id: 'reklamacije-alert',
+        name: 'Reklamacije Alerte',
+        description: 'Jaki alarmi za nove reklamacije',
+        importance: 5, // IMPORTANCE_HIGH
+        sound: 'alert1', // Bez ekstenzije za Android resurse
+        vibration: true,
+        visibility: 1, // PUBLIC
+      });
+      console.log('Notification kanal kreiran uspešno');
+    } catch (error) {
+      console.error('Greška pri kreiranju notification kanala:', error);
+    }
+  }
+}
+
+// Globalna varijabla za praćenje badge permisija
+let badgePermissionsGranted = false;
+
+// ═══════════════════════════════════════════════════════════════
+// INICIJALIZACIJA PUSH NOTIFIKACIJA
+// ═══════════════════════════════════════════════════════════════
+async function initializePushNotifications() {
+  console.log('🔔 [PUSH INIT] ═══════════════════════════════════════════');
+  console.log('🔔 [PUSH INIT] Početak inicijalizacije push notifikacija...');
+  console.log('🔔 [PUSH INIT] ═══════════════════════════════════════════');
+  
+  if (!Capacitor.isNativePlatform()) {
+    console.log('❌ [PUSH INIT] Push notifikacije su dostupne samo na mobilnim uređajima');
+    return;
+  }
+
+  try {
+    console.log('🔔 [PUSH INIT] Zahtevam permisije za lokalne notifikacije...');
+    // 1. Zahtevaj permisije za lokalne notifikacije
+    await LocalNotifications.requestPermissions();
+    
+    // 2. Kreiraj Android notification kanal sa custom zvukom (Android 8+)
+    await createNotificationChannel();
+
+    // 3. Zahtevaj badge permisije (KRITIČNO za iOS)
+    try {
+      const badgePerms = await Badge.requestPermissions();
+      badgePermissionsGranted = badgePerms.display === 'granted';
+      console.log('Badge permisije:', badgePermissionsGranted ? 'odobrene' : 'nisu odobrene');
+    } catch (error) {
+      console.error('Greška pri zahtevanju badge permisija:', error);
+    }
+
+    // 4. Zahtevaj push notifikacije permisije
+    const permResult = await PushNotifications.requestPermissions();
+    
+    if (permResult.receive === 'granted') {
+      // Registruj za push notifikacije
+      await PushNotifications.register();
+      console.log('Push notifikacije uspešno registrovane');
+    } else {
+      console.warn('Push notifikacije nisu odobrene');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // LISTENER: Nova push notifikacija primljena (FOREGROUND ONLY)
+    // ═══════════════════════════════════════════════════════════════
+    // HYBRID STRATEGY:
+    // - Backend šalje notification block (za background/terminated delivery) + data block
+    // - Ovaj listener se poziva SAMO kada je app u foreground-u
+    // - Na nekim uređajima (Samsung, Xiaomi), sistem automatski prikazuje notifikaciju
+    //   i u foreground-u, što bi kreiralo duplikat ako mi kreiramo lokalnu notifikaciju
+    // - Zato proveravamo da li je notifikacija već prikazana pre nego što kreiramo lokalnu
+    // ═══════════════════════════════════════════════════════════════
+    PushNotifications.addListener('pushNotificationReceived', async (notification) => {
+      console.log('Nova push notifikacija primljena (foreground):', notification);
+      
+      // UVEK: Jaka vibracija i badge povećanje (ovo ne kreira duplikat)
+      await vibrateStrong();
+      
+      if (badgePermissionsGranted) {
+        try {
+          await Badge.increase();
+        } catch (error) {
+          console.error('Greška pri povećanju badge-a:', error);
+        }
+      }
+      
+      // OPCIONO: Kreiraj lokalnu notifikaciju SAMO ako backend zahteva
+      // Ovo omogućava backend-u da kontroliše da li treba dodatna notifikacija
+      // Na većini Android uređaja, notifikacija se NE prikazuje u foreground-u automatski,
+      // pa moramo kreirati lokalnu. Backend može poslati forceLocal: "true" u data block-u.
+      const shouldShowLocal = notification.data?.forceLocal !== 'false';
+      
+      if (shouldShowLocal) {
+        await showLocal(
+          notification.title || notification.data?.title || 'Nova reklamacija',
+          notification.body || notification.data?.body || 'Kliknite da vidite detalje'
+        );
+      }
+    });
+
+    // Listener za kada korisnik klikne na notifikaciju
+    PushNotifications.addListener('pushNotificationActionPerformed', async (notification) => {
+      console.log('Notifikacija kliknuta:', notification);
+      
+      // Očisti badge kada korisnik otvori app preko notifikacije
+      if (badgePermissionsGranted) {
+        try {
+          await Badge.clear();
+        } catch (error) {
+          console.error('Greška pri čišćenju badge-a:', error);
+        }
+      }
+    });
+
+    // Listener za uspešnu registraciju
+    PushNotifications.addListener('registration', async (token) => {
+      console.log('✅ Push registration token primljen:', token.value);
+      
+      // Sačuvaj token ODMAH u localStorage (biće poslat nakon login-a ako korisnik nije ulogovan)
+      localStorage.setItem('pending_push_token', token.value);
+      
+      // Pokušaj da pošalješ token na backend ako je korisnik već ulogovan
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          console.warn('⚠️ Korisnik nije ulogovan - push token će biti poslat nakon login-a');
+          return;
+        }
+
+        const response = await fetch('/api/users/push-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ token: token.value })
+        });
+
+        if (response.ok) {
+          console.log('✅ Push token uspešno poslat na server');
+          // Obriši pending token jer je uspešno poslat
+          localStorage.removeItem('pending_push_token');
+        } else {
+          console.error('❌ Greška pri slanju push tokena na server:', await response.text());
+        }
+      } catch (error) {
+        console.error('❌ Greška pri slanju push tokena:', error);
+      }
+    });
+
+    // Listener za greške pri registraciji
+    PushNotifications.addListener('registrationError', (error) => {
+      console.error('Greška pri registraciji push notifikacija:', error);
+    });
+
+  } catch (error) {
+    console.error('Greška pri inicijalizaciji push notifikacija:', error);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MANUAL PUSH TOKEN RETRY (za debugging)
+// ═══════════════════════════════════════════════════════════════
+export async function sendPendingPushToken() {
+  const pendingToken = localStorage.getItem('pending_push_token');
+  const authToken = localStorage.getItem('authToken');
+  
+  if (!pendingToken) {
+    console.warn('⚠️ Nema pending push tokena');
+    return false;
+  }
+  
+  if (!authToken) {
+    console.warn('⚠️ Korisnik nije ulogovan');
+    return false;
+  }
+  
+  try {
+    const response = await fetch('/api/users/push-token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ token: pendingToken })
+    });
+    
+    if (response.ok) {
+      console.log('✅ Pending push token uspešno poslat!');
+      localStorage.removeItem('pending_push_token');
+      return true;
+    } else {
+      console.error('❌ Greška pri slanju:', await response.text());
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Greška:', error);
+    return false;
+  }
+}
+
+// Export za globalnu upotrebu (može se pozvati iz browser console)
+if (typeof window !== 'undefined') {
+  (window as any).sendPendingPushToken = sendPendingPushToken;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// POKRETANJE INICIJALIZACIJE
+// ═══════════════════════════════════════════════════════════════
+console.log('🚀 [MAIN] Aplikacija se pokreće...');
+console.log('📱 [MAIN] Capacitor.isNativePlatform():', Capacitor.isNativePlatform());
+console.log('🌐 [MAIN] Platform:', Capacitor.getPlatform());
+
+if (Capacitor.isNativePlatform()) {
+  console.log('✅ [MAIN] Detektovana MOBILNA platforma - pokrećem push notifications...');
+  initializePushNotifications()
+    .then(() => console.log('✅ [MAIN] Push notifications inicijalizovane'))
+    .catch(error => console.error('❌ [MAIN] Greška pri inicijalizaciji:', error));
+} else {
+  console.warn('⚠️ [MAIN] WEB platforma - push notifications NEĆE raditi!');
+}
+
+createRoot(document.getElementById("root")!).render(<App />);

@@ -1,0 +1,58 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[SOCKET.IO] Server initialized and ready
+[INIT] Socket.IO initialized for real-time notifications
+12:01:52 AM [express] serving on port 5000
+[CRON SCHEDULER] Starting... Will run every 15 minutes
+[CRON SCHEDULER] ✅ Started successfully
+Browserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+[CRON SCHEDULER] Triggering recurring tasks processing...
+[CRON] Processing recurring tasks...
+[CRON] Found 4 recurring tasks
+[RECURRING] Template 2234f184-b080-46fd-9b52-0858d336f5c4 already has 8 child tasks
+[RECURRING] Template ad4c5468-c50a-4bb3-8b7c-da89ed00ddc0 already has 8 child tasks
+[RECURRING] Template 8a504c01-81b6-414c-b269-337ab1f5dac0 already has 8 child tasks
+[RECURRING] Template 682d0950-92be-4bf3-8701-bd4d8157889a already has 8 child tasks
+[CRON] Finished processing. Created 0 new tasks
+[CRON SCHEDULER] Result: { processed: 0, total: 4, results: [] }
+[CRON SCHEDULER] No tasks to process
+📱 [APP WEB] [2025-11-21T00:02:04.066Z]: Platform: web
+📱 [APP WEB] [2025-11-21T00:02:04.065Z]: 🚀 Pokretanje aplikacije...
+12:02:05 AM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+12:02:05 AM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+[CRON SCHEDULER] Triggering recurring tasks processing...
+[CRON] Processing recurring tasks...
+[CRON] Found 4 recurring tasks
+[RECURRING] Template 2234f184-b080-46fd-9b52-0858d336f5c4 already has 8 child tasks
+[RECURRING] Template ad4c5468-c50a-4bb3-8b7c-da89ed00ddc0 already has 8 child tasks
+[RECURRING] Template 8a504c01-81b6-414c-b269-337ab1f5dac0 already has 8 child tasks
+[RECURRING] Template 682d0950-92be-4bf3-8701-bd4d8157889a already has 8 child tasks
+[CRON] Finished processing. Created 0 new tasks
+[CRON SCHEDULER] Result: { processed: 0, total: 4, results: [] }
+[CRON SCHEDULER] No tasks to process
+[CRON SCHEDULER] Triggering recurring tasks processing...
+[CRON] Processing recurring tasks...
+[CRON] Found 4 recurring tasks
+[RECURRING] Template 2234f184-b080-46fd-9b52-0858d336f5c4 already has 8 child tasks
+[RECURRING] Template ad4c5468-c50a-4bb3-8b7c-da89ed00ddc0 already has 8 child tasks
+[RECURRING] Template 8a504c01-81b6-414c-b269-337ab1f5dac0 already has 8 child tasks
+[RECURRING] Template 682d0950-92be-4bf3-8701-bd4d8157889a already has 8 child tasks
+[CRON] Finished processing. Created 0 new tasks
+[CRON SCHEDULER] Result: { processed: 0, total: 4, results: [] }
+[CRON SCHEDULER] No tasks to process
+[CRON SCHEDULER] Triggering recurring tasks processing...
+[CRON] Processing recurring tasks...
+[CRON] Found 4 recurring tasks
+[RECURRING] Template 2234f184-b080-46fd-9b52-0858d336f5c4 already has 8 child tasks
+[RECURRING] Template ad4c5468-c50a-4bb3-8b7c-da89ed00ddc0 already has 8 child tasks
+[RECURRING] Template 8a504c01-81b6-414c-b269-337ab1f5dac0 already has 8 child tasks
+[RECURRING] Template 682d0950-92be-4bf3-8701-bd4d8157889a already has 8 child tasks
+[CRON] Finished processing. Created 0 new tasks
+[CRON SCHEDULER] Result: { processed: 0, total: 4, results: [] }
+[CRON SCHEDULER] No tasks to process

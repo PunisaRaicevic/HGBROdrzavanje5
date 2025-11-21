@@ -1,0 +1,23 @@
+{
+	"appId": "com.budvanskarivijera.hotel",
+	"appName": "HGBR Tehnička Služba",
+	"webDir": "dist/public",
+	"server": {
+		"androidScheme": "https"
+	},
+	"plugins": {
+		"Camera": {
+			"quality": 90,
+			"allowEditing": false,
+			"resultType": "uri"
+		},
+		"Haptics": {},
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		}
+	}
+}

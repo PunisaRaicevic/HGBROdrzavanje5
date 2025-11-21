@@ -1,0 +1,46 @@
+~/workspace$ git push
+Enumerating objects: 25, done.
+Counting objects: 100% (25/25), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (17/17), done.
+Writing objects: 100% (17/17), 2.45 KiB | 2.45 MiB/s, done.
+Total 17 (delta 14), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (14/14), completed with 7 local objects.
+To https://github.com/PunisaRaicevic/HGBROdrzavanje5.git
+   1bb1358..f47345c  main -> main
+~/workspace$ tail -f /tmp/logs/Start_application_*.log
+==> /tmp/logs/Start_application_20251121_004015_059.log <==
+[CRON] Processing recurring tasks...
+[CRON] Found 4 recurring tasks
+[RECURRING] Template 2234f184-b080-46fd-9b52-0858d336f5c4 already has 8 child tasks
+[RECURRING] Template ad4c5468-c50a-4bb3-8b7c-da89ed00ddc0 already has 8 child tasks
+[RECURRING] Template 8a504c01-81b6-414c-b269-337ab1f5dac0 already has 8 child tasks
+[RECURRING] Template 682d0950-92be-4bf3-8701-bd4d8157889a already has 8 child tasks
+[CRON] Finished processing. Created 0 new tasks
+[CRON SCHEDULER] Result: { processed: 0, total: 4, results: [] }
+[CRON SCHEDULER] No tasks to process</logs>
+</workflow>
+
+==> /tmp/logs/Start_application_20251121_010651_790.log <==
+📱 [APP WEB] [2025-11-21T01:06:40.853Z]: [QUERY] Fetching: /api/tasks
+1:06:42 AM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+📱 [APP WEB] [2025-11-21T01:06:40.853Z]: [QUERY] Headers: {"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOWQzMWUxYy1mNThhLTQ5NjctODUxMy1iMjA1YjZjZTBhZmUiLCJ1c2VybmFtZSI6ImFsZWtzYW5kYXIiLCJyb2xlIjoib3BlcmF0ZXIiLCJmdWxsTmFtZSI6IkFsZWtzYW5kYXIgSm92acSHIiwiaWF0IjoxNzYzNjg3MTAxLCJleHAiOjE3NjYyNzkxMDEsImlzcyI6ImhnYnItaG90ZWwtbWFuYWdlbWVudCJ9.-3KnElfAJN27dVqUoTwCTok4Scj-h_bBvxQcwW28DCM"}
+1:06:42 AM [express] GET /api/tasks 304 in 603ms :: {"tasks":[{"id":"d5a4b8f9-df55-40ea-94a2-5c2a3dd…
+1:06:42 AM [express] POST /api/debug/log 200 in 129ms :: {"ok":true}
+📱 [APP WEB] [2025-11-21T01:06:41.747Z]: [QUERY] Response status: 200
+📱 [APP WEB] [2025-11-21T01:06:41.749Z]: [QUERY] Success, data length: 44
+1:06:43 AM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+1:06:43 AM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}</logs>
+</workflow>
+
+==> /tmp/logs/Start_application_20251121_012253_651.log <==
+📱 [APP WEB] [2025-11-21T01:22:45.591Z]: [QUERY] Fetching: /api/tasks
+1:22:47 AM [express] POST /api/debug/log 200 in 153ms :: {"ok":true}
+1:22:47 AM [express] GET /api/tasks 304 in 534ms :: {"tasks":[{"id":"d5a4b8f9-df55-40ea-94a2-5c2a3dd…
+📱 [APP WEB] [2025-11-21T01:22:45.592Z]: [QUERY] Headers: {"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOWQzMWUxYy1mNThhLTQ5NjctODUxMy1iMjA1YjZjZTBhZmUiLCJ1c2VybmFtZSI6ImFsZWtzYW5kYXIiLCJyb2xlIjoib3BlcmF0ZXIiLCJmdWxsTmFtZSI6IkFsZWtzYW5kYXIgSm92acSHIiwiaWF0IjoxNzYzNjg3MTAxLCJleHAiOjE3NjYyNzkxMDEsImlzcyI6ImhnYnItaG90ZWwtbWFuYWdlbWVudCJ9.-3KnElfAJN27dVqUoTwCTok4Scj-h_bBvxQcwW28DCM"}
+1:22:47 AM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+📱 [APP WEB] [2025-11-21T01:22:46.416Z]: [QUERY] Response status: 200
+📱 [APP WEB] [2025-11-21T01:22:46.418Z]: [QUERY] Success, data length: 44
+1:22:47 AM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}
+1:22:47 AM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}</logs>
+</workflow>

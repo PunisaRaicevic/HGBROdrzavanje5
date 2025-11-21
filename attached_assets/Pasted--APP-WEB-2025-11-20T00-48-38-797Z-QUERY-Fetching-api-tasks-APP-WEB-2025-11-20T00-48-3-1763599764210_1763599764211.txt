@@ -1,0 +1,36 @@
+[APP WEB] [2025-11-20T00:48:38.797Z]: [QUERY] Fetching: /api/tasks
+📱 [APP WEB] [2025-11-20T00:48:38.798Z]: [QUERY] Headers: {"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOWQzMWUxYy1mNThhLTQ5NjctODUxMy1iMjA1YjZjZTBhZmUiLCJ1c2VybmFtZSI6ImFsZWtzYW5kYXIiLCJyb2xlIjoib3BlcmF0ZXIiLCJmdWxsTmFtZSI6IkFsZWtzYW5kYXIgSm92acSHIiwiaWF0IjoxNzYzNTYxMzczLCJleHAiOjE3NjYxNTMzNzMsImlzcyI6ImhnYnItaG90ZWwtbWFuYWdlbWVudCJ9.D2hOYUyMzOlxMpszzqg6QMJQbglfdH5c1Bq5iMPYt34"}
+12:48:39 AM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+12:48:39 AM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+12:48:40 AM [express] GET /api/tasks 304 in 547ms :: {"tasks":[{"id":"db47cb6d-a12f-439a-b5eb-e47c929…
+📱 [APP WEB] [2025-11-20T00:48:40.136Z]: [QUERY] Response status: 200
+📱 [APP WEB] [2025-11-20T00:48:40.138Z]: [QUERY] Success, data length: 23
+12:48:40 AM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+12:48:40 AM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+📱 [APP WEB] [2025-11-20T00:48:50.146Z]: [QUERY] Fetching: /api/tasks
+12:48:50 AM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+📱 [APP WEB] [2025-11-20T00:48:50.146Z]: [QUERY] Headers: {"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOWQzMWUxYy1mNThhLTQ5NjctODUxMy1iMjA1YjZjZTBhZmUiLCJ1c2VybmFtZSI6ImFsZWtzYW5kYXIiLCJyb2xlIjoib3BlcmF0ZXIiLCJmdWxsTmFtZSI6IkFsZWtzYW5kYXIgSm92acSHIiwiaWF0IjoxNzYzNTYxMzczLCJleHAiOjE3NjYxNTMzNzMsImlzcyI6ImhnYnItaG90ZWwtbWFuYWdlbWVudCJ9.D2hOYUyMzOlxMpszzqg6QMJQbglfdH5c1Bq5iMPYt34"}
+12:48:51 AM [express] GET /api/tasks 304 in 547ms :: {"tasks":[{"id":"db47cb6d-a12f-439a-b5eb-e47c929…
+12:48:51 AM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+📱 [APP WEB] [2025-11-20T00:48:50.985Z]: [QUERY] Response status: 200
+📱 [APP WEB] [2025-11-20T00:48:50.987Z]: [QUERY] Success, data length: 23
+12:48:51 AM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+12:48:51 AM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}
+📱 [APP WEB] [2025-11-20T00:49:00.996Z]: [QUERY] Fetching: /api/tasks
+12:49:01 AM [express] POST /api/debug/log 200 in 125ms :: {"ok":true}
+📱 [APP WEB] [2025-11-20T00:49:00.996Z]: [QUERY] Headers: {"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOWQzMWUxYy1mNThhLTQ5NjctODUxMy1iMjA1YjZjZTBhZmUiLCJ1c2VybmFtZSI6ImFsZWtzYW5kYXIiLCJyb2xlIjoib3BlcmF0ZXIiLCJmdWxsTmFtZSI6IkFsZWtzYW5kYXIgSm92acSHIiwiaWF0IjoxNzYzNTYxMzczLCJleHAiOjE3NjYxNTMzNzMsImlzcyI6ImhnYnItaG90ZWwtbWFuYWdlbWVudCJ9.D2hOYUyMzOlxMpszzqg6QMJQbglfdH5c1Bq5iMPYt34"}
+12:49:01 AM [express] GET /api/tasks 304 in 594ms :: {"tasks":[{"id":"db47cb6d-a12f-439a-b5eb-e47c929…
+12:49:01 AM [express] POST /api/debug/log 200 in 125ms :: {"ok":true}
+📱 [APP WEB] [2025-11-20T00:49:01.880Z]: [QUERY] Response status: 200
+📱 [APP WEB] [2025-11-20T00:49:01.881Z]: [QUERY] Success, data length: 23
+12:49:02 AM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+12:49:02 AM [express] POST /api/debug/log 200 in 130ms :: {"ok":true}
+📱 [APP WEB] [2025-11-20T00:49:11.893Z]: [QUERY] Headers: {"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOWQzMWUxYy1mNThhLTQ5NjctODUxMy1iMjA1YjZjZTBhZmUiLCJ1c2VybmFtZSI6ImFsZWtzYW5kYXIiLCJyb2xlIjoib3BlcmF0ZXIiLCJmdWxsTmFtZSI6IkFsZWtzYW5kYXIgSm92acSHIiwiaWF0IjoxNzYzNTYxMzczLCJleHAiOjE3NjYxNTMzNzMsImlzcyI6ImhnYnItaG90ZWwtbWFuYWdlbWVudCJ9.D2hOYUyMzOlxMpszzqg6QMJQbglfdH5c1Bq5iMPYt34"}
+12:49:12 AM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+📱 [APP WEB] [2025-11-20T00:49:11.892Z]: [QUERY] Fetching: /api/tasks
+12:49:12 AM [express] GET /api/tasks 304 in 551ms :: {"tasks":[{"id":"db47cb6d-a12f-439a-b5eb-e47c929…
+12:49:12 AM [express] POST /api/debug/log 200 in 125ms :: {"ok":true}
+📱 [APP WEB] [2025-11-20T00:49:12.734Z]: [QUERY] Response status: 200
+📱 [APP WEB] [2025-11-20T00:49:12.735Z]: [QUERY] Success, data length: 23
+12:49:13 AM [express] POST /api/debug/log 200 in 125ms :: {"ok":true}
+12:49:13 AM [express] POST /api/debug/log 200 in 124ms :: {"ok":true}

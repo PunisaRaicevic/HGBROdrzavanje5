@@ -1,0 +1,189 @@
+mplementacija sa OneSignal:
+1. Instalirajte OneSignal plugin:
+bashnpm install onesignal-cordova-plugin
+npx cap sync
+2. Registrujte se na OneSignal:
+
+Idite na https://onesignal.com
+Kreirajte besplatan nalog
+Dodajte novu Android aplikaciju
+Preuzmite OneSignal App ID
+
+3. Ažurirajte capacitor.config.ts:
+typescriptimport type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.budvanskarivijera.hotel',
+  appName: 'HGBR Tehnička Služba',
+  webDir: 'dist/public',
+  server: {
+    androidScheme: 'https'
+  },
+  plugins: {
+    // UKLONITE PushNotifications i LocalNotifications
+    Camera: {
+      quality: 90,
+      allowEditing: false,
+      resultType: 'uri'
+    },
+    Haptics: {}
+  }
+};
+
+export default config;
+4. Inicijalizacija u vašoj aplikaciji:
+typescriptimport { Capacitor } from '@capacitor/core';
+
+// OneSignal setup
+const initializeOneSignal = () => {
+  if (!Capacitor.isNativePlatform()) {
+    console.log('⚠️ Not running on native platform');
+    return;
+  }
+
+  // @ts-ignore - OneSignal je global objekat
+  const OneSignal = window.plugins?.OneSignal;
+  
+  if (!OneSignal) {
+    console.error('❌ OneSignal plugin not found');
+    return;
+  }
+
+  console.log('🔔 Initializing OneSignal...');
+
+  // Inicijalizuj OneSignal
+  OneSignal.setAppId('VAŠ_ONESIGNAL_APP_ID'); // Dobijete sa OneSignal dashboard-a
+
+  // Omogući notifikacije
+  OneSignal.promptForPushNotificationsWithUserResponse((accepted) => {
+    console.log('Push notifications accepted:', accepted);
+  });
+
+  // Slušaj kada stigne notifikacija
+  OneSignal.setNotificationOpenedHandler((jsonData) => {
+    console.log('🔔 Notification opened:', jsonData);
+    
+    // Ovde rukujte akcijom (npr. otvori određenu reklamaciju)
+    const data = jsonData.notification.additionalData;
+    if (data?.reklamacija_id) {
+      // Navigirajte do reklamacije
+      window.location.href = `/reklamacija/${data.reklamacija_id}`;
+    }
+  });
+
+  // Dobij Player ID (koristite ga umesto FCM tokena)
+  OneSignal.getDeviceState((state) => {
+    console.log('📱 OneSignal Player ID:', state.userId);
+    // Sačuvajte userId u bazi umesto FCM tokena
+    savePlayerIdToDatabase(state.userId);
+  });
+};
+
+// Pokrenite pri startu
+document.addEventListener('deviceready', initializeOneSignal);
+
+// Fallback
+if (document.readyState === 'complete') {
+  setTimeout(initializeOneSignal, 1000);
+}
+```
+
+**5. Dodajte custom zvuk (opciono):**
+
+Stavite `notification_sound.wav` u:
+```
+android/app/src/main/res/raw/notification_sound.wav
+6. Backend integracija:
+Umesto FCM API-ja, koristite OneSignal API:
+javascript// Node.js primer
+const axios = require('axios');
+
+async function sendNotification(playerIds, title, message, data = {}) {
+  const notification = {
+    app_id: 'VAŠ_ONESIGNAL_APP_ID',
+    include_player_ids: playerIds, // Array player ID-eva
+    headings: { en: title },
+    contents: { en: message },
+    data: data, // Extra data (reklamacija_id, itd.)
+    android_sound: 'notification_sound', // Bez .wav ekstenzije
+    android_channel_id: 'reklamacije-alert',
+    priority: 10
+  };
+
+  try {
+    const response = await axios.post(
+      'https://onesignal.com/api/v1/notifications',
+      notification,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic VAŠ_REST_API_KEY' // Sa OneSignal dashboard-a
+        }
+      }
+    );
+    console.log('✅ Notification sent:', response.data);
+  } catch (error) {
+    console.error('❌ Error sending notification:', error);
+  }
+}
+
+// Primer upotrebe:
+sendNotification(
+  ['player-id-123', 'player-id-456'], 
+  'Nova reklamacija',
+  'Soba 305 - Nema tople vode',
+  { reklamacija_id: '12345', tip: 'hitno' }
+);
+7. Update AndroidManifest.xml:
+xml<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:replace="android:allowBackup,android:theme,android:label">
+        
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/title_activity_main"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <!-- UKLONITE FCM service -->
+        
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.budvanskarivjera.hotel.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+</manifest>
+8. Sync i rebuild:
+bashnpx cap sync android
+npx cap copy android
+
+# Build u AppFlow ili lokalno
+ionic capacitor build android

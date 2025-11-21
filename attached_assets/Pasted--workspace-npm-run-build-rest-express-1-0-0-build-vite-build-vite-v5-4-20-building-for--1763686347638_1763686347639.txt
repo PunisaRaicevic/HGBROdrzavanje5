@@ -1,0 +1,51 @@
+~/workspace$ npm run build
+
+> rest-express@1.0.0 build
+> vite build
+
+vite v5.4.20 building for production...
+<script src="capacitor.js"> in "/index.html" can't be bundled without type="module" attribute
+transforming (13) ../node_modules/@capacitor/haptics/dist/esm/definitions.jsBrowserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+transforming (44) ../node_modules/@tanstack/query-core/build/modern/index.js
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 2846 modules transformed.
+../dist/public/index.html                                                                 1.20 kB │ gzip:   0.59 kB
+../dist/public/assets/budvanska-color-centralno-transparent_1762428184467-Dw53VPqV.png   12.31 kB
+../dist/public/assets/index-DZndJWj5.css                                                122.32 kB │ gzip:  19.58 kB
+../dist/public/assets/status-tap-kuHP1fqc.js                                              0.51 kB │ gzip:   0.36 kB
+../dist/public/assets/index8-Cah2mxkF.js                                                  0.53 kB │ gzip:   0.36 kB
+../dist/public/assets/web-BxwMNdTB.js                                                     0.89 kB │ gzip:   0.41 kB
+../dist/public/assets/web-DEpByWjb.js                                                     0.94 kB │ gzip:   0.46 kB
+../dist/public/assets/focus-visible-supuXXMI.js                                           0.99 kB │ gzip:   0.51 kB
+../dist/public/assets/md.transition-BFFYPJyy.js                                           1.03 kB │ gzip:   0.57 kB
+../dist/public/assets/keyboard-CP1BbagE.js                                                1.28 kB │ gzip:   0.65 kB
+../dist/public/assets/index7-CHeoZ-8Q.js                                                  1.63 kB │ gzip:   0.83 kB
+../dist/public/assets/input-shims-BMhbXBjw.js                                             5.00 kB │ gzip:   2.15 kB
+../dist/public/assets/swipe-back-DUw_29d1.js                                              6.81 kB │ gzip:   2.73 kB
+../dist/public/assets/ios.transition-DGjH6EXX.js                                         10.56 kB │ gzip:   3.08 kB
+../dist/public/assets/index-CoozaGLK.js                                                 963.28 kB │ gzip: 280.39 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 12.19s
+~/workspace$ npx cap sync android
+✔ Copying web assets from public to android/app/src/main/assets/public in 36.37ms
+✔ Creating capacitor.config.json in android/app/src/main/assets in 1.35ms
+[info] Found 1 Cordova plugin for android:
+       onesignal-cordova-plugin@5.2.18
+✔ copy android in 110.32ms
+✔ Updating Android plugins in 22.13ms
+[info] Found 4 Capacitor plugins for android:
+       @capacitor/app@7.1.0
+       @capacitor/camera@7.0.2
+       @capacitor/haptics@7.0.2
+       @capawesome/capacitor-badge@7.0.1
+⠹ update android [info] Found 1 Cordova plugin for android:
+       onesignal-cordova-plugin@5.2.18
+✔ update android in 152.72ms
+[info] Sync finished in 0.371s
+~/workspace$ 

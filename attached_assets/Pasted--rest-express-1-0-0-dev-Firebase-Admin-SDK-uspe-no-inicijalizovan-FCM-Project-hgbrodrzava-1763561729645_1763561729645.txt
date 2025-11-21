@@ -1,0 +1,60 @@
+
+> rest-express@1.0.0 dev
+✅ Firebase Admin SDK uspešno inicijalizovan
+📱 FCM Project: hgbrodrzavanje-39543
+[SOCKET.IO] Server initialized and ready
+[INIT] Socket.IO initialized for real-time notifications
+2:05:12 PM [express] serving on port 5000
+[CRON SCHEDULER] Starting... Will run every 15 minutes
+[CRON SCHEDULER] ✅ Started successfully
+Browserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+[CRON SCHEDULER] Triggering recurring tasks processing...
+[CRON] Processing recurring tasks...
+[CRON] No recurring tasks found
+[CRON SCHEDULER] Result: {
+  processed: 0,
+  total: 0,
+  results: [],
+  message: 'No recurring tasks to process'
+}
+[CRON SCHEDULER] No tasks to process
+2:05:24 PM [express] GET /api/auth/me 304 in 412ms :: {"user":{"id":"e39c4001-e9d2-45a8-97aa-462b85d…
+2:05:24 PM [express] GET /api/tasks/my 304 in 359ms :: {"tasks":[{"id":"628d3ad9-2478-4b9d-aa1e-d465…
+2:09:21 PM [express] GET /api/tasks/my 304 in 365ms :: {"tasks":[{"id":"628d3ad9-2478-4b9d-aa1e-d465…
+2:09:27 PM [express] POST /api/auth/logout 200 in 127ms :: {"message":"Logged out successfully"}
+Login attempt for: aleksandar
+User found, checking password...
+Password (hashed) valid: true
+2:09:33 PM [express] POST /api/auth/login 200 in 726ms :: {"user":{"id":"a9d31e1c-f58a-4967-8513-b20…
+2:09:34 PM [express] GET /api/tasks 200 in 529ms :: {"tasks":[{"id":"628d3ad9-2478-4b9d-aa1e-d465f60…
+📥 [POST /api/tasks] Request received
+Request body: {
+  "title": "Hotel Mogren, Vila Magnolija B-blok",
+  "description": "333",
+  "hotel": "Hotel Mogren",
+  "blok": "Vila Magnolija B-blok",
+  "soba": null,
+  "priority": "normal",
+  "userId": "a9d31e1c-f58a-4967-8513-b205b6ce0afe",
+  "userName": "Aleksandar Jović",
+  "userDepartment": "tehnicka"
+}
+2:09:41 PM [express] POST /api/tasks 200 in 857ms :: {"task":{"id":"2c206c1d-a9e3-4dc8-98cd-7aec69dd…
+2:09:42 PM [express] GET /api/tasks 200 in 527ms :: {"tasks":[{"id":"2c206c1d-a9e3-4dc8-98cd-7aec69d…
+2:09:45 PM [express] GET /api/technicians 200 in 329ms :: {"technicians":[{"id":"05867ea3-2c6c-41f5-…
+[SOCKET.IO] Sending FULL task payload to 1 worker(s): 05867ea3-2c6c-41f5-9637-11c469827e9a
+[SOCKET.IO] Emitting task:assigned to room: user:05867ea3-2c6c-41f5-9637-11c469827e9a
+[SOCKET.IO] Broadcasting FULL task update: 2c206c1d-a9e3-4dc8-98cd-7aec69dd42a3 -> assigned_to_radnik
+❌ Greška pri slanju push notifikacije korisniku: Error: supabaseKey is required.
+    at new SupabaseClient (/home/runner/workspace/node_modules/@supabase/supabase-js/src/SupabaseClient.ts:111:29)
+    at createClient (/home/runner/workspace/node_modules/@supabase/supabase-js/src/index.ts:46:10)
+    at sendPushToUser (/home/runner/workspace/server/services/firebase.ts:114:22)
+2:09:47 PM [express] PATCH /api/tasks/2c206c1d-a9e3-4dc8-98cd-7aec69dd42a3 200 in 962ms :: {"task":{…
+2:09:48 PM [express] GET /api/tasks 200 in 548ms :: {"tasks":[{"id":"2c206c1d-a9e3-4dc8-98cd-7aec69d…
+2:10:00 PM [express] GET /api/tasks 304 in 581ms :: {"tasks":[{"id":"2c206c1d-a9e3-4dc8-98cd-7aec69d…
+2:10:11 PM [express] GET /api/tasks 304 in 580ms :: {"tasks":[{"id":"2c206c1d-a9e3-4dc8-98cd-7aec69d…
+2:10:22 PM [express] GET /api/tasks 304 in 595ms :: {"tasks":[{"id":"2c206c1d-a9e3-4dc8-98cd-7aec69d…

@@ -1,0 +1,78 @@
+1. Kreiraj ionic.config.json (ako ne postoji)
+U root direktorijumu dodaj:
+json{
+  "name": "Hotel Maintenance App",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react",
+  "id": "hotel-maintenance"
+}
+2. Proveri capacitor.config.ts
+Mora da pokazuje na ispravan webDir:
+typescriptimport { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.hotel.maintenance',
+  appName: 'Hotel Maintenance',
+  webDir: 'dist/public', // Ovo mora da odgovara tvom build outDir
+  bundledWebRuntime: false,
+  server: {
+    androidScheme: 'https'
+  }
+};
+
+export default config;
+3. Dodaj build skriptu u package.json
+json{
+  "scripts": {
+    "build": "vite build",
+    "build:android": "npm run build && cap sync android",
+    "ionic:build": "vite build"
+  }
+}
+4. Instaliraj vite-tsconfig-paths (rešava @shared problem)
+bashnpm install --save-dev vite-tsconfig-paths
+5. Ažuriraj vite.config.ts - dodaj plugin
+typescriptimport { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import tsconfigPaths from 'vite-tsconfig-paths'; // DODAJ
+import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+
+export default defineConfig({
+  plugins: [
+    react(),
+    tsconfigPaths(), // DODAJ - ovo rešava @shared problem
+    runtimeErrorOverlay(),
+    ...(process.env.NODE_ENV !== "production" &&
+    process.env.REPL_ID !== undefined
+      ? [
+          await import("@replit/vite-plugin-cartographer").then((m) =>
+            m.cartographer(),
+          ),
+          await import("@replit/vite-plugin-dev-banner").then((m) =>
+            m.devBanner(),
+          ),
+        ]
+      : []),
+  ],
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "client", "src"),
+      "@shared": path.resolve(import.meta.dirname, "shared"),
+      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+    },
+  },
+  root: path.resolve(import.meta.dirname, "client"),
+  build: {
+    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    emptyOutDir: true,
+  },
+  server: {
+    fs: {
+      strict: true,
+      deny: ["**/.*"],
+    },
+  },
+});
