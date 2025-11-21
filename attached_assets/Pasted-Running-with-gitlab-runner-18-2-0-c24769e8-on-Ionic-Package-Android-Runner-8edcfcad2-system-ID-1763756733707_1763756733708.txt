@@ -1,0 +1,965 @@
+Running with gitlab-runner 18.2.0 (c24769e8)
+  on Ionic Package Android Runner 8edcfcad2, system ID: r_grBV51LLoFR2
+  feature flags: FF_USE_POD_ACTIVE_DEADLINE_SECONDS:false
+Preparing the "kubernetes" executor
+Using Kubernetes namespace: ionic-runners
+Using Kubernetes executor with image 319312831725.dkr.ecr.us-west-2.amazonaws.com/appflow-runners/linux:2025.06 ...
+Using attach strategy to execute scripts...
+Using effective pull policy of [Always] for container build
+Using effective pull policy of [Always] for container helper
+Using effective pull policy of [Always] for container init-permissions
+Using effective pull policy of [Always] for container metrics
+Preparing environment
+Waiting for pod ionic-runners/runner-8edcfcad2-project-0-concurrent-4-rmon7dth to be running, status is Pending
+Running on runner-8edcfcad2-project-0-concurrent-4-rmon7dth via gitlab-runner-7dffd7b966-798h4...
+
+Getting source from Git repository
+Gitaly correlation ID: 
+Fetching changes...
+Initialized empty Git repository in /builds/PunisaRaicevic/HGBROdrzavanje5/.git/
+Created fresh repository.
+Checking out f899257d as detached HEAD (ref is main)...
+
+Updating/initializing submodules...
+Updated submodules
+
+Executing "step_script" stage of the job script
+$ pre-build
+[20:21:51]: Building project....
+$ run "fetch-updates"
+Checking for build process updates...
+$ run "build-android"
+[20:21:53]: ---------------------------------
+[20:21:53]: --- Step: add_extra_platforms ---
+[20:21:53]: ---------------------------------
+[20:21:53]: Setting '[:web]' as extra SupportedPlatforms
+/builds/PunisaRaicevic/HGBROdrzavanje5/fastlane/outsystems/errors/detectors/pdm_plugins.rb:8: warning: character class has '-' without escape
+/builds/PunisaRaicevic/HGBROdrzavanje5/fastlane/outsystems/errors/detectors/pdm_plugins.rb:15: warning: character class has '-' without escape
+[20:21:53]: ------------------------------
+[20:21:53]: --- Step: default_platform ---
+[20:21:53]: ------------------------------
+[20:21:53]: Driving the lane 'android build_capacitor' 🚀
+[20:21:53]: ---------------------------------
+[20:21:53]: --- Step: prepare_environment ---
+[20:21:53]: ---------------------------------
+[20:21:53]: Setting default environment variables to tidy up logs. These can be overridden by setting them in Appflow.
+[20:21:53]: 
+[20:21:53]: Set COREPACK_ENABLE_AUTO_PIN=0 (Suppress yarn warnings)
+[20:21:53]: -------------------------
+[20:21:53]: --- Step: sentry_init ---
+[20:21:53]: -------------------------
+[20:21:53]: ----------------------------
+[20:21:53]: --- Step: begin_building ---
+[20:21:53]: ----------------------------
+[20:21:53]: Began building @ 2025-11-21T20:21:53
+[20:21:53]: ---------------------------
+[20:21:53]: --- Step: build_summary ---
+[20:21:53]: ---------------------------
+
++---------------------------------------------------+
+|                   Build Summary                   |
++---------------------+-----------------------------+
+| Runners Revision    | Latest                      |
+| Job ID              | 10584982                    |
+| Node.js version     | v20.19.3                    |
+| Cordova CLI version | 12.0.0 (cordova-lib@12.0.2) |
+| npm version         | 10.8.2                      |
+| yarn version        | 1.22.22                     |
++---------------------+-----------------------------+
+
+[20:21:55]: No build credential specified
+[20:21:55]: ---------------------------
+[20:21:55]: --- Step: set_ionic_cli ---
+[20:21:55]: ---------------------------
+[20:21:56]: Preinstalled @ionic/cli compatible with project `react`
+[20:21:56]: ------------------------------------
+[20:21:56]: --- Step: detect_package_manager ---
+[20:21:56]: ------------------------------------
+[20:21:56]: Detecting package manager
+[20:21:56]: Defaulting to npm
+[20:21:56]: ---------------------------------
+[20:21:56]: --- Step: add_git_credentials ---
+[20:21:56]: ---------------------------------
+[20:21:56]: Writing git-credentials files
+[20:21:56]: git-credentials successfully added to project
+[20:21:56]: --------------------------------
+[20:21:56]: --- Step: get_appflow_config ---
+[20:21:56]: --------------------------------
+[20:21:56]: Checking for appflow.config.json
+[20:21:56]: Appflow config not detected
+[20:21:56]: --------------------------------
+[20:21:56]: --- Step: dependency_install ---
+[20:21:56]: --------------------------------
+[20:21:56]: Installing Dependencies (in /builds/PunisaRaicevic/HGBROdrzavanje5)
+[20:21:56]: $ npm ci --quiet 
+[20:22:01]: ▸ npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+[20:22:01]: ▸ npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+[20:22:01]: ▸ npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[20:22:01]: ▸ npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+[20:22:01]: ▸ npm warn deprecated
+[20:22:01]: ▸ npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+[20:22:10]: ▸ npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+[20:22:10]: ▸ npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[20:22:12]: ▸ npm warn deprecated @xmldom/xmldom@0.7.13: this version is no longer supported, please update to at least 0.8.*
+[20:22:12]: ▸ npm warn deprecated @xmldom/xmldom@0.7.13: this version is no longer supported, please update to at least 0.8.*
+[20:22:32]: ▸ added 1080 packages, and audited 1081 packages in 36s
+[20:22:32]: ▸ 124 packages are looking for funding
+[20:22:32]: ▸ run `npm fund` for details
+[20:22:32]: ▸ 9 vulnerabilities (3 low, 5 moderate, 1 high)
+[20:22:32]: ▸ To address issues that do not require attention, run:
+[20:22:32]: ▸ npm audit fix
+[20:22:32]: ▸ To address all issues (including breaking changes), run:
+[20:22:32]: ▸ npm audit fix --force
+[20:22:32]: ▸ Run `npm audit` for details.
+[20:22:32]: -------------------------------------
+[20:22:32]: --- Step: create_capacitor_config ---
+[20:22:32]: -------------------------------------
+[20:22:32]: -------------------------
+[20:22:32]: --- Step: get_web_dir ---
+[20:22:32]: -------------------------
+[20:22:32]: webDir is `dist/public`
+[20:22:32]: -----------------------------------
+[20:22:32]: --- Step: modify_cap_web_config ---
+[20:22:32]: -----------------------------------
+[20:22:32]: No custom native config detected.
+[20:22:32]: ---------------------------
+[20:22:32]: --- Step: set_java_home ---
+[20:22:32]: ---------------------------
+[20:22:32]: Try to detect the android gradle plugin version
+[20:22:32]: Project Android Gradle Plug-in version is 8.7.2: set Java to 21
+[20:22:32]: ---------------------------
+[20:22:32]: --- Step: build_pro_app ---
+[20:22:32]: ---------------------------
+[20:22:32]: Building app from /builds/PunisaRaicevic/HGBROdrzavanje5
+[20:22:32]: Build script detected...
+[20:22:32]: $ npm run build
+[20:22:32]: ▸ > rest-express@1.0.0 build
+[20:22:32]: ▸ > vite build
+[20:22:33]: ▸ vite v5.4.20 building for production...
+[20:22:33]: ▸ transforming...
+[20:22:33]: ▸ Browserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+[20:22:33]: ▸ npx update-browserslist-db@latest
+[20:22:33]: ▸ Why you should do it regularly: https://github.com/browserslist/update-db#readme
+[20:22:35]: ▸ A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+[20:22:43]: ▸ ✓ 2846 modules transformed.
+[20:22:44]: ▸ rendering chunks...
+[20:22:44]: ▸ computing gzip size...
+[20:22:44]: ▸ ../dist/public/index.html                                                                 1.16 kB │ gzip:   0.58 kB
+[20:22:44]: ▸ ../dist/public/assets/budvanska-color-centralno-transparent_1762428184467-Dw53VPqV.png   12.31 kB
+[20:22:44]: ▸ ../dist/public/assets/index-DZndJWj5.css                                                122.32 kB │ gzip:  19.58 kB
+[20:22:44]: ▸ ../dist/public/assets/status-tap-5EojpoMt.js                                              0.51 kB │ gzip:   0.36 kB
+[20:22:44]: ▸ ../dist/public/assets/index8-CkP2QCsW.js                                                  0.53 kB │ gzip:   0.36 kB
+[20:22:44]: ▸ ../dist/public/assets/web-B9dF_Wtr.js                                                     0.89 kB │ gzip:   0.41 kB
+[20:22:44]: ▸ ../dist/public/assets/web-TTlASKr5.js                                                     0.94 kB │ gzip:   0.47 kB
+[20:22:44]: ▸ ../dist/public/assets/focus-visible-supuXXMI.js                                           0.99 kB │ gzip:   0.51 kB
+[20:22:44]: ▸ ../dist/public/assets/md.transition-CT1Dv5v0.js                                           1.03 kB │ gzip:   0.57 kB
+[20:22:44]: ▸ ../dist/public/assets/keyboard-C7EAQrEz.js                                                1.28 kB │ gzip:   0.66 kB
+[20:22:44]: ▸ ../dist/public/assets/index7-DXZMEj0O.js                                                  1.63 kB │ gzip:   0.84 kB
+[20:22:44]: ▸ ../dist/public/assets/input-shims-Che0a0Ql.js                                             5.00 kB │ gzip:   2.15 kB
+[20:22:44]: ▸ ../dist/public/assets/swipe-back-DCwyXsmu.js                                              6.81 kB │ gzip:   2.74 kB
+[20:22:44]: ▸ ../dist/public/assets/ios.transition-DRLiwlEK.js                                         10.56 kB │ gzip:   3.09 kB
+[20:22:44]: ▸ ../dist/public/assets/index-C8uQ9cOg.js                                                 966.55 kB │ gzip: 282.51 kB
+[20:22:44]: ▸ 
+[20:22:44]: ▸ (!) Some chunks are larger than 500 kB after minification. Consider:
+[20:22:44]: ▸ - Using dynamic import() to code-split the application
+[20:22:44]: ▸ - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[20:22:44]: ▸ - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[20:22:44]: ▸ ✓ built in 11.61s
+[20:22:44]: $ ionic info
+[20:22:45]: ▸ [WARN] Error loading @capacitor/ios package.json: Error: Cannot find module '@capacitor/ios/package.json'
+[20:22:45]: ▸ Require stack:
+[20:22:45]: ▸ - /usr/local/nvm/versions/node/v20.19.3/lib/node_modules/@ionic/cli/lib/project/index.js
+[20:22:45]: ▸ - /usr/local/nvm/versions/node/v20.19.3/lib/node_modules/@ionic/cli/lib/index.js
+[20:22:45]: ▸ - /usr/local/nvm/versions/node/v20.19.3/lib/node_modules/@ionic/cli/index.js
+[20:22:45]: ▸ - /usr/local/nvm/versions/node/v20.19.3/lib/node_modules/@ionic/cli/bin/ionic
+[20:22:46]: ▸ Ionic:
+[20:22:46]: ▸ Ionic CLI       : 7.2.1 (/usr/local/nvm/versions/node/v20.19.3/lib/node_modules/@ionic/cli)
+[20:22:46]: ▸ Ionic Framework : @ionic/react 8.7.9
+[20:22:46]: ▸ Capacitor:
+[20:22:46]: ▸ Capacitor CLI      : 7.4.4
+[20:22:46]: ▸ @capacitor/android : 7.4.4
+[20:22:46]: ▸ @capacitor/core    : 7.4.4
+[20:22:46]: ▸ @capacitor/ios     : not installed
+[20:22:46]: ▸ Utility:
+[20:22:46]: ▸ cordova-res : not installed globally
+[20:22:46]: ▸ native-run  : 2.0.1
+[20:22:46]: ▸ System:
+[20:22:46]: ▸ NodeJS : v20.19.3 (/usr/local/nvm/versions/node/v20.19.3/bin/node)
+[20:22:46]: ▸ npm    : 10.8.2
+[20:22:46]: ▸ OS     : Linux 5.10
+[20:22:46]: Generating app manifest...
+[20:22:46]: ----------------------
+[20:22:46]: --- Step: cap_sync ---
+[20:22:46]: ----------------------
+[20:22:47]: $ npx cap sync android
+[20:22:48]: ▸ ✔ Copying web assets from public to android/app/src/main/assets/public in 21.53ms
+[20:22:48]: ▸ ✔ Creating capacitor.config.json in android/app/src/main/assets in 1.90ms
+[20:22:48]: ▸ [info] Found 1 Cordova plugin for android:
+[20:22:48]: ▸ onesignal-cordova-plugin@5.2.18
+[20:22:48]: ▸ ✔ copy android in 194.08ms
+[20:22:48]: ▸ ✔ Updating Android plugins in 51.10ms
+[20:22:48]: ▸ [info] Found 4 Capacitor plugins for android:
+[20:22:48]: ▸ @capacitor/app@7.1.0
+[20:22:48]: ▸ @capacitor/camera@7.0.2
+[20:22:48]: ▸ @capacitor/haptics@7.0.2
+[20:22:48]: ▸ @capawesome/capacitor-badge@7.0.1
+[20:22:48]: ▸ [info] Found 1 Cordova plugin for android:
+[20:22:48]: ▸ onesignal-cordova-plugin@5.2.18
+[20:22:48]: ▸ ✔ update android in 352.08ms
+[20:22:48]: ▸ [info] Sync finished in 0.749s
+[20:22:48]: -------------------------------
+[20:22:48]: --- Step: cap_custom_deploy ---
+[20:22:48]: -------------------------------
+[20:22:48]: No custom native config detected.
+[20:22:48]: ----------------------------------
+[20:22:48]: --- Step: modify_gradle_config ---
+[20:22:48]: ----------------------------------
+[20:22:48]: No custom native config found... skipping
+[20:22:48]: Building android (in /builds/PunisaRaicevic/HGBROdrzavanje5/android)...
+[20:22:48]: -------------------------
+[20:22:48]: --- Step: bundledebug ---
+[20:22:48]: -------------------------
+[20:22:48]: ▸ Downloading https://services.gradle.org/distributions/gradle-8.11.1-all.zip
+[20:22:51]: ▸ .....................10%......................20%......................30%......................40%......................50%......................60%......................70%......................80%......................90%......................100%
+[20:22:56]: ▸ Welcome to Gradle 8.11.1!
+[20:22:56]: ▸ Here are the highlights of this release:
+[20:22:56]: ▸ - Parallel load and store for Configuration Cache
+[20:22:56]: ▸ - Java compilation errors at the end of the build output
+[20:22:56]: ▸ - Consolidated report for warnings and deprecations
+[20:22:56]: ▸ For more details see https://docs.gradle.org/8.11.1/release-notes.html
+[20:22:56]: ▸ Starting a Gradle Daemon (subsequent builds will be faster)
+[20:23:30]: ▸ > Configure project :app
+[20:23:30]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[20:23:37]: ▸ > Configure project :capacitor-cordova-android-plugins
+[20:23:37]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[20:23:41]: ▸ > Task :app:preBuild UP-TO-DATE
+[20:23:41]: ▸ > Task :app:preDebugBuild UP-TO-DATE
+[20:23:41]: ▸ > Task :app:generateDebugResValues
+[20:23:41]: ▸ > Task :app:processDebugGoogleServices
+[20:23:41]: ▸ > Task :capacitor-android:preBuild UP-TO-DATE
+[20:23:41]: ▸ > Task :capacitor-android:preDebugBuild UP-TO-DATE
+[20:23:41]: ▸ > Task :capacitor-android:generateDebugResValues
+[20:23:41]: ▸ > Task :capacitor-android:generateDebugResources
+[20:23:41]: ▸ > Task :capacitor-android:packageDebugResources
+[20:23:41]: ▸ > Task :capacitor-app:preBuild UP-TO-DATE
+[20:23:41]: ▸ > Task :capacitor-app:preDebugBuild UP-TO-DATE
+[20:23:41]: ▸ > Task :capacitor-app:generateDebugResValues
+[20:23:41]: ▸ > Task :capacitor-app:generateDebugResources
+[20:23:41]: ▸ > Task :capacitor-app:packageDebugResources
+[20:23:41]: ▸ > Task :capacitor-camera:preBuild UP-TO-DATE
+[20:23:41]: ▸ > Task :capacitor-camera:preDebugBuild UP-TO-DATE
+[20:23:41]: ▸ > Task :capacitor-camera:generateDebugResValues
+[20:23:41]: ▸ > Task :capacitor-camera:generateDebugResources
+[20:23:42]: ▸ > Task :capacitor-camera:packageDebugResources
+[20:23:42]: ▸ > Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+[20:23:42]: ▸ > Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+[20:23:42]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResValues
+[20:23:42]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResources
+[20:23:42]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugResources
+[20:23:42]: ▸ > Task :capacitor-haptics:preBuild UP-TO-DATE
+[20:23:42]: ▸ > Task :capacitor-haptics:preDebugBuild UP-TO-DATE
+[20:23:42]: ▸ > Task :capacitor-haptics:generateDebugResValues
+[20:23:42]: ▸ > Task :capacitor-haptics:generateDebugResources
+[20:23:42]: ▸ > Task :capacitor-haptics:packageDebugResources
+[20:23:42]: ▸ > Task :capawesome-capacitor-badge:preBuild UP-TO-DATE
+[20:23:42]: ▸ > Task :capawesome-capacitor-badge:preDebugBuild UP-TO-DATE
+[20:23:42]: ▸ > Task :capawesome-capacitor-badge:generateDebugResValues
+[20:23:42]: ▸ > Task :capawesome-capacitor-badge:generateDebugResources
+[20:23:42]: ▸ > Task :capawesome-capacitor-badge:packageDebugResources
+[20:23:54]: ▸ > Task :app:mapDebugSourceSetPaths
+[20:23:54]: ▸ > Task :app:generateDebugResources
+[20:23:56]: ▸ > Task :app:createDebugCompatibleScreenManifests
+[20:23:56]: ▸ > Task :app:extractDeepLinksDebug
+[20:23:56]: ▸ > Task :capacitor-android:extractDeepLinksDebug
+[20:23:56]: ▸ > Task :capacitor-app:extractDeepLinksDebug
+[20:23:56]: ▸ > Task :capacitor-camera:extractDeepLinksDebug
+[20:23:56]: ▸ > Task :capacitor-cordova-android-plugins:extractDeepLinksDebug
+[20:23:56]: ▸ > Task :capacitor-haptics:extractDeepLinksDebug
+[20:23:56]: ▸ > Task :capawesome-capacitor-badge:extractDeepLinksDebug
+[20:23:57]: ▸ > Task :capacitor-android:writeDebugAarMetadata
+[20:23:57]: ▸ > Task :capacitor-camera:processDebugManifest
+[20:23:57]: ▸ > Task :capacitor-android:processDebugManifest
+[20:23:57]: ▸ > Task :capacitor-haptics:processDebugManifest
+[20:23:57]: ▸ > Task :capacitor-app:processDebugManifest
+[20:23:57]: ▸ > Task :capacitor-cordova-android-plugins:processDebugManifest
+[20:23:57]: ▸ > Task :capawesome-capacitor-badge:processDebugManifest
+[20:23:57]: ▸ > Task :capacitor-app:writeDebugAarMetadata
+[20:23:58]: ▸ > Task :app:mergeDebugResources
+[20:23:58]: ▸ > Task :app:processDebugMainManifest
+[20:23:58]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/AndroidManifest.xml:23:5-69:19 Warning:
+[20:23:58]: ▸ application@android:allowBackup was tagged at AndroidManifest.xml:23 to replace other declarations but no other declaration present
+[20:23:58]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/AndroidManifest.xml:23:5-69:19 Warning:
+[20:23:58]: ▸ application@android:theme was tagged at AndroidManifest.xml:23 to replace other declarations but no other declaration present
+[20:23:58]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/AndroidManifest.xml:23:5-69:19 Warning:
+[20:23:58]: ▸ application@android:label was tagged at AndroidManifest.xml:23 to replace other declarations but no other declaration present
+[20:23:58]: ▸ > Task :app:processDebugManifest
+[20:23:58]: ▸ > Task :app:processApplicationManifestDebugForBundle
+[20:23:58]: ▸ > Task :capacitor-camera:writeDebugAarMetadata
+[20:23:58]: ▸ > Task :capacitor-cordova-android-plugins:writeDebugAarMetadata
+[20:23:59]: ▸ > Task :capacitor-haptics:writeDebugAarMetadata
+[20:23:59]: ▸ > Task :capawesome-capacitor-badge:writeDebugAarMetadata
+[20:23:59]: ▸ > Task :app:packageDebugResources
+[20:23:59]: ▸ > Task :app:checkDebugAarMetadata
+[20:24:00]: ▸ > Task :app:parseDebugLocalResources
+[20:24:00]: ▸ > Task :app:processDebugManifestForPackage
+[20:24:00]: ▸ > Task :capacitor-android:compileDebugLibraryResources
+[20:24:00]: ▸ > Task :capacitor-android:parseDebugLocalResources
+[20:24:01]: ▸ > Task :capacitor-app:compileDebugLibraryResources
+[20:24:01]: ▸ > Task :capacitor-camera:compileDebugLibraryResources
+[20:24:01]: ▸ > Task :capacitor-app:parseDebugLocalResources
+[20:24:01]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugLibraryResources
+[20:24:01]: ▸ > Task :capacitor-camera:parseDebugLocalResources
+[20:24:01]: ▸ > Task :capacitor-android:generateDebugRFile
+[20:24:01]: ▸ > Task :capacitor-app:generateDebugRFile
+[20:24:01]: ▸ > Task :capacitor-camera:generateDebugRFile
+[20:24:01]: ▸ > Task :capacitor-cordova-android-plugins:parseDebugLocalResources
+[20:24:01]: ▸ > Task :capacitor-haptics:compileDebugLibraryResources
+[20:24:01]: ▸ > Task :capacitor-haptics:parseDebugLocalResources
+[20:24:01]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugRFile
+[20:24:01]: ▸ > Task :capawesome-capacitor-badge:compileDebugLibraryResources
+[20:24:01]: ▸ > Task :capacitor-haptics:generateDebugRFile
+[20:24:01]: ▸ > Task :capawesome-capacitor-badge:parseDebugLocalResources
+[20:24:01]: ▸ > Task :app:mergeDebugShaders
+[20:24:01]: ▸ > Task :capawesome-capacitor-badge:generateDebugRFile
+[20:24:01]: ▸ > Task :app:compileDebugShaders NO-SOURCE
+[20:24:04]: ▸ > Task :app:generateDebugAssets UP-TO-DATE
+[20:24:04]: ▸ > Task :capacitor-android:mergeDebugShaders
+[20:24:04]: ▸ > Task :capacitor-android:compileDebugShaders NO-SOURCE
+[20:24:04]: ▸ > Task :capacitor-android:generateDebugAssets UP-TO-DATE
+[20:24:04]: ▸ > Task :capacitor-android:packageDebugAssets
+[20:24:04]: ▸ > Task :capacitor-app:mergeDebugShaders
+[20:24:04]: ▸ > Task :capacitor-app:compileDebugShaders NO-SOURCE
+[20:24:04]: ▸ > Task :capacitor-app:generateDebugAssets UP-TO-DATE
+[20:24:04]: ▸ > Task :capacitor-app:packageDebugAssets
+[20:24:04]: ▸ > Task :capacitor-camera:mergeDebugShaders
+[20:24:04]: ▸ > Task :capacitor-camera:compileDebugShaders NO-SOURCE
+[20:24:04]: ▸ > Task :capacitor-camera:generateDebugAssets UP-TO-DATE
+[20:24:04]: ▸ > Task :capacitor-camera:packageDebugAssets
+[20:24:04]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugShaders
+[20:24:04]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+[20:24:04]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+[20:24:04]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugAssets
+[20:24:04]: ▸ > Task :capacitor-haptics:mergeDebugShaders
+[20:24:04]: ▸ > Task :capacitor-haptics:compileDebugShaders NO-SOURCE
+[20:24:04]: ▸ > Task :capacitor-haptics:generateDebugAssets UP-TO-DATE
+[20:24:04]: ▸ > Task :capacitor-haptics:packageDebugAssets
+[20:24:04]: ▸ > Task :capawesome-capacitor-badge:mergeDebugShaders
+[20:24:04]: ▸ > Task :capawesome-capacitor-badge:compileDebugShaders NO-SOURCE
+[20:24:04]: ▸ > Task :capawesome-capacitor-badge:generateDebugAssets UP-TO-DATE
+[20:24:04]: ▸ > Task :capawesome-capacitor-badge:packageDebugAssets
+[20:24:05]: ▸ > Task :app:mergeDebugAssets
+[20:24:05]: ▸ > Task :capacitor-app:javaPreCompileDebug
+[20:24:05]: ▸ > Task :capacitor-android:javaPreCompileDebug
+[20:24:05]: ▸ > Task :capacitor-camera:javaPreCompileDebug
+[20:24:05]: ▸ > Task :capacitor-haptics:javaPreCompileDebug
+[20:24:06]: ▸ > Task :app:processDebugResources
+[20:24:13]: ▸ > Task :capacitor-android:compileDebugJavaWithJavac
+[20:24:13]: ▸ Note: Some input files use unchecked or unsafe operations.
+[20:24:13]: ▸ Note: Recompile with -Xlint:unchecked for details.
+[20:24:36]: ▸ > Task :capawesome-capacitor-badge:javaPreCompileDebug
+[20:24:36]: ▸ > Task :capacitor-cordova-android-plugins:javaPreCompileDebug
+[20:24:36]: ▸ > Task :capacitor-android:bundleLibCompileToJarDebug
+[20:24:36]: ▸ > Task :capacitor-android:bundleLibRuntimeToJarDebug
+[20:24:37]: ▸ > Task :app:bundleDebugResources
+[20:24:38]: ▸ > Task :app:desugarDebugFileDependencies
+[20:24:38]: ▸ > Task :capacitor-app:compileDebugJavaWithJavac
+[20:24:38]: ▸ > Task :capacitor-app:bundleLibRuntimeToJarDebug
+[20:24:40]: ▸ > Task :capacitor-camera:compileDebugJavaWithJavac
+[20:24:40]: ▸ Note: /builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@capacitor/camera/android/src/main/java/com/capacitorjs/plugins/camera/CameraBottomSheetDialogFragment.java uses unchecked or unsafe operations.
+[20:24:40]: ▸ Note: Recompile with -Xlint:unchecked for details.
+[20:24:43]: ▸ > Task :capacitor-camera:bundleLibRuntimeToJarDebug
+[20:24:44]: ▸ > Task :capacitor-haptics:compileDebugJavaWithJavac
+[20:24:44]: ▸ > Task :capacitor-haptics:bundleLibRuntimeToJarDebug
+[20:24:44]: ▸ > Task :capawesome-capacitor-badge:compileDebugJavaWithJavac
+[20:24:44]: ▸ > Task :capawesome-capacitor-badge:bundleLibRuntimeToJarDebug
+[20:24:57]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac
+[20:24:57]: ▸ > Task :app:javaPreCompileDebug
+[20:24:57]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug
+[20:24:57]: ▸ > Task :capacitor-app:bundleLibCompileToJarDebug
+[20:24:57]: ▸ > Task :capacitor-camera:bundleLibCompileToJarDebug
+[20:24:57]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug
+[20:24:57]: ▸ > Task :capacitor-haptics:bundleLibCompileToJarDebug
+[20:24:57]: ▸ > Task :app:processDebugJavaRes NO-SOURCE
+[20:24:57]: ▸ > Task :capawesome-capacitor-badge:bundleLibCompileToJarDebug
+[20:24:57]: ▸ > Task :capacitor-android:processDebugJavaRes NO-SOURCE
+[20:24:57]: ▸ > Task :app:compileDebugJavaWithJavac FAILED
+[20:24:57]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:4: error: cannot find symbol
+[20:24:57]: ▸ import com.getcapacitor.CapacitorActivity;
+[20:24:57]: ▸ ^
+[20:24:57]: ▸ symbol:   class CapacitorActivity
+[20:24:57]: ▸ location: package com.getcapacitor
+[20:24:57]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+[20:24:57]: ▸ OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+[20:24:57]: ▸ ^
+[20:24:57]: ▸ symbol:   variable LOG_LEVEL
+[20:24:57]: ▸ location: class OneSignal
+[20:24:57]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+[20:24:57]: ▸ OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+[20:24:57]: ▸ ^
+[20:24:57]: ▸ symbol:   variable LOG_LEVEL
+[20:24:57]: ▸ location: class OneSignal
+[20:24:57]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:16: error: cannot find symbol
+[20:24:57]: ▸ OneSignal.setAppId("2f2e1a1d-44e8-4e3e-9f08-7d8a2f3e5c8b");
+[20:24:57]: ▸ ^
+[20:24:57]: ▸ symbol:   method setAppId(String)
+[20:24:57]: ▸ location: class OneSignal
+[20:24:57]: ▸ 4 errors
+[20:24:58]: ▸ [Incubating] Problems report is available at: file:///builds/PunisaRaicevic/HGBROdrzavanje5/android/build/reports/problems/problems-report.html
+[20:24:58]: ▸ FAILURE: Build failed with an exception.
+[20:24:58]: ▸ * What went wrong:
+[20:24:58]: ▸ Execution failed for task ':app:compileDebugJavaWithJavac'.
+[20:24:58]: ▸ > Compilation failed; see the compiler output below.
+[20:24:58]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:16: error: cannot find symbol
+[20:24:58]: ▸ OneSignal.setAppId("2f2e1a1d-44e8-4e3e-9f08-7d8a2f3e5c8b");
+[20:24:58]: ▸ ^
+[20:24:58]: ▸ symbol:   method setAppId(String)
+[20:24:58]: ▸ location: class OneSignal
+[20:24:58]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:4: error: cannot find symbol
+[20:24:58]: ▸ import com.getcapacitor.CapacitorActivity;
+[20:24:58]: ▸ ^
+[20:24:58]: ▸ symbol:   class CapacitorActivity
+[20:24:58]: ▸ location: package com.getcapacitor
+[20:24:58]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+[20:24:58]: ▸ OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+[20:24:58]: ▸ ^
+[20:24:58]: ▸ symbol:   variable LOG_LEVEL
+[20:24:58]: ▸ location: class OneSignal
+[20:24:58]: ▸ /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+[20:24:58]: ▸ OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+[20:24:58]: ▸ ^
+[20:24:58]: ▸ symbol:   variable LOG_LEVEL
+[20:24:58]: ▸ location: class OneSignal
+[20:24:58]: ▸ 4 errors
+[20:24:58]: ▸ * Try:
+[20:24:58]: ▸ > Check your code and dependencies to fix the compilation error(s)
+[20:24:58]: ▸ > Run with --scan to get full insights.
+[20:24:58]: ▸ BUILD FAILED in 2m 9s
+[20:24:58]: ▸ 111 actionable tasks: 111 executed
+[20:24:59]: -------------------------
+[20:24:59]: --- Step: upload_logs ---
+[20:24:59]: -------------------------
+[20:25:03]: --------------------------------------
+[20:25:03]: --- Step: sentry_capture_exception ---
+[20:25:03]: --------------------------------------
++------------------------------------------------+
+|                  Lane Context                  |
++----------------------+-------------------------+
+| DEFAULT_PLATFORM     | ios                     |
+| PLATFORM_NAME        | android                 |
+| LANE_NAME            | android build_capacitor |
+| IONIC_CLI_VERSION    | 7.2.1                   |
+| NODE_PACKAGE_MANAGER | npm                     |
+| PROJECT_WEB_DIR      | dist/public             |
+| GRADLE_BUILD_TYPE    | debug                   |
++----------------------+-------------------------+
+[20:25:03]: Shell command exited with exit status 1 instead of 0.
+Downloading https://services.gradle.org/distributions/gradle-8.11.1-all.zip
+.....................10%......................20%......................30%......................40%......................50%......................60%......................70%......................80%......................90%......................100%
+
+Welcome to Gradle 8.11.1!
+
+Here are the highlights of this release:
+ - Parallel load and store for Configuration Cache
+ - Java compilation errors at the end of the build output
+ - Consolidated report for warnings and deprecations
+
+For more details see https://docs.gradle.org/8.11.1/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-cordova-android-plugins
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResValues
+> Task :app:processDebugGoogleServices
+> Task :capacitor-android:preBuild UP-TO-DATE
+> Task :capacitor-android:preDebugBuild UP-TO-DATE
+> Task :capacitor-android:generateDebugResValues
+> Task :capacitor-android:generateDebugResources
+> Task :capacitor-android:packageDebugResources
+> Task :capacitor-app:preBuild UP-TO-DATE
+> Task :capacitor-app:preDebugBuild UP-TO-DATE
+> Task :capacitor-app:generateDebugResValues
+> Task :capacitor-app:generateDebugResources
+> Task :capacitor-app:packageDebugResources
+> Task :capacitor-camera:preBuild UP-TO-DATE
+> Task :capacitor-camera:preDebugBuild UP-TO-DATE
+> Task :capacitor-camera:generateDebugResValues
+> Task :capacitor-camera:generateDebugResources
+> Task :capacitor-camera:packageDebugResources
+> Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateDebugResValues
+> Task :capacitor-cordova-android-plugins:generateDebugResources
+> Task :capacitor-cordova-android-plugins:packageDebugResources
+> Task :capacitor-haptics:preBuild UP-TO-DATE
+> Task :capacitor-haptics:preDebugBuild UP-TO-DATE
+> Task :capacitor-haptics:generateDebugResValues
+> Task :capacitor-haptics:generateDebugResources
+> Task :capacitor-haptics:packageDebugResources
+> Task :capawesome-capacitor-badge:preBuild UP-TO-DATE
+> Task :capawesome-capacitor-badge:preDebugBuild UP-TO-DATE
+> Task :capawesome-capacitor-badge:generateDebugResValues
+> Task :capawesome-capacitor-badge:generateDebugResources
+> Task :capawesome-capacitor-badge:packageDebugResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :capacitor-android:extractDeepLinksDebug
+> Task :capacitor-app:extractDeepLinksDebug
+> Task :capacitor-camera:extractDeepLinksDebug
+> Task :capacitor-cordova-android-plugins:extractDeepLinksDebug
+> Task :capacitor-haptics:extractDeepLinksDebug
+> Task :capawesome-capacitor-badge:extractDeepLinksDebug
+> Task :capacitor-android:writeDebugAarMetadata
+> Task :capacitor-camera:processDebugManifest
+> Task :capacitor-android:processDebugManifest
+> Task :capacitor-haptics:processDebugManifest
+> Task :capacitor-app:processDebugManifest
+> Task :capacitor-cordova-android-plugins:processDebugManifest
+> Task :capawesome-capacitor-badge:processDebugManifest
+> Task :capacitor-app:writeDebugAarMetadata
+> Task :app:mergeDebugResources
+
+> Task :app:processDebugMainManifest
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/AndroidManifest.xml:23:5-69:19 Warning:
+	application@android:allowBackup was tagged at AndroidManifest.xml:23 to replace other declarations but no other declaration present
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/AndroidManifest.xml:23:5-69:19 Warning:
+	application@android:theme was tagged at AndroidManifest.xml:23 to replace other declarations but no other declaration present
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/AndroidManifest.xml:23:5-69:19 Warning:
+	application@android:label was tagged at AndroidManifest.xml:23 to replace other declarations but no other declaration present
+
+> Task :app:processDebugManifest
+> Task :app:processApplicationManifestDebugForBundle
+> Task :capacitor-camera:writeDebugAarMetadata
+> Task :capacitor-cordova-android-plugins:writeDebugAarMetadata
+> Task :capacitor-haptics:writeDebugAarMetadata
+> Task :capawesome-capacitor-badge:writeDebugAarMetadata
+> Task :app:packageDebugResources
+> Task :app:checkDebugAarMetadata
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugManifestForPackage
+> Task :capacitor-android:compileDebugLibraryResources
+> Task :capacitor-android:parseDebugLocalResources
+> Task :capacitor-app:compileDebugLibraryResources
+> Task :capacitor-camera:compileDebugLibraryResources
+> Task :capacitor-app:parseDebugLocalResources
+> Task :capacitor-cordova-android-plugins:compileDebugLibraryResources
+> Task :capacitor-camera:parseDebugLocalResources
+> Task :capacitor-android:generateDebugRFile
+> Task :capacitor-app:generateDebugRFile
+> Task :capacitor-camera:generateDebugRFile
+> Task :capacitor-cordova-android-plugins:parseDebugLocalResources
+> Task :capacitor-haptics:compileDebugLibraryResources
+> Task :capacitor-haptics:parseDebugLocalResources
+> Task :capacitor-cordova-android-plugins:generateDebugRFile
+> Task :capawesome-capacitor-badge:compileDebugLibraryResources
+> Task :capacitor-haptics:generateDebugRFile
+> Task :capawesome-capacitor-badge:parseDebugLocalResources
+> Task :app:mergeDebugShaders
+> Task :capawesome-capacitor-badge:generateDebugRFile
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:mergeDebugShaders
+> Task :capacitor-android:compileDebugShaders NO-SOURCE
+> Task :capacitor-android:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:packageDebugAssets
+> Task :capacitor-app:mergeDebugShaders
+> Task :capacitor-app:compileDebugShaders NO-SOURCE
+> Task :capacitor-app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-app:packageDebugAssets
+> Task :capacitor-camera:mergeDebugShaders
+> Task :capacitor-camera:compileDebugShaders NO-SOURCE
+> Task :capacitor-camera:generateDebugAssets UP-TO-DATE
+> Task :capacitor-camera:packageDebugAssets
+> Task :capacitor-cordova-android-plugins:mergeDebugShaders
+> Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+> Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:packageDebugAssets
+> Task :capacitor-haptics:mergeDebugShaders
+> Task :capacitor-haptics:compileDebugShaders NO-SOURCE
+> Task :capacitor-haptics:generateDebugAssets UP-TO-DATE
+> Task :capacitor-haptics:packageDebugAssets
+> Task :capawesome-capacitor-badge:mergeDebugShaders
+> Task :capawesome-capacitor-badge:compileDebugShaders NO-SOURCE
+> Task :capawesome-capacitor-badge:generateDebugAssets UP-TO-DATE
+> Task :capawesome-capacitor-badge:packageDebugAssets
+> Task :app:mergeDebugAssets
+> Task :capacitor-app:javaPreCompileDebug
+> Task :capacitor-android:javaPreCompileDebug
+> Task :capacitor-camera:javaPreCompileDebug
+> Task :capacitor-haptics:javaPreCompileDebug
+> Task :app:processDebugResources
+
+> Task :capacitor-android:compileDebugJavaWithJavac
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :capawesome-capacitor-badge:javaPreCompileDebug
+> Task :capacitor-cordova-android-plugins:javaPreCompileDebug
+> Task :capacitor-android:bundleLibCompileToJarDebug
+> Task :capacitor-android:bundleLibRuntimeToJarDebug
+> Task :app:bundleDebugResources
+> Task :app:desugarDebugFileDependencies
+> Task :capacitor-app:compileDebugJavaWithJavac
+> Task :capacitor-app:bundleLibRuntimeToJarDebug
+
+> Task :capacitor-camera:compileDebugJavaWithJavac
+Note: /builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@capacitor/camera/android/src/main/java/com/capacitorjs/plugins/camera/CameraBottomSheetDialogFragment.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :capacitor-camera:bundleLibRuntimeToJarDebug
+> Task :capacitor-haptics:compileDebugJavaWithJavac
+> Task :capacitor-haptics:bundleLibRuntimeToJarDebug
+> Task :capawesome-capacitor-badge:compileDebugJavaWithJavac
+> Task :capawesome-capacitor-badge:bundleLibRuntimeToJarDebug
+> Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac
+> Task :app:javaPreCompileDebug
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug
+> Task :capacitor-app:bundleLibCompileToJarDebug
+> Task :capacitor-camera:bundleLibCompileToJarDebug
+> Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug
+> Task :capacitor-haptics:bundleLibCompileToJarDebug
+> Task :app:processDebugJavaRes NO-SOURCE
+> Task :capawesome-capacitor-badge:bundleLibCompileToJarDebug
+> Task :capacitor-android:processDebugJavaRes NO-SOURCE
+
+> Task :app:compileDebugJavaWithJavac FAILED
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:4: error: cannot find symbol
+import com.getcapacitor.CapacitorActivity;
+                       ^
+  symbol:   class CapacitorActivity
+  location: package com.getcapacitor
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+    OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+                                   ^
+  symbol:   variable LOG_LEVEL
+  location: class OneSignal
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+    OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+                                                                ^
+  symbol:   variable LOG_LEVEL
+  location: class OneSignal
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:16: error: cannot find symbol
+    OneSignal.setAppId("2f2e1a1d-44e8-4e3e-9f08-7d8a2f3e5c8b");
+             ^
+  symbol:   method setAppId(String)
+  location: class OneSignal
+4 errors
+[Incubating] Problems report is available at: file:///builds/PunisaRaicevic/HGBROdrzavanje5/android/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:16: error: cannot find symbol
+      OneSignal.setAppId("2f2e1a1d-44e8-4e3e-9f08-7d8a2f3e5c8b");
+               ^
+    symbol:   method setAppId(String)
+    location: class OneSignal
+  /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:4: error: cannot find symbol
+  import com.getcapacitor.CapacitorActivity;
+                         ^
+    symbol:   class CapacitorActivity
+    location: package com.getcapacitor
+  /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+      OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+                                     ^
+    symbol:   variable LOG_LEVEL
+    location: class OneSignal
+  /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+      OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+                                                                  ^
+    symbol:   variable LOG_LEVEL
+    location: class OneSignal
+  4 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2m 9s
+111 actionable tasks: 111 executed
+
+
++-----------------------------------------------+
+|               fastlane summary                |
++------+--------------------------+-------------+
+| Step | Action                   | Time (in s) |
++------+--------------------------+-------------+
+| 1    | add_extra_platforms      | 0           |
+| 2    | default_platform         | 0           |
+| 3    | prepare_environment      | 0           |
+| 4    | sentry_init              | 0           |
+| 5    | begin_building           | 0           |
+| 6    | build_summary            | 1           |
+| 7    | set_ionic_cli            | 1           |
+| 8    | detect_package_manager   | 0           |
+| 9    | add_git_credentials      | 0           |
+| 10   | get_appflow_config       | 0           |
+| 11   | dependency_install       | 35          |
+| 12   | create_capacitor_config  | 0           |
+| 13   | get_web_dir              | 0           |
+| 14   | modify_cap_web_config    | 0           |
+| 15   | set_java_home            | 0           |
+| 16   | build_pro_app            | 13          |
+| 17   | cap_sync                 | 2           |
+| 18   | cap_custom_deploy        | 0           |
+| 19   | modify_gradle_config     | 0           |
+| 💥   | bundledebug              | 130         |
+| 21   | upload_logs              | 4           |
+| 22   | sentry_capture_exception | 0           |
++------+--------------------------+-------------+
+
+[20:25:03]: fastlane finished with errors
+/usr/local/bundle/bin/fastlane: [!] Shell command exited with exit status 1 instead of 0. (FastlaneCore::Interface::FastlaneShellError)
+Downloading https://services.gradle.org/distributions/gradle-8.11.1-all.zip
+.....................10%......................20%......................30%......................40%......................50%......................60%......................70%......................80%......................90%......................100%
+
+Welcome to Gradle 8.11.1!
+
+Here are the highlights of this release:
+ - Parallel load and store for Configuration Cache
+ - Java compilation errors at the end of the build output
+ - Consolidated report for warnings and deprecations
+
+For more details see https://docs.gradle.org/8.11.1/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-cordova-android-plugins
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResValues
+> Task :app:processDebugGoogleServices
+> Task :capacitor-android:preBuild UP-TO-DATE
+> Task :capacitor-android:preDebugBuild UP-TO-DATE
+> Task :capacitor-android:generateDebugResValues
+> Task :capacitor-android:generateDebugResources
+> Task :capacitor-android:packageDebugResources
+> Task :capacitor-app:preBuild UP-TO-DATE
+> Task :capacitor-app:preDebugBuild UP-TO-DATE
+> Task :capacitor-app:generateDebugResValues
+> Task :capacitor-app:generateDebugResources
+> Task :capacitor-app:packageDebugResources
+> Task :capacitor-camera:preBuild UP-TO-DATE
+> Task :capacitor-camera:preDebugBuild UP-TO-DATE
+> Task :capacitor-camera:generateDebugResValues
+> Task :capacitor-camera:generateDebugResources
+> Task :capacitor-camera:packageDebugResources
+> Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateDebugResValues
+> Task :capacitor-cordova-android-plugins:generateDebugResources
+> Task :capacitor-cordova-android-plugins:packageDebugResources
+> Task :capacitor-haptics:preBuild UP-TO-DATE
+> Task :capacitor-haptics:preDebugBuild UP-TO-DATE
+> Task :capacitor-haptics:generateDebugResValues
+> Task :capacitor-haptics:generateDebugResources
+> Task :capacitor-haptics:packageDebugResources
+> Task :capawesome-capacitor-badge:preBuild UP-TO-DATE
+> Task :capawesome-capacitor-badge:preDebugBuild UP-TO-DATE
+> Task :capawesome-capacitor-badge:generateDebugResValues
+> Task :capawesome-capacitor-badge:generateDebugResources
+> Task :capawesome-capacitor-badge:packageDebugResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :capacitor-android:extractDeepLinksDebug
+> Task :capacitor-app:extractDeepLinksDebug
+> Task :capacitor-camera:extractDeepLinksDebug
+> Task :capacitor-cordova-android-plugins:extractDeepLinksDebug
+> Task :capacitor-haptics:extractDeepLinksDebug
+> Task :capawesome-capacitor-badge:extractDeepLinksDebug
+> Task :capacitor-android:writeDebugAarMetadata
+> Task :capacitor-camera:processDebugManifest
+> Task :capacitor-android:processDebugManifest
+> Task :capacitor-haptics:processDebugManifest
+> Task :capacitor-app:processDebugManifest
+> Task :capacitor-cordova-android-plugins:processDebugManifest
+> Task :capawesome-capacitor-badge:processDebugManifest
+> Task :capacitor-app:writeDebugAarMetadata
+> Task :app:mergeDebugResources
+
+> Task :app:processDebugMainManifest
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/AndroidManifest.xml:23:5-69:19 Warning:
+	application@android:allowBackup was tagged at AndroidManifest.xml:23 to replace other declarations but no other declaration present
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/AndroidManifest.xml:23:5-69:19 Warning:
+	application@android:theme was tagged at AndroidManifest.xml:23 to replace other declarations but no other declaration present
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/AndroidManifest.xml:23:5-69:19 Warning:
+	application@android:label was tagged at AndroidManifest.xml:23 to replace other declarations but no other declaration present
+
+> Task :app:processDebugManifest
+> Task :app:processApplicationManifestDebugForBundle
+> Task :capacitor-camera:writeDebugAarMetadata
+> Task :capacitor-cordova-android-plugins:writeDebugAarMetadata
+> Task :capacitor-haptics:writeDebugAarMetadata
+> Task :capawesome-capacitor-badge:writeDebugAarMetadata
+> Task :app:packageDebugResources
+> Task :app:checkDebugAarMetadata
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugManifestForPackage
+> Task :capacitor-android:compileDebugLibraryResources
+> Task :capacitor-android:parseDebugLocalResources
+> Task :capacitor-app:compileDebugLibraryResources
+> Task :capacitor-camera:compileDebugLibraryResources
+> Task :capacitor-app:parseDebugLocalResources
+> Task :capacitor-cordova-android-plugins:compileDebugLibraryResources
+> Task :capacitor-camera:parseDebugLocalResources
+> Task :capacitor-android:generateDebugRFile
+> Task :capacitor-app:generateDebugRFile
+> Task :capacitor-camera:generateDebugRFile
+> Task :capacitor-cordova-android-plugins:parseDebugLocalResources
+> Task :capacitor-haptics:compileDebugLibraryResources
+> Task :capacitor-haptics:parseDebugLocalResources
+> Task :capacitor-cordova-android-plugins:generateDebugRFile
+> Task :capawesome-capacitor-badge:compileDebugLibraryResources
+> Task :capacitor-haptics:generateDebugRFile
+> Task :capawesome-capacitor-badge:parseDebugLocalResources
+> Task :app:mergeDebugShaders
+> Task :capawesome-capacitor-badge:generateDebugRFile
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:mergeDebugShaders
+> Task :capacitor-android:compileDebugShaders NO-SOURCE
+> Task :capacitor-android:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:packageDebugAssets
+> Task :capacitor-app:mergeDebugShaders
+> Task :capacitor-app:compileDebugShaders NO-SOURCE
+> Task :capacitor-app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-app:packageDebugAssets
+> Task :capacitor-camera:mergeDebugShaders
+> Task :capacitor-camera:compileDebugShaders NO-SOURCE
+> Task :capacitor-camera:generateDebugAssets UP-TO-DATE
+> Task :capacitor-camera:packageDebugAssets
+> Task :capacitor-cordova-android-plugins:mergeDebugShaders
+> Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+> Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:packageDebugAssets
+> Task :capacitor-haptics:mergeDebugShaders
+> Task :capacitor-haptics:compileDebugShaders NO-SOURCE
+> Task :capacitor-haptics:generateDebugAssets UP-TO-DATE
+> Task :capacitor-haptics:packageDebugAssets
+> Task :capawesome-capacitor-badge:mergeDebugShaders
+> Task :capawesome-capacitor-badge:compileDebugShaders NO-SOURCE
+> Task :capawesome-capacitor-badge:generateDebugAssets UP-TO-DATE
+> Task :capawesome-capacitor-badge:packageDebugAssets
+> Task :app:mergeDebugAssets
+> Task :capacitor-app:javaPreCompileDebug
+> Task :capacitor-android:javaPreCompileDebug
+> Task :capacitor-camera:javaPreCompileDebug
+> Task :capacitor-haptics:javaPreCompileDebug
+> Task :app:processDebugResources
+
+> Task :capacitor-android:compileDebugJavaWithJavac
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :capawesome-capacitor-badge:javaPreCompileDebug
+> Task :capacitor-cordova-android-plugins:javaPreCompileDebug
+> Task :capacitor-android:bundleLibCompileToJarDebug
+> Task :capacitor-android:bundleLibRuntimeToJarDebug
+> Task :app:bundleDebugResources
+> Task :app:desugarDebugFileDependencies
+> Task :capacitor-app:compileDebugJavaWithJavac
+> Task :capacitor-app:bundleLibRuntimeToJarDebug
+
+> Task :capacitor-camera:compileDebugJavaWithJavac
+Note: /builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@capacitor/camera/android/src/main/java/com/capacitorjs/plugins/camera/CameraBottomSheetDialogFragment.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :capacitor-camera:bundleLibRuntimeToJarDebug
+> Task :capacitor-haptics:compileDebugJavaWithJavac
+> Task :capacitor-haptics:bundleLibRuntimeToJarDebug
+> Task :capawesome-capacitor-badge:compileDebugJavaWithJavac
+> Task :capawesome-capacitor-badge:bundleLibRuntimeToJarDebug
+> Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac
+> Task :app:javaPreCompileDebug
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug
+> Task :capacitor-app:bundleLibCompileToJarDebug
+> Task :capacitor-camera:bundleLibCompileToJarDebug
+> Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug
+> Task :capacitor-haptics:bundleLibCompileToJarDebug
+> Task :app:processDebugJavaRes NO-SOURCE
+> Task :capawesome-capacitor-badge:bundleLibCompileToJarDebug
+> Task :capacitor-android:processDebugJavaRes NO-SOURCE
+
+> Task :app:compileDebugJavaWithJavac FAILED
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:4: error: cannot find symbol
+import com.getcapacitor.CapacitorActivity;
+                       ^
+  symbol:   class CapacitorActivity
+  location: package com.getcapacitor
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+    OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+                                   ^
+  symbol:   variable LOG_LEVEL
+  location: class OneSignal
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+    OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+                                                                ^
+  symbol:   variable LOG_LEVEL
+  location: class OneSignal
+/builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:16: error: cannot find symbol
+    OneSignal.setAppId("2f2e1a1d-44e8-4e3e-9f08-7d8a2f3e5c8b");
+             ^
+  symbol:   method setAppId(String)
+  location: class OneSignal
+4 errors
+[Incubating] Problems report is available at: file:///builds/PunisaRaicevic/HGBROdrzavanje5/android/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:16: error: cannot find symbol
+      OneSignal.setAppId("2f2e1a1d-44e8-4e3e-9f08-7d8a2f3e5c8b");
+               ^
+    symbol:   method setAppId(String)
+    location: class OneSignal
+  /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:4: error: cannot find symbol
+  import com.getcapacitor.CapacitorActivity;
+                         ^
+    symbol:   class CapacitorActivity
+    location: package com.getcapacitor
+  /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+      OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+                                     ^
+    symbol:   variable LOG_LEVEL
+    location: class OneSignal
+  /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/src/main/java/com/budvanskarivijera/hotel/MainApplication.java:14: error: cannot find symbol
+      OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+                                                                  ^
+    symbol:   variable LOG_LEVEL
+    location: class OneSignal
+  4 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+
+BUILD FAILED in 2m 9s
+111 actionable tasks: 111 executed
+
+
+Running after_script
+Running after script...
+$ run "clean-up"
+
+Cleaning up project directory and file based variables
+
+ERROR: Job failed: command terminated with exit code 1
