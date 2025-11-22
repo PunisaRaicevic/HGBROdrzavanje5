@@ -17,6 +17,7 @@ import NotFound from "@/pages/not-found";
 import { IonApp, setupIonicReact } from "@ionic/react";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { Capacitor } from "@capacitor/core";
+import { messaging, getToken } from "./firebase";
 
 setupIonicReact({
   mode: "md",
@@ -61,8 +62,38 @@ function Router() {
       });
     };
 
-    if (user && Capacitor.isNativePlatform()) {
+    const setupWebFCM = async () => {
+      console.log("🔔 [FCM] Priprema Firebase Messaging...");
+
+      try {
+        const fcmToken = await getToken(messaging, {
+          vapidKey: "BFqO1uJ_1l6bZ7s2T5k4N9p3Q8w6X0y7M1z4A8b5C2d9e3F7g1H5i0J4k8L2m6N0p9",
+        });
+
+        if (fcmToken) {
+          console.log("✅ [FCM] Token dobijen:", fcmToken);
+
+          // Pošalji token u bazu
+          if (user?.id) {
+            await apiRequest("POST", "/api/users/fcm-token", {
+              fcmToken,
+            });
+            console.log("💾 [FCM] Token sačuvan u bazi.");
+          }
+        } else {
+          console.log("⚠️ [FCM] Token JE NULL");
+        }
+      } catch (e) {
+        console.log("❌ [FCM] Greška pri dobijanju tokena", e);
+      }
+    };
+
+    if (!user) return;
+
+    if (Capacitor.isNativePlatform()) {
       setupFCM();
+    } else {
+      setupWebFCM();
     }
 
   }, [user]);
