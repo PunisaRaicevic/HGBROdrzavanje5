@@ -13,7 +13,6 @@ dependencies {
     implementation project(':capacitor-camera')
     implementation project(':capacitor-haptics')
     implementation project(':capacitor-push-notifications')
-    implementation project(':capawesome-capacitor-badge')
 
 }
 

@@ -14,9 +14,5 @@
 	{
 		"pkg": "@capacitor/push-notifications",
 		"classpath": "com.capacitorjs.plugins.pushnotifications.PushNotificationsPlugin"
-	},
-	{
-		"pkg": "@capawesome/capacitor-badge",
-		"classpath": "io.capawesome.capacitorjs.plugins.badge.BadgePlugin"
 	}
 ]
