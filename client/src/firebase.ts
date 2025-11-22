@@ -1,27 +1,16 @@
 import { initializeApp } from "firebase/app";
-import { getMessaging } from "firebase/messaging";
+import { getMessaging, getToken } from "firebase/messaging";
 
-// Firebase Configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDlQxlkT9oJ7K8_H5L6M9N0P1Q2R3S4T5U",
+  apiKey: "AIzaSyDMaf507Om6Dq-RUKmaStCnrfQ9ywUdo44",
   authDomain: "hgbrodrzavanje-39543.firebaseapp.com",
   projectId: "hgbrodrzavanje-39543",
   storageBucket: "hgbrodrzavanje-39543.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890ghijkl",
+  messagingSenderId: "227433602872",
+  appId: "1:227433602872:web:3670adb0773591e68debcd",
 };
 
-// Initialize Firebase
-export const firebaseApp = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app);
 
-// Get Messaging service (only available on native/web with service worker)
-export const messaging = (() => {
-  try {
-    return getMessaging(firebaseApp);
-  } catch (error) {
-    console.warn("[Firebase] Messaging not available on this platform");
-    return null;
-  }
-})();
-
-console.log("[Firebase] Initialized with project:", firebaseConfig.projectId);
+export { messaging, getToken };
