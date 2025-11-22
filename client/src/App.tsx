@@ -15,6 +15,7 @@ import TasksPage from "@/pages/TasksPage";
 import UsersPage from "@/pages/UsersPage";
 import NotFound from "@/pages/not-found";
 import { IonApp, setupIonicReact } from "@ionic/react";
+import { PushNotifications } from "@capacitor/push-notifications";
 
 setupIonicReact({
   mode: "md",
@@ -22,6 +23,46 @@ setupIonicReact({
 
 function Router() {
   const { user, login, loading } = useAuth();
+
+  useEffect(() => {
+    const setupFCM = async () => {
+      console.log("🚀 [FCM] Pokrećem inicijalizaciju push notifikacija...");
+
+      // 1. Traženje dozvole
+      const permResult = await PushNotifications.requestPermissions();
+      if (permResult.receive !== "granted") {
+        console.warn("⚠️ [FCM] Push dozvola nije odobrena.");
+        return;
+      }
+
+      // 2. Registracija uređaja
+      await PushNotifications.register();
+
+      // 3. Listeneri
+      PushNotifications.addListener("registration", async token => {
+        console.log("🔥 [FCM] Token uređaja:", token.value);
+
+        // Sačuvamo token u bazu za korisnika
+        if (user?.id) {
+          await apiRequest("POST", "/api/users/fcm-token", {
+            token: token.value,
+          });
+          console.log("💾 [FCM] Token sačuvan u bazi.");
+        }
+      });
+
+      PushNotifications.addListener("registrationError", err => {
+        console.error("❌ [FCM] registrationError:", err);
+      });
+
+      PushNotifications.addListener("pushNotificationReceived", notif => {
+        console.log("📥 [FCM] Primljena notifikacija:", notif);
+      });
+    };
+
+    if (user) setupFCM();
+
+  }, [user]);
 
   if (loading) {
     return (
