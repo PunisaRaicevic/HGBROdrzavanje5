@@ -542,54 +542,54 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <button 
                           onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'completed' ? null : 'completed')}
-                          className={`p-2.5 border rounded-md transition-colors ${
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                             selectedStatusFilter === 'completed' 
-                              ? 'bg-green-100 border-green-500' 
-                              : 'hover-elevate'
+                              ? 'bg-green-50 border-green-500 shadow-md scale-105' 
+                              : 'border-green-300 hover:border-green-500 hover:shadow-md hover:scale-102'
                           }`}
                           data-testid="filter-button-completed"
                         >
-                          <p className="text-xs text-muted-foreground">Završeno</p>
-                          <p className="text-lg font-bold text-green-600 mt-0.5">{completedTasks.length}</p>
+                          <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">Završeno</p>
+                          <p className="text-3xl font-bold text-green-600 mt-2">{completedTasks.length}</p>
                         </button>
                         <button 
                           onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'in_progress' ? null : 'in_progress')}
-                          className={`p-2.5 border rounded-md transition-colors ${
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                             selectedStatusFilter === 'in_progress' 
-                              ? 'bg-blue-100 border-blue-500' 
-                              : 'hover-elevate'
+                              ? 'bg-blue-50 border-blue-500 shadow-md scale-105' 
+                              : 'border-blue-300 hover:border-blue-500 hover:shadow-md hover:scale-102'
                           }`}
                           data-testid="filter-button-in-progress"
                         >
-                          <p className="text-xs text-muted-foreground">U toku</p>
-                          <p className="text-lg font-bold text-blue-600 mt-0.5">{inProgressTasks.length}</p>
+                          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">U toku</p>
+                          <p className="text-3xl font-bold text-blue-600 mt-2">{inProgressTasks.length}</p>
                         </button>
                         <button 
                           onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'pending' ? null : 'pending')}
-                          className={`p-2.5 border rounded-md transition-colors ${
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                             selectedStatusFilter === 'pending' 
-                              ? 'bg-yellow-100 border-yellow-500' 
-                              : 'hover-elevate'
+                              ? 'bg-yellow-50 border-yellow-500 shadow-md scale-105' 
+                              : 'border-yellow-300 hover:border-yellow-500 hover:shadow-md hover:scale-102'
                           }`}
                           data-testid="filter-button-pending"
                         >
-                          <p className="text-xs text-muted-foreground">Na čekanju</p>
-                          <p className="text-lg font-bold text-yellow-600 mt-0.5">{pendingTasks.length}</p>
+                          <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">Na čekanju</p>
+                          <p className="text-3xl font-bold text-yellow-600 mt-2">{pendingTasks.length}</p>
                         </button>
                         <button 
                           onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'external' ? null : 'external')}
-                          className={`p-2.5 border rounded-md transition-colors ${
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
                             selectedStatusFilter === 'external' 
-                              ? 'bg-purple-100 border-purple-500' 
-                              : 'hover-elevate'
+                              ? 'bg-purple-50 border-purple-500 shadow-md scale-105' 
+                              : 'border-purple-300 hover:border-purple-500 hover:shadow-md hover:scale-102'
                           }`}
                           data-testid="filter-button-external"
                         >
-                          <p className="text-xs text-muted-foreground">Eksterna</p>
-                          <p className="text-lg font-bold text-purple-600 mt-0.5">{externalTasks.length}</p>
+                          <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Eksterna</p>
+                          <p className="text-3xl font-bold text-purple-600 mt-2">{externalTasks.length}</p>
                         </button>
                       </div>
 
