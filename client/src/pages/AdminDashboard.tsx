@@ -62,6 +62,7 @@ export default function AdminDashboard() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [tasksPerPage, setTasksPerPage] = useState<number>(10);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   
   // Period states with date ranges
   const now = new Date();
@@ -542,23 +543,145 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div className="p-2.5 border rounded-md">
+                        <button 
+                          onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'completed' ? null : 'completed')}
+                          className={`p-2.5 border rounded-md transition-colors ${
+                            selectedStatusFilter === 'completed' 
+                              ? 'bg-green-100 border-green-500' 
+                              : 'hover-elevate'
+                          }`}
+                          data-testid="filter-button-completed"
+                        >
                           <p className="text-xs text-muted-foreground">Završeno</p>
                           <p className="text-lg font-bold text-green-600 mt-0.5">{completedTasks.length}</p>
-                        </div>
-                        <div className="p-2.5 border rounded-md">
+                        </button>
+                        <button 
+                          onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'in_progress' ? null : 'in_progress')}
+                          className={`p-2.5 border rounded-md transition-colors ${
+                            selectedStatusFilter === 'in_progress' 
+                              ? 'bg-blue-100 border-blue-500' 
+                              : 'hover-elevate'
+                          }`}
+                          data-testid="filter-button-in-progress"
+                        >
                           <p className="text-xs text-muted-foreground">U toku</p>
                           <p className="text-lg font-bold text-blue-600 mt-0.5">{inProgressTasks.length}</p>
-                        </div>
-                        <div className="p-2.5 border rounded-md">
+                        </button>
+                        <button 
+                          onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'pending' ? null : 'pending')}
+                          className={`p-2.5 border rounded-md transition-colors ${
+                            selectedStatusFilter === 'pending' 
+                              ? 'bg-yellow-100 border-yellow-500' 
+                              : 'hover-elevate'
+                          }`}
+                          data-testid="filter-button-pending"
+                        >
                           <p className="text-xs text-muted-foreground">Na čekanju</p>
                           <p className="text-lg font-bold text-yellow-600 mt-0.5">{pendingTasks.length}</p>
-                        </div>
-                        <div className="p-2.5 border rounded-md">
+                        </button>
+                        <button 
+                          onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'external' ? null : 'external')}
+                          className={`p-2.5 border rounded-md transition-colors ${
+                            selectedStatusFilter === 'external' 
+                              ? 'bg-purple-100 border-purple-500' 
+                              : 'hover-elevate'
+                          }`}
+                          data-testid="filter-button-external"
+                        >
                           <p className="text-xs text-muted-foreground">Eksterna</p>
                           <p className="text-lg font-bold text-purple-600 mt-0.5">{externalTasks.length}</p>
-                        </div>
+                        </button>
                       </div>
+
+                      {selectedStatusFilter && (
+                        <div className="mt-6 pt-6 border-t">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold">
+                              {selectedStatusFilter === 'completed' && 'Završeni zadaci'}
+                              {selectedStatusFilter === 'in_progress' && 'Zadaci u toku'}
+                              {selectedStatusFilter === 'pending' && 'Zadaci na čekanju'}
+                              {selectedStatusFilter === 'external' && 'Zadaci - Eksterna firma'}
+                            </h3>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setSelectedStatusFilter(null)}
+                              data-testid="button-clear-filter"
+                            >
+                              Obriši filter
+                            </Button>
+                          </div>
+                          <ScrollArea className="h-[400px] border rounded-md pr-4">
+                            <div className="space-y-3 p-4">
+                              {(() => {
+                                let filteredTasks: Task[] = [];
+                                
+                                if (selectedStatusFilter === 'completed') {
+                                  filteredTasks = completedTasks;
+                                } else if (selectedStatusFilter === 'in_progress') {
+                                  filteredTasks = inProgressTasks;
+                                } else if (selectedStatusFilter === 'pending') {
+                                  filteredTasks = pendingTasks;
+                                } else if (selectedStatusFilter === 'external') {
+                                  filteredTasks = externalTasks;
+                                }
+
+                                if (filteredTasks.length === 0) {
+                                  return (
+                                    <p className="text-center text-muted-foreground py-6 text-sm">
+                                      Nema zadataka sa ovim statusom za izabrani period
+                                    </p>
+                                  );
+                                }
+
+                                return filteredTasks
+                                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                  .map((task) => {
+                                    const getStatusBadge = (status: string) => {
+                                      if (status === 'completed') {
+                                        return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                                      } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
+                                        return <Badge variant="secondary">U toku</Badge>;
+                                      } else if (status === 'with_external') {
+                                        return <Badge variant="outline">Eksterna firma</Badge>;
+                                      }
+                                      return <Badge variant="secondary">{status}</Badge>;
+                                    };
+
+                                    const formatDate = (dateStr: string) => {
+                                      const date = new Date(dateStr);
+                                      return date.toLocaleDateString('sr-RS', { 
+                                        day: '2-digit', 
+                                        month: '2-digit', 
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      });
+                                    };
+
+                                    return (
+                                      <div 
+                                        key={task.id} 
+                                        className="p-3 border rounded-md hover-elevate cursor-pointer"
+                                        data-testid={`filtered-task-item-${task.id}`}
+                                        onClick={() => setSelectedTask(task)}
+                                      >
+                                        <div className="flex items-start justify-between gap-2 mb-2">
+                                          <span className="text-xs text-muted-foreground">{formatDate(task.created_at)}</span>
+                                          {getStatusBadge(task.status)}
+                                        </div>
+                                        <h4 className="font-medium text-sm">{task.title}</h4>
+                                        {task.created_by_name && (
+                                          <p className="text-xs text-muted-foreground mt-1">Prijavio: {task.created_by_name}</p>
+                                        )}
+                                      </div>
+                                    );
+                                  });
+                              })()}
+                            </div>
+                          </ScrollArea>
+                        </div>
+                      )}
                     </div>
                   );
                 })()
