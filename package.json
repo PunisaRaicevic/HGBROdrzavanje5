@@ -26,6 +26,7 @@
     "@capacitor/cli": "^7.4.4",
     "@capacitor/core": "^7.4.4",
     "@capacitor/haptics": "^7.0.2",
+    "@capacitor/push-notifications": "^7.0.3",
     "@capawesome/capacitor-badge": "^7.0.1",
     "@hookform/resolvers": "^3.10.0",
     "@ionic/pwa-elements": "^3.3.0",
