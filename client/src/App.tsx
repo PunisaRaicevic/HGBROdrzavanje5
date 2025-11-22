@@ -61,7 +61,9 @@ function Router() {
       });
     };
 
-    if (user) setupFCM();
+    if (user && Capacitor.isNativePlatform()) {
+      setupFCM();
+    }
 
   }, [user]);
 
