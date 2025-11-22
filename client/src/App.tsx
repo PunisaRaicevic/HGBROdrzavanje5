@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
+import { queryClient, apiRequest } from "./lib/queryClient"; // <--- DODAT apiRequest
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -27,7 +27,7 @@ function Router() {
   const { user, login, loading } = useAuth();
 
   // ============================================================
-  // PODEŠAVANJE NOTIFIKACIJA SA DETALJNOM PROVEROM (DEBUG)
+  // PODEŠAVANJE NOTIFIKACIJA + ČUVANJE U BAZU
   // ============================================================
   useEffect(() => {
     const setupOneSignal = async () => {
@@ -41,47 +41,52 @@ function Router() {
         await OneSignal.Notifications.requestPermission(true);
         console.log("📱 [App.tsx] Dozvola zatražena.");
 
-        // 3. Login korisnika
+        // 3. Login korisnika (Povezivanje External ID)
         if (user && user.id) {
           OneSignal.login(user.id);
           console.log(`✅ [App.tsx] OneSignal LOGIN pozvan za: ${user.id}`);
         }
 
         // ---------------------------------------------------------
-        // 🕵️‍♂️ DETEKTIVSKI DEO - PROVERA STATUSA PRETPLATE
+        // 4. ČUVANJE ID-ja U BAZU (OVO JE FALILO!)
         // ---------------------------------------------------------
+        
+        const saveIdToDb = async (id: string) => {
+            try {
+                console.log(`💾 [App.tsx] Šaljem Player ID u bazu: ${id}`);
+                // Pozivamo tvoj backend endpoint da sačuvamo ID
+                await apiRequest("POST", "/api/users/onesignal-player-id", { playerId: id });
+                console.log("💾 [App.tsx] Player ID uspešno sačuvan u bazi!");
+            } catch (err) {
+                console.error("❌ [App.tsx] Greška pri čuvanju ID-ja:", err);
+            }
+        };
 
-        // Proveri trenutno stanje (može biti null na početku)
+        // A) Proveri da li već imamo ID odmah
         const currentId = OneSignal.User.PushSubscription.id;
-        const currentToken = OneSignal.User.PushSubscription.token;
-        const isOptedIn = OneSignal.User.PushSubscription.optedIn;
+        if (currentId) {
+            saveIdToDb(currentId);
+        }
 
-        console.log(`🕵️‍♂️ [OneSignal DEBUG] Trenutni status:
-          - ID: ${currentId}
-          - Token: ${currentToken}
-          - OptedIn: ${isOptedIn}
-        `);
-
-        // Slušaj promene (ovo se okida kada OneSignal dobije odgovor od Google-a)
+        // B) Slušaj promene (ako se ID generiše malo kasnije)
         OneSignal.User.PushSubscription.addEventListener("change", (event) => {
-            console.log("🔄 [OneSignal EVENT] Promena statusa pretplate:", JSON.stringify(event));
-
+            console.log("🔄 [OneSignal EVENT] Promena statusa:", JSON.stringify(event));
+            
             if (event.current.id) {
-                console.log(`🏆 [OneSignal SUCCESS] DOBIO SAM ID: ${event.current.id}`);
-                console.log("👉 OVO ZNAČI DA JE UREĐAJ USPEŠNO REGISTROVAN I MOŽE DA PRIMA PORUKE!");
+                saveIdToDb(event.current.id);
             }
         });
-        // ---------------------------------------------------------
 
       } catch (error) {
         console.error("❌ [App.tsx] OneSignal CRITICAL ERROR:", JSON.stringify(error));
       }
     };
 
+    // Pokreni samo ako je korisnik ulogovan
     if (user) {
       setupOneSignal();
     }
-
+    
   }, [user]); 
   // ============================================================
 
