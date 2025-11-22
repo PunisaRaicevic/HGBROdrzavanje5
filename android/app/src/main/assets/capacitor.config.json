@@ -1,19 +1,19 @@
 {
-  "appId": "com.budvanskarivijera.hotel",
-  "appName": "HGBR Tehnička Služba",
-  "webDir": "public", 
-  "bundledWebRuntime": false,
-  "server": {
-    "androidScheme": "https",
-    "cleartext": true
-  },
-  "plugins": {
-    "PushNotifications": {
-      "presentationOptions": [
-        "badge",
-        "sound",
-        "alert"
-      ]
-    }
-  }
+	"appId": "com.budvanskarivijera.hotel",
+	"appName": "HGBR Tehnička Služba",
+	"webDir": "dist/public",
+	"bundledWebRuntime": false,
+	"server": {
+		"androidScheme": "https",
+		"cleartext": true
+	},
+	"plugins": {
+		"PushNotifications": {
+			"presentationOptions": [
+				"badge",
+				"sound",
+				"alert"
+			]
+		}
+	}
 }

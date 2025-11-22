@@ -12,6 +12,7 @@ dependencies {
     implementation project(':capacitor-app')
     implementation project(':capacitor-camera')
     implementation project(':capacitor-haptics')
+    implementation project(':capacitor-push-notifications')
     implementation project(':capawesome-capacitor-badge')
     implementation "com.onesignal:OneSignal:5.1.38"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.7.10"

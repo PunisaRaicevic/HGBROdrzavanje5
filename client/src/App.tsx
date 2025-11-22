@@ -16,6 +16,7 @@ import UsersPage from "@/pages/UsersPage";
 import NotFound from "@/pages/not-found";
 import { IonApp, setupIonicReact } from "@ionic/react";
 import { PushNotifications } from "@capacitor/push-notifications";
+import { Capacitor } from "@capacitor/core";
 
 setupIonicReact({
   mode: "md",
