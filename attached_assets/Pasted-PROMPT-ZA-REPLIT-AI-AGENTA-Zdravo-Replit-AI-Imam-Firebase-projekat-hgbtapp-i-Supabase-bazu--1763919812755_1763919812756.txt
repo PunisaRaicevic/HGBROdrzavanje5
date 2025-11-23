@@ -1,0 +1,144 @@
+PROMPT ZA REPLIT AI AGENTA:
+"Zdravo Replit AI!
+Imam Firebase projekat ( hgbtapp ) i Supabase bazu podataka. Kreirao sam Firebase Functions projekat ( functions folder) i cilj mi je da napravim Cloud Function koja će primati Webhook-ove od Supabase-a i slati Firebase Cloud Messaging (FCM) notifikacije. Imam fcm_token polja u users tabeli u Supabase-u.
+Molim te, pomozi mi da pripremim i napišem tu Firebase Cloud Function.
+Evo koraka koje treba da izvedeš:
+Navigiraj u functions folder. Otvori terminal i promeni direktorijum u functions .
+Instaliraj @supabase/supabase-js : Dok si u functions folderu u terminalu, pokreni komandu za instalaciju ovog paketa.
+Otvori index.ts (ili index.js ako koristim JavaScript) fajl.
+Zamena sadržaja fajla: Molim te, obriši sav postojeći sadržaj u tom fajlu ( index.ts ili index.js ) i zalepi sledeći kod u njega.
+// --- Potrebni importi ---
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+
+// Import za Supabase klijenta
+import { createClient } from '@supabase/supabase-js';
+
+// --- Inicijalizacija Firebase Admin SDK ---
+// Ovo omogućava vašoj funkciji da komunicira sa Firebase servisima (kao što je FCM)
+admin.initializeApp();
+
+// --- Supabase konfiguracija i klijent ---
+// OVE VREDNOSTI ĆE BITI PREUZETE IZ FIREBASE ENVIRONMENT KONFIGURACIJE
+// NE URAĐUJU SE DIREKTNO OVDE, VEĆ PREKO `firebase functions:config:set` KOMANDE
+const SUPABASE_URL = functions.config().supabase?.url; // ? znači da može biti undefined
+const SUPABASE_SERVICE_ROLE_KEY = functions.config().supabase?.service_role_key;
+const WEBHOOK_SECRET = functions.config().supabase?.webhook_secret; // Tajni ključ za Supabase Webhook
+
+// Proverite da li su vrednosti definisane pre kreiranja klijenta
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('Supabase URL or Service Role Key is not configured in Firebase Functions environment.');
+    // Molim te, Replit AI, samo me obavesti da ovo treba da podesim
+}
+
+const supabaseAdmin = createClient(SUPABASE_URL || '', SUPABASE_SERVICE_ROLE_KEY || ''); // Dodatna provera za TypeScript
+
+
+// --- Vaša Cloud Function: handleSupabaseWebhook ---
+// Ova funkcija će se aktivirati svaki put kada Supabase Webhook pošalje HTTP POST zahtev
+export const handleSupabaseWebhook = functions.https.onRequest(async (req, res) => {
+    // --- 1. Sigurnosna provera: Proverite tajni ključ Webhook-a ---
+    if (!WEBHOOK_SECRET || req.headers['x-supabase-webhook-secret'] !== WEBHOOK_SECRET) {
+        console.error('Unauthorized webhook access: Invalid or missing secret.');
+        return res.status(403).send('Unauthorized');
+    }
+
+    // --- 2. Proverite HTTP metodu i telo zahteva ---
+    if (req.method !== 'POST') {
+        console.warn('Webhook received non-POST request. Only POST is allowed.');
+        return res.status(405).send('Method Not Allowed');
+    }
+    if (!req.body) {
+        console.error('Webhook received empty body. Bad Request.');
+        return res.status(400).send('Bad Request: Body missing');
+    }
+
+    try {
+        const webhookData = req.body;
+        console.log('Received Supabase webhook data:', JSON.stringify(webhookData, null, 2));
+
+        // Supabase Webhook payload za INSERT događaj obično sadrži 'record' objekat sa novim podacima
+        const newRecord = webhookData.record;
+
+        if (!newRecord) {
+            console.error('Missing "record" in webhook data. Unexpected payload structure.');
+            return res.status(400).send('Bad Request: Missing record data');
+        }
+
+        // --- Ekstrakcija podataka iz Webhook-a ---
+        // PAŽNJA: Molim te, Replit AI, podseti me da ove linije treba da prilagodim!
+        // Imena polja newRecord.assigned_to_user_id, newRecord.title, newRecord.message moraju odgovarati mojim Supabase kolonama.
+        const recipientUserId = newRecord.assigned_to_user_id || newRecord.recipient_id; // ID korisnika kojem je zadatak/poruka namenjena
+        const notificationTitle = newRecord.title || 'Novi zadatak/poruka!'; // Naslov notifikacije
+        const notificationBody = newRecord.message || newRecord.description; // Sadržaj poruke/zadatka
+        const itemId = newRecord.id; // ID novokreiranog zadatka/poruke
+
+        if (!recipientUserId || !notificationBody) {
+            console.warn('Missing recipient ID or notification body in new record. Skipping notification.');
+            return res.status(200).send('No recipient or content for notification.');
+        }
+
+        // --- 3. Dohvatite FCM token primaoca iz Supabase baze ---
+        const { data: userData, error } = await supabaseAdmin
+            .from('users') // PAŽNJA: Replit AI, podseti me da "users" mora biti IME MOJE TABELE gde čuvam korisnike i fcm_token!
+            .select('fcm_token') // PAŽNJA: Replit AI, podseti me da "fcm_token" mora biti IME KOLONE gde čuvam tokene!
+            .eq('id', recipientUserId) // Pronađite korisnika po ID-u
+            .single(); // Očekujemo samo jedan rezultat
+
+        if (error) {
+            console.error('Error fetching recipient FCM token from Supabase:', error);
+            return res.status(500).send('Error fetching recipient token.');
+        }
+        if (!userData || !userData.fcm_token) {
+            console.warn(`No FCM token found for user ID: ${recipientUserId}. Notification not sent.`);
+            return res.status(200).send('Recipient token not found, notification skipped.');
+        }
+
+        const recipientFCMToken = userData.fcm_token;
+
+        // --- 4. Kreirajte FCM poruku ---
+        const message = {
+            notification: {
+                title: notificationTitle,
+                body: notificationBody.substring(0, 150) + (notificationBody.length > 150 ? '...' : ''), // Skratite telo ako je predugo
+                sound: 'default', // Ovo aktivira default zvučnu notifikaciju na uređaju
+            },
+            data: {
+                // Podaci koji će biti poslati vašoj aplikaciji i koje možete obraditi u kodu
+                itemId: String(itemId), // Uvek šaljite kao string
+                type: 'new_task_or_message',
+                // Dodajte druge podatke koje želite da prosledite, npr. senderId, claimId
+            },
+            token: recipientFCMToken,
+            // Specifična podešavanja za platforme (potrebno za zvuk i na nekim platformama)
+            android: {
+                priority: 'high', // Visoki prioritet za brzu isporuku
+                notification: {
+                    sound: 'default', // Ponavlja zvuk za Android specifičnosti
+                    // icon: 'ic_notification', // Opciono: ikona notifikacije
+                    // color: '#ff0000', // Opciono: boja notifikacije
+                },
+            },
+            apns: { // Apple Push Notification Service (za iOS)
+                payload: {
+                    aps: {
+                        sound: 'default', // Ponavlja zvuk za iOS specifičnosti
+                        // content-available: 1 // Za tihe notifikacije
+                    },
+                },
+            },
+        };
+
+        // --- 5. Pošaljite poruku putem FCM-a ---
+        const response = await admin.messaging().send(message);
+        console.log('Successfully sent message:', response);
+
+        return res.status(200).send('Notification sent successfully!');
+
+    } catch (error) {
+        console.error('Error processing Supabase webhook or sending FCM:', error);
+        return res.status(500).send('Error processing webhook.');
+    }
+});
+Podseti me na konfiguraciju okruženja: Nakon što si sačuvao kod, molim te, podseti me da moram da se vratim u ROOT folder projekta u terminalu i tamo izvršim komandu firebase functions:config:set da bih postavio supabase.url , supabase.service_role_key i supabase.webhook_secret . Reci mi da ove vrednosti moram da preuzmem iz Supabase Dashboard-a i da webhook_secret mora da odgovara onom koji ću postaviti u Supabase Webhook HTTP Headeru.
+Podseti me na deploy: Na kraju, podseti me da moram da deploy-ujem funkciju komandom firebase deploy --only functions:handleSupabaseWebhook i da ću nakon toga dobiti URL funkcije koji mi treba za Supabase Webhook.
