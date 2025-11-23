@@ -30,6 +30,15 @@ function Router() {
     const setupFCM = async () => {
       console.log("🚀 [FCM] Pokrećem inicijalizaciju push notifikacija...");
 
+      // ⏳ Čekajte da je authToken sigurno u localStorage
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.warn("⚠️ [FCM] Nema JWT tokena u localStorage! Čekam...");
+        return;
+      }
+
+      console.log("✅ [FCM] JWT token dostupan, nastavljam sa setup-om...");
+
       // 1. Traženje dozvole
       const permResult = await PushNotifications.requestPermissions();
       if (permResult.receive !== "granted") {
@@ -69,6 +78,15 @@ function Router() {
     const setupWebFCM = async () => {
       console.log("🔔 [FCM] Priprema Firebase Messaging...");
 
+      // ⏳ Čekajte da je authToken sigurno u localStorage
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.warn("⚠️ [FCM] Nema JWT tokena u localStorage! Čekam...");
+        return;
+      }
+
+      console.log("✅ [FCM] JWT token dostupan, nastavljam sa Web FCM setup-om...");
+
       try {
         const fcmToken = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
@@ -94,11 +112,16 @@ function Router() {
 
     if (!user) return;
 
-    if (Capacitor.isNativePlatform()) {
-      setupFCM();
-    } else {
-      setupWebFCM();
-    }
+    // Dodajte mali delay da se JWT sigurno čuva pre nego što se FCM setup pokreće
+    const timer = setTimeout(() => {
+      if (Capacitor.isNativePlatform()) {
+        setupFCM();
+      } else {
+        setupWebFCM();
+      }
+    }, 500); // 500ms delay da se JWT čuva
+
+    return () => clearTimeout(timer);
 
   }, [user]);
 
