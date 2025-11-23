@@ -72,9 +72,9 @@ android: {
 priority: 'high',
 notification: {
 channelId: 'reklamacije-alert', // <--- KRITIČNA ISPRAVKA: Moramo gađati isti ID kao na klijentu
-sound: 'alert1', vraćeno na default, jer alert1.mp3 nije konfigurisan u Capacitoru
+sound: 'alert1',
 priority: 'high',
-defaultVibrateTimings: true, // Neka koristi vibraciju definisanu u kanalu
+        defaultVibrateTimings: true,
 defaultSound: true,
           // Uklonjen vibrateTimingsMillis da se ne poništavaju default vrednosti
 },
