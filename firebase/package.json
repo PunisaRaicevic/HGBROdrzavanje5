@@ -1,0 +1,13 @@
+{
+  "name": "hgbtapp-firebase",
+  "version": "1.0.0",
+  "description": "Firebase configuration and functions for HGBTAPP hotel management system",
+  "private": true,
+  "scripts": {
+    "build": "cd functions && npm run build",
+    "deploy": "firebase deploy",
+    "deploy:functions": "firebase deploy --only functions",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "emulate": "firebase emulators:start"
+  }
+}

@@ -4,7 +4,34 @@
 
 A comprehensive hotel and facility management system designed for multi-role task tracking, maintenance operations, and real-time collaboration across various departments (reception, restaurant, pool, housekeeping, technical services, external contractors). It supports multiple user roles (administrators, receptionists, operators, supervisors, workers, service technicians, and managers) with tailored dashboards. The system facilitates efficient task creation, assignment, tracking, and completion with priority levels, status management, and real-time notifications. It features bilingual support (English/Serbian) and a Material Design 3-inspired interface optimized for productivity.
 
-### Recent Updates (November 2025)
+## Project Structure
+
+```
+workspace/
+├── client/                    # React frontend with Vite
+├── server/                    # Express backend
+├── shared/                    # Shared types and schemas
+├── firebase/                  # Firebase Cloud Functions & config
+│   ├── firebase.json         # Firebase configuration
+│   ├── package.json          # Firebase project scripts
+│   ├── .firebaserc           # Firebase project ID (hgbtapp)
+│   ├── .gitignore            # Git ignore patterns
+│   ├── functions/            # Cloud Functions
+│   │   ├── src/
+│   │   │   └── index.ts     # Supabase Webhook handler + FCM
+│   │   ├── dist/            # Compiled output
+│   │   ├── package.json     # Cloud Functions dependencies
+│   │   └── tsconfig.json    # TypeScript config
+│   └── public/              # Firebase Hosting static files
+├── package.json             # Root workspace dependencies
+├── vite.config.ts          # Vite configuration
+└── tsconfig.json           # TypeScript configuration
+```
+
+### Recent Updates (November 23, 2025)
+- **Firebase Cloud Function + Supabase Webhook** (November 23, 2025): Implemented `handleSupabaseWebhook` Cloud Function that receives Supabase webhook events for task INSERT/UPDATE operations and automatically sends FCM push notifications. Cloud Function reads FCM tokens from `users.fcm_token` field and sends notifications with custom sound (`default`), channel ID (`reklamacije-alert`), and Android/iOS specific configurations. Restructured Firebase configuration: moved `firebase.json` to `firebase/` folder, added `firebase/package.json`, `firebase/.firebaserc` (project: hgbtapp), and `firebase/.gitignore`. Cloud Function is fully compiled and ready for deployment via Firebase CLI on local machine.
+
+### Previous Updates (November 2025)
 - **Supervisor Dashboard Enhancement**: Added tabbed interface with "Moji zadaci" (tasks from operator/workers) and "Zadaci" (all tasks with period filtering: day/week/month). Includes color-coded status badges and improved task visibility.
 - **Work Schedule Feature Removed** (November 20, 2025): Completely removed work schedule management feature including UI components (WorkScheduleDialog, AddWorkScheduleDialog), API endpoints, database schema (work_schedules table), and all related storage methods. Focus remains on core complaint/task tracking functionality.
 - **Recurring Task Deletion Enhancement** (November 20, 2025): Implemented smart deletion for recurring task templates - when a recurring template is deleted, all future (non-finalized) child tasks are automatically removed while completed/cancelled tasks remain in history for audit purposes. Added `getChildTasksByParentId` storage method and comprehensive audit logging.
