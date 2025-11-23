@@ -52,13 +52,22 @@ function Router() {
       // 3. Listeneri
       PushNotifications.addListener("registration", async token => {
         console.log("🔥 [FCM] Token uređaja:", token.value);
+        console.log("👤 [FCM] User ID:", user?.id);
 
         // Sačuvamo token u bazu za korisnika
         if (user?.id) {
-          await apiRequest("POST", "/api/users/fcm-token", {
-            token: token.value,
-          });
-          console.log("💾 [FCM] Token sačuvan u bazi.");
+          try {
+            console.log("[FCM] Slanje tokena na backend...");
+            const response = await apiRequest("POST", "/api/users/fcm-token", {
+              token: token.value,
+            });
+            console.log("✅ [FCM] Backend response:", response.status);
+            console.log("💾 [FCM] Token sačuvan u bazi.");
+          } catch (err) {
+            console.error("❌ [FCM] Greška pri slanju tokena:", err);
+          }
+        } else {
+          console.warn("⚠️ [FCM] User ID nije dostupan!");
         }
       });
 
@@ -97,10 +106,18 @@ function Router() {
 
           // Pošalji token u bazu
           if (user?.id) {
-            await apiRequest("POST", "/api/users/fcm-token", {
-              fcmToken,
-            });
-            console.log("💾 [FCM] Token sačuvan u bazi.");
+            try {
+              console.log("[FCM] Slanje Web tokena na backend...");
+              const response = await apiRequest("POST", "/api/users/fcm-token", {
+                fcmToken,
+              });
+              console.log("✅ [FCM] Backend response:", response.status);
+              console.log("💾 [FCM] Web token sačuvan u bazi.");
+            } catch (err) {
+              console.error("❌ [FCM] Greška pri slanju Web tokena:", err);
+            }
+          } else {
+            console.warn("⚠️ [FCM] User ID nije dostupan!");
           }
         } else {
           console.log("⚠️ [FCM] Token JE NULL");
