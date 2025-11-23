@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "375153203002",
+    "project_id": "hgbtapp",
+    "storage_bucket": "hgbtapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:375153203002:android:d57aea9c9c9cd906372203",
+        "android_client_info": {
+          "package_name": "com.budvanskarivijera.hotel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "key"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
