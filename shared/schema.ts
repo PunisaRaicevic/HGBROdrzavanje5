@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   shift: text("shift"),
   push_token: text("push_token"),
   onesignal_player_id: text("onesignal_player_id"),
+  fcm_token: text("fcm_token"),
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

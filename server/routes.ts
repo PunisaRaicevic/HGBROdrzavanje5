@@ -277,6 +277,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Register FCM Token
+  app.post("/api/users/fcm-token", requireAuth, async (req, res) => {
+    try {
+      const { fcmToken, token } = req.body;
+      const tokenValue = fcmToken || token;
+
+      if (!tokenValue) {
+        return res.status(400).json({ error: "Token required" });
+      }
+
+      if (!req.session || !req.session.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      await storage.updateUser(req.session.userId, { fcm_token: tokenValue });
+      console.log(`✅ FCM token registered for user ${req.session.userId}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error registering FCM token:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Debug Logger
   app.post("/api/debug/log", (req, res) => {
     try {
