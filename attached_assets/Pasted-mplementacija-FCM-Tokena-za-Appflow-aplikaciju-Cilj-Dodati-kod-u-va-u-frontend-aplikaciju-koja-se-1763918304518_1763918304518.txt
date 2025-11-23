@@ -1,0 +1,74 @@
+mplementacija FCM Tokena za Appflow aplikaciju
+Cilj: Dodati kod u vašu frontend aplikaciju (koja se razvija u Replitu za Appflow) koji će inicijalizovati Firebase Messaging i dohvaćati FCM registration token. Token je neophodan za testiranje push notifikacija i kasnije slanje notifikacija sa Firebase Cloud Functions.
+Koraci:
+Instalacija Firebase SDK-a (ako već niste):
+U Replitu, otvorite Shell tab.
+Unesite komandu: npm install firebase
+Sačekajte da se instalacija završi.
+Identifikujte glavni fajl vaše frontend aplikacije:
+Pronadjite glavni JavaScript/TypeScript fajl gde se inicijalizuje vaša aplikacija (npr. main.js , index.ts , app.js ili slično, zavisno od vašeg frameworka/strukture).
+Dodajte Firebase konfiguraciju i kod za dohvaćanje tokena:
+U taj identifikovani fajl, dodajte sledeći kod. PAŽNJA: Obavezno zamenite placeholder vrednosti ( YOUR_API_KEY , YOUR_AUTH_DOMAIN , itd. i YOUR_VAPID_KEY ) stvarnim vrednostima iz vašeg Firebase projekta (HGBTApp).
+// Uvoz potrebnih Firebase modula
+import { initializeApp } from "firebase/app";
+import { getMessaging, getToken } from "firebase/messaging"; // Dodati getMessaging i getToken
+
+// VAŠA FIREBASE KONFIGURACIJA
+// Preuzmite ove vrednosti iz Firebase Console -> Project settings -> General -> Your apps -> Web app
+const firebaseConfig = {
+  apiKey: "VITE_FIREBASE_API_KEY", // Ovo je vaš VITE_FIREBASE_API_KEY
+  authDomain: "hgbtapp.firebaseapp.com", // Primer, proverite vaše settings
+  projectId: "hgbtapp",
+  storageBucket: "hgbtapp.appspot.com", // Primer
+  messagingSenderId: "375153203002", // Ovo je vaš Project Number
+  appId: "1:375153203002:web:YOUR_WEB_APP_ID" // Vaš Web App ID (iz Firebase konzole za web aplikaciju)
+};
+
+// Inicijalizujte Firebase
+const app = initializeApp(firebaseConfig);
+
+// Inicijalizujte Firebase Messaging
+const messaging = getMessaging(app);
+
+// Funkcija za dohvaćanje FCM tokena
+async function getFCMRegistrationToken() {
+  try {
+    // Zatražite dozvolu za notifikacije ako već nije data
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.warn('Notification permission not granted.');
+      return;
+    }
+
+    // DOHVATITE VAPID KLJUČ!
+    // Ovo je vaš VITE_FIREBASE_VAPID_KEY. Pronađite ga u Firebase Console -> Cloud Messaging -> Web Push certificates
+    const VAPID_KEY = "YOUR_VAPID_KEY_HERE"; // ZAMENITE OVDE STVARNU VREDNOST!
+
+    const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+
+    if (currentToken) {
+      console.log('--- VAŽNO: VAŠ FCM REGISTRATION TOKEN ---');
+      console.log(currentToken);
+      console.log('------------------------------------------');
+      // OVDE BI TREBALO DA POŠALJETE OVAJ TOKEN NA VAŠ SUPABASE BACKEND
+      // POVEZAN SA ID-JEM TRENUTNO ULOGOVANOG KORISNIKA!
+    } else {
+      console.warn('Nema dostupnog registration tokena. Moguće da je dozvola odbijena ili nešto drugo nije u redu.');
+    }
+  } catch (err) {
+    console.error('Došlo je do greške prilikom dohvaćanja tokena:', err);
+  }
+}
+
+// Pozovite funkciju kada želite da dobijete token
+// Preporučeno je da je pozovete nakon što je korisnik ulogovan ili kada je aplikacija spremna.
+// Npr., unutar nekog `onMounted` hooka za Vue, `useEffect` za React, ili nakon `DOMContentLoaded` za vanilla JS.
+getFCMRegistrationToken();
+
+// Ostatak koda vaše aplikacije...
+Pokrenite aplikaciju i preuzmite token:
+Pokrenite vaš Replit projekat (ili napravite build preko Appflow-a i pokrenite na uređaju/browseru).
+Otvorite Developer Tools (F12) u vašem web pregledaču.
+Idite na Console tab. Tamo biste trebali videti ispis --- VAŽNO: VAŠ FCM REGISTRATION TOKEN --- praćenim dugačkim stringom.
+Kopirajte taj token! To je ono što ćete koristiti za testiranje u Firebase konzoli.
+Nakon što dobijete token, sledeći korak je da ga pošaljete na vaš Supabase backend i povežete ga sa ID-jem korisnika, kako bi vaša Cloud Function mogla da ga pronađe.
