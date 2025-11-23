@@ -608,60 +608,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ==========================================================
-  //  NOVA RUTA ZA PORUKE I NOTIFIKACIJE
-  // ==========================================================
-  app.post("/api/tasks/:id/messages", requireAuth, async (req, res) => {
-    try {
-      const taskId = req.params.id;
-      const senderId = req.session.userId; // Koristimo session ID
-      const { message } = req.body;
-
-      if (!senderId) return res.sendStatus(401);
-
-      // 1. Sačuvaj poruku
-      const [newMessage] = await db.insert(taskMessages).values({
-        taskId,
-        userId: senderId,
-        message,
-      }).returning();
-
-      // 2. Logika za notifikacije
-      const task = await db.query.tasks.findFirst({
-        where: eq(tasks.id, taskId),
-      });
-
-      if (task) {
-        let targetUserId = null;
-        let title = "Nova poruka";
-
-        // Ako RADNIK piše -> Šalji kreatoru zadatka
-        if (task.assignedTo === senderId) {
-          targetUserId = task.createdBy;
-          title = `💬 Poruka od radnika (Soba ${task.roomNumber || '?'})`;
-        } 
-        // Ako NEKO DRUGI piše (šef/kreator) -> Šalji radniku
-        else if (task.assignedTo && task.assignedTo !== senderId) {
-          targetUserId = task.assignedTo;
-          title = `💬 Nova poruka na zadatku: ${task.title}`;
-        }
-
-        if (targetUserId && targetUserId !== senderId) {
-          // Pozivamo naš novi servis
-          await sendPushNotification(
-            targetUserId,
-            title,
-            message.length > 50 ? message.substring(0, 50) + "..." : message
-          );
-        }
-      }
-
-      res.json(newMessage);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
 
   // Update task status/assignment
   app.patch("/api/tasks/:id", requireAuth, async (req, res) => {
