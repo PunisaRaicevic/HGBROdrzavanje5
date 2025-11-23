@@ -1,0 +1,40 @@
+PROMPT ZA REPLIT AI AGENTA (Kompletan Check & Create za Functions Folder):
+"Zdravo Replit AI!
+Radim na Firebase projektu ( hgbtapp ) i Supabase integraciji. Moja Cloud Function je ključna, ali imam problema sa functions folderom i njegovim sadržajem. Želim da bude sigurno da je sve ispravno inicijalizovano za Firebase Functions.
+Molim te, izvrši sledeće operacije. Tvoj glavni zadatak je da osiguraš da functions folder u ~/workspace/firebase direktorijumu bude ispravno kreiran i popunjen sa svim neophodnim Firebase Functions fajlovima (posebno index.ts i package.json ).
+FAZA: AUTOMATSKA INICIJALIZACIJA I VERIFIKACIJA
+Navigiraj do root direktorijuma Firebase projekta:
+Otvori Shell i izvrši: cd ~/workspace/firebase
+Potvrdi trenutni direktorijum: Ispiši poruku poput: "Replit AI: Trenutni direktorijum je: $(pwd)"
+Inicijalizuj Firebase Functions (ili ponovo inicijalizuj):
+Pokreni komandu: firebase init functions
+Kada te CLI pita "Which project do you want to use?" :
+Izaberi hgbtapp sa liste.
+Kada te CLI pita "What language would you like to use to write Cloud Functions?" :
+Izaberi TypeScript .
+Kada te CLI pita "Do you want to use ESLint to catch probable bugs and enforce style?" :
+Odgovori y (yes) .
+Kada te CLI pita "Do you want to install dependencies with npm?" :
+Odgovori y (yes) .
+VEOMA VAŽNO - RUKOVANJE POSTOJEĆIM functions FOLDEROM:
+Ako te CLI pita "You already have a functions directory. Do you want to overwrite it? (y/N)" : OBRIGATORNO odgovori sa y (yes). Cilj je da se functions folder ispravno rekreira ili popuni sa svim potrebnim fajlovima, čak i ako je ručno kreiran i prazan.
+Verifikacija kreiranih fajlova:
+Nakon što firebase init functions završi, navigiraj u functions folder: cd ~/workspace/firebase/functions
+Izvrši komandu ls -F (ili ls -F -a za skrivene fajlove, ili dir na Windows-u) i pregledaj izlaz.
+Proveri da li su sledeći fajlovi/folderi sada prisutni:
+index.ts
+package.json
+tsconfig.json
+node_modules/ (folder)
+IZVEŠTAJ ZA KORISNIKA (koji Replit AI treba da mi kaže na kraju):
+"Zdravo!
+Upravo sam izvršio automatsku inicijalizaciju Firebase Functions za vaš projekat.
+Evo šta sam uradio:
+Navigirao sam do ~/workspace/firebase .
+Pokrenuo sam firebase init functions . Izabrao sam hgbtapp kao projekat, TypeScript kao jezik, omogućio ESLint i instalirao npm zavisnosti. Takođe sam odgovorio y (yes) na pitanje o prebrisanju functions foldera, kako bih osigurao ispravnu strukturu.
+Potvrdio sam da su ključni fajlovi i folderi ( index.ts , package.json , tsconfig.json , node_modules/ ) sada prisutni u ~/workspace/firebase/functions direktorijumu.
+Status: functions folder je sada ispravno inicijalizovan i spreman za dalju implementaciju koda.
+Sledeći korak (za tebe): Sada kada je struktura foldera ispravna, možeš da nastaviš sa:
+Instaliranjem @supabase/supabase-js (unutar ~/workspace/firebase/functions ).
+Zalepljivanjem koda za Cloud Function u index.ts fajl, kao što smo ranije dogovorili.
+Javi mi kada budeš spreman da pređemo na te korake!"

@@ -27,7 +27,7 @@ const supabaseAdmin = createClient(SUPABASE_URL || '', SUPABASE_SERVICE_ROLE_KEY
 
 // --- Vaša Cloud Function: handleSupabaseWebhook ---
 // Ova funkcija će se aktivirati svaki put kada Supabase Webhook pošalje HTTP POST zahtev
-export const handleSupabaseWebhook = functions.https.onRequest(async (req, res): Promise<void> => {
+export const handleSupabaseWebhook = functions.https.onRequest(async (req: functions.https.Request, res: functions.Response): Promise<void> => {
     // --- 1. Sigurnosna provera: Proverite tajni ključ Webhook-a ---
     if (!WEBHOOK_SECRET || req.headers['x-supabase-webhook-secret'] !== WEBHOOK_SECRET) {
         console.error('Unauthorized webhook access: Invalid or missing secret.');
