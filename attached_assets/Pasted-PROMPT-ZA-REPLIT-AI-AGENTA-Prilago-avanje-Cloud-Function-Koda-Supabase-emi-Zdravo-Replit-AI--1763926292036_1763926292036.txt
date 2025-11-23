@@ -1,0 +1,39 @@
+PROMPT ZA REPLIT AI AGENTA (Prilagođavanje Cloud Function Koda Supabase Šemi):
+"Zdravo Replit AI!
+Sada kada je functions folder inicijalizovan, index.ts fajl sadrži generički kod za Cloud Function handleSupabaseWebhook , a @supabase/supabase-js je instaliran, želim da prilagodiš taj kod mojoj specifičnoj Supabase šemi.
+Cilj: Modifikovati ~/workspace/firebase/functions/src/index.ts fajl tako da imena kolona koje se izvlače iz newRecord objekta (koji dolazi od Supabase Webhook-a) tačno odgovaraju imenu kolona u mojim Supabase tabelama.
+Molim te, izvrši sledeće korake:
+Navigiraj do ~/workspace/firebase/functions/src/ direktorijuma.
+Otvori index.ts fajl.
+Identifikuj tabelu koja će trigerovati Webhook:
+Trenutno Cloud Function očekuje da prima događaje od Supabase Webhook-a. Molim te, koristi svoje znanje o mom projektu ili me pitaj: Koja je GLAVNA TABELA (npr. tasks ili messages ) iz koje će dolaziti Webhook događaji za nove zadatke/poruke? (Pretpostaviću tasks za sada ako ne možeš automatski da utvrdiš).
+Prilagodi linije za ekstrakciju podataka u index.ts :
+Na osnovu kolona u tabeli koju si identifikovao u koraku 3 , modifikuj sledeće linije koda unutar index.ts fajla.
+Proveri svoju povezanost sa Supabase šemom (ili svoje interno znanje o njoj) da pronađeš tačna imena kolona.
+// --- Ekstrakcija podataka iz Webhook-a ---
+// PAŽNJA: OVE LINIJE MORATE PRILAGODITI!
+// Imena polja (npr. 'assigned_to_user_id', 'title', 'message') moraju odgovarati kolonama u VAŠOJ Supabase tabeli!
+const recipientUserId = newRecord.assigned_to_user_id || newRecord.receiver_id || newRecord.to_user_id; // <-- PRILAGODI OVO
+const notificationTitle = newRecord.title || 'Nova Obavest!'; // <-- PRILAGODI OVO
+const notificationBody = newRecord.message || newRecord.description || 'Stigla je nova poruka/zadatak.'; // <-- PRILAGODI OVO
+const itemId = newRecord.id; // <-- PRILAGODI OVO
+Za recipientUserId : Treba da bude naziv kolone u triger tabeli koja sadrži ID korisnika kojem treba poslati notifikaciju (npr. assigned_to_id , recipient_id , technician_id ).
+Za notificationTitle : Treba da bude naziv kolone u triger tabeli koja sadrži naslov zadatka/poruke (npr. title , name , subject ).
+Za notificationBody : Treba da bude naziv kolone u triger tabeli koja sadrži detaljan opis/sadržaj zadatka/poruke (npr. description , message , content ).
+Za itemId : Treba da bude naziv kolone koja je primarni ključ triger tabele (obično id ).
+Prilagodi linije za dohvaćanje FCM tokena:
+Modifikuj sledeće linije koda unutar index.ts fajla:
+const { data: userData, error } = await supabaseAdmin
+    .from('users') // <-- POTVRDI DA JE "users" TAČNO IME TABELE
+    .select('fcm_token') // <-- POTVRDI DA JE "fcm_token" TAČNO IME KOLONE
+    .eq('id', recipientUserId)
+    .single();
+Za .from('users') : Potvrdi da je users tačno ime tabele gde se čuvaju podaci o korisnicima i njihov fcm_token .
+Za .select('fcm_token') : Potvrdi da je fcm_token tačno ime kolone u tabeli users koja čuva FCM tokene.
+Sačuvaj izmene u index.ts fajlu.
+Izvesti me o urađenom: Nakon što završiš, molim te, daj mi sledeće informacije:
+Koju si tabelu pretpostavio/identifikovao kao triger tabelu?
+Koje si tačne nazive kolona koristio za recipientUserId , notificationTitle , notificationBody , i itemId ?
+Potvrdi da si proverio da je ime tabele users i kolona fcm_token ispravno.
+Ispiši celokupan, modifikovan kod iz index.ts fajla.
+Hvala ti na pomoći, Replit AI!"
