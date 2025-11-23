@@ -1,0 +1,30 @@
+oje kolone da kreiram u supabase za dohvatanje tokena?
+Gemini said
+Odlično pitanje! Ovo je ključna tačka povezivanja vaše aplikacije sa Firebase notifikacijama.
+FCM tokeni su specifični za korisnika i uređaj, pa je najbolje da ih čuvate u tabeli koja je direktno povezana sa vašim korisnicima.
+Preporučena struktura u Supabase-u:
+Najjednostavniji i najčešći način je da dodate kolonu za FCM token direktno u vašu tabelu users .
+Evo koje kolone (ili koje kolone da proverite/kreirate) treba da imate:
+Tabela: users (ili kako god da se zove vaša glavna tabela sa podacima o korisnicima)
+Zašto: Jer je FCM token povezan sa specifičnim korisnikom (i njegovim uređajem).
+Kolona za ID Korisnika: id (ili user_id , uuid itd.)
+Tip podataka: Obično uuid ili int (primarni ključ).
+Zašto: Ovo je primarni ključ vaše tabele users i koristi se za jedinstvenu identifikaciju korisnika. Vaša Cloud Function koristi recipientUserId (ID primaoca) da pronađe odgovarajućeg korisnika u ovoj tabeli.
+Kolona za FCM Token: fcm_token
+Tip podataka: TEXT (ili VARCHAR sa dovoljno velikom dužinom, npr. 255 ili više).
+Zašto TEXT: FCM tokeni su dugački stringovi (tekstualne vrednosti) i mogu varirati u dužini. TEXT je najsigurniji izbor.
+Nullable: Može biti TRUE (tj. dozvoljeno je da bude NULL ).
+Zašto: Korisnici možda nemaju omogućene notifikacije, možda nikada nisu otvorili aplikaciju koja podržava notifikacije, ili možda koriste desktop verziju koja ne podržava push notifikacije. Dakle, neće svaki korisnik imati FCM token.
+Unique: Ne bi trebalo da bude TRUE .
+Zašto: Jedan korisnik može imati više uređaja (telefon, tablet, web pregledač na drugom računaru), i svaki od njih će generisati sopstveni FCM token. Ako želite da šaljete notifikacije na SVE uređaje jednog korisnika, onda bi trebalo da imate posebnu tabelu user_devices (ili fcm_tokens ) koja bi imala user_id (FOREIGN KEY ka users.id ) i fcm_token (TEXT), gde bi jedan korisnik mogao imati više redova. Međutim, za početak i najčešći scenario, jedna fcm_token kolona u users tabeli je dovoljna, i vaša aplikacija bi onda trebalo da šalje poslednji validni token korisnika.
+Primer SQL komande za dodavanje kolone u users tabelu (ako već postoji):
+ALTER TABLE users
+ADD COLUMN fcm_token TEXT NULL;
+Kako će to koristiti vaša Cloud Function:
+Vaša Cloud Function će izvršiti upit sličan ovome:
+const { data: userData, error } = await supabaseAdmin
+    .from('users') // Tabela koju Cloud Function pretražuje
+    .select('fcm_token') // Kolona koju Cloud Function traži
+    .eq('id', recipientUserId) // Kolona po kojoj Cloud Function pretražuje korisnike
+    .single();
+Dakle, ključno je da kolona koju šaljete sa frontenda ( fcm_token ) postoji u tabeli users i da je tipa TEXT 
