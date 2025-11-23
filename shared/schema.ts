@@ -21,30 +21,6 @@ export const users = pgTable("users", {
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const complaints = pgTable("complaints", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: text("title").notNull(),
-  description: text("description"),
-  location: text("location"),
-  room_number: varchar("room_number"),
-  priority: varchar("priority").notNull(),
-  status: varchar("status").notNull(),
-  created_by: varchar("created_by").notNull(),
-  created_by_name: text("created_by_name").notNull(),
-  created_by_department: text("created_by_department").notNull(),
-  assigned_to: text("assigned_to"),
-  assigned_to_name: text("assigned_to_name"),
-  assigned_to_type: varchar("assigned_to_type"),
-  deadline_at: timestamp("deadline_at", { withTimezone: true }),
-  is_overdue: boolean("is_overdue").notNull().default(false),
-  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  completed_at: timestamp("completed_at", { withTimezone: true }),
-  completed_by: varchar("completed_by"),
-  completed_by_name: text("completed_by_name"),
-  images: text("images").array(),
-});
-
 export const tasks = pgTable("tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
