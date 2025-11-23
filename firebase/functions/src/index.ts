@@ -61,12 +61,12 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req: funct
         }
 
         // --- Ekstrakcija podataka iz Webhook-a ---
-        // TABELA: complaints (Webhook će biti triggeran na INSERT/UPDATE ove tabele)
+        // TABELA: tasks (Webhook će biti triggeran na INSERT/UPDATE ove tabele)
         // Ova polja odgovaraju tačnim kolonama u Supabase šemi:
-        const recipientUserId = newRecord.assigned_to; // Kolona: complaints.assigned_to (TEXT - ID korisnika kojem je reklamacija dodeljena)
-        const notificationTitle = newRecord.title || 'Nova Reklamacija!'; // Kolona: complaints.title (naslov reklamacije)
-        const notificationBody = newRecord.description || 'Imate novu reklamaciju za tehničku službu.'; // Kolona: complaints.description (detaljan opis reklamacije)
-        const itemId = newRecord.id; // Kolona: complaints.id (primarni ključ - ID reklamacije)
+        const recipientUserId = newRecord.assigned_to; // Kolona: tasks.assigned_to (TEXT - ID korisnika kojem je zadatak dodeljen)
+        const notificationTitle = newRecord.title || 'Novi zadatak!'; // Kolona: tasks.title (naslov zadatka)
+        const notificationBody = newRecord.description || 'Imate novi zadatak.'; // Kolona: tasks.description (detaljan opis zadatka)
+        const itemId = newRecord.id; // Kolona: tasks.id (primarni ključ - ID zadatka)
 
         if (!recipientUserId || !notificationBody) {
             console.warn('Missing recipient ID or notification body in new record. Skipping notification.');
