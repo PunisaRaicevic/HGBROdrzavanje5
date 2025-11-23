@@ -2,12 +2,12 @@ import { initializeApp } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDMaf507Om6Dq-RUKmaStCnrfQ9ywUdo44",
-  authDomain: "hgbrodrzavanje-39543.firebaseapp.com",
-  projectId: "hgbrodrzavanje-39543",
-  storageBucket: "hgbrodrzavanje-39543.appspot.com",
-  messagingSenderId: "227433602872",
-  appId: "1:227433602872:web:3670adb0773591e68debcd",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "VITE_FIREBASE_API_KEY_NOT_SET",
+  authDomain: "hgbtapp.firebaseapp.com",
+  projectId: "hgbtapp",
+  storageBucket: "hgbtapp.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "VITE_FIREBASE_MESSAGING_SENDER_ID_NOT_SET",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "VITE_FIREBASE_APP_ID_NOT_SET",
 };
 
 const app = initializeApp(firebaseConfig);
