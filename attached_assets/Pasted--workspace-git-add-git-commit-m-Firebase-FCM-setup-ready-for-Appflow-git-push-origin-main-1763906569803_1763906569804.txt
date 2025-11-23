@@ -1,0 +1,41 @@
+~/workspace$ git add .
+git commit -m "Firebase FCM setup - ready for Appflow"
+git push origin main
+On branch main
+Your branch is ahead of 'origin/main' by 12 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+Enumerating objects: 95, done.
+Counting objects: 100% (95/95), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (77/77), done.
+Writing objects: 100% (77/77), 1.48 MiB | 5.69 MiB/s, done.
+Total 77 (delta 63), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (63/63), completed with 16 local objects.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— Google Cloud Service Account Credentials ——————————
+remote:        locations:
+remote:          - commit: febb4ee0bc1aa430a6ce11840b4c74c142c90ca8
+remote:            path: attached_assets/Pasted--type-service-account-project-id-hgbtapp-private-key-id-eb285ee09c37555367e18-1763905442598_1763905442599.txt:1
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/PunisaRaicevic/HGBROdrzavanje5/security/secret-scanning/unblock-secret/35slDn0aGIjqXtE7iQbfbQnBWPq
+remote:     
+remote: 
+remote: 
+To https://github.com/PunisaRaicevic/HGBROdrzavanje5.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/PunisaRaicevic/HGBROdrzavanje5.git'
