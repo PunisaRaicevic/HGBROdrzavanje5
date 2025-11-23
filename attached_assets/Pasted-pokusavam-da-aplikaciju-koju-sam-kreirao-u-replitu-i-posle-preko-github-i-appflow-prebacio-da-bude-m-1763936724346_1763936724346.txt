@@ -1,0 +1,81 @@
+pokusavam da aplikaciju koju sam kreirao u replitu i posle preko github i appflow prebacio da bude mobilna aplikacija povezem da firebase nessaging ( da imam notifikacije u aplikaciji) Sve sam povezao ali mi se nedje podkrala greska, pomogni mi da je nadjem.
+
+Analizirajmo problem sa Firebase Cloud Messaging integracijom korak po korak.
+
+Iz screenshot-ova vidim:
+
+Image 1 - Google Cloud Logs: Pokazuje grešku "No FCM token found for user ID: 85867ea3-2c6c-41f5-9637-11c46982769a. Notification not sent." i statusni kod 200 za Cloud Function izvršenje.
+
+Image 2 - Supabase: Vidim users tabelu sa kolonom fcm_token koja je NULL za sve korisnike.
+
+Image 3 - Replit: google-services.json konfiguracija
+
+Image 4 - Firebase folder: Lokalni fajlovi
+
+Problem je jasan: FCM tokeni se ne čuvaju u bazu!
+Vaša aplikacija poziva Cloud Function koja traži FCM token iz Supabase, ali tokeni nikada nisu sačuvani tamo.
+
+Šta treba da uradite:
+1. Proverite da li aplikacija traži FCM token
+U vašoj Ionic/Capacitor aplikaciji treba da imate kod koji:
+
+Traži dozvolu za notifikacije
+Dobija FCM token od Firebase-a
+Čuva taj token u Supabase
+Dodajte ovaj kod u vašu aplikaciju (npr. u app.component.ts ili glavnoj stranici):
+
+typescript
+import { PushNotifications } from '@capacitor/push-notifications';
+import { createClient } from '@supabase/supabase-js';
+
+// Inicijalizujte Supabase klijent
+const supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_KEY');
+
+async function registerPushNotifications() {
+  // Tražite dozvolu
+  let permStatus = await PushNotifications.checkPermissions();
+  
+  if (permStatus.receive === 'prompt') {
+    permStatus = await PushNotifications.requestPermissions();
+  }
+  
+  if (permStatus.receive !== 'granted') {
+    throw new Error('User denied permissions!');
+  }
+  
+  // Registrujte se za push notifikacije
+  await PushNotifications.register();
+  
+  // Listener za FCM token
+  PushNotifications.addListener('registration', async (token) => {
+    console.log('FCM Token:', token.value);
+    
+    // KLJUČNO: Sačuvajte token u Supabase
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      const { error } = await supabase
+        .from('users')
+        .update({ fcm_token: token.value })
+        .eq('id', user.id);
+      
+      if (error) {
+        console.error('Error saving FCM token:', error);
+      } else {
+        console.log('FCM token saved successfully!');
+      }
+    }
+  });
+}
+
+// Pozovite ovu funkciju nakon što se korisnik uloguje
+registerPushNotifications();
+2. Proverite da li imate instaliran Capacitor Push Notifications plugin
+bash
+npm install @capacitor/push-notifications
+npx cap sync
+3. Proverite Supabase tabelu
+Vaša users tabela mora da ima kolonu fcm_token:
+
+sql
+ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token TEXT;
