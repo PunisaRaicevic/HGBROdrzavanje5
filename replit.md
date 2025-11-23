@@ -58,39 +58,47 @@ Preferred communication style: Simple, everyday language.
 ## Push Notification Architecture
 
 **Implementation Date**: November 2025
+**Firebase Project**: `hgbtapp` (migrated November 23, 2025)
 
 ### Strategy
-- **Foreground (app open)**: Socket.IO delivers instant updates
-- **Background/Terminated**: FCM push notifications ensure delivery
-- Both channels send identical task assignment data for seamless UX
+- **Native (Android/iOS via Appflow)**: FCM via Capacitor Push Notifications plugin + Firebase Admin SDK
+- **Web**: Firebase Cloud Messaging Web SDK with VAPID key
+- **Foreground (app open)**: Socket.IO + FCM for instant updates
+- **Background/Terminated**: FCM push notifications ensure reliable delivery
 
 ### Key Components
 1. **Backend** (`server/services/firebase.ts`):
-   - Firebase Admin SDK initialization
+   - Firebase Admin SDK initialization with `hgbtapp` credentials (FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL)
    - `sendPushToUser()` function for FCM delivery
    - Hybrid sending: Socket.IO + FCM on task assignment
    
-2. **Frontend** (`client/src/main.tsx`):
-   - Capacitor Push Notifications plugin
+2. **Frontend Web** (`client/src/firebase.ts`):
+   - Firebase Web SDK with environment variables: VITE_FIREBASE_API_KEY, VITE_FIREBASE_MESSAGING_SENDER_ID, VITE_FIREBASE_APP_ID
+   - Firebase Messaging service for web push notifications
+   - Web service worker (`public/firebase-messaging-sw.js`) for background message handling
+   - VAPID key (VITE_FIREBASE_VAPID_KEY) for web push authentication
+   
+3. **Frontend Mobile** (`client/src/App.tsx`):
+   - Capacitor Push Notifications plugin for native Android/iOS
    - Automatic device token registration on app startup
-   - Token sent to `/api/users/push-token` endpoint
-   - Custom notification channel: `reklamacije-alert`
+   - Token sent to `/api/users/fcm-token` endpoint
+   - Custom notification channel: `reklamacije-alert` (Android)
 
-3. **Database**:
-   - `users.push_token` column stores FCM device tokens
-   - Updated via `POST /api/users/push-token`
+4. **Database**:
+   - `users.fcm_token` column stores FCM device tokens
+   - Updated via `POST /api/users/fcm-token`
 
-4. **Notification Payload**:
-   - Title: `Nova reklamacija #<taskId>`
-   - Body: Location + priority ("HITNO" for urgent)
-   - Sound: `alert1.mp3` (Android: `res/raw/`, iOS: Xcode bundle)
-   - Vibration: Heavy haptic feedback
-   - Badge: Auto-incremented via Capacitor Badge plugin
+5. **Android Configuration** (`android/`):
+   - `google-services.json` with `hgbtapp` project credentials
+   - Firebase Cloud Messaging dependency in `build.gradle`
+   - Custom sound (`alert1.mp3`) and vibration patterns configured via Capacitor
 
 ### Security
-- Firebase service account credentials stored in Replit Secrets
+- Firebase service account credentials stored in Replit Secrets: FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL
+- Web VAPID key stored as VITE_FIREBASE_VAPID_KEY
 - Push tokens tied to authenticated user sessions
 - FCM uses Google's secure infrastructure
+- Android/iOS: google-services.json packaged with APK/IPA
 
 ## External Dependencies
 
@@ -123,5 +131,7 @@ Preferred communication style: Simple, everyday language.
     - `bcrypt` (for password hashing)
 - **Push Notifications**:
     - `firebase-admin` (FCM server-side SDK)
-    - Firebase project: `hgbrodrzavanje-39543`
-    - Package: `com.budvanskarivijera.hotel`
+    - `firebase` (Web SDK for browser)
+    - `@capacitor/push-notifications` (Native push on Android/iOS)
+    - Firebase project: `hgbtapp`, Package: `com.budvanskarivijera.hotel`
+    - Service Account: `firebase-adminsdk-fbsvc@hgbtapp.iam.gserviceaccount.com`
