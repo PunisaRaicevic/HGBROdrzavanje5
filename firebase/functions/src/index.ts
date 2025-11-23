@@ -27,21 +27,24 @@ const supabaseAdmin = createClient(SUPABASE_URL || '', SUPABASE_SERVICE_ROLE_KEY
 
 // --- Vaša Cloud Function: handleSupabaseWebhook ---
 // Ova funkcija će se aktivirati svaki put kada Supabase Webhook pošalje HTTP POST zahtev
-export const handleSupabaseWebhook = functions.https.onRequest(async (req, res) => {
+export const handleSupabaseWebhook = functions.https.onRequest(async (req, res): Promise<void> => {
     // --- 1. Sigurnosna provera: Proverite tajni ključ Webhook-a ---
     if (!WEBHOOK_SECRET || req.headers['x-supabase-webhook-secret'] !== WEBHOOK_SECRET) {
         console.error('Unauthorized webhook access: Invalid or missing secret.');
-        return res.status(403).send('Unauthorized');
+        res.status(403).send('Unauthorized');
+        return;
     }
 
     // --- 2. Proverite HTTP metodu i telo zahteva ---
     if (req.method !== 'POST') {
         console.warn('Webhook received non-POST request. Only POST is allowed.');
-        return res.status(405).send('Method Not Allowed');
+        res.status(405).send('Method Not Allowed');
+        return;
     }
     if (!req.body) {
         console.error('Webhook received empty body. Bad Request.');
-        return res.status(400).send('Bad Request: Body missing');
+        res.status(400).send('Bad Request: Body missing');
+        return;
     }
 
     try {
@@ -53,7 +56,8 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req, res) 
 
         if (!newRecord) {
             console.error('Missing "record" in webhook data. Unexpected payload structure.');
-            return res.status(400).send('Bad Request: Missing record data');
+            res.status(400).send('Bad Request: Missing record data');
+            return;
         }
 
         // --- Ekstrakcija podataka iz Webhook-a ---
@@ -66,7 +70,8 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req, res) 
 
         if (!recipientUserId || !notificationBody) {
             console.warn('Missing recipient ID or notification body in new record. Skipping notification.');
-            return res.status(200).send('No recipient or content for notification.');
+            res.status(200).send('No recipient or content for notification.');
+            return;
         }
 
         // --- 3. Dohvatite FCM token primaoca iz Supabase baze ---
@@ -78,11 +83,13 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req, res) 
 
         if (error) {
             console.error('Error fetching recipient FCM token from Supabase:', error);
-            return res.status(500).send('Error fetching recipient token.');
+            res.status(500).send('Error fetching recipient token.');
+            return;
         }
         if (!userData || !userData.fcm_token) {
             console.warn(`No FCM token found for user ID: ${recipientUserId}. Notification not sent.`);
-            return res.status(200).send('Recipient token not found, notification skipped.');
+            res.status(200).send('Recipient token not found, notification skipped.');
+            return;
         }
 
         const recipientFCMToken = userData.fcm_token;
@@ -123,10 +130,10 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req, res) 
         const response = await admin.messaging().send(message as admin.messaging.Message);
         console.log('Successfully sent message:', response);
 
-        return res.status(200).send('Notification sent successfully!');
+        res.status(200).send('Notification sent successfully!');
 
     } catch (error) {
         console.error('Error processing Supabase webhook or sending FCM:', error);
-        return res.status(500).send('Error processing webhook.');
+        res.status(500).send('Error processing webhook.');
     }
 });
