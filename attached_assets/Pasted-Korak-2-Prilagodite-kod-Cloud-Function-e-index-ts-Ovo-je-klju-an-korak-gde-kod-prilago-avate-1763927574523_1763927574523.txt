@@ -1,0 +1,42 @@
+Korak 2: Prilagodite kod Cloud Function-e ( index.ts )
+
+Ovo je ključan korak gde kod prilagođavate vašoj specifičnoj Supabase šemi. Morate osigurati da kod ispravno "čita" podatke iz Webhook-a i zna gde da pronađe FCM tokene.
+Otvorite index.ts fajl u svom editoru:
+Putanja do fajla je: Documents/Projects/HGBROdrzavanje5/firebase/functions/src/index.ts
+Koristite editor kao što je VS Code, Sublime Text, ili Notepad++.
+Pronađite i prilagodite linije za ekstrakciju podataka iz Webhook-a:
+U kodu, potražite komentar // --- Ekstrakcija podataka iz Webhook-a --- .
+Ispod toga, videćete linije koje pokušavaju da izvuku recipientUserId , notificationTitle , notificationBody , i itemId iz newRecord objekta.
+Zamenite generičke nazive (poput assigned_to_user_id ili title ) sa TAČNIM NAZIVIMA KOLONA iz vaše Supabase tabele koju Webhook nadgleda (npr. complaints tabela).
+Kako pronaći tačna imena kolona:
+Idite u vaš Supabase Dashboard .
+Idite na Database > Table Editor .
+Kliknite na tabelu koju vaš Webhook nadgleda (npr. complaints ).
+Pregledajte listu kolona i njihova imena.
+Primer (pretpostavimo da vaša complaints tabela ima kolone id , assigned_to_user_id , title , description ):
+// Pre nego što ste prilagodili:
+// const recipientUserId = newRecord.assigned_to_user_id || newRecord.receiver_id || newRecord.to_user_id; // Primeri! Prilagodite!
+// const notificationTitle = newRecord.title || 'Nova Obavest!'; // Naslov notifikacije
+// const notificationBody = newRecord.message || newRecord.description || 'Stigla je nova poruka/zadatak.'; // Sadržaj poruke/zadatka
+// const itemId = newRecord.id; // ID novokreiranog zadatka/poruke
+
+// Posle prilagođavanja (koristeći kolone iz complaints tabele):
+const recipientUserId = newRecord.assigned_to_user_id; // Ime kolone u complaints tabeli koja drži ID primaoca
+const notificationTitle = newRecord.title;               // Ime kolone u complaints tabeli za naslov
+const notificationBody = newRecord.description;          // Ime kolone u complaints tabeli za opis
+const itemId = newRecord.id;                             // Ime kolone u complaints tabeli za primarni ID
+Rezervne vrednosti: Imajte na umu da možete dodati rezervne vrednosti ako neka kolona može biti prazna:
+const notificationTitle = newRecord.title || 'Nova Reklamacija!'; // Ako je newRecord.title prazan, koristi 'Nova Reklamacija!'
+Pronađite i prilagodite linije za dohvaćanje FCM tokena:
+U kodu, potražite komentar // --- 3. Dohvatite FCM token primaoca iz Supabase baze --- .
+Ovaj deo koda pretražuje vašu users tabelu da bi pronašao FCM token za recipientUserId .
+Potvrdite ime tabele users i ime kolone fcm_token :
+const { data: userData, error } = await supabaseAdmin
+    .from('users') // <-- POTVRDITE: Da li se vaša tabela korisnika zaista zove 'users'? Ako ne, promenite ovde!
+    .select('fcm_token') // <-- POTVRDITE: Da li se kolona sa FCM tokenom u tabeli korisnika zaista zove 'fcm_token'? Ako ne, promenite ovde!
+    .eq('id', recipientUserId) // Ovo bi trebalo da bude ime kolone u users tabeli koja čuva ID korisnika
+    .single();
+Ako ste, na primer, nazvali tabelu app_users i kolonu za tokene device_token , onda bi to trebalo da izgleda ovako:
+.from('app_users')
+.select('device_token')
+Sačuvajte sve izmene u index.ts fajlu.
