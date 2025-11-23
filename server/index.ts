@@ -5,6 +5,7 @@ import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startCronScheduler } from "./cron";
+import { initializeFirebase } from "./services/firebase";
 
 const app = express();
 
@@ -108,6 +109,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Inicijalizuj Firebase za push notifikacije
+  initializeFirebase();
+
   const server = await registerRoutes(app);
 
   // ==========================================
