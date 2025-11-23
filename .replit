@@ -90,3 +90,8 @@ waitForPort = 5000
 [agent]
 integrations = ["javascript_object_storage:1.0.0", "javascript_websocket:1.0.0"]
 expertMode = true
+
+[userenv]
+
+[userenv.shared]
+VITE_FIREBASE_VAPID_KEY = "YEyfKS6BncFnkJyzoJ12VwxsJZPeP0YDBu_94PuUAzM"
