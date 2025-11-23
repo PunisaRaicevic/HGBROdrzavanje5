@@ -60,6 +60,10 @@ function Router() {
       PushNotifications.addListener("pushNotificationReceived", notif => {
         console.log("📥 [FCM] Primljena notifikacija:", notif);
       });
+
+      PushNotifications.addListener("pushNotificationActionPerformed", notif => {
+        console.log("🔔 [FCM] Korisnik kliknuo na notifikaciju:", notif);
+      });
     };
 
     const setupWebFCM = async () => {
@@ -67,7 +71,7 @@ function Router() {
 
       try {
         const fcmToken = await getToken(messaging, {
-          vapidKey: "BFqO1uJ_1l6bZ7s2T5k4N9p3Q8w6X0y7M1z4A8b5C2d9e3F7g1H5i0J4k8L2m6N0p9",
+          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
         });
 
         if (fcmToken) {

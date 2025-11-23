@@ -71,8 +71,8 @@ body,
 android: {
 priority: 'high',
 notification: {
-channelId: 'hitne_intervencije', // <--- KRITIČNA ISPRAVKA: Moramo gađati isti ID kao na klijentu
-sound: 'default',        // Privremeno vraćeno na default, jer alert1.mp3 nije konfigurisan u Capacitoru
+channelId: 'reklamacije-alert', // <--- KRITIČNA ISPRAVKA: Moramo gađati isti ID kao na klijentu
+sound: 'alert1', vraćeno na default, jer alert1.mp3 nije konfigurisan u Capacitoru
 priority: 'high',
 defaultVibrateTimings: true, // Neka koristi vibraciju definisanu u kanalu
 defaultSound: true,
