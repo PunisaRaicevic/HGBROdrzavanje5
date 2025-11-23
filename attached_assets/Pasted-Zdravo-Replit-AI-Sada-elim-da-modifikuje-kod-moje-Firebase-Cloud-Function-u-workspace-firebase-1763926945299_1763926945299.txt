@@ -1,0 +1,30 @@
+Zdravo Replit AI!
+Sada želim da modifikuješ kod moje Firebase Cloud Function u ~/workspace/firebase/functions/src/index.ts fajlu. Cilj je da se linije za ekstrakciju podataka iz Supabase Webhook-a i za dohvaćanje FCM tokena prilagode mojoj specifičnoj Supabase šemi.
+Molim te, izvrši sledeće korake:
+Navigiraj do ~/workspace/firebase/functions/src/ direktorijuma.
+Otvori index.ts fajl.
+PRILAGODI EKSTRAKCIJU PODATAKA IZ WEBHOOK-A:
+Pronađi blok koda koji počinje sa komentarom // --- Ekstrakcija podataka iz Webhook-a --- .
+Za ovu funkciju, Supabase Webhook će nadgledati promene u tabeli pod nazivom complaints .
+Modifikuj sledeće linije koda na osnovu kolona u complaints tabeli:
+recipientUserId : Koristi vrednost iz kolone assigned_to iz newRecord . (Ovo je ID korisnika kojem je reklamacija dodeljena).
+notificationTitle : Koristi vrednost iz kolone title iz newRecord . (Ovo je naslov reklamacije). Ako je prazno, rezervna vrednost neka bude 'Nova Reklamacija!' .
+notificationBody : Koristi vrednost iz kolone description iz newRecord . (Ovo je detaljan opis reklamacije). Ako je prazno, rezervna vrednost neka bude 'Imate novu reklamaciju za tehničku službu.' .
+itemId : Koristi vrednost iz kolone id iz newRecord . (Ovo je primarni ID reklamacije).
+PRILAGODI DOHVAĆANJE FCM TOKENA IZ SUPABASE-A:
+Pronađi blok koda koji počinje sa komentarom // --- 3. Dohvatite FCM token primaoca iz Supabase baze --- .
+Potvrdi da se tokeni čuvaju u tabeli pod nazivom users .
+Potvrdi da se kolona za FCM token zove fcm_token unutar te users tabele.
+Ako su users i fcm_token tačni, ostavi te linije neizmenjene. Ako ne, molim te, koristi ispravne nazive koje si saznao iz konteksta projekta.
+Sačuvaj izmene u index.ts fajlu.
+IZVESTI ME O URAĐENOM: Nakon što završiš, molim te, daj mi sledeće informacije:
+Potvrdi da si modifikovao index.ts .
+Ispiši celokupan, modifikovan kod iz index.ts fajla.
+Podseti me da proverim da li su imena kolona koje si koristio (npr. assigned_to , title , description ) zaista tačna u mojoj complaints tabeli.
+Hvala ti na pomoći, Replit AI!"
+Objašnjenje prompta:
+Preciznost: Nalažemo mu tačno koju tabelu ( complaints ) da koristi kao izvor podataka za Webhook.
+Imena kolona: Dajemo mu specifična imena kolona ( assigned_to , title , description , id ) za ekstrakciju.
+Fallback: Uključujemo rezervne vrednosti za naslov i telo notifikacije.
+FCM token kolone: Potvrđujemo mu imena tabele ( users ) i kolone ( fcm_token ) za dohvaćanje tokena.
+Izveštaj: Tražimo od njega da nam pokaže konačan kod i da nas podseti na proveru.
