@@ -7,7 +7,9 @@ import {
   type TaskHistory,
   type InsertTaskHistory,
   type Notification,
-  type InsertNotification
+  type InsertNotification,
+  type UserDeviceToken,
+  type InsertUserDeviceToken
 } from "@shared/schema";
 
 export interface IStorage {
@@ -37,6 +39,10 @@ export interface IStorage {
   getUserNotifications(userId: string): Promise<Notification[]>;
   markNotificationAsRead(id: string): Promise<void>;
   markAllNotificationsAsRead(userId: string): Promise<void>;
+
+  saveDeviceToken(token: Partial<InsertUserDeviceToken>): Promise<UserDeviceToken>;
+  getDeviceTokensForUser(userId: string): Promise<UserDeviceToken[]>;
+  deactivateDeviceToken(fcmToken: string): Promise<void>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -313,6 +319,43 @@ export class SupabaseStorage implements IStorage {
       .from('notifications')
       .update({ is_read: true, read_at: new Date().toISOString() })
       .eq('user_id', userId);
+    
+    if (error) throw error;
+  }
+
+  async saveDeviceToken(token: Partial<InsertUserDeviceToken>): Promise<UserDeviceToken> {
+    const { data, error } = await supabase
+      .from('user_device_tokens')
+      .upsert({
+        user_id: token.user_id,
+        fcm_token: token.fcm_token,
+        platform: token.platform,
+        last_updated: new Date().toISOString(),
+        is_active: true,
+      }, { onConflict: 'fcm_token' })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as UserDeviceToken;
+  }
+
+  async getDeviceTokensForUser(userId: string): Promise<UserDeviceToken[]> {
+    const { data, error } = await supabase
+      .from('user_device_tokens')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_active', true);
+    
+    if (error) throw error;
+    return (data || []) as UserDeviceToken[];
+  }
+
+  async deactivateDeviceToken(fcmToken: string): Promise<void> {
+    const { error } = await supabase
+      .from('user_device_tokens')
+      .update({ is_active: false })
+      .eq('fcm_token', fcmToken);
     
     if (error) throw error;
   }

@@ -8,8 +8,8 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   full_name: text("full_name").notNull(),
-  role: varchar("role").notNull(), // Sistemska uloga (admin, operater, radnik, etc.)
-  job_title: text("job_title"), // Zanimanje/pozicija u hotelu (Recepcioner, Kuvar, Tehničar, etc.)
+  role: varchar("role").notNull(),
+  job_title: text("job_title"),
   department: text("department"),
   phone: varchar("phone"),
   password_hash: text("password_hash").notNull(),
@@ -19,6 +19,16 @@ export const users = pgTable("users", {
   onesignal_player_id: text("onesignal_player_id"),
   fcm_token: text("fcm_token"),
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const user_device_tokens = pgTable("user_device_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  user_id: varchar("user_id").notNull(),
+  fcm_token: text("fcm_token").notNull().unique(),
+  platform: text("platform"),
+  last_updated: timestamp("last_updated", { withTimezone: true }).notNull().defaultNow(),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  is_active: boolean("is_active").notNull().default(true),
 });
 
 export const tasks = pgTable("tasks", {
@@ -95,9 +105,6 @@ export const notifications = pgTable("notifications", {
   read_at: timestamp("read_at", { withTimezone: true }),
 });
 
-// Relations
-// Note: tasks.assigned_to is a TEXT field with comma-separated user IDs, not a foreign key
-// Similarly, assigned_to_name, operator_name, sef_name, etc. are denormalized text fields
 export const usersRelations = relations(users, ({ many }) => ({
   createdTasks: many(tasks, { relationName: "created_by" }),
   notifications: many(notifications),
@@ -143,12 +150,15 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 }));
 
 export const insertUserSchema = createInsertSchema(users);
+export const insertUserDeviceTokenSchema = createInsertSchema(user_device_tokens);
 export const insertTaskSchema = createInsertSchema(tasks);
 export const insertTaskHistorySchema = createInsertSchema(task_history);
 export const insertNotificationSchema = createInsertSchema(notifications);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertUserDeviceToken = z.infer<typeof insertUserDeviceTokenSchema>;
+export type UserDeviceToken = typeof user_device_tokens.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type Task = typeof tasks.$inferSelect;
 export type InsertTaskHistory = z.infer<typeof insertTaskHistorySchema>;

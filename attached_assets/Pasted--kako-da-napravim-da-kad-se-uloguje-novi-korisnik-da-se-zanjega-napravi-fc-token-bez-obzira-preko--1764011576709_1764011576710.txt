@@ -1,0 +1,186 @@
+
+kako da napravim da kad se uloguje novi korisnik da se zanjega napravi fc_token, bez obzira preko kojeg uredjaja da se konektuje da je to njegov token
+Gemini said
+Razumem tvoju želju! Ključno je razjasniti jednu fundamentalnu stvar o FCM tokenima: FCM token je vezan za INSTALACIJU aplikacije na određenom UREĐAJU, a ne za samog KORISNIKA.
+To znači da:
+Ako se Milica prijavi na svoj telefon, dobiće jedan FCM token.
+Ako se Milica prijavi na svoj tablet, dobiće drugi FCM token.
+Ako Milica deinstalira i ponovo instalira aplikaciju na telefonu, može dobiti novi token za isti telefon.
+Čak i ako se ne deinstalira, Firebase može osvežiti token iz sigurnosnih razloga, pa će aplikacija dobiti novi token za isti uređaj.
+Tvoj cilj "bez obzira preko kojeg uređaja da se konektuje da je to njegov token" se zapravo prevodi u "svi FCM tokeni svih uređaja na kojima je korisnik prijavljen treba da budu povezani sa tim korisnikom".
+Evo kako to postići sa Supabase-om i Firebase-om:
+1. Izmeni Supabase šemu baze podataka
+
+Trebaće ti tabela koja povezuje user_id sa fcm_token -ima. Nazovimo je user_device_tokens .
+CREATE TABLE user_device_tokens (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL, -- Poveži sa Supabase auth korisnikom
+  fcm_token TEXT UNIQUE NOT NULL, -- Jedinstven FCM token za svaki uređaj
+  platform TEXT, -- npr. 'android', 'ios', 'web'
+  last_updated TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  is_active BOOLEAN DEFAULT TRUE -- Za markiranje neaktivnih tokena
+);
+
+-- Dodaj indeks za brže pretraživanje po user_id
+CREATE INDEX idx_user_device_tokens_user_id ON user_device_tokens(user_id);
+2. Klijentska strana: Slanje tokena na tvoj backend (kada se korisnik prijavi/token se osveži)
+
+Ovaj deo je već delimično pokriven u prethodnim odgovorima. Potrebno je osigurati da se fcm_token šalje na tvoj backend kada:
+Aplikacija se prvi put pokrene i token se inicijalno generiše.
+Korisnik se uspešno prijavi. U ovom trenutku, imaš user_id iz Supabase Auth-a, koji ti je potreban.
+FCM token se osveži (što Firebase radi povremeno).
+Evo pseudokoda/ideje za tvoju Capacitor/React aplikaciju (ono što si već delimično implementirao u useFCM hook-u):
+// Unutar tvog useFCM hooka, ili nekog drugog mesta gde upravljaš FCM
+import { PushNotifications } from '@capacitor/push-notifications';
+import { supabase } from './supabaseClient'; // Tvoj Supabase klijent
+
+interface UserProfile {
+  id: string; // User ID iz Supabase auth-a
+  // ... ostali podaci korisnika
+}
+
+// Funkcija koja se poziva kad god želimo da pošaljemo/ažuriramo FCM token
+async function sendFCMTokenToBackend(userId: string, token: string, platform: string) {
+  try {
+    const { data, error } = await supabase
+      .from('user_device_tokens')
+      .upsert(
+        { user_id: userId, fcm_token: token, platform: platform, last_updated: new Date().toISOString(), is_active: true },
+        { onConflict: 'fcm_token' } // Ako token već postoji, ažuriraj ga
+      );
+
+    if (error) {
+      console.error('Greška pri čuvanju/ažuriranju FCM tokena u Supabase:', error.message);
+    } else {
+      console.log('FCM token uspešno sačuvan/ažuriran za korisnika:', userId);
+    }
+  } catch (err) {
+    console.error('Generalna greška pri slanju FCM tokena:', err);
+  }
+}
+
+// Glavna logika za inicijalizaciju FCM-a u tvojoj Capacitor aplikaciji
+async function initializeFCMForCapacitor(currentUser: UserProfile | null) {
+  if (!currentUser?.id) {
+    console.warn("Nema prijavljenog korisnika, preskačem FCM setup.");
+    return;
+  }
+
+  // --- OVO JE VEĆ U TVOM LOGU I RADI DOBRO ---
+  // Listener za kada se dobije novi token (Capacitor)
+  PushNotifications.addListener('registration', async (res) => {
+    console.log('Capacitor registration token:', res.value);
+    const platform = (await PushNotifications.getDeliveredNotifications()).notifications[0]?.platform || 'android'; // Ili detektuj platformu na bolji način
+    await sendFCMTokenToBackend(currentUser.id, res.value, platform);
+  });
+
+  // Listener za kada se primi notifikacija
+  PushNotifications.addListener('pushNotificationReceived', (notification) => {
+    console.log('Push received:', notification);
+    // Ovde obradi notifikaciju kada je aplikacija aktivna
+  });
+  // --- KRAJ TVOJE POSTOJEĆE LOGIKE ---
+
+  // Ako već imamo token, pošalji ga odmah (npr. nakon prijave korisnika)
+  const result = await PushNotifications.requestPermissions();
+  if (result.receive === 'granted') {
+    await PushNotifications.register(); // Ovo će okidati 'registration' listener
+  } else {
+    console.warn('Dozvole za push notifikacije nisu odobrene.');
+  }
+}
+
+// Pozovi initializeFCMForCapacitor nakon što korisnik prođe autentifikaciju
+// i kada znaš njegov currentUser.id
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session?.user) {
+    console.log('Korisnik prijavljen:', session.user.id);
+    // Dohvati podatke o korisniku ako su potrebni, pa pozovi
+    await initializeFCMForCapacitor({ id: session.user.id /*, ... */ });
+  }
+  // Moguće je i rukovati SIGNED_OUT eventom za brisanje tokena
+});
+
+// Takođe, pozovi ga na startu aplikacije ako je korisnik već prijavljen
+// Npr. u root komponenti aplikacije, nakon što se proveri status autentifikacije
+3. Backend: Slanje notifikacija na korisnika (umesto na jedan token)
+
+Kada želiš da pošalješ notifikaciju Milici (tj. korisniku sa user_id ), tvoj backend treba da uradi sledeće:
+Dohvati sve aktivne FCM tokene za tog user_id iz Supabase tabele user_device_tokens .
+Pošalji poruku svim tim tokenima koristeći Firebase Admin SDK.
+// Na tvom backendu (Node.js/Express, Cloud Function)
+import * as admin from 'firebase-admin';
+import { createClient } from '@supabase/supabase-js'; // Tvoj Supabase klijent
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY; // Koristi service_role key za backend
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+// Pretpostavimo da je Admin SDK već inicijalizovan
+
+async function sendNotificationToUser(userId: string, title: string, body: string, dataPayload: any = {}) {
+  // 1. Dohvati sve tokene za datog korisnika
+  const { data: deviceTokens, error } = await supabase
+    .from('user_device_tokens')
+    .select('fcm_token')
+    .eq('user_id', userId)
+    .eq('is_active', true); // Samo aktivni tokeni
+
+  if (error) {
+    console.error('Greška pri dohvatanju tokena iz Supabase:', error.message);
+    return;
+  }
+
+  const registrationTokens = deviceTokens.map(row => row.fcm_token);
+
+  if (registrationTokens.length === 0) {
+    console.log('Nema aktivnih FCM tokena za korisnika:', userId);
+    return;
+  }
+
+  // 2. Kreiraj poruku
+  const message = {
+    notification: {
+      title: title,
+      body: body,
+    },
+    data: dataPayload,
+    tokens: registrationTokens, // Slanje na više tokena odjednom
+  };
+
+  try {
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log('Uspešno poslato poruka:', response.successCount, ' tokena, neuspešno:', response.failureCount);
+
+    // Opcionalno: Ažuriraj Supabase za neuspele tokene
+    if (response.failureCount > 0) {
+      const tokensToRemove: string[] = [];
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          // Ako je greška AUTHENTICATION_ERROR ili INVALID_ARGUMENT (token invalidan), treba ga ukloniti
+          // Vidi: https://firebase.google.com/docs/cloud-messaging/send-messages#admin_sdk_error_responses
+          if (resp.error?.code === 'messaging/registration-token-not-registered' ||
+              resp.error?.code === 'messaging/invalid-argument') { // Dodaj druge relevantne kodove
+            tokensToRemove.push(registrationTokens[idx]);
+          }
+        }
+      });
+
+      if (tokensToRemove.length > 0) {
+        console.log('Označavam kao neaktivne sledeće tokene:', tokensToRemove);
+        await supabase
+          .from('user_device_tokens')
+          .update({ is_active: false })
+          .in('fcm_token', tokensToRemove);
+      }
+    }
+
+  } catch (error) {
+    console.error('Greška pri slanju FCM poruke:', error);
+  }
+}
+
+// Primer poziva:
+// sendNotificationToUser('ID_KORISNIKA_MILICA', 'Nova Reklamacija!', 'Imate novu reklamaciju od gosta!');
