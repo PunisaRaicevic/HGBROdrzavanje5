@@ -128,13 +128,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Try Supabase first, fallback to test users
       let user = null;
+      let isTestUser = false;
       try {
         console.log("Fetching user from Supabase...");
         user = await storage.getUserByUsername(username);
         console.log("Supabase result:", user ? "Found" : "Not found");
       } catch (supabaseError) {
-        console.warn("Supabase error, using test user:", supabaseError);
+        console.warn("Supabase error, trying test user:", supabaseError);
         user = testUsers[username] || null;
+        isTestUser = !!user;
+        if (user) console.log("Using test user:", user.username);
       }
 
       if (!user || !user.is_active) {
@@ -153,11 +156,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isValidPassword = await bcrypt.compare(password, user.password_hash);
       } else {
         isValidPassword = password === user.password_hash;
-        if (isValidPassword) {
-          const hashedPassword = await bcrypt.hash(password, 10);
-          await storage.updateUser(user.id, { password_hash: hashedPassword });
+        if (isValidPassword && !isTestUser) {
+          // Only update password in Supabase for real users
+          try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await storage.updateUser(user.id, { password_hash: hashedPassword });
+          } catch (updateErr) {
+            console.warn("Could not hash password for user:", updateErr);
+          }
         }
       }
+      
+      console.log("Password validation:", { isValid: isValidPassword, isTest: isTestUser });
 
       if (!isValidPassword) {
         return res.status(401).json({ error: "Invalid username or password" });
