@@ -27,6 +27,7 @@ function Router() {
   const { user, login, loading } = useAuth();
 
   // 🔥 Inicijalizuj push notifikacije na mobilnim uređajima
+  console.log(`📍 [Router] Current user:`, user?.username || 'NOT LOGGED IN', 'ID:', user?.id ? `${user.id.substring(0, 8)}...` : 'UNDEFINED');
   useFCM(user?.id);
 
   // 🌐 Web FCM setup (samo za browser - NE za Capacitor/Android/iOS!)

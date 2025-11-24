@@ -1,31 +1,45 @@
 import { useEffect } from 'react';
-import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import { apiRequest } from '@/lib/queryClient';
+// NOTE: PushNotifications imported dynamically to avoid errors on web platform
 
 // 🔥 Kreiranje notification channel-a za Android
 const createNotificationChannel = async () => {
-  if (Capacitor.getPlatform() === 'android') {
-    try {
-      await PushNotifications.createChannel({
-        id: 'reklamacije-alert', // 🔥 MORA SE POKLAPATI SA channelId u Firebase Cloud Function
-        name: 'Reklamacije Notifikacije',
-        description: 'Notifikacije za dodeljene reklamacije i zadatke',
-        importance: 5, // 5 = Max importance (sa zvukom)
-        sound: 'default',
-        vibration: true,
-        visibility: 1, // Public
-      });
-      console.log('✅ [FCM] Notification channel "reklamacije-alert" created');
-    } catch (error) {
-      console.error('❌ [FCM] Error creating notification channel:', error);
-    }
+  const platform = Capacitor.getPlatform();
+  if (platform !== 'android') {
+    console.log(`⏭️ [FCM] Skipping notification channel - platform is ${platform}`);
+    return;
+  }
+  
+  try {
+    // Dinamički import PushNotifications samo na native platformama
+    const { PushNotifications: PN } = await import('@capacitor/push-notifications');
+    await PN.createChannel({
+      id: 'reklamacije-alert', // 🔥 MORA SE POKLAPATI SA channelId u Firebase Cloud Function
+      name: 'Reklamacije Notifikacije',
+      description: 'Notifikacije za dodeljene reklamacije i zadatke',
+      importance: 5, // 5 = Max importance (sa zvukom)
+      sound: 'default',
+      vibration: true,
+      visibility: 1, // Public
+    });
+    console.log('✅ [FCM] Notification channel "reklamacije-alert" created');
+  } catch (error) {
+    console.error('❌ [FCM] Error creating notification channel:', error);
   }
 };
 
 export const useFCM = (userId?: string) => {
   useEffect(() => {
-    if (!userId) return;
+    // 🔴 UVEK logujem kada se hook pozove
+    console.log(`📱 [useFCM] Hook called with userId:`, userId ? `${userId.substring(0, 8)}...` : 'UNDEFINED');
+    
+    if (!userId) {
+      console.warn('⚠️ [useFCM] Skipping FCM setup - no userId provided');
+      return;
+    }
+
+    console.log(`✅ [useFCM] userId is valid - proceeding with FCM setup`);
 
     let isMounted = true;
     let hasStarted = false;
@@ -67,6 +81,9 @@ export const useFCM = (userId?: string) => {
 
         // 🔥 1. Kreiraj notification channel (samo Android)
         await createNotificationChannel();
+
+        // Dinamički import PushNotifications
+        const { PushNotifications } = await import('@capacitor/push-notifications');
 
         // 2. Tražimo dozvolu
         console.log('📋 [FCM] Zahtevam push dozvole...');
