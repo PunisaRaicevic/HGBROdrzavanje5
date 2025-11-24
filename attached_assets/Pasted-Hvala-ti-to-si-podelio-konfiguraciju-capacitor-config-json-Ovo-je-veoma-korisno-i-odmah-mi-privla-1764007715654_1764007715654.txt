@@ -1,0 +1,31 @@
+Hvala ti što si podelio konfiguraciju capacitor.config.json ! Ovo je veoma korisno i odmah mi privlači pažnju jedan detalj koji bi mogao biti uzrok problema:
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+Evo šta mislim o ovome:
+"androidScheme": "https" : Ovo je dobra stvar. Govori Capacitor-u da bi trebalo da koristi HTTPS za učitavanje lokalnog web sadržaja unutar WebView-a na Androidu.
+"cleartext": true : E, ovo je potencijalni krivac za tvoj problem! Ova postavka, kada je true , u suštini govori Android operativnom sistemu da je tvoja aplikacija spremna da pravi neenkriptovane HTTP zahteve .
+Zašto je cleartext: true problematično?
+
+Android Security Policy: Od Androida 9 (API level 28), Google je uveo strogu politiku Network Security Configuration (NSC) koja podrazumevano blokira sav neenkriptovan HTTP saobraćaj ka udaljenim (remote) destinacijama.
+Paradoks: Iako cleartext: true dozvoljava tvojoj aplikaciji da koristi HTTP, to ne znači da će backend server (ili Replit proxy) to prihvatiti, niti da sam Android OS neće imati problema sa takvom komunikacijom prema udaljenim serverima, naročito ako je tvoj backend konfigurisan samo za HTTPS (što je dobra praksa).
+"Request ne prolazi": Tvoj opis problema ("Milicin zahtjev ne prolazi kroz Express middleware na početku") savršeno se uklapa u scenario gde Android OS jednostavno odbacuje HTTP zahtev pre nego što on i stigne do Replit proxyja ili tvog Express servera , jer ga smatra nesigurnim. Čak i ako Replit nudi HTTP, sam Android može da ga preseče.
+Preporuka i sledeći koraci:
+
+Promeni cleartext na false : Ovo je prvi i najvažniji korak.
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false // PROMENI OVO
+  },
+ Expand 
+Nakon promene, obavezno ponovo build-uj Android projekat ( npx cap sync android && npx cap open android ). Ovo će ažurirati AndroidManifest.xml sa android:usesCleartextTraffic="false" (ili će ga ukloniti, što je ekvivalentno false ).
+Osiguraj da je tvoj Replit backend dostupan isključivo preko HTTPS-a: Ako već nije, proveri da li je tvoj Replit domen (npr. https://HGBRTehnickaSluzba.replit.app ) dostupan samo preko HTTPS-a. To je standard i preporučena praksa.
+Testiraj ponovo: Nakon ove promene i re-build-a Android aplikacije, ponovi testiranje slanja FCM tokena. Vrlo je verovatno da će zahtevi sada prolaziti.
+Dodatno objašnjenje:
+Iako je u Capacitor konfiguraciji androidScheme postavljen na https , to se prvenstveno odnosi na lokalni sadržaj koji se servira u WebView-u. Za udaljene API pozive (tvoj Express backend), tvoja aplikacija mora da koristi URL-ove koji počinju sa https:// . Ako i dalje negde u kodu pozivaš http:// URL, to bi mogao biti problem koji cleartext: false neće magično rešiti, već će ga jasno prikazati kao grešku. Međutim, s obzirom na to da je Replit obično podrazumevano HTTPS, velika je šansa da je samo postavka cleartext: true u konfiguraciji ometala komunikaciju.
+Menjanjem cleartext na false i obezbeđivanjem HTTPS komunikacije, tvoja Android aplikacija će se pridržavati modernih sigurnosnih standarda, što bi trebalo da reši problem sa zahtevima koji ne stižu do tvog Express backend-a.
+Da biste ovo dalje istražili, možda biste želeli da pitate:
+Kako da u svom React/TypeScript kodu osiguram da su svi API pozivi ka backendu uvek preko HTTPS-a, bez obzira na platformu?
+Šta da radim ako i nakon postavljanja cleartext: false i dalje imam problema sa mrežnom komunikacijom na Androidu?
+Možeš li mi dati primer kako bih mogao da postavim specifične HTTP klijent logove u mojoj Capa
