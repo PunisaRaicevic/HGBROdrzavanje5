@@ -109,6 +109,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
 
+  // FALLBACK TEST USERS (for development when Supabase is unavailable)
+  const testUsers: Record<string, any> = {
+    "jovan": { id: "test-1", username: "jovan", full_name: "Jovan Test", role: "sef", is_active: true, password_hash: "test123" },
+    "aleksandar": { id: "test-2", username: "aleksandar", full_name: "Aleksandar Test", role: "admin", is_active: true, password_hash: "test123" },
+    "marko": { id: "test-3", username: "marko", full_name: "Marko Test", role: "radnik", is_active: true, password_hash: "test123" },
+  };
+
   // Authentication endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
@@ -119,10 +126,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Username and password are required" });
       }
 
-      const user = await storage.getUserByUsername(username);
+      // Try Supabase first, fallback to test users
+      let user = null;
+      try {
+        console.log("Fetching user from Supabase...");
+        user = await storage.getUserByUsername(username);
+        console.log("Supabase result:", user ? "Found" : "Not found");
+      } catch (supabaseError) {
+        console.warn("Supabase error, using test user:", supabaseError);
+        user = testUsers[username] || null;
+      }
 
       if (!user || !user.is_active) {
-        console.log("User not found:", username);
+        console.log("User not found or inactive:", username);
         return res.status(401).json({ error: "Invalid username or password" });
       }
 
@@ -178,7 +194,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login error - Full details:", error);
+      console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
       res.status(500).json({ error: "Internal server error" });
     }
   });
