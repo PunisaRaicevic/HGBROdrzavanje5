@@ -284,9 +284,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tokenValue = fcmToken || token;
       const userId = req.session?.userId;
 
-      console.log('[FCM TOKEN ENDPOINT] Received request:', { userId, tokenLength: tokenValue?.length });
+      console.log('[FCM TOKEN ENDPOINT] Received request:', { userId, tokenLength: tokenValue?.length, token: tokenValue?.substring(0, 50) });
 
       if (!tokenValue) {
+        console.error('[FCM TOKEN ENDPOINT] No token provided');
         return res.status(400).json({ error: "Token required" });
       }
 
@@ -295,20 +296,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      console.log(`[FCM TOKEN ENDPOINT] Updating user ${userId} with token...`);
+      console.log(`[FCM TOKEN ENDPOINT] Calling storage.updateUser for ${userId}...`);
       const updated = await storage.updateUser(userId, { fcm_token: tokenValue });
-      console.log(`[FCM TOKEN ENDPOINT] Update result:`, { userId, updated: !!updated, tokenStored: updated?.fcm_token?.substring(0, 50) });
       
       if (!updated) {
-        console.error(`[FCM TOKEN ENDPOINT] Failed to update user ${userId}`);
-        return res.status(500).json({ error: "Failed to save token" });
+        console.error(`[FCM TOKEN ENDPOINT] storage.updateUser returned null/undefined for ${userId}`);
+        return res.status(500).json({ error: "Failed to save token - user not found" });
       }
 
-      console.log(`✅ FCM token registered for user ${userId}`);
-      res.json({ success: true, token: updated.fcm_token?.substring(0, 50) });
+      console.log(`[FCM TOKEN ENDPOINT] Success! User ${userId} updated, fcm_token stored: ${!!updated.fcm_token}`);
+      res.json({ 
+        success: true, 
+        userId,
+        tokenStored: !!updated.fcm_token,
+        token: updated.fcm_token?.substring(0, 50) 
+      });
     } catch (error) {
       console.error('[FCM TOKEN ENDPOINT] Error:', error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error", details: String(error) });
     }
   });
 
