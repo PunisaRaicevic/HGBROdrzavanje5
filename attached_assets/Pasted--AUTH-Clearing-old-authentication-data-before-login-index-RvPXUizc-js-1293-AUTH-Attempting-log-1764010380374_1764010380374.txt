@@ -1,0 +1,310 @@
+[AUTH] Clearing old authentication data before login...
+index-RvPXUizc.js:1293 [AUTH] Attempting login for: jovan
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Login successful for: Jovan Đurić Role: radnik
+index-RvPXUizc.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-RvPXUizc.js:1293 📍 [Router] Current user: Jovan Đurić ID: 05867ea3...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [NOTIFICATIONS] OneSignal handles native permissions
+index-RvPXUizc.js:1293 [SOCKET.IO DEBUG] Connecting to: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [SOCKET.IO DEBUG] Platform: Mobile
+index-RvPXUizc.js:1293 📱 [useFCM:7:50:29 PM] Hook called with userId: 05867ea3...
+index-RvPXUizc.js:1293 📱 [useFCM:7:50:29 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ✅ [useFCM:7:50:29 PM] userId is valid - proceeding with FCM setup
+index-RvPXUizc.js:1293 📝 [useFCM:7:50:29 PM] Postavljam timeout od 500ms za setupFCM...
+index-RvPXUizc.js:1293 📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications
+index-RvPXUizc.js:1293 [SOCKET.IO] ✅ Connected successfully: 9V21RCGAQueoh6lyAABS
+index-RvPXUizc.js:1293 [SOCKET.IO] Transport: websocket
+index-RvPXUizc.js:1293 📝 [useFCM] Pozivam setupFCM...
+index-RvPXUizc.js:1293 🚀 [FCM:7:50:30 PM] Platform DETECTED: android, Is Native: true
+index-RvPXUizc.js:1293 🚀 [FCM:7:50:30 PM] Capacitor.isNativePlatform() = true
+index-RvPXUizc.js:1293 ✅ [FCM:7:50:30 PM] JWT token dostupan
+index-RvPXUizc.js:1293 📱 [FCM:7:50:30 PM] MOBILNA VERZIJA DETEKTOVANA! Platform: android
+index-RvPXUizc.js:1293 📝 [FCM:7:50:30 PM] Kreiram notification channel...
+VM3:348 native PushNotifications.createChannel (#15859295)
+VM3:328 result PushNotifications.createChannel (#15859295)
+index-RvPXUizc.js:1293 ✅ [FCM] Notification channel "reklamacije-alert" created
+index-RvPXUizc.js:1293 ✅ [FCM:7:50:30 PM] Notification channel kreiran
+index-RvPXUizc.js:1293 📝 [FCM:7:50:30 PM] Importujem @capacitor/push-notifications...
+index-RvPXUizc.js:1293 ✅ [FCM:7:50:30 PM] PushNotifications importovan
+index-RvPXUizc.js:1293 📋 [FCM:7:50:30 PM] Zahtevam push dozvole...
+VM3:348 native PushNotifications.requestPermissions (#15859296)
+VM3:328 result PushNotifications.requestPermissions (#15859296)
+index-RvPXUizc.js:1293 ✅ [FCM:7:50:30 PM] Permission result: granted
+index-RvPXUizc.js:1293 ✅ [FCM:7:50:30 PM] Push dozvola odobrena
+index-RvPXUizc.js:1293 📝 [FCM:7:50:30 PM] Registrujem uređaj...
+index-RvPXUizc.js:1293 📝 [FCM:7:50:30 PM] Pozivam PushNotifications.register()...
+VM3:348 native PushNotifications.addListener (#15859297)
+VM3:348 native PushNotifications.addListener (#15859298)
+VM3:348 native PushNotifications.addListener (#15859299)
+VM3:348 native PushNotifications.addListener (#15859300)
+VM3:348 native PushNotifications.register (#15859301)
+VM3:328 result PushNotifications.register (#15859301)
+index-RvPXUizc.js:1293 ✅ [FCM:7:50:30 PM] Uređaj registrovan - čekam token...
+VM3:328 result PushNotifications.addListener (#15859297)
+index-RvPXUizc.js:1293 🔥 [FCM:7:50:30 PM] Token primljen: eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP...
+index-RvPXUizc.js:1293 📤 [FCM:7:50:30 PM] Slanje tokena na backend...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Content-Type: 'application/json', Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [API REQUEST] Body: {token: 'eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP…oBxvbuuUhYqpM-9_g0r1tTCgCMXbKMui6dLDDepZXdVoJMPWs'}
+index-RvPXUizc.js:1293 [SOCKET.IO] Worker connected to room: {userId: '05867ea3-2c6c-41f5-9637-11c469827e9a', socketId: '9V21RCGAQueoh6lyAABS'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 ✅ [FCM:7:50:30 PM] Token sačuvan na backend! Response {type: 'cors', url: 'https://hgbrtehnickasluzba.replit.app/api/users/fcm-token', redirected: false, status: 200, ok: true, …}
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.DwoAJOYL9S_wBHYAUFTG1i-Kf4HcEClqscREJmymiYI'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 45
+index-RvPXUizc.js:1293 [SOCKET.IO] ⚠️ Disconnected. Reason: transport close
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onclose @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onclose @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onClose @ index-RvPXUizc.js:372
+(anonymous) @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onClose @ index-RvPXUizc.js:372
+ws.onclose @ index-RvPXUizc.js:372
+index-RvPXUizc.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED
+createSocket @ index-RvPXUizc.js:372
+doOpen @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+_open @ index-RvPXUizc.js:372
+Gs @ index-RvPXUizc.js:372
+h9 @ index-RvPXUizc.js:372
+p9 @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+(anonymous) @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] ❌ Connection error: websocket error
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onerror @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+o @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onError @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onError @ index-RvPXUizc.js:372
+ws.onerror @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] Error details: ZW: websocket error
+    at i9.onError (index-RvPXUizc.js:372:54847)
+    at ws.onerror (index-RvPXUizc.js:372:61038)
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onerror @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+o @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onError @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onError @ index-RvPXUizc.js:372
+ws.onerror @ index-RvPXUizc.js:372
+index-RvPXUizc.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED
+createSocket @ index-RvPXUizc.js:372
+doOpen @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+_open @ index-RvPXUizc.js:372
+Gs @ index-RvPXUizc.js:372
+h9 @ index-RvPXUizc.js:372
+p9 @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+(anonymous) @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] ❌ Connection error: websocket error
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onerror @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+o @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onError @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onError @ index-RvPXUizc.js:372
+ws.onerror @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] Error details: ZW: websocket error
+    at i9.onError (index-RvPXUizc.js:372:54847)
+    at ws.onerror (index-RvPXUizc.js:372:61038)
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onerror @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+o @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onError @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onError @ index-RvPXUizc.js:372
+ws.onerror @ index-RvPXUizc.js:372
+index-RvPXUizc.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED
+createSocket @ index-RvPXUizc.js:372
+doOpen @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+_open @ index-RvPXUizc.js:372
+Gs @ index-RvPXUizc.js:372
+h9 @ index-RvPXUizc.js:372
+p9 @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+(anonymous) @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] ❌ Connection error: websocket error
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onerror @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+o @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onError @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onError @ index-RvPXUizc.js:372
+ws.onerror @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] Error details: ZW: websocket error
+    at i9.onError (index-RvPXUizc.js:372:54847)
+    at ws.onerror (index-RvPXUizc.js:372:61038)
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onerror @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+o @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onError @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onError @ index-RvPXUizc.js:372
+ws.onerror @ index-RvPXUizc.js:372
+index-RvPXUizc.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED
+createSocket @ index-RvPXUizc.js:372
+doOpen @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+_open @ index-RvPXUizc.js:372
+Gs @ index-RvPXUizc.js:372
+h9 @ index-RvPXUizc.js:372
+p9 @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+(anonymous) @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] ❌ Connection error: websocket error
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onerror @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+o @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onError @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onError @ index-RvPXUizc.js:372
+ws.onerror @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] Error details: ZW: websocket error
+    at i9.onError (index-RvPXUizc.js:372:54847)
+    at ws.onerror (index-RvPXUizc.js:372:61038)
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onerror @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+o @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onError @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onError @ index-RvPXUizc.js:372
+ws.onerror @ index-RvPXUizc.js:372
+index-RvPXUizc.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED
+createSocket @ index-RvPXUizc.js:372
+doOpen @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+_open @ index-RvPXUizc.js:372
+Gs @ index-RvPXUizc.js:372
+h9 @ index-RvPXUizc.js:372
+p9 @ index-RvPXUizc.js:372
+open @ index-RvPXUizc.js:372
+(anonymous) @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] ❌ Connection error: websocket error
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:374
+at.emit @ index-RvPXUizc.js:372
+onerror @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+o @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+_onError @ index-RvPXUizc.js:372
+at.emit @ index-RvPXUizc.js:372
+onError @ index-RvPXUizc.js:372
+ws.onerror @ index-RvPXUizc.js:372
+index-RvPXUizc.js:1293 [SOCKET.IO] Error details: ZW: websocket error
+    at i9.onError (index-RvPXUizc.js:372:54847)
+    at ws.onerror (index-RvPXUizc.js:372:61
