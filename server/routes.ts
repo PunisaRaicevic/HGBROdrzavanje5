@@ -109,13 +109,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
 
-  // FALLBACK TEST USERS (for development when Supabase is unavailable)
-  const testUsers: Record<string, any> = {
-    "jovan": { id: "test-1", username: "jovan", full_name: "Jovan Test", role: "sef", is_active: true, password_hash: "test123" },
-    "aleksandar": { id: "test-2", username: "aleksandar", full_name: "Aleksandar Test", role: "admin", is_active: true, password_hash: "test123" },
-    "marko": { id: "test-3", username: "marko", full_name: "Marko Test", role: "radnik", is_active: true, password_hash: "test123" },
-  };
-
   // Authentication endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
@@ -126,22 +119,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Username and password are required" });
       }
 
-      // Try Supabase first, fallback to test users
-      let user = null;
-      let isTestUser = false;
-      try {
-        console.log("Fetching user from Supabase...");
-        user = await storage.getUserByUsername(username);
-        console.log("Supabase result:", user ? "Found" : "Not found");
-      } catch (supabaseError) {
-        console.warn("Supabase error, trying test user:", supabaseError);
-        user = testUsers[username] || null;
-        isTestUser = !!user;
-        if (user) console.log("Using test user:", user.username);
-      }
+      const user = await storage.getUserByUsername(username);
 
       if (!user || !user.is_active) {
-        console.log("User not found or inactive:", username);
+        console.log("User not found:", username);
         return res.status(401).json({ error: "Invalid username or password" });
       }
 
@@ -156,18 +137,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isValidPassword = await bcrypt.compare(password, user.password_hash);
       } else {
         isValidPassword = password === user.password_hash;
-        if (isValidPassword && !isTestUser) {
-          // Only update password in Supabase for real users
-          try {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            await storage.updateUser(user.id, { password_hash: hashedPassword });
-          } catch (updateErr) {
-            console.warn("Could not hash password for user:", updateErr);
-          }
+        if (isValidPassword) {
+          const hashedPassword = await bcrypt.hash(password, 10);
+          await storage.updateUser(user.id, { password_hash: hashedPassword });
         }
       }
-      
-      console.log("Password validation:", { isValid: isValidPassword, isTest: isTestUser });
 
       if (!isValidPassword) {
         return res.status(401).json({ error: "Invalid username or password" });
@@ -204,8 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
     } catch (error) {
-      console.error("Login error - Full details:", error);
-      console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
+      console.error("Login error:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

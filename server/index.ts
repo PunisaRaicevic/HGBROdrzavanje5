@@ -145,7 +145,6 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
-    // TODO: CRON scheduler disabled temporarily - Supabase error in getRecurringTasks()
-    // startCronScheduler();
+    startCronScheduler();
   });
 })();
