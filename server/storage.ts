@@ -327,9 +327,9 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await supabase
       .from('user_device_tokens')
       .upsert({
-        user_id: token.user_id,
-        fcm_token: token.fcm_token,
-        platform: token.platform,
+        user_id: token.user_id!,
+        fcm_token: token.fcm_token!,
+        platform: token.platform || 'web',
         last_updated: new Date().toISOString(),
         is_active: true,
       }, { onConflict: 'fcm_token' })
