@@ -293,17 +293,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Register FCM Token
+  // Register FCM Token - Save to user_device_tokens table
   app.post("/api/users/fcm-token", async (req, res) => {
     console.log('[FCM TOKEN ENDPOINT] === START ===');
-    console.log('[FCM TOKEN ENDPOINT] Body:', JSON.stringify(req.body));
-    console.log('[FCM TOKEN ENDPOINT] Headers (all):', req.headers);
-    console.log('[FCM TOKEN ENDPOINT] Authorization header:', req.headers.authorization ? 'EXISTS' : 'MISSING');
     
-    // Skip requireAuth and do manual auth check
     const authHeader = req.headers.authorization;
     const token = extractTokenFromHeader(authHeader);
-    console.log('[FCM TOKEN ENDPOINT] Extracted JWT token:', token ? `${token.substring(0, 20)}...` : 'NULL');
     
     let userId: string | null = null;
     
@@ -311,7 +306,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const payload = verifyToken(token);
       if (payload) {
         userId = payload.userId;
-        console.log(`[FCM TOKEN ENDPOINT] Authenticated via JWT: ${userId}`);
       }
     }
     
@@ -321,52 +315,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      const { fcmToken, token: bodyToken } = req.body;
+      const { fcmToken, token: bodyToken, platform } = req.body;
       const tokenValue = fcmToken || bodyToken;
-
-      console.log('[FCM TOKEN ENDPOINT] Token value length:', tokenValue?.length);
 
       if (!tokenValue) {
         console.error('[FCM TOKEN ENDPOINT] No token in body');
         return res.status(400).json({ error: "Token required" });
       }
 
-      // Use direct Supabase client with SERVICE_ROLE_KEY to bypass RLS
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        process.env.SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      );
+      console.log(`[FCM TOKEN ENDPOINT] Saving FCM token for user ${userId} on platform ${platform || 'unknown'}...`);
+      
+      // Koristi novu saveDeviceToken metodu
+      const deviceToken = await storage.saveDeviceToken({
+        user_id: userId,
+        fcm_token: tokenValue,
+        platform: platform || 'web'
+      });
 
-      console.log(`[FCM TOKEN ENDPOINT] Updating fcm_token for user ${userId}...`);
-      const { data: updated, error } = await supabase
-        .from('users')
-        .update({ fcm_token: tokenValue })
-        .eq('id', userId)
-        .select()
-        .single();
-
-      if (error) {
-        console.error(`[FCM TOKEN ENDPOINT] Supabase error:`, JSON.stringify(error));
-        throw error;
-      }
-
-      if (!updated) {
-        console.error(`[FCM TOKEN ENDPOINT] No user found with id ${userId}`);
-        return res.status(404).json({ error: "User not found" });
-      }
-
-      console.log(`[FCM TOKEN ENDPOINT] SUCCESS! fcm_token stored: ${!!updated.fcm_token}`);
+      console.log(`[FCM TOKEN ENDPOINT] SUCCESS! Token stored in user_device_tokens table`);
       console.log('[FCM TOKEN ENDPOINT] === END ===');
       res.json({ 
         success: true, 
         userId,
-        tokenStored: !!updated.fcm_token,
+        tokenId: deviceToken.id,
         message: "FCM token registered successfully"
       });
     } catch (error) {
       console.error('[FCM TOKEN ENDPOINT] CATCH ERROR:', error);
-      console.log('[FCM TOKEN ENDPOINT] === END (ERROR) ===');
       res.status(500).json({ error: "Internal server error", details: String(error) });
     }
   });
