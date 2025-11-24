@@ -104,36 +104,28 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req: funct
         // koristeći pre-konfigurisani notification channel sa custom zvukom i vibracijom
 
         // --- 5. Pošaljite poruku na SVE aktivne tokene ---
+        // VAŽNO: DATA-ONLY payload (bez notification polja)
+        // Ovo osigurava da se MyFirebaseMessagingService.onMessageReceived() UVEK poziva
         const sendPromises = recipientFCMTokens.map((token: string) => {
             const message = {
-                notification: {
-                    title: notificationTitle,
-                    body: notificationBody.substring(0, 500), // Skratite ako je predugo
-                },
+                // NEMA notification polja - samo data!
                 data: {
+                    title: notificationTitle,
+                    body: notificationBody.substring(0, 500),
                     itemId: String(itemId),
                     type: 'task_assigned',
                     priority: 'urgent',
-                    title: notificationTitle,
-                    body: notificationBody.substring(0, 500),
-                    // Dodatni podaci za aplikaciju kada je otvori
                 },
                 token: token,
                 android: {
-                    priority: 'high' as const,
-                    notification: {
-                        sound: 'default', // Default system sound
-                        defaultVibrateTimings: true, // Default vibration pattern
-                        notificationPriority: 'PRIORITY_HIGH' as const,
-                        visibility: 'PUBLIC' as const,
-                        // Ne specificiramo channelId - Capacitor koristi default channel
-                    },
+                    priority: 'high' as const, // Visoki prioritet za background delivery
                 },
                 apns: {
                     payload: {
                         aps: {
-                            sound: 'default',
                             contentAvailable: true,
+                            // iOS zahteva notification payload za background
+                            // ali Android ne sme imati notification ako zelimo custom handling
                         },
                     },
                 },
