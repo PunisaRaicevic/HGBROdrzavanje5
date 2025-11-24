@@ -1,0 +1,502 @@
+index-RvPXUizc.js:1293 ═══════════════════════════════════════════
+index-RvPXUizc.js:1293 🔍 PLATFORM DETECTION
+index-RvPXUizc.js:1293 ═══════════════════════════════════════════
+index-RvPXUizc.js:1293 Platform: android
+index-RvPXUizc.js:1293 Is Native: true
+index-RvPXUizc.js:1293 App Prefix: [APP ANDROID]
+index-RvPXUizc.js:1293 Capacitor Available: true
+index-RvPXUizc.js:1293 ═══════════════════════════════════════════
+index-RvPXUizc.js:1293 [APP ANDROID] Remote logger aktiviran
+index-RvPXUizc.js:1293 [APP ANDROID] ✅ Capacitor je dostupan
+index-RvPXUizc.js:1293 [APP ANDROID] 🚀 Pokretanje aplikacije...
+index-RvPXUizc.js:1293 [APP ANDROID] 📱 Platform: android
+index-RvPXUizc.js:1293 [APP ANDROID] 📱 Is Native: true
+index-RvPXUizc.js:1293 [APP ANDROID] 📱 Detektovan Android/iOS - Firebase FCM će biti inicijalizovan u App.tsx
+index-RvPXUizc.js:1293 [APP ANDROID] ✅ Renderujem React aplikaciju...
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:20:18 PM] Hook called with userId: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:20:18 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ⚠️ [useFCM:7:20:18 PM] Skipping FCM setup - no userId provided
+console.<computed> @ index-RvPXUizc.js:1293
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 Uncaught (in promise) FirebaseError: Messaging: This browser doesn't support the API's required to use the Firebase SDK. (messaging/unsupported-browser).
+    at index-RvPXUizc.js:1293:60
+VM3:348 native App.addListener (#15859246)
+index-RvPXUizc.js:1293 [AUTH] Clearing old authentication data before login...
+index-RvPXUizc.js:1293 [AUTH] Attempting login for: milica
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Login successful for: Milica Petrović Role: recepcioner
+index-RvPXUizc.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-RvPXUizc.js:1293 📍 [Router] Current user: Milica Petrović ID: e39c4001...
+index-RvPXUizc.js:1293 [MY TASKS] Fetching tasks for user: e39c4001-e9d2-45a8-97aa-462b85d188b4
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] GET https://HGBRTehnickaSluzba.replit.app/api/tasks/my?userId=e39c4001-e9d2-45a8-97aa-462b85d188b4
+index-RvPXUizc.js:1293 [API REQUEST] Headers: Object
+index-RvPXUizc.js:1293 📱 [useFCM:7:20:29 PM] Hook called with userId: e39c4001...
+index-RvPXUizc.js:1293 📱 [useFCM:7:20:29 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ✅ [useFCM:7:20:29 PM] userId is valid - proceeding with FCM setup
+index-RvPXUizc.js:1293 📝 [useFCM:7:20:29 PM] Postavljam timeout od 500ms za setupFCM...
+index-RvPXUizc.js:1293 📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications
+index-RvPXUizc.js:1293 📝 [useFCM] Pozivam setupFCM...
+index-RvPXUizc.js:1293 🚀 [FCM:7:20:30 PM] Platform DETECTED: android, Is Native: true
+index-RvPXUizc.js:1293 🚀 [FCM:7:20:30 PM] Capacitor.isNativePlatform() = true
+index-RvPXUizc.js:1293 ✅ [FCM:7:20:30 PM] JWT token dostupan
+index-RvPXUizc.js:1293 📱 [FCM:7:20:30 PM] MOBILNA VERZIJA DETEKTOVANA! Platform: android
+index-RvPXUizc.js:1293 📝 [FCM:7:20:30 PM] Kreiram notification channel...
+VM3:348 native PushNotifications.createChannel (#15859247)
+VM3:328 result PushNotifications.createChannel (#15859247)
+index-RvPXUizc.js:1293 ✅ [FCM] Notification channel "reklamacije-alert" created
+index-RvPXUizc.js:1293 ✅ [FCM:7:20:30 PM] Notification channel kreiran
+index-RvPXUizc.js:1293 📝 [FCM:7:20:30 PM] Importujem @capacitor/push-notifications...
+index-RvPXUizc.js:1293 ✅ [FCM:7:20:30 PM] PushNotifications importovan
+index-RvPXUizc.js:1293 📋 [FCM:7:20:30 PM] Zahtevam push dozvole...
+VM3:348 native PushNotifications.requestPermissions (#15859248)
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 [MY TASKS] Success, tasks count: 3
+VM3:328 result PushNotifications.requestPermissions (#15859248)
+index-RvPXUizc.js:1293 ✅ [FCM:7:20:30 PM] Permission result: granted
+index-RvPXUizc.js:1293 ✅ [FCM:7:20:30 PM] Push dozvola odobrena
+index-RvPXUizc.js:1293 📝 [FCM:7:20:30 PM] Registrujem uređaj...
+index-RvPXUizc.js:1293 📝 [FCM:7:20:30 PM] Pozivam PushNotifications.register()...
+VM3:348 native PushNotifications.addListener (#15859249)
+VM3:348 native PushNotifications.addListener (#15859250)
+VM3:348 native PushNotifications.addListener (#15859251)
+VM3:348 native PushNotifications.addListener (#15859252)
+VM3:348 native PushNotifications.register (#15859253)
+VM3:328 result PushNotifications.addListener (#15859249)
+index-RvPXUizc.js:1293 🔥 [FCM:7:20:33 PM] Token primljen: eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP...
+index-RvPXUizc.js:1293 📤 [FCM:7:20:33 PM] Slanje tokena na backend...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-RvPXUizc.js:1293 [API REQUEST] Headers: Object
+index-RvPXUizc.js:1293 [API REQUEST] Body: Object
+VM3:328 result PushNotifications.register (#15859253)
+index-RvPXUizc.js:1293 ✅ [FCM:7:20:30 PM] Uređaj registrovan - čekam token...
+VM3:328 result PushNotifications.addListener (#15859249)
+index-RvPXUizc.js:1293 🔥 [FCM:7:20:33 PM] Token primljen: eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP...
+index-RvPXUizc.js:1293 📤 [FCM:7:20:33 PM] Slanje tokena na backend...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-RvPXUizc.js:1293 [API REQUEST] Headers: Object
+index-RvPXUizc.js:1293 [API REQUEST] Body: Object
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 ✅ [FCM:7:20:33 PM] Token sačuvan na backend! Response
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 ✅ [FCM:7:20:33 PM] Token sačuvan na backend! Response
+index-RvPXUizc.js:1293 📍 [Router] Current user: Milica Petrović ID: e39c4001...
+index-RvPXUizc.js:1293 [AUTH] Logging out...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [AUTH] Clearing localStorage and session...
+index-RvPXUizc.js:1293 [AUTH] ✅ Logout complete - all tokens cleared
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:20:58 PM] Hook called with userId: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:20:58 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ⚠️ [useFCM:7:20:58 PM] Skipping FCM setup - no userId provided
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:425
+kf @ index-RvPXUizc.js:41
+Qi @ index-RvPXUizc.js:41
+Rw @ index-RvPXUizc.js:41
+fo @ index-RvPXUizc.js:39
+FI @ index-RvPXUizc.js:41
+wo @ index-RvPXUizc.js:41
+_S @ index-RvPXUizc.js:41
+S @ index-RvPXUizc.js:26
+I @ index-RvPXUizc.js:26
+VM3:348 native PushNotifications.removeAllListeners (#15859254)
+VM3:328 result PushNotifications.removeAllListeners (#15859254)
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Clearing old authentication data before login...
+index-RvPXUizc.js:1293 [AUTH] Attempting login for: milica
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Login successful for: Milica Petrović Role: recepcioner
+index-RvPXUizc.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-RvPXUizc.js:1293 📍 [Router] Current user: Milica Petrović ID: e39c4001...
+index-RvPXUizc.js:1293 [MY TASKS] Fetching tasks for user: e39c4001-e9d2-45a8-97aa-462b85d188b4
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] GET https://HGBRTehnickaSluzba.replit.app/api/tasks/my?userId=e39c4001-e9d2-45a8-97aa-462b85d188b4
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.Pwgzc9YrVZDMHDbJ18iOT-e6lD8w0AND6cpXlkAjLwA'}
+index-RvPXUizc.js:1293 📱 [useFCM:7:21:08 PM] Hook called with userId: e39c4001...
+index-RvPXUizc.js:1293 📱 [useFCM:7:21:08 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ✅ [useFCM:7:21:08 PM] userId is valid - proceeding with FCM setup
+index-RvPXUizc.js:1293 📝 [useFCM:7:21:08 PM] Postavljam timeout od 500ms za setupFCM...
+index-RvPXUizc.js:1293 📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications
+index-RvPXUizc.js:1293 📝 [useFCM] Pozivam setupFCM...
+index-RvPXUizc.js:1293 🚀 [FCM:7:21:08 PM] Platform DETECTED: android, Is Native: true
+index-RvPXUizc.js:1293 🚀 [FCM:7:21:08 PM] Capacitor.isNativePlatform() = true
+index-RvPXUizc.js:1293 ✅ [FCM:7:21:08 PM] JWT token dostupan
+index-RvPXUizc.js:1293 📱 [FCM:7:21:08 PM] MOBILNA VERZIJA DETEKTOVANA! Platform: android
+index-RvPXUizc.js:1293 📝 [FCM:7:21:08 PM] Kreiram notification channel...
+VM3:348 native PushNotifications.createChannel (#15859255)
+VM3:328 result PushNotifications.createChannel (#15859255)
+index-RvPXUizc.js:1293 ✅ [FCM] Notification channel "reklamacije-alert" created
+index-RvPXUizc.js:1293 ✅ [FCM:7:21:08 PM] Notification channel kreiran
+index-RvPXUizc.js:1293 📝 [FCM:7:21:08 PM] Importujem @capacitor/push-notifications...
+index-RvPXUizc.js:1293 ✅ [FCM:7:21:08 PM] PushNotifications importovan
+index-RvPXUizc.js:1293 📋 [FCM:7:21:08 PM] Zahtevam push dozvole...
+VM3:348 native PushNotifications.requestPermissions (#15859256)
+VM3:328 result PushNotifications.requestPermissions (#15859256)
+index-RvPXUizc.js:1293 ✅ [FCM:7:21:08 PM] Permission result: granted
+index-RvPXUizc.js:1293 ✅ [FCM:7:21:08 PM] Push dozvola odobrena
+index-RvPXUizc.js:1293 📝 [FCM:7:21:08 PM] Registrujem uređaj...
+index-RvPXUizc.js:1293 📝 [FCM:7:21:08 PM] Pozivam PushNotifications.register()...
+VM3:348 native PushNotifications.addListener (#15859257)
+VM3:348 native PushNotifications.addListener (#15859258)
+VM3:348 native PushNotifications.addListener (#15859259)
+VM3:348 native PushNotifications.addListener (#15859260)
+VM3:348 native PushNotifications.register (#15859261)
+VM3:328 result PushNotifications.register (#15859261)
+index-RvPXUizc.js:1293 ✅ [FCM:7:21:08 PM] Uređaj registrovan - čekam token...
+VM3:328 result PushNotifications.addListener (#15859257)
+index-RvPXUizc.js:1293 🔥 [FCM:7:21:08 PM] Token primljen: eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP...
+index-RvPXUizc.js:1293 📤 [FCM:7:21:08 PM] Slanje tokena na backend...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Content-Type: 'application/json', Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.Pwgzc9YrVZDMHDbJ18iOT-e6lD8w0AND6cpXlkAjLwA'}
+index-RvPXUizc.js:1293 [API REQUEST] Body: {token: 'eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP…oBxvbuuUhYqpM-9_g0r1tTCgCMXbKMui6dLDDepZXdVoJMPWs'}
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 [MY TASKS] Success, tasks count: 3
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 ✅ [FCM:7:21:08 PM] Token sačuvan na backend! Response {type: 'cors', url: 'https://hgbrtehnickasluzba.replit.app/api/users/fcm-token', redirected: false, status: 200, ok: true, …}
+index-RvPXUizc.js:1293 📍 [Router] Current user: Milica Petrović ID: e39c4001...
+index-RvPXUizc.js:1293 [AUTH] Logging out...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [AUTH] Logging out...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [AUTH] Clearing localStorage and session...
+index-RvPXUizc.js:1293 [AUTH] ✅ Logout complete - all tokens cleared
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:36:10 PM] Hook called with userId: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:36:10 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ⚠️ [useFCM:7:36:10 PM] Skipping FCM setup - no userId provided
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:425
+kf @ index-RvPXUizc.js:41
+Qi @ index-RvPXUizc.js:41
+Rw @ index-RvPXUizc.js:41
+fo @ index-RvPXUizc.js:39
+FI @ index-RvPXUizc.js:41
+wo @ index-RvPXUizc.js:41
+_S @ index-RvPXUizc.js:41
+S @ index-RvPXUizc.js:26
+I @ index-RvPXUizc.js:26
+VM3:348 native PushNotifications.removeAllListeners (#15859262)
+VM3:328 result PushNotifications.removeAllListeners (#15859262)
+index-RvPXUizc.js:1293 [AUTH] Clearing localStorage and session...
+index-RvPXUizc.js:1293 [AUTH] ✅ Logout complete - all tokens cleared
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Clearing old authentication data before login...
+index-RvPXUizc.js:1293 [AUTH] Attempting login for: milica
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Login successful for: Milica Petrović Role: recepcioner
+index-RvPXUizc.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-RvPXUizc.js:1293 📍 [Router] Current user: Milica Petrović ID: e39c4001...
+index-RvPXUizc.js:1293 [MY TASKS] Fetching tasks for user: e39c4001-e9d2-45a8-97aa-462b85d188b4
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] GET https://HGBRTehnickaSluzba.replit.app/api/tasks/my?userId=e39c4001-e9d2-45a8-97aa-462b85d188b4
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.yvaEUsxmuhziF5iCVqWmYHSMz3sSST_TqGBfHMvspgM'}
+index-RvPXUizc.js:1293 📱 [useFCM:7:36:27 PM] Hook called with userId: e39c4001...
+index-RvPXUizc.js:1293 📱 [useFCM:7:36:27 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ✅ [useFCM:7:36:27 PM] userId is valid - proceeding with FCM setup
+index-RvPXUizc.js:1293 📝 [useFCM:7:36:27 PM] Postavljam timeout od 500ms za setupFCM...
+index-RvPXUizc.js:1293 📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications
+index-RvPXUizc.js:1293 📝 [useFCM] Pozivam setupFCM...
+index-RvPXUizc.js:1293 🚀 [FCM:7:36:27 PM] Platform DETECTED: android, Is Native: true
+index-RvPXUizc.js:1293 🚀 [FCM:7:36:27 PM] Capacitor.isNativePlatform() = true
+index-RvPXUizc.js:1293 ✅ [FCM:7:36:27 PM] JWT token dostupan
+index-RvPXUizc.js:1293 📱 [FCM:7:36:27 PM] MOBILNA VERZIJA DETEKTOVANA! Platform: android
+index-RvPXUizc.js:1293 📝 [FCM:7:36:27 PM] Kreiram notification channel...
+VM3:348 native PushNotifications.createChannel (#15859263)
+VM3:328 result PushNotifications.createChannel (#15859263)
+index-RvPXUizc.js:1293 ✅ [FCM] Notification channel "reklamacije-alert" created
+index-RvPXUizc.js:1293 ✅ [FCM:7:36:27 PM] Notification channel kreiran
+index-RvPXUizc.js:1293 📝 [FCM:7:36:27 PM] Importujem @capacitor/push-notifications...
+index-RvPXUizc.js:1293 ✅ [FCM:7:36:27 PM] PushNotifications importovan
+index-RvPXUizc.js:1293 📋 [FCM:7:36:27 PM] Zahtevam push dozvole...
+VM3:348 native PushNotifications.requestPermissions (#15859264)
+VM3:328 result PushNotifications.requestPermissions (#15859264)
+index-RvPXUizc.js:1293 ✅ [FCM:7:36:27 PM] Permission result: granted
+index-RvPXUizc.js:1293 ✅ [FCM:7:36:27 PM] Push dozvola odobrena
+index-RvPXUizc.js:1293 📝 [FCM:7:36:27 PM] Registrujem uređaj...
+index-RvPXUizc.js:1293 📝 [FCM:7:36:27 PM] Pozivam PushNotifications.register()...
+VM3:348 native PushNotifications.addListener (#15859265)
+VM3:348 native PushNotifications.addListener (#15859266)
+VM3:348 native PushNotifications.addListener (#15859267)
+VM3:348 native PushNotifications.addListener (#15859268)
+VM3:348 native PushNotifications.register (#15859269)
+VM3:328 result PushNotifications.register (#15859269)
+index-RvPXUizc.js:1293 ✅ [FCM:7:36:27 PM] Uređaj registrovan - čekam token...
+VM3:328 result PushNotifications.addListener (#15859265)
+index-RvPXUizc.js:1293 🔥 [FCM:7:36:27 PM] Token primljen: eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP...
+index-RvPXUizc.js:1293 📤 [FCM:7:36:27 PM] Slanje tokena na backend...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Content-Type: 'application/json', Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.yvaEUsxmuhziF5iCVqWmYHSMz3sSST_TqGBfHMvspgM'}Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJlMzljNDAwMS1lOWQyLTQ1YTgtOTdhYS00NjJiODVkMTg4YjQiLCJ1c2VybmFtZSI6Im1pbGljYSIsInJvbGUiOiJyZWNlcGNpb25lciIsImZ1bGxOYW1lIjoiTWlsaWNhIFBldHJvdmnEhyIsImlhdCI6MTc2NDAwOTM4NywiZXhwIjoxNzY2NjAxMzg3LCJpc3MiOiJoZ2JyLWhvdGVsLW1hbmFnZW1lbnQifQ.yvaEUsxmuhziF5iCVqWmYHSMz3sSST_TqGBfHMvspgM"Content-Type: "application/json"[[Prototype]]: Object
+index-RvPXUizc.js:1293 [API REQUEST] Body: {token: 'eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP…oBxvbuuUhYqpM-9_g0r1tTCgCMXbKMui6dLDDepZXdVoJMPWs'}token: "eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP022DEikT8cathJGe3by-dnNwqslNpID7-yIgfmhEZffoBxvbuuUhYqpM-9_g0r1tTCgCMXbKMui6dLDDepZXdVoJMPWs"[[Prototype]]: Object
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 ✅ [FCM:7:36:27 PM] Token sačuvan na backend! Response {type: 'cors', url: 'https://hgbrtehnickasluzba.replit.app/api/users/fcm-token', redirected: false, status: 200, ok: true, …}
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 [MY TASKS] Success, tasks count: 3
+index-RvPXUizc.js:1293 📍 [Router] Current user: Milica Petrović ID: e39c4001...
+index-RvPXUizc.js:1293 📍 [Router] Current user: Milica Petrović ID: e39c4001...
+index-RvPXUizc.js:1293 [AUTH] Logging out...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [AUTH] Clearing localStorage and session...
+index-RvPXUizc.js:1293 [AUTH] ✅ Logout complete - all tokens cleared
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:37:34 PM] Hook called with userId: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:37:34 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ⚠️ [useFCM:7:37:34 PM] Skipping FCM setup - no userId provided
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:425
+kf @ index-RvPXUizc.js:41
+Qi @ index-RvPXUizc.js:41
+Rw @ index-RvPXUizc.js:41
+fo @ index-RvPXUizc.js:39
+FI @ index-RvPXUizc.js:41
+wo @ index-RvPXUizc.js:41
+_S @ index-RvPXUizc.js:41
+S @ index-RvPXUizc.js:26
+I @ index-RvPXUizc.js:26
+VM3:348 native PushNotifications.removeAllListeners (#15859270)
+VM3:328 result PushNotifications.removeAllListeners (#15859270)
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Clearing old authentication data before login...
+index-RvPXUizc.js:1293 [AUTH] Attempting login for: aleksandar
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Login successful for: Aleksandar Jović Role: operater
+index-RvPXUizc.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-RvPXUizc.js:1293 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.4Eoz8c_4_v0b8MwDKnsqEQ8GsA1BEgCwCGGSSCsOK7U'}
+index-RvPXUizc.js:1293 📱 [useFCM:7:37:44 PM] Hook called with userId: a9d31e1c...
+index-RvPXUizc.js:1293 📱 [useFCM:7:37:44 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ✅ [useFCM:7:37:44 PM] userId is valid - proceeding with FCM setup
+index-RvPXUizc.js:1293 📝 [useFCM:7:37:44 PM] Postavljam timeout od 500ms za setupFCM...
+index-RvPXUizc.js:1293 📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications
+index-RvPXUizc.js:1293 📝 [useFCM] Pozivam setupFCM...
+index-RvPXUizc.js:1293 🚀 [FCM:7:37:44 PM] Platform DETECTED: android, Is Native: true
+index-RvPXUizc.js:1293 🚀 [FCM:7:37:44 PM] Capacitor.isNativePlatform() = true
+index-RvPXUizc.js:1293 ✅ [FCM:7:37:44 PM] JWT token dostupan
+index-RvPXUizc.js:1293 📱 [FCM:7:37:44 PM] MOBILNA VERZIJA DETEKTOVANA! Platform: android
+index-RvPXUizc.js:1293 📝 [FCM:7:37:44 PM] Kreiram notification channel...
+VM3:348 native PushNotifications.createChannel (#15859271)
+VM3:328 result PushNotifications.createChannel (#15859271)
+index-RvPXUizc.js:1293 ✅ [FCM] Notification channel "reklamacije-alert" created
+index-RvPXUizc.js:1293 ✅ [FCM:7:37:44 PM] Notification channel kreiran
+index-RvPXUizc.js:1293 📝 [FCM:7:37:44 PM] Importujem @capacitor/push-notifications...
+index-RvPXUizc.js:1293 ✅ [FCM:7:37:44 PM] PushNotifications importovan
+index-RvPXUizc.js:1293 📋 [FCM:7:37:44 PM] Zahtevam push dozvole...
+VM3:348 native PushNotifications.requestPermissions (#15859272)
+VM3:328 result PushNotifications.requestPermissions (#15859272)
+index-RvPXUizc.js:1293 ✅ [FCM:7:37:44 PM] Permission result: granted
+index-RvPXUizc.js:1293 ✅ [FCM:7:37:44 PM] Push dozvola odobrena
+index-RvPXUizc.js:1293 📝 [FCM:7:37:44 PM] Registrujem uređaj...
+index-RvPXUizc.js:1293 📝 [FCM:7:37:44 PM] Pozivam PushNotifications.register()...
+VM3:348 native PushNotifications.addListener (#15859273)
+VM3:348 native PushNotifications.addListener (#15859274)
+VM3:348 native PushNotifications.addListener (#15859275)
+VM3:348 native PushNotifications.addListener (#15859276)
+VM3:348 native PushNotifications.register (#15859277)
+VM3:328 result PushNotifications.register (#15859277)
+index-RvPXUizc.js:1293 ✅ [FCM:7:37:44 PM] Uređaj registrovan - čekam token...
+VM3:328 result PushNotifications.addListener (#15859273)
+index-RvPXUizc.js:1293 🔥 [FCM:7:37:44 PM] Token primljen: eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP...
+index-RvPXUizc.js:1293 📤 [FCM:7:37:44 PM] Slanje tokena na backend...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Content-Type: 'application/json', Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.4Eoz8c_4_v0b8MwDKnsqEQ8GsA1BEgCwCGGSSCsOK7U'}
+index-RvPXUizc.js:1293 [API REQUEST] Body: {token: 'eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP…oBxvbuuUhYqpM-9_g0r1tTCgCMXbKMui6dLDDepZXdVoJMPWs'}
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 ✅ [FCM:7:37:44 PM] Token sačuvan na backend! Response {type: 'cors', url: 'https://hgbrtehnickasluzba.replit.app/api/users/fcm-token', redirected: false, status: 200, ok: true, …}
+index-RvPXUizc.js:1293 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:363
+kf @ index-RvPXUizc.js:41
+Qi @ index-RvPXUizc.js:41
+FI @ index-RvPXUizc.js:41
+wo @ index-RvPXUizc.js:41
+Rw @ index-RvPXUizc.js:41
+fo @ index-RvPXUizc.js:39
+(anonymous) @ index-RvPXUizc.js:41
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 74
+index-RvPXUizc.js:1293 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+index-RvPXUizc.js:1293 [CREATE TASK] Sending request with data: {title: 'Hotel Aleksandar, Vila Kana D-blok', description: 'Vvb', hotel: 'Hotel Aleksandar', blok: 'Vila Kana D-blok', soba: null, …}
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Content-Type: 'application/json', Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.4Eoz8c_4_v0b8MwDKnsqEQ8GsA1BEgCwCGGSSCsOK7U'}
+index-RvPXUizc.js:1293 [API REQUEST] Body: {title: 'Hotel Aleksandar, Vila Kana D-blok', description: 'Vvb', hotel: 'Hotel Aleksandar', blok: 'Vila Kana D-blok', soba: null, …}
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 [CREATE TASK] Success: {task: {…}}
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.4Eoz8c_4_v0b8MwDKnsqEQ8GsA1BEgCwCGGSSCsOK7U'}
+index-RvPXUizc.js:1293 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+index-RvPXUizc.js:1293 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 75
+index-RvPXUizc.js:1293 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/technicians
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.4Eoz8c_4_v0b8MwDKnsqEQ8GsA1BEgCwCGGSSCsOK7U'}
+index-RvPXUizc.js:1293 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: N/A
+index-RvPXUizc.js:1293 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] PATCH https://HGBRTehnickaSluzba.replit.app/api/tasks/16a84a1e-39e3-4e9d-86e4-58f780f94a63
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Content-Type: 'application/json', Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.4Eoz8c_4_v0b8MwDKnsqEQ8GsA1BEgCwCGGSSCsOK7U'}
+index-RvPXUizc.js:1293 [API REQUEST] Body: {status: 'assigned_to_radnik', assigned_to: '05867ea3-2c6c-41f5-9637-11c469827e9a', assigned_to_name: 'Jovan Đurić'}
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.4Eoz8c_4_v0b8MwDKnsqEQ8GsA1BEgCwCGGSSCsOK7U'}
+index-RvPXUizc.js:1293 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 75
+index-RvPXUizc.js:1293 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+index-RvPXUizc.js:1293 [AUTH] Logging out...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [AUTH] Clearing localStorage and session...
+index-RvPXUizc.js:1293 [AUTH] ✅ Logout complete - all tokens cleared
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:38:09 PM] Hook called with userId: UNDEFINED
+index-RvPXUizc.js:1293 📱 [useFCM:7:38:09 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ⚠️ [useFCM:7:38:09 PM] Skipping FCM setup - no userId provided
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:425
+kf @ index-RvPXUizc.js:41
+Qi @ index-RvPXUizc.js:41
+Rw @ index-RvPXUizc.js:41
+fo @ index-RvPXUizc.js:39
+FI @ index-RvPXUizc.js:41
+wo @ index-RvPXUizc.js:41
+_S @ index-RvPXUizc.js:41
+S @ index-RvPXUizc.js:26
+I @ index-RvPXUizc.js:26
+VM3:348 native PushNotifications.removeAllListeners (#15859278)
+VM3:328 result PushNotifications.removeAllListeners (#15859278)
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Clearing old authentication data before login...
+index-RvPXUizc.js:1293 [AUTH] Attempting login for: jovan
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-RvPXUizc.js:1293 [AUTH] Login successful for: Jovan Đurić Role: radnik
+index-RvPXUizc.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-RvPXUizc.js:1293 📍 [Router] Current user: Jovan Đurić ID: 05867ea3...
+index-RvPXUizc.js:1293 [NOTIFICATIONS] OneSignal handles native permissions
+index-RvPXUizc.js:1293 [SOCKET.IO DEBUG] Connecting to: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [SOCKET.IO DEBUG] Platform: Mobile
+index-RvPXUizc.js:1293 📱 [useFCM:7:38:18 PM] Hook called with userId: 05867ea3...
+index-RvPXUizc.js:1293 📱 [useFCM:7:38:18 PM] Window location: https://localhost/
+index-RvPXUizc.js:1293 ✅ [useFCM:7:38:18 PM] userId is valid - proceeding with FCM setup
+index-RvPXUizc.js:1293 📝 [useFCM:7:38:18 PM] Postavljam timeout od 500ms za setupFCM...
+index-RvPXUizc.js:1293 📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications
+index-RvPXUizc.js:1293 [SOCKET.IO] ✅ Connected successfully: Wo7wdDDsG9NYISWYAABM
+index-RvPXUizc.js:1293 [SOCKET.IO] Transport: websocket
+index-RvPXUizc.js:1293 📝 [useFCM] Pozivam setupFCM...
+index-RvPXUizc.js:1293 🚀 [FCM:7:38:19 PM] Platform DETECTED: android, Is Native: true
+index-RvPXUizc.js:1293 🚀 [FCM:7:38:19 PM] Capacitor.isNativePlatform() = true
+index-RvPXUizc.js:1293 ✅ [FCM:7:38:19 PM] JWT token dostupan
+index-RvPXUizc.js:1293 📱 [FCM:7:38:19 PM] MOBILNA VERZIJA DETEKTOVANA! Platform: android
+index-RvPXUizc.js:1293 📝 [FCM:7:38:19 PM] Kreiram notification channel...
+VM3:348 native PushNotifications.createChannel (#15859279)
+VM3:328 result PushNotifications.createChannel (#15859279)
+index-RvPXUizc.js:1293 ✅ [FCM] Notification channel "reklamacije-alert" created
+index-RvPXUizc.js:1293 ✅ [FCM:7:38:19 PM] Notification channel kreiran
+index-RvPXUizc.js:1293 📝 [FCM:7:38:19 PM] Importujem @capacitor/push-notifications...
+index-RvPXUizc.js:1293 ✅ [FCM:7:38:19 PM] PushNotifications importovan
+index-RvPXUizc.js:1293 📋 [FCM:7:38:19 PM] Zahtevam push dozvole...
+VM3:348 native PushNotifications.requestPermissions (#15859280)
+VM3:328 result PushNotifications.requestPermissions (#15859280)
+index-RvPXUizc.js:1293 ✅ [FCM:7:38:19 PM] Permission result: granted
+index-RvPXUizc.js:1293 ✅ [FCM:7:38:19 PM] Push dozvola odobrena
+index-RvPXUizc.js:1293 📝 [FCM:7:38:19 PM] Registrujem uređaj...
+index-RvPXUizc.js:1293 📝 [FCM:7:38:19 PM] Pozivam PushNotifications.register()...
+VM3:348 native PushNotifications.addListener (#15859281)
+VM3:348 native PushNotifications.addListener (#15859282)
+VM3:348 native PushNotifications.addListener (#15859283)
+VM3:348 native PushNotifications.addListener (#15859284)
+VM3:348 native PushNotifications.register (#15859285)
+VM3:328 result PushNotifications.addListener (#15859281)
+index-RvPXUizc.js:1293 🔥 [FCM:7:38:19 PM] Token primljen: eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP...
+index-RvPXUizc.js:1293 📤 [FCM:7:38:19 PM] Slanje tokena na backend...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Content-Type: 'application/json', Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.qNVEHn0rUH5p7ouYIjJtIXqDCzk5R7mTks63YD9ZF1s'}
+index-RvPXUizc.js:1293 [API REQUEST] Body: {token: 'eoxc2jNaST6LiHPAC-B0tP:APA91bEIYR9FrSWgzUY9pfE-clP…oBxvbuuUhYqpM-9_g0r1tTCgCMXbKMui6dLDDepZXdVoJMPWs'}
+VM3:328 result PushNotifications.register (#15859285)
+index-RvPXUizc.js:1293 ✅ [FCM:7:38:19 PM] Uređaj registrovan - čekam token...
+index-RvPXUizc.js:1293 [SOCKET.IO] Worker connected to room: {userId: '05867ea3-2c6c-41f5-9637-11c469827e9a', socketId: 'Wo7wdDDsG9NYISWYAABM'}
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 ✅ [FCM:7:38:19 PM] Token sačuvan na backend! Response {type: 'cors', url: 'https://hgbrtehnickasluzba.replit.app/api/users/fcm-token', redirected: false, status: 200, ok: true, …}
+index-RvPXUizc.js:1293 📍 [Router] Current user: Jovan Đurić ID: 05867ea3...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.qNVEHn0rUH5p7ouYIjJtIXqDCzk5R7mTks63YD9ZF1s'}
+index-RvPXUizc.js:1293 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+console.<computed> @ index-RvPXUizc.js:1293
+(anonymous) @ index-RvPXUizc.js:363
+kf @ index-RvPXUizc.js:41
+Qi @ index-RvPXUizc.js:41
+FI @ index-RvPXUizc.js:41
+wo @ index-RvPXUizc.js:41
+Rw @ index-RvPXUizc.js:41
+fo @ index-RvPXUizc.js:39
+(anonymous) @ index-RvPXUizc.js:41
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 75
+index-RvPXUizc.js:1293 [BUTTON] Task Completed touched
+index-RvPXUizc.js:1293 [BUTTON] Task Completed clicked
+index-RvPXUizc.js:1293 [BUTTON] onTouchStart triggered
+index-RvPXUizc.js:1293 [BUTTON] onClick triggered
+index-RvPXUizc.js:1293 [SUBMIT REPORT] Button clicked/touched
+index-RvPXUizc.js:1293 [SUBMIT REPORT] Submitting... {selectedTaskId: '16a84a1e-39e3-4e9d-86e4-58f780f94a63', actionType: 'completed', reportLength: 3}
+index-RvPXUizc.js:1293 [OPTIMISTIC UPDATE] Starting for task: 16a84a1e-39e3-4e9d-86e4-58f780f94a63 status: completed
+index-RvPXUizc.js:1293 [TASK CACHE] Optimistic update: 16a84a1e-39e3-4e9d-86e4-58f780f94a63 {status: 'completed', worker_report: 'Ttt', reporterImages: undefined, completedAt: Mon Nov 24 2025 19:38:29 GMT+0100 (Central European Standard Time)}
+index-RvPXUizc.js:1293 [MUTATION] Updating task: 16a84a1e-39e3-4e9d-86e4-58f780f94a63 to status: completed
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [API REQUEST] PATCH https://HGBRTehnickaSluzba.replit.app/api/tasks/16a84a1e-39e3-4e9d-86e4-58f780f94a63
+index-RvPXUizc.js:1293 [API REQUEST] Headers: {Content-Type: 'application/json', Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.qNVEHn0rUH5p7ouYIjJtIXqDCzk5R7mTks63YD9ZF1s'}
+index-RvPXUizc.js:1293 [API REQUEST] Body: {status: 'completed', user_id: '05867ea3-2c6c-41f5-9637-11c469827e9a', user_name: 'Jovan Đurić', worker_report: 'Ttt', worker_images: Array(0)}
+index-RvPXUizc.js:1293 [SOCKET.IO] Task updated: {id: '16a84a1e-39e3-4e9d-86e4-58f780f94a63', taskId: '16a84a1e-39e3-4e9d-86e4-58f780f94a63', title: 'Hotel Aleksandar, Vila Kana D-blok', description: 'Vvb', location: 'Hotel Aleksandar, Vila Kana D-blok', …}
+index-RvPXUizc.js:1293 [TASK CACHE] Upserting task: 16a84a1e-39e3-4e9d-86e4-58f780f94a63 {isCompletePayload: true, shouldHydrate: false, prepend: false, hasAssignedTo: true, hasStatus: true}
+index-RvPXUizc.js:1293 [TASK CACHE] Updated existing task: 16a84a1e-39e3-4e9d-86e4-58f780f94a63
+index-RvPXUizc.js:1293 [SOCKET.IO] Complete payload received, skipping hydration
+index-RvPXUizc.js:1293 [API REQUEST] Response status: 200
+index-RvPXUizc.js:1293 [MUTATION] Response status: 200
+index-RvPXUizc.js:1293 [MUTATION] Success: {task: {…}}
+index-RvPXUizc.js:1293 [OPTIMISTIC UPDATE] Success - scheduling background hydration
+index-RvPXUizc.js:1293 [TASK CACHE] Scheduling background hydration in 1000 ms
+index-RvPXUizc.js:1293 [SUBMIT REPORT] Success!
+index-RvPXUizc.js:1293 📍 [Router] Current user: Jovan Đurić ID: 05867ea3...
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.qNVEHn0rUH5p7ouYIjJtIXqDCzk5R7mTks63YD9ZF1s'}
+index-RvPXUizc.js:1293 📍 [Router] Current user: Jovan Đurić ID: 05867ea3...
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 75
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.qNVEHn0rUH5p7ouYIjJtIXqDCzk5R7mTks63YD9ZF1s'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 75
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.qNVEHn0rUH5p7ouYIjJtIXqDCzk5R7mTks63YD9ZF1s'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 75
+index-RvPXUizc.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-RvPXUizc.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-RvPXUizc.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.qNVEHn0rUH5p7ouYIjJtIXqDCzk5R7mTks63YD9ZF1s'}
+index-RvPXUizc.js:1293 [QUERY] Response status: 200
+index-RvPXUizc.js:1293 [QUERY] Success, data length: 75
