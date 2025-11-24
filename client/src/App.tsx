@@ -15,7 +15,6 @@ import TasksPage from "@/pages/TasksPage";
 import UsersPage from "@/pages/UsersPage";
 import NotFound from "@/pages/not-found";
 import { IonApp, setupIonicReact } from "@ionic/react";
-import { Capacitor } from "@capacitor/core";
 import { useFCM } from "@/hooks/useFCM";
 import { messaging, getToken } from "./firebase";
 
@@ -29,15 +28,9 @@ function Router() {
   // 🔥 Inicijalizuj push notifikacije na mobilnim uređajima
   useFCM(user?.id);
 
-  // 🌐 Web FCM setup (samo za browser - NE za Capacitor/Android/iOS!)
+  // 🌐 Web FCM setup (samo za browser)
   useEffect(() => {
     if (!user?.id) return;
-
-    // SKIP Firebase Web SDK na mobilnim platformama - koristi Capacitor FCM umesto toga
-    if (Capacitor.isNativePlatform()) {
-      console.log("📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications");
-      return;
-    }
 
     const setupWebFCM = async () => {
       console.log("🔔 [Web FCM] Priprema Firebase Messaging za browser...");
