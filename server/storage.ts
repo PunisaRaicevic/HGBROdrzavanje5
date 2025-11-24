@@ -94,6 +94,8 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateUser(id: string, data: Partial<User>): Promise<User | undefined> {
+    console.log(`[STORAGE] updateUser called with id: ${id}, data keys: ${Object.keys(data).join(', ')}`);
+    
     const { data: updated, error } = await supabase
       .from('users')
       .update(data)
@@ -102,9 +104,12 @@ export class SupabaseStorage implements IStorage {
       .single();
     
     if (error) {
+      console.error(`[STORAGE] updateUser error for ${id}:`, error);
       if (error.code === 'PGRST116') return undefined; // Not found
       throw error;
     }
+    
+    console.log(`[STORAGE] updateUser success for ${id}, returning user with fcm_token: ${updated?.fcm_token ? 'YES' : 'NO'}`);
     return updated as User;
   }
 
