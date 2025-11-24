@@ -8,15 +8,15 @@ const createNotificationChannel = async () => {
   if (Capacitor.getPlatform() === 'android') {
     try {
       await PushNotifications.createChannel({
-        id: 'reklamacije-alert', // 🔥 MORA SE POKLAPATI SA channelId u Firebase Cloud Function
-        name: 'Reklamacije Notifikacije',
-        description: 'Notifikacije za dodeljene reklamacije i zadatke',
+        id: 'task_notifications', // 🔥 MORA SE POKLAPATI SA channelId u Firebase index.ts
+        name: 'Task Notifications',
+        description: 'Notifikacije za dodeljene zadatke',
         importance: 5, // 5 = Max importance (sa zvukom)
         sound: 'default',
         vibration: true,
         visibility: 1, // Public
       });
-      console.log('✅ [FCM] Notification channel "reklamacije-alert" created');
+      console.log('✅ [FCM] Notification channel created');
     } catch (error) {
       console.error('❌ [FCM] Error creating notification channel:', error);
     }
