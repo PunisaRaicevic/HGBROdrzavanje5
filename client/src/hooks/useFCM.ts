@@ -128,9 +128,10 @@ export const useFCM = (userId?: string) => {
           if (!isMounted) return;
 
           try {
-            console.log(`📤 [FCM:${regTime}] Slanje tokena na backend...`);
+            console.log(`📤 [FCM:${regTime}] Slanje tokena na backend - Platform: ${platform}...`);
             const response = await apiRequest('POST', '/api/users/fcm-token', {
-              token: fcmToken.value,
+              fcmToken: fcmToken.value,
+              platform: platform,
             });
             console.log(`✅ [FCM:${regTime}] Token sačuvan na backend!`, response);
           } catch (err) {

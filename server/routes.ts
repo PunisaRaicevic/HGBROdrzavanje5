@@ -323,14 +323,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Token required" });
       }
 
-      console.log(`[FCM TOKEN ENDPOINT] Saving FCM token for user ${userId} on platform ${platform || 'unknown'}...`);
+      const detectedPlatform = platform || 'web';
+      console.log(`[FCM TOKEN ENDPOINT] Saving FCM token for user ${userId} on platform ${detectedPlatform}, token length: ${tokenValue.length}`);
       
       // Koristi novu saveDeviceToken metodu
       const deviceToken = await storage.saveDeviceToken({
         user_id: userId,
         fcm_token: tokenValue,
-        platform: platform || 'web'
+        platform: detectedPlatform
       });
+      
+      console.log(`[FCM TOKEN ENDPOINT] Token saved successfully, device ID: ${deviceToken.id}`);
 
       console.log(`[FCM TOKEN ENDPOINT] SUCCESS! Token stored in user_device_tokens table`);
       console.log('[FCM TOKEN ENDPOINT] === END ===');
