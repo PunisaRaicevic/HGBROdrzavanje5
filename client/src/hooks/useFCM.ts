@@ -25,10 +25,7 @@ const createNotificationChannel = async () => {
 
 export const useFCM = (userId?: string) => {
   useEffect(() => {
-    // SKIP - samo na mobilnim platformama
-    if (!userId || !Capacitor.isNativePlatform()) {
-      return;
-    }
+    if (!userId) return;
 
     const setupFCM = async () => {
       console.log('🚀 [FCM] Inicijalizujem push notifikacije...');
@@ -74,8 +71,8 @@ export const useFCM = (userId?: string) => {
           }
         });
 
-        PushNotifications.addListener('registrationError', (err: any) => {
-          console.error('❌ [FCM] Greška pri registraciji:', err?.message || err);
+        PushNotifications.addListener('registrationError', (err) => {
+          console.error('❌ [FCM] Greška pri registraciji:', err);
         });
 
         PushNotifications.addListener('pushNotificationReceived', (notif) => {
@@ -100,15 +97,14 @@ export const useFCM = (userId?: string) => {
 
     // Čekamo 500ms da se JWT token čuva
     const timer = setTimeout(() => {
-      setupFCM();
+      if (Capacitor.isNativePlatform()) {
+        setupFCM();
+      }
     }, 500);
 
     return () => {
       clearTimeout(timer);
-      // Cleanup samo na mobilnim platformama
-      if (Capacitor.isNativePlatform()) {
-        PushNotifications.removeAllListeners();
-      }
+      PushNotifications.removeAllListeners(); // 🔥 Cleanup
     };
   }, [userId]);
 };
