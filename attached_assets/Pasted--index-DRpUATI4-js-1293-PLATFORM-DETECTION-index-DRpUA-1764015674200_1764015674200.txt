@@ -1,0 +1,174 @@
+═══════════════════════════════════════════
+index-DRpUATI4.js:1293 🔍 PLATFORM DETECTION
+index-DRpUATI4.js:1293 ═══════════════════════════════════════════
+index-DRpUATI4.js:1293 Platform: android
+index-DRpUATI4.js:1293 Is Native: true
+index-DRpUATI4.js:1293 App Prefix: [APP ANDROID]
+index-DRpUATI4.js:1293 Capacitor Available: true
+index-DRpUATI4.js:1293 ═══════════════════════════════════════════
+index-DRpUATI4.js:1293 [APP ANDROID] Remote logger aktiviran
+index-DRpUATI4.js:1293 [APP ANDROID] ✅ Capacitor je dostupan
+index-DRpUATI4.js:1293 [APP ANDROID] 🚀 Pokretanje aplikacije...
+index-DRpUATI4.js:1293 [APP ANDROID] 📱 Platform: android
+index-DRpUATI4.js:1293 [APP ANDROID] 📱 Is Native: true
+index-DRpUATI4.js:1293 [APP ANDROID] 📱 Detektovan Android/iOS - Firebase FCM će biti inicijalizovan u App.tsx
+index-DRpUATI4.js:1293 [APP ANDROID] ✅ Renderujem React aplikaciju...
+index-DRpUATI4.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-DRpUATI4.js:1293 📱 [useFCM:9:19:25 PM] Hook called with userId: UNDEFINED
+index-DRpUATI4.js:1293 📱 [useFCM:9:19:25 PM] Window location: https://localhost/
+index-DRpUATI4.js:1293 ⚠️ [useFCM:9:19:25 PM] Skipping FCM setup - no userId provided
+console.<computed> @ index-DRpUATI4.js:1293
+index-DRpUATI4.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-DRpUATI4.js:1293 Uncaught (in promise) FirebaseError: Messaging: This browser doesn't support the API's required to use the Firebase SDK. (messaging/unsupported-browser).
+    at index-DRpUATI4.js:1293:60
+VM3:348 native App.addListener (#25258155)
+index-DRpUATI4.js:1293 [AUTH] Clearing old authentication data before login...
+index-DRpUATI4.js:1293 [AUTH] Attempting login for: punisa
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-DRpUATI4.js:1293 [AUTH] Login successful for: Punisa Raicevic Role: radnik
+index-DRpUATI4.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-DRpUATI4.js:1293 📍 [Router] Current user: Punisa Raicevic ID: 52fdd502...
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: Object
+index-DRpUATI4.js:1293 [NOTIFICATIONS] OneSignal handles native permissions
+index-DRpUATI4.js:1293 [SOCKET.IO DEBUG] Connecting to: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [SOCKET.IO DEBUG] Platform: Mobile
+index-DRpUATI4.js:1293 📱 [useFCM:9:19:47 PM] Hook called with userId: 52fdd502...
+index-DRpUATI4.js:1293 📱 [useFCM:9:19:47 PM] Window location: https://localhost/
+index-DRpUATI4.js:1293 ✅ [useFCM:9:19:47 PM] userId is valid - proceeding with FCM setup
+index-DRpUATI4.js:1293 📝 [useFCM:9:19:47 PM] Postavljam timeout od 500ms za setupFCM...
+index-DRpUATI4.js:1293 📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications
+index-DRpUATI4.js:1293 [SOCKET.IO] ✅ Connected successfully: HlfQJ2fDmMiwFpIaAAB6
+index-DRpUATI4.js:1293 [SOCKET.IO] Transport: websocket
+index-DRpUATI4.js:1293 📝 [useFCM] Pozivam setupFCM...
+index-DRpUATI4.js:1293 🚀 [FCM:9:19:48 PM] Platform DETECTED: android, Is Native: true
+index-DRpUATI4.js:1293 🚀 [FCM:9:19:48 PM] Capacitor.isNativePlatform() = true
+index-DRpUATI4.js:1293 ✅ [FCM:9:19:48 PM] JWT token dostupan
+index-DRpUATI4.js:1293 📱 [FCM:9:19:48 PM] MOBILNA VERZIJA DETEKTOVANA! Platform: android
+index-DRpUATI4.js:1293 📝 [FCM:9:19:48 PM] Kreiram notification channel...
+VM3:348 native PushNotifications.createChannel (#25258156)
+VM3:328 result PushNotifications.createChannel (#25258156)
+index-DRpUATI4.js:1293 ✅ [FCM] Notification channel "reklamacije-alert" created
+index-DRpUATI4.js:1293 ✅ [FCM:9:19:48 PM] Notification channel kreiran
+index-DRpUATI4.js:1293 📝 [FCM:9:19:48 PM] Importujem @capacitor/push-notifications...
+index-DRpUATI4.js:1293 ✅ [FCM:9:19:48 PM] PushNotifications importovan
+index-DRpUATI4.js:1293 📋 [FCM:9:19:48 PM] Zahtevam push dozvole...
+VM3:348 native PushNotifications.requestPermissions (#25258157)
+index-DRpUATI4.js:1293 [SOCKET.IO] Worker connected to room: Object
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+VM3:328 result PushNotifications.requestPermissions (#25258157)
+index-DRpUATI4.js:1293 ✅ [FCM:9:19:48 PM] Permission result: granted
+index-DRpUATI4.js:1293 ✅ [FCM:9:19:48 PM] Push dozvola odobrena
+index-DRpUATI4.js:1293 📝 [FCM:9:19:48 PM] Registrujem uređaj...
+index-DRpUATI4.js:1293 📝 [FCM:9:19:48 PM] Pozivam PushNotifications.register()...
+VM3:348 native PushNotifications.addListener (#25258158)
+VM3:348 native PushNotifications.addListener (#25258159)
+VM3:348 native PushNotifications.addListener (#25258160)
+VM3:348 native PushNotifications.addListener (#25258161)
+VM3:348 native PushNotifications.register (#25258162)
+VM3:328 result PushNotifications.addListener (#25258158)
+index-DRpUATI4.js:1293 🔥 [FCM:9:19:49 PM] Token primljen: doBNxZvzTHe9z8xo5RAO08:APA91bG7U-rVQLeTiK5tzh2EyWY...
+index-DRpUATI4.js:1293 📤 [FCM:9:19:49 PM] Slanje tokena na backend - Platform: android, Token length: 142...
+index-DRpUATI4.js:1293 📤 [FCM:9:19:49 PM] Payload koji se šalje: Object
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-DRpUATI4.js:1293 [API REQUEST] Headers: Object
+index-DRpUATI4.js:1293 [API REQUEST] Body: Object
+VM3:328 result PushNotifications.register (#25258162)
+index-DRpUATI4.js:1293 ✅ [FCM:9:19:48 PM] Uređaj registrovan - čekam token...
+VM3:328 result PushNotifications.addListener (#25258158)
+index-DRpUATI4.js:1293 🔥 [FCM:9:19:49 PM] Token primljen: doBNxZvzTHe9z8xo5RAO08:APA91bG7U-rVQLeTiK5tzh2EyWY...
+index-DRpUATI4.js:1293 📤 [FCM:9:19:49 PM] Slanje tokena na backend - Platform: android, Token length: 142...
+index-DRpUATI4.js:1293 📤 [FCM:9:19:49 PM] Payload koji se šalje: Object
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-DRpUATI4.js:1293 [API REQUEST] Headers: Object
+index-DRpUATI4.js:1293 [API REQUEST] Body: Object
+index-DRpUATI4.js:1293 [API REQUEST] Response status: 200
+index-DRpUATI4.js:1293 ✅ [FCM:9:19:49 PM] Token sačuvan na backend! Response
+index-DRpUATI4.js:1293 [API REQUEST] Response status: 200
+index-DRpUATI4.js:1293 ✅ [FCM:9:19:49 PM] Token sačuvan na backend! Response
+3index-DRpUATI4.js:1293 📍 [Router] Current user: Punisa Raicevic ID: 52fdd502...
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: Object
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: Object
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: Object
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+console.<computed> @ index-DRpUATI4.js:1293
+index-DRpUATI4.js:1293 [BUTTON] Task Completed touched
+index-DRpUATI4.js:1293 [BUTTON] Task Completed clicked
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: Object
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 [BUTTON] onTouchStart triggered
+index-DRpUATI4.js:1293 [BUTTON] onClick triggered
+index-DRpUATI4.js:1293 [SUBMIT REPORT] Button clicked/touched
+index-DRpUATI4.js:1293 [SUBMIT REPORT] Submitting... Object
+index-DRpUATI4.js:1293 [OPTIMISTIC UPDATE] Starting for task: abd0d62d-1f3e-4bad-8a12-9d3a3c714f75 status: completed
+index-DRpUATI4.js:1293 [TASK CACHE] Optimistic update: abd0d62d-1f3e-4bad-8a12-9d3a3c714f75 Object
+index-DRpUATI4.js:1293 [MUTATION] Updating task: abd0d62d-1f3e-4bad-8a12-9d3a3c714f75 to status: completed
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [API REQUEST] PATCH https://HGBRTehnickaSluzba.replit.app/api/tasks/abd0d62d-1f3e-4bad-8a12-9d3a3c714f75
+index-DRpUATI4.js:1293 [API REQUEST] Headers: Object
+index-DRpUATI4.js:1293 [API REQUEST] Body: Object
+index-DRpUATI4.js:1293 [SOCKET.IO] Task updated: Object
+index-DRpUATI4.js:1293 [TASK CACHE] Upserting task: abd0d62d-1f3e-4bad-8a12-9d3a3c714f75 Object
+index-DRpUATI4.js:1293 [TASK CACHE] Updated existing task: abd0d62d-1f3e-4bad-8a12-9d3a3c714f75
+index-DRpUATI4.js:1293 [SOCKET.IO] Complete payload received, skipping hydration
+index-DRpUATI4.js:1293 [API REQUEST] Response status: 200
+index-DRpUATI4.js:1293 [MUTATION] Response status: 200
+index-DRpUATI4.js:1293 [MUTATION] Success: Object
+index-DRpUATI4.js:1293 [OPTIMISTIC UPDATE] Success - scheduling background hydration
+index-DRpUATI4.js:1293 [TASK CACHE] Scheduling background hydration in 1000 ms
+index-DRpUATI4.js:1293 [SUBMIT REPORT] Success!
+index-DRpUATI4.js:1293 📍 [Router] Current user: Punisa Raicevic ID: 52fdd502...
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: Object
+index-DRpUATI4.js:1293 📍 [Router] Current user: Punisa Raicevic ID: 52fdd502...
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: Object
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.v1MqRZb1dWIkAfqtJwhR_JVRZlO4YJAgT_0kVWmNODE'}
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.v1MqRZb1dWIkAfqtJwhR_JVRZlO4YJAgT_0kVWmNODE'}
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.v1MqRZb1dWIkAfqtJwhR_JVRZlO4YJAgT_0kVWmNODE'}
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.v1MqRZb1dWIkAfqtJwhR_JVRZlO4YJAgT_0kVWmNODE'}
+index-DRpUATI4.js:1293 [QUERY] Response status: 200
+index-DRpUATI4.js:1293 [QUERY] Success, data length: 52
+index-DRpUATI4.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DRpUATI4.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DRpUATI4.js:1293 [QUERY] Headers: {Authorizatio
