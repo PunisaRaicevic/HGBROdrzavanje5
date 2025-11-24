@@ -1,0 +1,275 @@
+index-DJ0yVRun.js:1293 ═══════════════════════════════════════════
+index-DJ0yVRun.js:1293 🔍 PLATFORM DETECTION
+index-DJ0yVRun.js:1293 ═══════════════════════════════════════════
+index-DJ0yVRun.js:1293 Platform: android
+index-DJ0yVRun.js:1293 Is Native: true
+index-DJ0yVRun.js:1293 App Prefix: [APP ANDROID]
+index-DJ0yVRun.js:1293 Capacitor Available: true
+index-DJ0yVRun.js:1293 ═══════════════════════════════════════════
+index-DJ0yVRun.js:1293 [APP ANDROID] Remote logger aktiviran
+index-DJ0yVRun.js:1293 [APP ANDROID] ✅ Capacitor je dostupan
+index-DJ0yVRun.js:1293 [APP ANDROID] 🚀 Pokretanje aplikacije...
+index-DJ0yVRun.js:1293 [APP ANDROID] 📱 Platform: android
+index-DJ0yVRun.js:1293 [APP ANDROID] 📱 Is Native: true
+index-DJ0yVRun.js:1293 [APP ANDROID] 📱 Detektovan Android/iOS - Firebase FCM će biti inicijalizovan u App.tsx
+index-DJ0yVRun.js:1293 [APP ANDROID] ✅ Renderujem React aplikaciju...
+index-DJ0yVRun.js:1293 Uncaught (in promise) FirebaseError: Messaging: This browser doesn't support the API's required to use the Firebase SDK. (messaging/unsupported-browser).
+    at index-DJ0yVRun.js:1293:60
+VM3:348 native App.addListener (#36053639)
+index-DJ0yVRun.js:1293 [AUTH] Clearing old authentication data before login...
+index-DJ0yVRun.js:1293 [AUTH] Attempting login for: jovan
+index-DJ0yVRun.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DJ0yVRun.js:1293 [AUTH] Login successful for: Jovan Đurić Role: radnik
+index-DJ0yVRun.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-DJ0yVRun.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DJ0yVRun.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DJ0yVRun.js:1293 [QUERY] Headers: Object
+index-DJ0yVRun.js:1293 [NOTIFICATIONS] OneSignal handles native permissions
+index-DJ0yVRun.js:1293 [SOCKET.IO DEBUG] Connecting to: https://HGBRTehnickaSluzba.replit.app
+index-DJ0yVRun.js:1293 [SOCKET.IO DEBUG] Platform: Mobile
+index-DJ0yVRun.js:1293 📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications
+index-DJ0yVRun.js:1293 [SOCKET.IO] ✅ Connected successfully: MPI8-kKGnVIxYpCHAAAf
+index-DJ0yVRun.js:1293 [SOCKET.IO] Transport: websocket
+index-DJ0yVRun.js:1293 🚀 [FCM] Platform: android, Is Native: true
+index-DJ0yVRun.js:1293 ✅ [FCM] JWT token dostupan
+VM3:348 native PushNotifications.createChannel (#36053640)
+index-DJ0yVRun.js:1293 [SOCKET.IO] Worker connected to room: Object
+VM3:328 result PushNotifications.createChannel (#36053640)
+index-DJ0yVRun.js:1293 ✅ [FCM] Notification channel "reklamacije-alert" created
+index-DJ0yVRun.js:1293 📋 [FCM] Zahtevam push dozvole...
+VM3:348 native PushNotifications.requestPermissions (#36053641)
+index-DJ0yVRun.js:1293 [QUERY] Response status: 200
+index-DJ0yVRun.js:1293 [QUERY] Success, data length: 65
+VM3:328 result PushNotifications.requestPermissions (#36053641)
+index-DJ0yVRun.js:1293 ✅ [FCM] Permission result: granted
+index-DJ0yVRun.js:1293 ✅ [FCM] Push dozvola odobrena
+index-DJ0yVRun.js:1293 📝 [FCM] Registrujem uređaj...
+VM3:348 native PushNotifications.addListener (#36053642)
+VM3:348 native PushNotifications.addListener (#36053643)
+VM3:348 native PushNotifications.addListener (#36053644)
+VM3:348 native PushNotifications.addListener (#36053645)
+VM3:348 native PushNotifications.register (#36053646)
+VM3:328 result PushNotifications.addListener (#36053642)
+index-DJ0yVRun.js:1293 🔥 [FCM] Token primljen: f9Gxx824R6q6oRvgipOUEN:APA91bEcBJyBbogId5nsr6RPQD-...
+index-DJ0yVRun.js:1293 [FCM] Slanje tokena na backend...
+index-DJ0yVRun.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DJ0yVRun.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-DJ0yVRun.js:1293 [API REQUEST] Headers: Object
+index-DJ0yVRun.js:1293 [API REQUEST] Body: Object
+VM3:328 result PushNotifications.addListener (#36053642)
+index-DJ0yVRun.js:1293 🔥 [FCM] Token primljen: f9Gxx824R6q6oRvgipOUEN:APA91bEcBJyBbogId5nsr6RPQD-...
+index-DJ0yVRun.js:1293 [FCM] Slanje tokena na backend...
+index-DJ0yVRun.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DJ0yVRun.js:1293 [API REQUEST] POST https://HGBRTehnickaSluzba.replit.app/api/users/fcm-token
+index-DJ0yVRun.js:1293 [API REQUEST] Headers: Object
+index-DJ0yVRun.js:1293 [API REQUEST] Body: Object
+VM3:328 result PushNotifications.register (#36053646)
+index-DJ0yVRun.js:1293 ✅ [FCM] Uređaj registrovan - čekam token...
+index-DJ0yVRun.js:1293 [API REQUEST] Response status: 200
+index-DJ0yVRun.js:1293 ✅ [FCM] Token sačuvan na backend! Response
+index-DJ0yVRun.js:1293 [API REQUEST] Response status: 200
+index-DJ0yVRun.js:1293 ✅ [FCM] Token sačuvan na backend! Response
+index-DJ0yVRun.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DJ0yVRun.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DJ0yVRun.js:1293 [QUERY] Headers: Object
+index-DJ0yVRun.js:1293 [QUERY] Response status: 200
+index-DJ0yVRun.js:1293 [QUERY] Success, data length: 65
+index-DJ0yVRun.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DJ0yVRun.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DJ0yVRun.js:1293 [QUERY] Headers: Object
+index-DJ0yVRun.js:1293 [QUERY] Response status: 200
+index-DJ0yVRun.js:1293 [QUERY] Success, data length: 65
+index-DJ0yVRun.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DJ0yVRun.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DJ0yVRun.js:1293 [QUERY] Headers: Object
+index-DJ0yVRun.js:1293 [QUERY] Response status: 200
+index-DJ0yVRun.js:1293 [QUERY] Success, data length: 66
+index-DJ0yVRun.js:1293 [SOCKET.IO] New task assigned: Object
+index-DJ0yVRun.js:1293 [TASK CACHE] Upserting task: 2bbbbe08-e206-4a33-89ec-53c7778cfc21 Object
+index-DJ0yVRun.js:1293 [TASK CACHE] Updated existing task: 2bbbbe08-e206-4a33-89ec-53c7778cfc21
+index-DJ0yVRun.js:1293 [SOCKET.IO] Complete payload received, skipping hydration
+index-DJ0yVRun.js:1293 [NOTIFICATIONS] Permission handled by OneSignal
+index-DJ0yVRun.js:1293 [NOTIFICATIONS] Permission granted - native notifications enabled
+VM3:348 native Haptics.impact (#36053647)
+index-DJ0yVRun.js:1293 [SOCKET.IO] Task updated: Object
+index-DJ0yVRun.js:1293 [TASK CACHE] Upserting task: 2bbbbe08-e206-4a33-89ec-53c7778cfc21 Object
+index-DJ0yVRun.js:1293 [TASK CACHE] Updated existing task: 2bbbbe08-e206-4a33-89ec-53c7778cfc21
+index-DJ0yVRun.js:1293 [SOCKET.IO] Complete payload received, skipping hydration
+VM3:328 result Haptics.impact (#36053647)
+VM3:348 native Haptics.impact (#36053648)
+VM3:328 result Haptics.impact (#36053648)
+index-DJ0yVRun.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-DJ0yVRun.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-DJ0yVRun.js:1293 [QUERY] Headers: Object
+index-DJ0yVRun.js:1293 [QUERY] Response status: 200
+index-DJ0yVRun.js:1293 [QUERY] Success, data length: 66
+index-DJ0yVRun.js:1293 [SOCKET.IO] ⚠️ Disconnected. Reason: transport close
+console.<computed> @ index-DJ0yVRun.js:1293
+index-DJ0yVRun.js:1293 [SOCKET.IO] ❌ Connection error: timeout
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+(anonymous) @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:1293 [SOCKET.IO] Error details: Error: timeout
+    at index-DJ0yVRun.js:372:87270
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+(anonymous) @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: WebSocket is closed before the connection is established.
+doClose @ index-DJ0yVRun.js:372
+close @ index-DJ0yVRun.js:372
+_onClose @ index-DJ0yVRun.js:372
+t @ index-DJ0yVRun.js:372
+close @ index-DJ0yVRun.js:372
+(anonymous) @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED
+createSocket @ index-DJ0yVRun.js:372
+doOpen @ index-DJ0yVRun.js:372
+open @ index-DJ0yVRun.js:372
+_open @ index-DJ0yVRun.js:372
+Ys @ index-DJ0yVRun.js:372
+p9 @ index-DJ0yVRun.js:372
+m9 @ index-DJ0yVRun.js:372
+open @ index-DJ0yVRun.js:372
+(anonymous) @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:1293 [SOCKET.IO] ❌ Connection error: websocket error
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+_onError @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+onError @ index-DJ0yVRun.js:372
+ws.onerror @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:1293 [SOCKET.IO] Error details: JV: websocket error
+    at a9.onError (index-DJ0yVRun.js:372:54847)
+    at ws.onerror (index-DJ0yVRun.js:372:61038)
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+_onError @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+onError @ index-DJ0yVRun.js:372
+ws.onerror @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED
+createSocket @ index-DJ0yVRun.js:372
+doOpen @ index-DJ0yVRun.js:372
+open @ index-DJ0yVRun.js:372
+_open @ index-DJ0yVRun.js:372
+Ys @ index-DJ0yVRun.js:372
+p9 @ index-DJ0yVRun.js:372
+m9 @ index-DJ0yVRun.js:372
+open @ index-DJ0yVRun.js:372
+(anonymous) @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:1293 [SOCKET.IO] ❌ Connection error: websocket error
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+_onError @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+onError @ index-DJ0yVRun.js:372
+ws.onerror @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:1293 [SOCKET.IO] Error details: JV: websocket error
+    at a9.onError (index-DJ0yVRun.js:372:54847)
+    at ws.onerror (index-DJ0yVRun.js:372:61038)
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+_onError @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+onError @ index-DJ0yVRun.js:372
+ws.onerror @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED
+createSocket @ index-DJ0yVRun.js:372
+doOpen @ index-DJ0yVRun.js:372
+open @ index-DJ0yVRun.js:372
+_open @ index-DJ0yVRun.js:372
+Ys @ index-DJ0yVRun.js:372
+p9 @ index-DJ0yVRun.js:372
+m9 @ index-DJ0yVRun.js:372
+open @ index-DJ0yVRun.js:372
+(anonymous) @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:1293 [SOCKET.IO] ❌ Connection error: websocket error
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+_onError @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+onError @ index-DJ0yVRun.js:372
+ws.onerror @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:1293 [SOCKET.IO] Error details: JV: websocket error
+    at a9.onError (index-DJ0yVRun.js:372:54847)
+    at ws.onerror (index-DJ0yVRun.js:372:61038)
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+_onError @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+onError @ index-DJ0yVRun.js:372
+ws.onerror @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: Error in connection establishment: net::ERR_NAME_NOT_RESOLVED
+createSocket @ index-DJ0yVRun.js:372
+doOpen @ index-DJ0yVRun.js:372
+open @ index-DJ0yVRun.js:372
+_open @ index-DJ0yVRun.js:372
+Ys @ index-DJ0yVRun.js:372
+p9 @ index-DJ0yVRun.js:372
+m9 @ index-DJ0yVRun.js:372
+open @ index-DJ0yVRun.js:372
+(anonymous) @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:1293 [SOCKET.IO] ❌ Connection error: websocket error
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+_onError @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+onError @ index-DJ0yVRun.js:372
+ws.onerror @ index-DJ0yVRun.js:372
+index-DJ0yVRun.js:1293 [SOCKET.IO] Error details: JV: websocket error
+    at a9.onError (index-DJ0yVRun.js:372:54847)
+    at ws.onerror (index-DJ0yVRun.js:372:61038)
+console.<computed> @ index-DJ0yVRun.js:1293
+(anonymous) @ index-DJ0yVRun.js:374
+at.emit @ index-DJ0yVRun.js:372
+onerror @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+o @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+_onError @ index-DJ0yVRun.js:372
+at.emit @ index-DJ0yVRun.js:372
+onError @ index-DJ0yVRun.js:372
+ws.onerror @ index-DJ0yVRun.js:372

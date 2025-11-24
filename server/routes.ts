@@ -282,20 +282,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { fcmToken, token } = req.body;
       const tokenValue = fcmToken || token;
+      const userId = req.session?.userId;
+
+      console.log('[FCM TOKEN ENDPOINT] Received request:', { userId, tokenLength: tokenValue?.length });
 
       if (!tokenValue) {
         return res.status(400).json({ error: "Token required" });
       }
 
-      if (!req.session || !req.session.userId) {
+      if (!userId) {
+        console.error('[FCM TOKEN ENDPOINT] No userId in session');
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      await storage.updateUser(req.session.userId, { fcm_token: tokenValue });
-      console.log(`✅ FCM token registered for user ${req.session.userId}`);
-      res.json({ success: true });
+      console.log(`[FCM TOKEN ENDPOINT] Updating user ${userId} with token...`);
+      const updated = await storage.updateUser(userId, { fcm_token: tokenValue });
+      console.log(`[FCM TOKEN ENDPOINT] Update result:`, { userId, updated: !!updated, tokenStored: updated?.fcm_token?.substring(0, 50) });
+      
+      if (!updated) {
+        console.error(`[FCM TOKEN ENDPOINT] Failed to update user ${userId}`);
+        return res.status(500).json({ error: "Failed to save token" });
+      }
+
+      console.log(`✅ FCM token registered for user ${userId}`);
+      res.json({ success: true, token: updated.fcm_token?.substring(0, 50) });
     } catch (error) {
-      console.error("Error registering FCM token:", error);
+      console.error('[FCM TOKEN ENDPOINT] Error:', error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
