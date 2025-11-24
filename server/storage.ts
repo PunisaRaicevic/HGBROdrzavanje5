@@ -330,6 +330,23 @@ export class SupabaseStorage implements IStorage {
   }): Promise<UserDeviceToken> {
     console.log(`[STORAGE] saveDeviceToken called - user: ${token.user_id.substring(0, 8)}..., platform: ${token.platform}, token length: ${token.fcm_token.length}`);
     
+    // STEP 1: Device Token Invalidation - Deactivate ALL other users with same FCM token
+    // This ensures only the currently logged-in user receives notifications on shared devices
+    console.log(`[STORAGE] Deactivating other users with same FCM token: ${token.fcm_token.substring(0, 20)}...`);
+    const { error: deactivateError } = await supabase
+      .from('user_device_tokens')
+      .update({ is_active: false })
+      .eq('fcm_token', token.fcm_token)
+      .neq('user_id', token.user_id);
+    
+    if (deactivateError) {
+      console.error(`[STORAGE] Error deactivating other tokens:`, deactivateError);
+      // Continue anyway - this is not critical for current user's token save
+    } else {
+      console.log(`[STORAGE] Successfully deactivated other users' tokens on this device`);
+    }
+    
+    // STEP 2: Save/update token for current user with is_active=true
     const { data, error } = await supabase
       .from('user_device_tokens')
       .upsert({
@@ -347,7 +364,7 @@ export class SupabaseStorage implements IStorage {
       throw error;
     }
     
-    console.log(`[STORAGE] Device token saved successfully - ID: ${data.id}`);
+    console.log(`[STORAGE] Device token saved successfully - ID: ${data.id}, user is now the ONLY active user on this device`);
     return data as UserDeviceToken;
   }
 
