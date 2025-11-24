@@ -41,13 +41,28 @@ export const useFCM = (userId?: string) => {
         
         console.log(`🚀 [FCM] Platform: ${platform}, Is Native: ${isNative}`);
 
-        if (!isNative) {
-          console.log('🌐 [FCM] Web verzija - push notifikacije isključene');
+        // Proveravamo JWT token
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          console.warn('⚠️ [FCM] Nema JWT tokena!');
           return;
         }
 
-        // Proveravamo JWT token
-        const token = localStorage.getItem('authToken');
+        if (!isNative) {
+          // 🌐 WEB VERZIJA - Pošalji fallback token za testiranje
+          console.log('🌐 [FCM] Web verzija - Slanje fallback FCM tokena...');
+          try {
+            const fallbackToken = `web-fcm-${userId}-${Date.now()}`;
+            const response = await apiRequest('POST', '/api/users/fcm-token', {
+              token: fallbackToken,
+            });
+            console.log('✅ [FCM] Web fallback token poslat:', response);
+          } catch (err) {
+            console.error('❌ [FCM] Greška pri slanju web fallback tokena:', err);
+          }
+          return;
+        }
+
         if (!token) {
           console.warn('⚠️ [FCM] Nema JWT tokena!');
           return;
