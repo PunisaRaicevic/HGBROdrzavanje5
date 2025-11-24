@@ -114,6 +114,14 @@ async function requireAdmin(req: any, res: any, next: any) {
 export async function registerRoutes(app: Express): Promise<Server> {
   const server = createServer(app);
 
+  // Middleware to log ALL requests to /api/users/fcm-token
+  app.use("/api/users/fcm-token", (req, res, next) => {
+    console.log(`[MIDDLEWARE] SVEPOSTUPAK NA /api/users/fcm-token - Method: ${req.method}, IP: ${req.ip}`);
+    console.log(`[MIDDLEWARE] Auth header: ${req.headers.authorization ? "EXISTS" : "MISSING"}`);
+    console.log(`[MIDDLEWARE] Body: ${JSON.stringify(req.body)}`);
+    next();
+  });
+
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
 
