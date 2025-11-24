@@ -1,0 +1,86 @@
+══════════════════════════════════════════
+index-Dh_d4gmM.js:1293 🔍 PLATFORM DETECTION
+index-Dh_d4gmM.js:1293 ═══════════════════════════════════════════
+index-Dh_d4gmM.js:1293 Platform: android
+index-Dh_d4gmM.js:1293 Is Native: true
+index-Dh_d4gmM.js:1293 App Prefix: [APP ANDROID]
+index-Dh_d4gmM.js:1293 Capacitor Available: true
+index-Dh_d4gmM.js:1293 ═══════════════════════════════════════════
+index-Dh_d4gmM.js:1293 [APP ANDROID] Remote logger aktiviran
+index-Dh_d4gmM.js:1293 [APP ANDROID] ✅ Capacitor je dostupan
+index-Dh_d4gmM.js:1293 [APP ANDROID] 🚀 Pokretanje aplikacije...
+index-Dh_d4gmM.js:1293 [APP ANDROID] 📱 Platform: android
+index-Dh_d4gmM.js:1293 [APP ANDROID] 📱 Is Native: true
+index-Dh_d4gmM.js:1293 [APP ANDROID] 📱 Detektovan Android/iOS - Firebase FCM će biti inicijalizovan u App.tsx
+index-Dh_d4gmM.js:1293 [APP ANDROID] ✅ Renderujem React aplikaciju...
+index-Dh_d4gmM.js:1293 Uncaught (in promise) FirebaseError: Messaging: This browser doesn't support the API's required to use the Firebase SDK. (messaging/unsupported-browser).
+    at index-Dh_d4gmM.js:1293:60
+VM3:348 native App.addListener (#133124859)
+index-Dh_d4gmM.js:1293 [AUTH] Clearing old authentication data before login...
+index-Dh_d4gmM.js:1293 [AUTH] Attempting login for: jovan
+index-Dh_d4gmM.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-Dh_d4gmM.js:1293 [AUTH] Login successful for: Jovan Đurić Role: radnik
+index-Dh_d4gmM.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-Dh_d4gmM.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-Dh_d4gmM.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-Dh_d4gmM.js:1293 [QUERY] Headers: Object
+index-Dh_d4gmM.js:1293 [NOTIFICATIONS] OneSignal handles native permissions
+index-Dh_d4gmM.js:1293 [SOCKET.IO DEBUG] Connecting to: https://HGBRTehnickaSluzba.replit.app
+index-Dh_d4gmM.js:1293 [SOCKET.IO DEBUG] Platform: Mobile
+index-Dh_d4gmM.js:1293 [SOCKET.IO] ✅ Connected successfully: Z4PM-rFzf0XimMk1AAAJ
+index-Dh_d4gmM.js:1293 [SOCKET.IO] Transport: websocket
+index-Dh_d4gmM.js:1293 🚀 [FCM] Inicijalizujem push notifikacije...
+VM3:348 native PushNotifications.createChannel (#133124860)
+index-Dh_d4gmM.js:1293 🔔 [Web FCM] Priprema Firebase Messaging za browser...
+index-Dh_d4gmM.js:1293 ✅ [Web FCM] JWT token dostupan
+index-Dh_d4gmM.js:1293 ⚠️ [Web FCM] Browser ne podržava notifikacije
+console.<computed> @ index-Dh_d4gmM.js:1293
+VM3:328 result PushNotifications.createChannel (#133124860)
+index-Dh_d4gmM.js:1293 ✅ [FCM] Notification channel "reklamacije-alert" created
+VM3:348 native PushNotifications.requestPermissions (#133124861)
+index-Dh_d4gmM.js:1293 [SOCKET.IO] Worker connected to room: Object
+index-Dh_d4gmM.js:1293 [QUERY] Response status: 200
+index-Dh_d4gmM.js:1293 [QUERY] Success, data length: 56
+VM3:328 result PushNotifications.requestPermissions (#133124861)
+index-Dh_d4gmM.js:1293 ✅ [FCM] Push dozvola odobrena
+VM3:348 native PushNotifications.register (#133124862)
+VM3:328 result PushNotifications.register (#133124862)
+index-Dh_d4gmM.js:1293 ✅ [FCM] Uređaj registrovan
+VM3:348 native PushNotifications.addListener (#133124863)
+VM3:348 native PushNotifications.addListener (#133124864)
+VM3:348 native PushNotifications.addListener (#133124865)
+VM3:348 native PushNotifications.addListener (#133124866)
+VM3:328 result PushNotifications.addListener (#133124864)
+index-Dh_d4gmM.js:1293 ❌ [FCM] Greška pri registraciji: Object
+console.<computed> @ index-Dh_d4gmM.js:1293
+index-Dh_d4gmM.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-Dh_d4gmM.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-Dh_d4gmM.js:1293 [QUERY] Headers: Object
+index-Dh_d4gmM.js:1293 [QUERY] Response status: 200
+index-Dh_d4gmM.js:1293 [QUERY] Success, data length: 56
+index-Dh_d4gmM.js:1293 [SOCKET.IO] ⚠️ Disconnected. Reason: transport close
+console.<computed> @ index-Dh_d4gmM.js:1293
+index-Dh_d4gmM.js:1293 [SOCKET.IO] ❌ Connection error: timeout
+console.<computed> @ index-Dh_d4gmM.js:1293
+(anonymous) @ index-Dh_d4gmM.js:374
+at.emit @ index-Dh_d4gmM.js:372
+onerror @ index-Dh_d4gmM.js:372
+at.emit @ index-Dh_d4gmM.js:372
+o @ index-Dh_d4gmM.js:372
+(anonymous) @ index-Dh_d4gmM.js:372
+index-Dh_d4gmM.js:1293 [SOCKET.IO] Error details: Error: timeout
+    at index-Dh_d4gmM.js:372:87270
+console.<computed> @ index-Dh_d4gmM.js:1293
+(anonymous) @ index-Dh_d4gmM.js:374
+at.emit @ index-Dh_d4gmM.js:372
+onerror @ index-Dh_d4gmM.js:372
+at.emit @ index-Dh_d4gmM.js:372
+o @ index-Dh_d4gmM.js:372
+(anonymous) @ index-Dh_d4gmM.js:372
+index-Dh_d4gmM.js:372 WebSocket connection to 'wss://hgbrtehnickasluzba.replit.app/socket.io/?EIO=4&transport=websocket' failed: WebSocket is closed before the connection is established.
+doClose @ index-Dh_d4gmM.js:372
+close @ index-Dh_d4gmM.js:372
+_onClose @ index-Dh_d4gmM.js:372
+t @ index-Dh_d4gmM.js:372
+close @ index-Dh_d4gmM.js:372
+(anonymous) @ index-Dh_d4gmM.js:372
