@@ -3,6 +3,26 @@ import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import { apiRequest } from '@/lib/queryClient';
 
+// 🔥 Kreiranje notification channel-a za Android
+const createNotificationChannel = async () => {
+  if (Capacitor.getPlatform() === 'android') {
+    try {
+      await PushNotifications.createChannel({
+        id: 'task_notifications', // 🔥 MORA SE POKLAPATI SA channelId u Firebase index.ts
+        name: 'Task Notifications',
+        description: 'Notifikacije za dodeljene zadatke',
+        importance: 5, // 5 = Max importance (sa zvukom)
+        sound: 'default',
+        vibration: true,
+        visibility: 1, // Public
+      });
+      console.log('✅ [FCM] Notification channel created');
+    } catch (error) {
+      console.error('❌ [FCM] Error creating notification channel:', error);
+    }
+  }
+};
+
 export const useFCM = (userId?: string) => {
   useEffect(() => {
     if (!userId) return;
@@ -18,28 +38,30 @@ export const useFCM = (userId?: string) => {
       }
 
       try {
-        // 1. Tražimo dozvolu
+        // 🔥 1. Kreiraj notification channel (samo Android)
+        await createNotificationChannel();
+
+        // 2. Tražimo dozvolu
         const permResult = await PushNotifications.requestPermissions();
         if (permResult.receive !== 'granted') {
           console.warn('⚠️ [FCM] Push dozvola nije odobrena.');
           return;
         }
-
         console.log('✅ [FCM] Push dozvola odobrena');
 
-        // 2. Registrujemo uređaj
+        // 3. Registrujemo uređaj
         await PushNotifications.register();
         console.log('✅ [FCM] Uređaj registrovan');
 
-        // 3. Postavljamo listenere
-        PushNotifications.addListener('registration', async (token) => {
-          console.log('🔥 [FCM] Token uređaja:', token.value);
+        // 4. Postavljamo listenere
+        PushNotifications.addListener('registration', async (fcmToken) => {
+          console.log('🔥 [FCM] Token uređaja:', fcmToken.value);
 
           if (userId) {
             try {
               console.log('[FCM] Slanje tokena na backend...');
               const response = await apiRequest('POST', '/api/users/fcm-token', {
-                token: token.value,
+                token: fcmToken.value,
               });
               console.log('✅ [FCM] Backend odgovorio:', response.status);
               console.log('💾 [FCM] Token sačuvan u bazi!');
@@ -57,9 +79,17 @@ export const useFCM = (userId?: string) => {
           console.log('📥 [FCM] Primljena notifikacija:', notif);
         });
 
-        PushNotifications.addListener('pushNotificationActionPerformed', (notif) => {
-          console.log('🔔 [FCM] Korisnik kliknuo na notifikaciju:', notif);
+        PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+          console.log('🔔 [FCM] Korisnik kliknuo na notifikaciju:', action);
+          
+          // Navigacija na task detail ako je potrebno
+          const data = action.notification.data;
+          if (data.type === 'task_assigned' && data.taskId) {
+            console.log('🔗 [FCM] Navigiram na task:', data.taskId);
+            // window.location.href = `/tasks/${data.taskId}`; // Primer navigacije
+          }
         });
+
       } catch (error) {
         console.error('❌ [FCM] Greška pri inicijalizaciji:', error);
       }
@@ -72,6 +102,9 @@ export const useFCM = (userId?: string) => {
       }
     }, 500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      PushNotifications.removeAllListeners(); // 🔥 Cleanup
+    };
   }, [userId]);
 };
