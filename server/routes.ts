@@ -296,12 +296,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      console.log(`[FCM TOKEN ENDPOINT] Calling storage.updateUser for ${userId}...`);
-      const updated = await storage.updateUser(userId, { fcm_token: tokenValue });
-      
+      // Use direct Supabase client with SERVICE_ROLE_KEY to bypass RLS
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      console.log(`[FCM TOKEN ENDPOINT] Updating fcm_token for user ${userId}...`);
+      const { data: updated, error } = await supabase
+        .from('users')
+        .update({ fcm_token: tokenValue })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error(`[FCM TOKEN ENDPOINT] Supabase error:`, error);
+        throw error;
+      }
+
       if (!updated) {
-        console.error(`[FCM TOKEN ENDPOINT] storage.updateUser returned null/undefined for ${userId}`);
-        return res.status(500).json({ error: "Failed to save token - user not found" });
+        console.error(`[FCM TOKEN ENDPOINT] No user found with id ${userId}`);
+        return res.status(404).json({ error: "User not found" });
       }
 
       console.log(`[FCM TOKEN ENDPOINT] Success! User ${userId} updated, fcm_token stored: ${!!updated.fcm_token}`);
