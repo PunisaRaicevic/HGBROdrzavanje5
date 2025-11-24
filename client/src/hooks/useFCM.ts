@@ -25,7 +25,10 @@ const createNotificationChannel = async () => {
 
 export const useFCM = (userId?: string) => {
   useEffect(() => {
-    if (!userId) return;
+    // SKIP - samo na mobilnim platformama
+    if (!userId || !Capacitor.isNativePlatform()) {
+      return;
+    }
 
     const setupFCM = async () => {
       console.log('🚀 [FCM] Inicijalizujem push notifikacije...');
@@ -71,8 +74,8 @@ export const useFCM = (userId?: string) => {
           }
         });
 
-        PushNotifications.addListener('registrationError', (err) => {
-          console.error('❌ [FCM] Greška pri registraciji:', err);
+        PushNotifications.addListener('registrationError', (err: any) => {
+          console.error('❌ [FCM] Greška pri registraciji:', err?.message || err);
         });
 
         PushNotifications.addListener('pushNotificationReceived', (notif) => {
@@ -104,7 +107,10 @@ export const useFCM = (userId?: string) => {
 
     return () => {
       clearTimeout(timer);
-      PushNotifications.removeAllListeners(); // 🔥 Cleanup
+      // Cleanup samo na mobilnim platformama
+      if (Capacitor.isNativePlatform()) {
+        PushNotifications.removeAllListeners();
+      }
     };
   }, [userId]);
 };
