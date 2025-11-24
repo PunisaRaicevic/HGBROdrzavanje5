@@ -74,63 +74,77 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req: funct
             return;
         }
 
-        // --- 3. Dohvatite FCM token primaoca iz Supabase baze ---
-        const { data: userData, error } = await supabaseAdmin
-            .from('users') // PAŽNJA: "users" je tabela gde se čuvaju korisnici i fcm_token!
-            .select('fcm_token') // PAŽNJA: "fcm_token" je kolona gde se čuvaju tokeni!
-            .eq('id', recipientUserId) // Pronađite korisnika po ID-u
-            .single(); // Očekujemo samo jedan rezultat
+        // --- 3. Dohvatite AKTIVNE FCM tokene primaoca iz Supabase baze ---
+        // BITNO: Koristimo user_device_tokens tabelu, ne users.fcm_token
+        // Tražimo samo aktivne tokene (is_active = true)
+        const { data: tokenData, error } = await supabaseAdmin
+            .from('user_device_tokens')
+            .select('fcm_token')
+            .eq('user_id', recipientUserId)
+            .eq('is_active', true);
 
         if (error) {
-            console.error('Error fetching recipient FCM token from Supabase:', error);
-            res.status(500).send('Error fetching recipient token.');
+            console.error('Error fetching recipient FCM tokens from Supabase:', error);
+            res.status(500).send('Error fetching recipient tokens.');
             return;
         }
-        if (!userData || !userData.fcm_token) {
-            console.warn(`No FCM token found for user ID: ${recipientUserId}. Notification not sent.`);
-            res.status(200).send('Recipient token not found, notification skipped.');
+        if (!tokenData || tokenData.length === 0) {
+            console.warn(`No active FCM tokens found for user ID: ${recipientUserId}. Notification not sent.`);
+            res.status(200).send('No active tokens found, notification skipped.');
             return;
         }
 
-        const recipientFCMToken = userData.fcm_token;
+        // Korisnik može imati više aktivnih uređaja - šaljemo na SVE
+        const recipientFCMTokens = tokenData.map((t: any) => t.fcm_token);
+        console.log(`Found ${recipientFCMTokens.length} active token(s) for user ${recipientUserId}`);
 
-        // --- 4. Kreirajte FCM poruku ---
-        const message = {
-            notification: {
-                title: notificationTitle,
-                body: notificationBody.substring(0, 150) + (notificationBody.length > 150 ? '...' : ''), // Skratite telo ako je predugo
-                // sound: 'default', // Ovo aktivira default zvučnu notifikaciju na uređaju
-            },
-            data: {
-                // Podaci koji će biti poslati vašoj aplikaciji i koje možete obraditi u kodu
-                itemId: String(itemId), // Uvek šaljite kao string
-                type: 'new_task_or_message',
-                // Dodajte druge podatke koje želite da prosledite, npr. senderId, claimId
-            },
-            token: recipientFCMToken,
-            // Specifična podešavanja za platforme (potrebno za zvuk i na nekim platformama)
-            android: {
-                priority: 'high', // Visoki prioritet za brzu isporuku
-                notification: {
-                    sound: 'default', // Ponavlja zvuk za Android specifičnosti
-                    channelId: 'reklamacije-alert',
-                },
-            },
-            apns: { // Apple Push Notification Service (za iOS)
-                payload: {
-                    aps: {
-                        sound: 'default', // Ponavlja zvuk za iOS specifičnosti
-                        contentAvailable: true,
-                    },
-                },
-            },
+        // --- 4. Kreirajte FCM poruku sa DATA-ONLY payload ---
+        // VAŽNO: Bez "notification" polja - ovo garantuje da se onMessageReceived() 
+        // uvek poziva na Android-u, čak i kada je app u pozadini ili ekran isključen
+        const dataPayload = {
+            title: notificationTitle,
+            body: notificationBody.substring(0, 500), // Skratite ako je predugo
+            itemId: String(itemId),
+            type: 'task_assigned',
+            priority: 'urgent',
+            // Android će koristiti ove podatke za kreiranje custom notifikacije
         };
 
-        // --- 5. Pošaljite poruku putem FCM-a ---
-        const response = await admin.messaging().send(message as admin.messaging.Message);
-        console.log('Successfully sent message:', response);
+        // --- 5. Pošaljite poruku na SVE aktivne tokene ---
+        const sendPromises = recipientFCMTokens.map((token: string) => {
+            const message = {
+                data: dataPayload, // SAMO DATA - bez notification polja!
+                token: token,
+                android: {
+                    priority: 'high' as const, // Visoki prioritet za brzu isporuku
+                },
+                apns: {
+                    payload: {
+                        aps: {
+                            contentAvailable: true,
+                        },
+                    },
+                },
+            };
+            
+            return admin.messaging().send(message as admin.messaging.Message);
+        });
 
-        res.status(200).send('Notification sent successfully!');
+        const responses = await Promise.allSettled(sendPromises);
+        const successCount = responses.filter(r => r.status === 'fulfilled').length;
+        const failCount = responses.filter(r => r.status === 'rejected').length;
+        
+        console.log(`Notification results: ${successCount} sent, ${failCount} failed`);
+        
+        if (failCount > 0) {
+            responses.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    console.error(`Failed to send to token ${index}:`, result.reason);
+                }
+            });
+        }
+
+        res.status(200).send(`Notifications sent: ${successCount} successful, ${failCount} failed`);
 
     } catch (error) {
         console.error('Error processing Supabase webhook or sending FCM:', error);
