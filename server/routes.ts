@@ -56,6 +56,11 @@ async function requireAuth(req: any, res: any, next: any) {
   const authHeader = req.headers.authorization;
   const token = extractTokenFromHeader(authHeader);
 
+  // Initialize session if it doesn't exist
+  if (!req.session) {
+    req.session = {};
+  }
+
   if (token) {
     const payload = verifyToken(token);
     if (payload) {
@@ -63,14 +68,17 @@ async function requireAuth(req: any, res: any, next: any) {
       req.session.userRole = payload.role;
       req.session.username = payload.username;
       req.session.fullName = payload.fullName;
+      console.log(`[AUTH] User authenticated via JWT: ${payload.userId}`);
       return next();
     }
   }
 
   if (req.session.userId) {
+    console.log(`[AUTH] User authenticated via session: ${req.session.userId}`);
     return next();
   }
 
+  console.log('[AUTH] Authentication failed - no token or session');
   return res.status(401).json({ error: "Authentication required" });
 }
 
