@@ -286,22 +286,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Register FCM Token
-  app.post("/api/users/fcm-token", requireAuth, async (req, res) => {
-    try {
-      const { fcmToken, token } = req.body;
-      const tokenValue = fcmToken || token;
-      const userId = req.session?.userId;
+  app.post("/api/users/fcm-token", async (req, res) => {
+    console.log('[FCM TOKEN ENDPOINT] === START ===');
+    console.log('[FCM TOKEN ENDPOINT] Body:', JSON.stringify(req.body).substring(0, 200));
+    console.log('[FCM TOKEN ENDPOINT] Headers:', Object.keys(req.headers));
+    
+    // Skip requireAuth and do manual auth check
+    const authHeader = req.headers.authorization;
+    const token = extractTokenFromHeader(authHeader);
+    
+    let userId: string | null = null;
+    
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload) {
+        userId = payload.userId;
+        console.log(`[FCM TOKEN ENDPOINT] Authenticated via JWT: ${userId}`);
+      }
+    }
+    
+    if (!userId) {
+      console.error('[FCM TOKEN ENDPOINT] No valid JWT token');
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-      console.log('[FCM TOKEN ENDPOINT] Received request:', { userId, tokenLength: tokenValue?.length, token: tokenValue?.substring(0, 50) });
+    try {
+      const { fcmToken, token: bodyToken } = req.body;
+      const tokenValue = fcmToken || bodyToken;
+
+      console.log('[FCM TOKEN ENDPOINT] Token value length:', tokenValue?.length);
 
       if (!tokenValue) {
-        console.error('[FCM TOKEN ENDPOINT] No token provided');
+        console.error('[FCM TOKEN ENDPOINT] No token in body');
         return res.status(400).json({ error: "Token required" });
-      }
-
-      if (!userId) {
-        console.error('[FCM TOKEN ENDPOINT] No userId in session');
-        return res.status(401).json({ error: "Unauthorized" });
       }
 
       // Use direct Supabase client with SERVICE_ROLE_KEY to bypass RLS
@@ -320,7 +337,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .single();
 
       if (error) {
-        console.error(`[FCM TOKEN ENDPOINT] Supabase error:`, error);
+        console.error(`[FCM TOKEN ENDPOINT] Supabase error:`, JSON.stringify(error));
         throw error;
       }
 
@@ -329,15 +346,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
 
-      console.log(`[FCM TOKEN ENDPOINT] Success! User ${userId} updated, fcm_token stored: ${!!updated.fcm_token}`);
+      console.log(`[FCM TOKEN ENDPOINT] SUCCESS! fcm_token stored: ${!!updated.fcm_token}`);
+      console.log('[FCM TOKEN ENDPOINT] === END ===');
       res.json({ 
         success: true, 
         userId,
         tokenStored: !!updated.fcm_token,
-        token: updated.fcm_token?.substring(0, 50) 
+        message: "FCM token registered successfully"
       });
     } catch (error) {
-      console.error('[FCM TOKEN ENDPOINT] Error:', error);
+      console.error('[FCM TOKEN ENDPOINT] CATCH ERROR:', error);
+      console.log('[FCM TOKEN ENDPOINT] === END (ERROR) ===');
       res.status(500).json({ error: "Internal server error", details: String(error) });
     }
   });
