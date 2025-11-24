@@ -21,6 +21,8 @@ import { capacitorNotifications } from '@/services/capacitorNotifications';
 import { upsertTaskInCache, scheduleBackgroundHydration, optimisticUpdateTask, removeTaskFromCache } from '@/lib/taskCache';
 import { apiRequest } from '@/lib/queryClient';
 import { ImagePreviewModal } from '@/components/ImagePreviewModal';
+import { getApiUrl } from '@/lib/apiUrl';
+import { Capacitor } from '@capacitor/core';
 
 type PhotoPreview = {
   id: string;
@@ -125,10 +127,17 @@ export default function WorkerDashboard() {
     audioRef.current = new Audio('https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/sounds/bell_ring.mp3');
     audioRef.current.volume = 0.7;
 
-    // Connect to Socket.IO server - use current origin for compatibility with external access
-    const socketUrl = window.location.origin;
+    // Connect to Socket.IO server - use same logic as API calls
+    // For mobile (Capacitor): use backend URL
+    // For web: use current origin
+    let socketUrl: string;
+    if (Capacitor.isNativePlatform()) {
+      socketUrl = import.meta.env.VITE_API_URL || "https://0f8348da-785a-4a32-a048-3781e2402d8c-00-1ifebzeou9igx.picard.replit.dev";
+    } else {
+      socketUrl = window.location.origin;
+    }
     console.log('[SOCKET.IO DEBUG] Connecting to:', socketUrl);
-    console.log('[SOCKET.IO DEBUG] Current location:', window.location.href);
+    console.log('[SOCKET.IO DEBUG] Platform:', Capacitor.isNativePlatform() ? 'Mobile' : 'Web');
     
     const socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
