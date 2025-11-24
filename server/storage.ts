@@ -338,7 +338,7 @@ export class SupabaseStorage implements IStorage {
         platform: token.platform || 'web',
         last_updated: new Date().toISOString(),
         is_active: true,
-      }, { onConflict: 'fcm_token' })
+      }, { onConflict: 'user_id,fcm_token,platform' })
       .select()
       .single();
     
