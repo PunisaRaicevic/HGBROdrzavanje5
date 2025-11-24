@@ -98,29 +98,41 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req: funct
         const recipientFCMTokens = tokenData.map((t: any) => t.fcm_token);
         console.log(`Found ${recipientFCMTokens.length} active token(s) for user ${recipientUserId}`);
 
-        // --- 4. Kreirajte FCM poruku sa DATA-ONLY payload ---
-        // VAŽNO: Bez "notification" polja - ovo garantuje da se onMessageReceived() 
-        // uvek poziva na Android-u, čak i kada je app u pozadini ili ekran isključen
-        const dataPayload = {
-            title: notificationTitle,
-            body: notificationBody.substring(0, 500), // Skratite ako je predugo
-            itemId: String(itemId),
-            type: 'task_assigned',
-            priority: 'urgent',
-            // Android će koristiti ove podatke za kreiranje custom notifikacije
-        };
+        // --- 4. Kreirajte FCM poruku sa NOTIFICATION payload + android_channel_id ---
+        // VAŽNO: Koristimo notification payload sa android_channel_id
+        // Ovo omogućava Android OS-u da automatski prikaže notifikaciju
+        // koristeći pre-konfigurisani notification channel sa custom zvukom i vibracijom
 
         // --- 5. Pošaljite poruku na SVE aktivne tokene ---
         const sendPromises = recipientFCMTokens.map((token: string) => {
             const message = {
-                data: dataPayload, // SAMO DATA - bez notification polja!
+                notification: {
+                    title: notificationTitle,
+                    body: notificationBody.substring(0, 500), // Skratite ako je predugo
+                },
+                data: {
+                    itemId: String(itemId),
+                    type: 'task_assigned',
+                    priority: 'urgent',
+                    title: notificationTitle,
+                    body: notificationBody.substring(0, 500),
+                    // Dodatni podaci za aplikaciju kada je otvori
+                },
                 token: token,
                 android: {
-                    priority: 'high' as const, // Visoki prioritet za brzu isporuku
+                    priority: 'high' as const,
+                    notification: {
+                        sound: 'default', // Default system sound
+                        defaultVibrateTimings: true, // Default vibration pattern
+                        notificationPriority: 'PRIORITY_HIGH' as const,
+                        visibility: 'PUBLIC' as const,
+                        // Ne specificiramo channelId - Capacitor koristi default channel
+                    },
                 },
                 apns: {
                     payload: {
                         aps: {
+                            sound: 'default',
                             contentAvailable: true,
                         },
                     },
