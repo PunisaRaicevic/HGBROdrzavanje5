@@ -162,7 +162,12 @@ export const useFCM = (userId?: string) => {
       isMounted = false;
       clearTimeout(timer);
       try {
-        PushNotifications.removeAllListeners();
+        const platform = Capacitor.getPlatform();
+        if (platform !== 'web') {
+          import('@capacitor/push-notifications').then(({ PushNotifications }) => {
+            PushNotifications.removeAllListeners();
+          });
+        }
       } catch (e) {
         // Ignore cleanup errors
       }
