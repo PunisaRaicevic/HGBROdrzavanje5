@@ -63,11 +63,6 @@ export const useFCM = (userId?: string) => {
           return;
         }
 
-        if (!token) {
-          console.warn('⚠️ [FCM] Nema JWT tokena!');
-          return;
-        }
-
         console.log('✅ [FCM] JWT token dostupan');
 
         // 🔥 1. Kreiraj notification channel (samo Android)
