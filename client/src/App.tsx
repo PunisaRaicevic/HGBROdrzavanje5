@@ -15,8 +15,7 @@ import TasksPage from "@/pages/TasksPage";
 import UsersPage from "@/pages/UsersPage";
 import NotFound from "@/pages/not-found";
 import { IonApp, setupIonicReact } from "@ionic/react";
-import { PushNotifications } from "@capacitor/push-notifications";
-import { Capacitor } from "@capacitor/core";
+import { useFCM } from "@/hooks/useFCM";
 import { messaging, getToken } from "./firebase";
 
 setupIonicReact({
@@ -26,120 +25,46 @@ setupIonicReact({
 function Router() {
   const { user, login, loading } = useAuth();
 
+  // 🔥 Inicijalizuj push notifikacije na mobilnim uređajima
+  useFCM(user?.id);
+
+  // Web FCM setup
   useEffect(() => {
-    const setupFCM = async () => {
-      console.log("🚀 [FCM] Pokrećem inicijalizaciju push notifikacija...");
-
-      // ⏳ Čekajte da je authToken sigurno u localStorage
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        console.warn("⚠️ [FCM] Nema JWT tokena u localStorage! Čekam...");
-        return;
-      }
-
-      console.log("✅ [FCM] JWT token dostupan, nastavljam sa setup-om...");
-
-      // 1. Traženje dozvole
-      const permResult = await PushNotifications.requestPermissions();
-      if (permResult.receive !== "granted") {
-        console.warn("⚠️ [FCM] Push dozvola nije odobrena.");
-        return;
-      }
-
-      // 2. Registracija uređaja
-      await PushNotifications.register();
-
-      // 3. Listeneri
-      PushNotifications.addListener("registration", async token => {
-        console.log("🔥 [FCM] Token uređaja:", token.value);
-        console.log("👤 [FCM] User ID:", user?.id);
-
-        // Sačuvamo token u bazu za korisnika
-        if (user?.id) {
-          try {
-            console.log("[FCM] Slanje tokena na backend...");
-            const response = await apiRequest("POST", "/api/users/fcm-token", {
-              token: token.value,
-            });
-            console.log("✅ [FCM] Backend response:", response.status);
-            console.log("💾 [FCM] Token sačuvan u bazi.");
-          } catch (err) {
-            console.error("❌ [FCM] Greška pri slanju tokena:", err);
-          }
-        } else {
-          console.warn("⚠️ [FCM] User ID nije dostupan!");
-        }
-      });
-
-      PushNotifications.addListener("registrationError", err => {
-        console.error("❌ [FCM] registrationError:", err);
-      });
-
-      PushNotifications.addListener("pushNotificationReceived", notif => {
-        console.log("📥 [FCM] Primljena notifikacija:", notif);
-      });
-
-      PushNotifications.addListener("pushNotificationActionPerformed", notif => {
-        console.log("🔔 [FCM] Korisnik kliknuo na notifikaciju:", notif);
-      });
-    };
-
     const setupWebFCM = async () => {
       console.log("🔔 [FCM] Priprema Firebase Messaging...");
 
-      // ⏳ Čekajte da je authToken sigurno u localStorage
       const token = localStorage.getItem('authToken');
       if (!token) {
-        console.warn("⚠️ [FCM] Nema JWT tokena u localStorage! Čekam...");
+        console.warn("⚠️ [FCM] Nema JWT tokena!");
         return;
       }
 
-      console.log("✅ [FCM] JWT token dostupan, nastavljam sa Web FCM setup-om...");
+      console.log("✅ [FCM] JWT token dostupan, Web FCM setup...");
 
       try {
         const fcmToken = await getToken(messaging, {
           vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
         });
 
-        if (fcmToken) {
-          console.log("✅ [FCM] Token dobijen:", fcmToken);
-
-          // Pošalji token u bazu
-          if (user?.id) {
-            try {
-              console.log("[FCM] Slanje Web tokena na backend...");
-              const response = await apiRequest("POST", "/api/users/fcm-token", {
-                fcmToken,
-              });
-              console.log("✅ [FCM] Backend response:", response.status);
-              console.log("💾 [FCM] Web token sačuvan u bazi.");
-            } catch (err) {
-              console.error("❌ [FCM] Greška pri slanju Web tokena:", err);
-            }
-          } else {
-            console.warn("⚠️ [FCM] User ID nije dostupan!");
-          }
-        } else {
-          console.log("⚠️ [FCM] Token JE NULL");
+        if (fcmToken && user?.id) {
+          console.log("✅ [FCM] Web token dobijen:", fcmToken);
+          const response = await apiRequest("POST", "/api/users/fcm-token", {
+            token: fcmToken,
+          });
+          console.log("✅ [FCM] Web token sačuvan:", response.status);
         }
       } catch (e) {
-        console.log("❌ [FCM] Greška pri dobijanju tokena", e);
+        console.log("❌ [FCM] Greška pri Web FCM:", e);
       }
     };
 
     if (!user) return;
 
-    // Dodajte mali delay da se JWT sigurno čuva pre nego što se FCM setup pokreće
     const timer = setTimeout(() => {
-      if (Capacitor.isNativePlatform()) {
-        setupFCM();
-      } else {
-        setupWebFCM();
-      }
-    }, 500); // 500ms delay da se JWT čuva
+      setupWebFCM();
+    }, 500);
 
     return () => clearTimeout(timer);
-
   }, [user]);
 
   if (loading) {

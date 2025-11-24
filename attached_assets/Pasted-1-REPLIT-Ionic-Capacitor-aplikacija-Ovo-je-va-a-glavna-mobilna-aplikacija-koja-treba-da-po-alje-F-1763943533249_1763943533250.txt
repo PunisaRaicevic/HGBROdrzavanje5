@@ -1,0 +1,152 @@
+1. REPLIT (Ionic/Capacitor aplikacija)
+Ovo je vaša glavna mobilna aplikacija koja treba da pošalje FCM token u Supabase.
+Fajlovi koje treba da kreirate/izmenite:
+A) Kreirajte novi servis: src/app/services/fcm.service.ts
+typescriptimport { Injectable } from '@angular/core';
+import { PushNotifications, Token } from '@capacitor/push-notifications';
+import { SupabaseService } from './supabase.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class FcmService {
+
+  constructor(private supabase: SupabaseService) {}
+
+  async initialize() {
+    const { data: { user } } = await this.supabase.client.auth.getUser();
+    
+    if (!user) {
+      console.log('❌ User not logged in');
+      return;
+    }
+
+    console.log('✅ User logged in:', user.id);
+
+    const result = await PushNotifications.requestPermissions();
+    
+    if (result.receive === 'granted') {
+      console.log('✅ Push notification permission granted');
+      await PushNotifications.register();
+    } else {
+      console.log('❌ Push notification permission denied');
+    }
+  }
+
+  setupListeners() {
+    PushNotifications.addListener('registration', async (token: Token) => {
+      console.log('🎯 FCM Token received:', token.value);
+      await this.saveFcmToken(token.value);
+    });
+
+    PushNotifications.addListener('registrationError', (error: any) => {
+      console.error('❌ FCM registration error:', error);
+    });
+
+    PushNotifications.addListener('pushNotificationReceived', (notification) => {
+      console.log('📬 Notification received:', notification);
+    });
+
+    PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+      console.log('👆 Notification clicked:', action);
+    });
+  }
+
+  async saveFcmToken(token: string) {
+    try {
+      const { data: { user } } = await this.supabase.client.auth.getUser();
+      
+      if (!user) {
+        console.error('❌ No user logged in');
+        return;
+      }
+
+      console.log('💾 Saving FCM token for user:', user.id);
+
+      const { error } = await this.supabase.client
+        .from('users')
+        .update({ fcm_token: token })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('❌ Error saving FCM token:', error);
+      } else {
+        console.log('✅✅✅ FCM token saved to Supabase!');
+      }
+    } catch (err) {
+      console.error('❌ Exception:', err);
+    }
+  }
+}
+B) Izmenite: src/app/app.component.ts
+typescriptimport { Component } from '@angular/core';
+import { Platform } from '@ionic/angular';
+import { FcmService } from './services/fcm.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: 'app.component.html',
+  styleUrls: ['app.component.scss'],
+})
+export class AppComponent {
+  constructor(
+    private platform: Platform,
+    private fcmService: FcmService
+  ) {
+    this.initializeApp();
+  }
+
+  initializeApp() {
+    this.platform.ready().then(() => {
+      this.fcmService.setupListeners();
+    });
+  }
+}
+C) Izmenite vašu login stranicu (npr. src/app/pages/login/login.page.ts):
+Dodajte nakon uspešnog logovanja:
+typescriptimport { FcmService } from '../../services/fcm.service';
+
+export class LoginPage {
+  constructor(
+    private supabase: SupabaseService,
+    private fcmService: FcmService // Dodajte ovo
+  ) {}
+
+  async login() {
+    const { error } = await this.supabase.client.auth.signInWithPassword({
+      email: this.email,
+      password: this.password
+    });
+
+    if (!error) {
+      console.log('✅ Login successful');
+      
+      // 🔥 DODAJTE OVO
+      await this.fcmService.initialize();
+      
+      // Vaš redirect...
+      this.router.navigate(['/home']);
+    }
+  }
+}
+D) Instalirajte Capacitor Push Notifications plugin
+U Replit terminalu:
+bashnpm install @capacitor/push-notifications
+npx cap sync
+E) Proverite capacitor.config.ts
+Trebalo bi već da imate:
+typescriptimport { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.budvanskivilijera.hotel', // Ili vaš app ID
+  appName: 'HGBRApp',
+  webDir: 'www',
+  bundledWebRuntime: false,
+  plugins: {
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"]
+    }
+  }
+};
+
+export default config;
