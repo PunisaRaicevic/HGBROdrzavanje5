@@ -1,0 +1,80 @@
+═══════════════════════════════════════════
+index-BHJzKysL.js:1293 🔍 PLATFORM DETECTION
+index-BHJzKysL.js:1293 ═══════════════════════════════════════════
+index-BHJzKysL.js:1293 Platform: android
+index-BHJzKysL.js:1293 Is Native: true
+index-BHJzKysL.js:1293 App Prefix: [APP ANDROID]
+index-BHJzKysL.js:1293 Capacitor Available: true
+index-BHJzKysL.js:1293 ═══════════════════════════════════════════
+index-BHJzKysL.js:1293 [APP ANDROID] Remote logger aktiviran
+index-BHJzKysL.js:1293 [APP ANDROID] ✅ Capacitor je dostupan
+index-BHJzKysL.js:1293 [APP ANDROID] 🚀 Pokretanje aplikacije...
+index-BHJzKysL.js:1293 [APP ANDROID] 📱 Platform: android
+index-BHJzKysL.js:1293 [APP ANDROID] 📱 Is Native: true
+index-BHJzKysL.js:1293 [APP ANDROID] 📱 Detektovan Android/iOS - Firebase FCM će biti inicijalizovan u App.tsx
+index-BHJzKysL.js:1293 [APP ANDROID] ✅ Renderujem React aplikaciju...
+index-BHJzKysL.js:1293 Uncaught (in promise) FirebaseError: Messaging: This browser doesn't support the API's required to use the Firebase SDK. (messaging/unsupported-browser).
+    at index-BHJzKysL.js:1293:60
+VM3:348 native App.addListener (#10052004)
+index-BHJzKysL.js:1293 [AUTH] Clearing old authentication data before login...
+index-BHJzKysL.js:1293 [AUTH] Attempting login for: jovan
+index-BHJzKysL.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-BHJzKysL.js:1293 [AUTH] Login successful for: Jovan Đurić Role: radnik
+index-BHJzKysL.js:1293 [AUTH] ✅ NEW JWT token stored: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO...
+index-BHJzKysL.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-BHJzKysL.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-BHJzKysL.js:1293 [QUERY] Headers: Object
+index-BHJzKysL.js:1293 [NOTIFICATIONS] OneSignal handles native permissions
+index-BHJzKysL.js:1293 [SOCKET.IO DEBUG] Connecting to: https://HGBRTehnickaSluzba.replit.app
+index-BHJzKysL.js:1293 [SOCKET.IO DEBUG] Platform: Mobile
+index-BHJzKysL.js:1293 [SOCKET.IO] ✅ Connected successfully: eAHRkB2mwbFFke1cAAAF
+index-BHJzKysL.js:1293 [SOCKET.IO] Transport: websocket
+index-BHJzKysL.js:1293 🚀 [FCM] Inicijalizujem push notifikacije...
+VM3:348 native PushNotifications.createChannel (#10052005)
+index-BHJzKysL.js:1293 🔔 [Web FCM] Priprema Firebase Messaging za browser...
+index-BHJzKysL.js:1293 ✅ [Web FCM] JWT token dostupan
+index-BHJzKysL.js:1293 ⚠️ [Web FCM] Browser ne podržava notifikacije
+console.<computed> @ index-BHJzKysL.js:1293
+VM3:328 result PushNotifications.createChannel (#10052005)
+index-BHJzKysL.js:1293 ✅ [FCM] Notification channel created
+VM3:348 native PushNotifications.requestPermissions (#10052006)
+index-BHJzKysL.js:1293 [SOCKET.IO] Worker connected to room: Object
+index-BHJzKysL.js:1293 [QUERY] Response status: 200
+index-BHJzKysL.js:1293 [QUERY] Success, data length: 56
+VM3:328 result PushNotifications.requestPermissions (#10052006)
+index-BHJzKysL.js:1293 ✅ [FCM] Push dozvola odobrena
+VM3:348 native PushNotifications.register (#10052007)
+VM3:328 result PushNotifications.register (#10052007)
+index-BHJzKysL.js:1293 ✅ [FCM] Uređaj registrovan
+VM3:348 native PushNotifications.addListener (#10052008)
+VM3:348 native PushNotifications.addListener (#10052009)
+VM3:348 native PushNotifications.addListener (#10052010)
+VM3:348 native PushNotifications.addListener (#10052011)
+VM3:328 result PushNotifications.addListener (#10052009)
+index-BHJzKysL.js:1293 ❌ [FCM] Greška pri registraciji: Object
+console.<computed> @ index-BHJzKysL.js:1293
+index-BHJzKysL.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-BHJzKysL.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-BHJzKysL.js:1293 [QUERY] Headers: Object
+index-BHJzKysL.js:1293 [QUERY] Response status: 200
+index-BHJzKysL.js:1293 [QUERY] Success, data length: 56
+index-BHJzKysL.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-BHJzKysL.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-BHJzKysL.js:1293 [QUERY] Headers: Object
+index-BHJzKysL.js:1293 [QUERY] Response status: 200
+index-BHJzKysL.js:1293 [QUERY] Success, data length: 56
+index-BHJzKysL.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-BHJzKysL.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-BHJzKysL.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.T7_TP9r1H75YNzLjVvPaHxHPdInvlqccf_VBrsNDtH8'}
+index-BHJzKysL.js:1293 [QUERY] Response status: 200
+index-BHJzKysL.js:1293 [QUERY] Success, data length: 56
+index-BHJzKysL.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-BHJzKysL.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-BHJzKysL.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.T7_TP9r1H75YNzLjVvPaHxHPdInvlqccf_VBrsNDtH8'}
+index-BHJzKysL.js:1293 [QUERY] Response status: 200
+index-BHJzKysL.js:1293 [QUERY] Success, data length: 56
+index-BHJzKysL.js:1293 [API] Using backend URL: https://HGBRTehnickaSluzba.replit.app
+index-BHJzKysL.js:1293 [QUERY] Fetching: https://HGBRTehnickaSluzba.replit.app/api/tasks
+index-BHJzKysL.js:1293 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…nQifQ.T7_TP9r1H75YNzLjVvPaHxHPdInvlqccf_VBrsNDtH8'}
+index-BHJzKysL.js:1293 [QUERY] Response status: 200
+index-BHJzKysL.js:1293 [QUERY] Success, data length: 56
