@@ -25,91 +25,119 @@ const createNotificationChannel = async () => {
 
 export const useFCM = (userId?: string) => {
   useEffect(() => {
-    // SKIP - samo na mobilnim platformama
-    if (!userId || !Capacitor.isNativePlatform()) {
-      return;
-    }
+    if (!userId) return;
+
+    let isMounted = true;
+    let hasStarted = false;
 
     const setupFCM = async () => {
-      console.log('🚀 [FCM] Inicijalizujem push notifikacije...');
-
-      // Proveravamo JWT token
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        console.warn('⚠️ [FCM] Nema JWT tokena!');
-        return;
-      }
+      if (hasStarted || !isMounted) return;
+      hasStarted = true;
 
       try {
+        // Detektuj platform - koristi getPlatform() umesto isNativePlatform()
+        const platform = Capacitor.getPlatform();
+        const isNative = platform !== 'web';
+        
+        console.log(`🚀 [FCM] Platform: ${platform}, Is Native: ${isNative}`);
+
+        if (!isNative) {
+          console.log('🌐 [FCM] Web verzija - push notifikacije isključene');
+          return;
+        }
+
+        // Proveravamo JWT token
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          console.warn('⚠️ [FCM] Nema JWT tokena!');
+          return;
+        }
+
+        console.log('✅ [FCM] JWT token dostupan');
+
         // 🔥 1. Kreiraj notification channel (samo Android)
         await createNotificationChannel();
 
         // 2. Tražimo dozvolu
+        console.log('📋 [FCM] Zahtevam push dozvole...');
         const permResult = await PushNotifications.requestPermissions();
+        console.log('✅ [FCM] Permission result:', permResult.receive);
+        
         if (permResult.receive !== 'granted') {
-          console.warn('⚠️ [FCM] Push dozvola nije odobrena.');
+          console.warn('⚠️ [FCM] Push dozvola nije odobrena - status:', permResult.receive);
           return;
         }
         console.log('✅ [FCM] Push dozvola odobrena');
 
-        // 3. Registrujemo uređaj
-        await PushNotifications.register();
-        console.log('✅ [FCM] Uređaj registrovan');
+        // 3. Registrujemo uređaj i čekamo token
+        console.log('📝 [FCM] Registrujem uređaj...');
 
-        // 4. Postavljamo listenere
+        let tokenReceived = false;
+        const tokenTimeout = setTimeout(() => {
+          if (!tokenReceived && isMounted) {
+            console.warn('⚠️ [FCM] Token nije primljen nakon 10s');
+          }
+        }, 10000);
+
         PushNotifications.addListener('registration', async (fcmToken) => {
-          console.log('🔥 [FCM] Token uređaja:', fcmToken.value);
+          clearTimeout(tokenTimeout);
+          tokenReceived = true;
+          
+          console.log('🔥 [FCM] Token primljen:', fcmToken.value?.substring(0, 50) + '...');
 
-          if (userId) {
-            try {
-              console.log('[FCM] Slanje tokena na backend...');
-              const response = await apiRequest('POST', '/api/users/fcm-token', {
-                token: fcmToken.value,
-              });
-              console.log('✅ [FCM] Backend odgovorio:', response.status);
-              console.log('💾 [FCM] Token sačuvan u bazi!');
-            } catch (err) {
-              console.error('❌ [FCM] Greška pri slanju tokena:', err);
-            }
+          if (!isMounted) return;
+
+          try {
+            console.log('[FCM] Slanje tokena na backend...');
+            const response = await apiRequest('POST', '/api/users/fcm-token', {
+              token: fcmToken.value,
+            });
+            console.log('✅ [FCM] Token sačuvan na backend!', response);
+          } catch (err) {
+            console.error('❌ [FCM] Greška pri slanju tokena:', err);
           }
         });
 
         PushNotifications.addListener('registrationError', (err: any) => {
-          console.error('❌ [FCM] Greška pri registraciji:', err?.message || err);
+          clearTimeout(tokenTimeout);
+          console.error('❌ [FCM] Greška pri registraciji:', err?.message || JSON.stringify(err));
         });
 
         PushNotifications.addListener('pushNotificationReceived', (notif) => {
-          console.log('📥 [FCM] Primljena notifikacija:', notif);
+          console.log('📥 [FCM] Primljena notifikacija (foreground):', notif.notification.title);
         });
 
         PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-          console.log('🔔 [FCM] Korisnik kliknuo na notifikaciju:', action);
-          
-          // Navigacija na task detail ako je potrebno
+          console.log('🔔 [FCM] Korisnik kliknuo na notifikaciju');
           const data = action.notification.data;
-          if (data.type === 'task_assigned' && data.taskId) {
-            console.log('🔗 [FCM] Navigiram na task:', data.taskId);
-            // window.location.href = `/tasks/${data.taskId}`; // Primer navigacije
+          if (data?.taskId) {
+            console.log('🔗 [FCM] Task ID:', data.taskId);
           }
         });
 
-      } catch (error) {
-        console.error('❌ [FCM] Greška pri inicijalizaciji:', error);
+        // 4. Registruj uređaj
+        await PushNotifications.register();
+        console.log('✅ [FCM] Uređaj registrovan - čekam token...');
+
+      } catch (error: any) {
+        console.error('❌ [FCM] Greška pri inicijalizaciji:', error?.message || error);
       }
     };
 
-    // Čekamo 500ms da se JWT token čuva
+    // Čekamo da se JWT token kešira pre nego što pokrenemo FCM
     const timer = setTimeout(() => {
-      if (Capacitor.isNativePlatform()) {
+      if (isMounted) {
         setupFCM();
       }
     }, 500);
 
     return () => {
+      isMounted = false;
       clearTimeout(timer);
-      // Cleanup samo na mobilnim platformama
-      if (Capacitor.isNativePlatform()) {
+      try {
         PushNotifications.removeAllListeners();
+      } catch (e) {
+        // Ignore cleanup errors
       }
     };
   }, [userId]);
