@@ -8,15 +8,15 @@ const createNotificationChannel = async () => {
   if (Capacitor.getPlatform() === 'android') {
     try {
       await PushNotifications.createChannel({
-        id: 'task_notifications', // 🔥 MORA SE POKLAPATI SA channelId u Firebase index.ts
-        name: 'Task Notifications',
-        description: 'Notifikacije za dodeljene zadatke',
+        id: 'reklamacije-alert', // 🔥 MORA SE POKLAPATI SA channelId u Firebase Cloud Function
+        name: 'Reklamacije Notifikacije',
+        description: 'Notifikacije za dodeljene reklamacije i zadatke',
         importance: 5, // 5 = Max importance (sa zvukom)
         sound: 'default',
         vibration: true,
         visibility: 1, // Public
       });
-      console.log('✅ [FCM] Notification channel created');
+      console.log('✅ [FCM] Notification channel "reklamacije-alert" created');
     } catch (error) {
       console.error('❌ [FCM] Error creating notification channel:', error);
     }
@@ -25,7 +25,10 @@ const createNotificationChannel = async () => {
 
 export const useFCM = (userId?: string) => {
   useEffect(() => {
-    if (!userId) return;
+    // SKIP - samo na mobilnim platformama
+    if (!userId || !Capacitor.isNativePlatform()) {
+      return;
+    }
 
     const setupFCM = async () => {
       console.log('🚀 [FCM] Inicijalizujem push notifikacije...');
@@ -71,8 +74,8 @@ export const useFCM = (userId?: string) => {
           }
         });
 
-        PushNotifications.addListener('registrationError', (err) => {
-          console.error('❌ [FCM] Greška pri registraciji:', err);
+        PushNotifications.addListener('registrationError', (err: any) => {
+          console.error('❌ [FCM] Greška pri registraciji:', err?.message || err);
         });
 
         PushNotifications.addListener('pushNotificationReceived', (notif) => {
@@ -97,14 +100,15 @@ export const useFCM = (userId?: string) => {
 
     // Čekamo 500ms da se JWT token čuva
     const timer = setTimeout(() => {
-      if (Capacitor.isNativePlatform()) {
-        setupFCM();
-      }
+      setupFCM();
     }, 500);
 
     return () => {
       clearTimeout(timer);
-      PushNotifications.removeAllListeners(); // 🔥 Cleanup
+      // Cleanup samo na mobilnim platformama
+      if (Capacitor.isNativePlatform()) {
+        PushNotifications.removeAllListeners();
+      }
     };
   }, [userId]);
 };
