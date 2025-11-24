@@ -323,12 +323,18 @@ export class SupabaseStorage implements IStorage {
     if (error) throw error;
   }
 
-  async saveDeviceToken(token: Partial<InsertUserDeviceToken>): Promise<UserDeviceToken> {
+  async saveDeviceToken(token: {
+    user_id: string;
+    fcm_token: string;
+    platform?: string;
+  }): Promise<UserDeviceToken> {
+    console.log(`[STORAGE] saveDeviceToken called - user: ${token.user_id.substring(0, 8)}..., platform: ${token.platform}, token length: ${token.fcm_token.length}`);
+    
     const { data, error } = await supabase
       .from('user_device_tokens')
       .upsert({
-        user_id: token.user_id!,
-        fcm_token: token.fcm_token!,
+        user_id: token.user_id,
+        fcm_token: token.fcm_token,
         platform: token.platform || 'web',
         last_updated: new Date().toISOString(),
         is_active: true,
@@ -336,18 +342,30 @@ export class SupabaseStorage implements IStorage {
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error(`[STORAGE] saveDeviceToken error:`, error);
+      throw error;
+    }
+    
+    console.log(`[STORAGE] Device token saved successfully - ID: ${data.id}`);
     return data as UserDeviceToken;
   }
 
   async getDeviceTokensForUser(userId: string): Promise<UserDeviceToken[]> {
+    console.log(`[STORAGE] getDeviceTokensForUser called - user: ${userId.substring(0, 8)}...`);
+    
     const { data, error } = await supabase
       .from('user_device_tokens')
       .select('*')
       .eq('user_id', userId)
       .eq('is_active', true);
     
-    if (error) throw error;
+    if (error) {
+      console.error(`[STORAGE] getDeviceTokensForUser error:`, error);
+      throw error;
+    }
+    
+    console.log(`[STORAGE] Found ${data?.length || 0} active tokens for user`);
     return (data || []) as UserDeviceToken[];
   }
 

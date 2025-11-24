@@ -86,8 +86,12 @@ function Router() {
         } else {
           console.warn("⚠️ [Web FCM] Token nije dobijen");
         }
-      } catch (error) {
-        console.error("❌ [Web FCM] Greška:", error);
+      } catch (error: any) {
+        console.error("❌ [Web FCM] Greška pri inicijalizaciji:", {
+          message: error?.message || String(error),
+          code: error?.code,
+          fullError: error
+        });
       }
     };
 
