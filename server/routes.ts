@@ -288,12 +288,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register FCM Token
   app.post("/api/users/fcm-token", async (req, res) => {
     console.log('[FCM TOKEN ENDPOINT] === START ===');
-    console.log('[FCM TOKEN ENDPOINT] Body:', JSON.stringify(req.body).substring(0, 200));
-    console.log('[FCM TOKEN ENDPOINT] Headers:', Object.keys(req.headers));
+    console.log('[FCM TOKEN ENDPOINT] Body:', JSON.stringify(req.body));
+    console.log('[FCM TOKEN ENDPOINT] Headers (all):', req.headers);
+    console.log('[FCM TOKEN ENDPOINT] Authorization header:', req.headers.authorization ? 'EXISTS' : 'MISSING');
     
     // Skip requireAuth and do manual auth check
     const authHeader = req.headers.authorization;
     const token = extractTokenFromHeader(authHeader);
+    console.log('[FCM TOKEN ENDPOINT] Extracted JWT token:', token ? `${token.substring(0, 20)}...` : 'NULL');
     
     let userId: string | null = null;
     
