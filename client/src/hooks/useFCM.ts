@@ -69,17 +69,8 @@ export const useFCM = (userId?: string) => {
         console.log(`✅ [FCM:${setupTime}] JWT token dostupan`);
 
         if (!isNative) {
-          // 🌐 WEB VERZIJA - Pošalji fallback token za testiranje
-          console.log(`🌐 [FCM:${setupTime}] Web verzija - Slanje fallback FCM tokena...`);
-          try {
-            const fallbackToken = `web-fcm-${userId}-${Date.now()}`;
-            const response = await apiRequest('POST', '/api/users/fcm-token', {
-              token: fallbackToken,
-            });
-            console.log(`✅ [FCM:${setupTime}] Web fallback token poslat:`, response);
-          } catch (err) {
-            console.error(`❌ [FCM:${setupTime}] Greška pri slanju web fallback tokena:`, err);
-          }
+          // 🌐 WEB VERZIJA - Čekam pravi Firebase Web FCM token (Not implemented yet - čeka Firebase setup)
+          console.log(`🌐 [FCM:${setupTime}] Web verzija detektovana - Web Firebase Messaging će biti iniciјalizovan iz App.tsx`);
           return;
         }
 
@@ -128,11 +119,13 @@ export const useFCM = (userId?: string) => {
           if (!isMounted) return;
 
           try {
-            console.log(`📤 [FCM:${regTime}] Slanje tokena na backend - Platform: ${platform}...`);
-            const response = await apiRequest('POST', '/api/users/fcm-token', {
-              fcmToken: fcmToken.value,
+            console.log(`📤 [FCM:${regTime}] Slanje tokena na backend - Platform: ${platform}, Token length: ${fcmToken.value.length}...`);
+            const payload = {
+              token: fcmToken.value,
               platform: platform,
-            });
+            };
+            console.log(`📤 [FCM:${regTime}] Payload koji se šalje:`, { ...payload, token: payload.token.substring(0, 30) + '...' });
+            const response = await apiRequest('POST', '/api/users/fcm-token', payload);
             console.log(`✅ [FCM:${regTime}] Token sačuvan na backend!`, response);
           } catch (err) {
             console.error(`❌ [FCM:${regTime}] Greška pri slanju tokena:`, err);
