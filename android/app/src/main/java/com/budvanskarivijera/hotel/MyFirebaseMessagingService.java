@@ -121,8 +121,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
         // Kreiraj notifikaciju SA ZVUKOM I VIBRACIJOM
+        // Koristi android.R.drawable.ic_dialog_info kao fallback ikonu (uvek dostupna)
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification) // Fallback ikona
+            .setSmallIcon(android.R.drawable.ic_dialog_info) // System ikona (uvek postoji)
             .setContentTitle(title)
             .setContentText(body)
             .setAutoCancel(true)
