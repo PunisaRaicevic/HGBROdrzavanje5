@@ -9,6 +9,14 @@ import { initializeFirebase } from "./services/firebase";
 
 const app = express();
 
+// GLOBAL LOGGING - hvata SVE zahtjeve
+app.use((req, res, next) => {
+  if (req.path.includes('fcm-token')) {
+    console.log(`[GLOBAL MIDDLEWARE] ${req.method} ${req.path} - Auth: ${req.headers.authorization ? 'YES' : 'NO'}`);
+  }
+  next();
+});
+
 // ==========================================
 // 1. CORS MORA BITI PRVI (Pre Session i JSON)
 // ==========================================
