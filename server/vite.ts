@@ -41,6 +41,23 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
+  
+  // Serve Firebase Service Worker with correct MIME type
+  app.get("/firebase-messaging-sw.js", (req, res) => {
+    const swPath = path.resolve(
+      import.meta.dirname,
+      "..",
+      "public",
+      "firebase-messaging-sw.js",
+    );
+    
+    if (fs.existsSync(swPath)) {
+      res.type("application/javascript").sendFile(swPath);
+    } else {
+      res.status(404).send("Service Worker not found");
+    }
+  });
+  
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
