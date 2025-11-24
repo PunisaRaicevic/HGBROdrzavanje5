@@ -1,0 +1,138 @@
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+✅ Firebase Admin SDK uspešno inicijalizovan
+📱 FCM Project: hgbtapp
+[SOCKET.IO] Server initialized and ready
+[INIT] Socket.IO initialized for real-time notifications
+5:45:16 PM [express] serving on port 5000
+[CRON SCHEDULER] Starting... Will run every 15 minutes
+[CRON SCHEDULER] ✅ Started successfully
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+[CRON SCHEDULER] Triggering recurring tasks processing...
+[CRON] Processing recurring tasks...
+[CRON] Found 4 recurring tasks
+[RECURRING] Template 2234f184-b080-46fd-9b52-0858d336f5c4 already has 8 child tasks
+[RECURRING] Template ad4c5468-c50a-4bb3-8b7c-da89ed00ddc0 already has 8 child tasks
+[RECURRING] Template 8a504c01-81b6-414c-b269-337ab1f5dac0 already has 8 child tasks
+[RECURRING] Template 682d0950-92be-4bf3-8701-bd4d8157889a already has 8 child tasks
+[CRON] Finished processing. Created 0 new tasks
+[CRON SCHEDULER] Result: { processed: 0, total: 4, results: [] }
+[CRON SCHEDULER] No tasks to process
+📱 [APP WEB] [2025-11-24T17:45:25.831Z]: [APP WEB] Remote logger aktiviran
+📱 [APP WEB] [2025-11-24T17:45:25.832Z]: [APP WEB] ✅ Capacitor je dostupan
+📱 [APP WEB] [2025-11-24T17:45:25.832Z]: [APP WEB] 🚀 Pokretanje aplikacije...
+📱 [APP WEB] [2025-11-24T17:45:25.833Z]: [APP WEB] 🌐 Web verzija - push notifikacije isključene
+📱 [APP WEB] [2025-11-24T17:45:25.832Z]: [APP WEB] 📱 Platform: web
+📱 [APP WEB] [2025-11-24T17:45:25.833Z]: [APP WEB] 📱 Is Native: false
+5:45:28 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:28 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:28 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:28 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:28 PM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}
+5:45:28 PM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}
+📱 [APP WEB] [2025-11-24T17:45:25.833Z]: [APP WEB] ✅ Renderujem React aplikaciju...
+📱 [APP WEB] [2025-11-24T17:45:25.879Z]: 📱 [useFCM:6:45:25 PM] Hook called with userId: UNDEFINED
+📱 [APP WEB] [2025-11-24T17:45:25.857Z]: 📍 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+📱 [APP WEB] [2025-11-24T17:45:25.880Z]: 📱 [useFCM:6:45:25 PM] Window location: https://0f8348da-785a-4a32-a048-3781e2402d8c-00-1ifebzeou9igx.picard.replit.dev/
+⚠️ [APP WEB] [2025-11-24T17:45:25.880Z]: ⚠️ [useFCM:6:45:25 PM] Skipping FCM setup - no userId provided
+5:45:28 PM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}
+5:45:28 PM [express] POST /api/debug/log 200 in 129ms :: {"ok":true}
+5:45:28 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:28 PM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}
+5:45:28 PM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}
+5:45:29 PM [express] GET /api/auth/me 200 in 396ms :: {"user":{"id":"a9d31e1c-f58a-4967-8513-b205b6c…
+📱 [APP WEB] [2025-11-24T17:45:26.929Z]: 📍 [Router] Current user: Aleksandar Jović ID: a9d31e1c...
+📱 [APP WEB] [2025-11-24T17:45:26.959Z]: [QUERY] Fetching: /api/tasks
+📱 [APP WEB] [2025-11-24T17:45:26.960Z]: [QUERY] Headers: {"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOWQzMWUxYy1mNThhLTQ5NjctODUxMy1iMjA1YjZjZTBhZmUiLCJ1c2VybmFtZSI6ImFsZWtzYW5kYXIiLCJyb2xlIjoib3BlcmF0ZXIiLCJmdWxsTmFtZSI6IkFsZWtzYW5kYXIgSm92acSHIiwiaWF0IjoxNzYzOTc4Mjc5LCJleHAiOjE3NjY1NzAyNzksImlzcyI6ImhnYnItaG90ZWwtbWFuYWdlbWVudCJ9.rGLwlvTihRoxEEmYETyBFNcXcWzxBfcLbjltyxQreuo"}
+📱 [APP WEB] [2025-11-24T17:45:26.962Z]: ✅ [useFCM:6:45:26 PM] userId is valid - proceeding with FCM setup
+📱 [APP WEB] [2025-11-24T17:45:26.961Z]: 📱 [useFCM:6:45:26 PM] Window location: https://0f8348da-785a-4a32-a048-3781e2402d8c-00-1ifebzeou9igx.picard.replit.dev/
+📱 [APP WEB] [2025-11-24T17:45:26.961Z]: 📱 [useFCM:6:45:26 PM] Hook called with userId: a9d31e1c...
+5:45:29 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:29 PM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+5:45:29 PM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+5:45:29 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:29 PM [express] POST /api/debug/log 200 in 125ms :: {"ok":true}
+5:45:29 PM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}
+📱 [APP WEB] [2025-11-24T17:45:26.962Z]: 📝 [useFCM:6:45:26 PM] Postavljam timeout od 500ms za setupFCM...
+[AUTH] User authenticated via JWT: a9d31e1c-f58a-4967-8513-b205b6ce0afe
+5:45:29 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+📱 [APP WEB] [2025-11-24T17:45:27.475Z]: 🚀 [FCM:6:45:27 PM] Platform DETECTED: web, Is Native: false
+📱 [APP WEB] [2025-11-24T17:45:27.474Z]: 📝 [useFCM] Pozivam setupFCM...
+📱 [APP WEB] [2025-11-24T17:45:27.476Z]: 🚀 [FCM:6:45:27 PM] Capacitor.isNativePlatform() = false
+📱 [APP WEB] [2025-11-24T17:45:27.476Z]: ✅ [FCM:6:45:27 PM] JWT token dostupan
+5:45:30 PM [express] POST /api/debug/log 200 in 128ms :: {"ok":true}
+5:45:30 PM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+5:45:30 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:30 PM [express] POST /api/debug/log 200 in 130ms :: {"ok":true}
+📱 [APP WEB] [2025-11-24T17:45:27.477Z]: 🌐 [FCM:6:45:27 PM] Web verzija - Slanje fallback FCM tokena...
+5:45:30 PM [express] GET /api/tasks 304 in 512ms :: {"tasks":[{"id":"762a808d-e851-4c77-9784-ecab409…
+5:45:30 PM [express] POST /api/debug/log 200 in 130ms :: {"ok":true}
+📱 [APP WEB] [2025-11-24T17:45:27.477Z]: [API REQUEST] POST /api/users/fcm-token
+📱 [APP WEB] [2025-11-24T17:45:27.477Z]: [API REQUEST] Headers: {"Content-Type":"application/json","Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOWQzMWUxYy1mNThhLTQ5NjctODUxMy1iMjA1YjZjZTBhZmUiLCJ1c2VybmFtZSI6ImFsZWtzYW5kYXIiLCJyb2xlIjoib3BlcmF0ZXIiLCJmdWxsTmFtZSI6IkFsZWtzYW5kYXIgSm92acSHIiwiaWF0IjoxNzYzOTc4Mjc5LCJleHAiOjE3NjY1NzAyNzksImlzcyI6ImhnYnItaG90ZWwtbWFuYWdlbWVudCJ9.rGLwlvTihRoxEEmYETyBFNcXcWzxBfcLbjltyxQreuo"}
+[FCM TOKEN ENDPOINT] === START ===
+[FCM TOKEN ENDPOINT] Body: {"token":"web-fcm-a9d31e1c-f58a-4967-8513-b205b6ce0afe-1764006327477"}
+[FCM TOKEN ENDPOINT] Headers: [
+  'host',
+  'user-agent',
+  'content-length',
+  'accept',
+  'accept-encoding',
+  'accept-language',
+  'authorization',
+  'content-type',
+  'cookie',
+  'origin',
+  'referer',
+  'sec-ch-ua',
+  'sec-ch-ua-mobile',
+  'sec-ch-ua-platform',
+  'sec-fetch-dest',
+  'sec-fetch-mode',
+  'sec-fetch-site',
+  'sec-fetch-storage-access',
+  'x-forwarded-for',
+  'x-forwarded-proto',
+  'x-replit-user-bio',
+  'x-replit-user-id',
+  'x-replit-user-name',
+  'x-replit-user-profile-image',
+  'x-replit-user-roles',
+  'x-replit-user-teams',
+  'x-replit-user-url'
+]
+[FCM TOKEN ENDPOINT] Authenticated via JWT: a9d31e1c-f58a-4967-8513-b205b6ce0afe
+[FCM TOKEN ENDPOINT] Token value length: 58
+📱 [APP WEB] [2025-11-24T17:45:27.478Z]: [API REQUEST] Body: {"token":"web-fcm-a9d31e1c-f58a-4967-8513-b205b6ce0afe-1764006327477"}
+[FCM TOKEN ENDPOINT] Updating fcm_token for user a9d31e1c-f58a-4967-8513-b205b6ce0afe...
+5:45:30 PM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+5:45:30 PM [express] POST /api/debug/log 200 in 126ms :: {"ok":true}
+5:45:30 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+[FCM TOKEN ENDPOINT] SUCCESS! fcm_token stored: true
+[FCM TOKEN ENDPOINT] === END ===
+📱 [APP WEB] [2025-11-24T17:45:27.479Z]: 🔔 [Web FCM] Priprema Firebase Messaging za browser...
+📱 [APP WEB] [2025-11-24T17:45:27.479Z]: ✅ [Web FCM] JWT token dostupan
+5:45:30 PM [express] POST /api/users/fcm-token 200 in 343ms :: {"success":true,"userId":"a9d31e1c-f5…
+5:45:30 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+❌ [APP WEB] [2025-11-24T17:45:27.486Z]: ❌ [Web FCM] Greška: {}
+5:45:30 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+📱 [APP WEB] [2025-11-24T17:45:28.146Z]: [QUERY] Response status: 200
+📱 [APP WEB] [2025-11-24T17:45:28.150Z]: [QUERY] Success, data length: 72
+5:45:30 PM [express] POST /api/debug/log 200 in 124ms :: {"ok":true}
+5:45:30 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:30 PM [express] POST /api/debug/log 200 in 130ms :: {"ok":true}
+📱 [APP WEB] [2025-11-24T17:45:28.522Z]: [API REQUEST] Response status: 200
+📱 [APP WEB] [2025-11-24T17:45:28.522Z]: ✅ [FCM:6:45:27 PM] Web fallback token poslat: {}
+5:45:31 PM [express] POST /api/debug/log 200 in 129ms :: {"ok":true}
+5:45:31 PM [express] POST /api/debug/log 200 in 129ms :: {"ok":true}
+[AUTH] User authenticated via JWT: a9d31e1c-f58a-4967-8513-b205b6ce0afe
+📱 [APP WEB] [2025-11-24T17:45:38.160Z]: [QUERY] Fetching: /api/tasks
+📱 [APP WEB] [2025-11-24T17:45:38.160Z]: [QUERY] Headers: {"Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhOWQzMWUxYy1mNThhLTQ5NjctODUxMy1iMjA1YjZjZTBhZmUiLCJ1c2VybmFtZSI6ImFsZWtzYW5kYXIiLCJyb2xlIjoib3BlcmF0ZXIiLCJmdWxsTmFtZSI6IkFsZWtzYW5kYXIgSm92acSHIiwiaWF0IjoxNzYzOTc4Mjc5LCJleHAiOjE3NjY1NzAyNzksImlzcyI6ImhnYnItaG90ZWwtbWFuYWdlbWVudCJ9.rGLwlvTihRoxEEmYETyBFNcXcWzxBfcLbjltyxQreuo"}
+5:45:40 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:40 PM [express] POST /api/debug/log 200 in 130ms :: {"ok":true}
+5:45:41 PM [express] GET /api/tasks 304 in 583ms :: {"tasks":[{"id":"762a808d-e851-4c77-9784-ecab409…
+📱 [APP WEB] [2025-11-24T17:45:39.031Z]: [QUERY] Response status: 200
+📱 [APP WEB] [2025-11-24T17:45:39.034Z]: [QUERY] Success, data length: 72
+5:45:41 PM [express] POST /api/debug/log 200 in 127ms :: {"ok":true}
+5:45:41 PM [express] POST /api/debug/log 200 in 130ms :: {"ok":true}
