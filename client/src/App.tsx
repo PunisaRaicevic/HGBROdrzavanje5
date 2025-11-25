@@ -52,6 +52,15 @@ function Router() {
       console.log("✅ [Web FCM] JWT token dostupan");
 
       try {
+        // RESET Service Worker cache - unregister svih postojećih
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          if (registration.active?.scriptURL.includes('firebase-messaging-sw.js')) {
+            console.log("🔄 [Web FCM] Uklanjam stari Service Worker...");
+            await registration.unregister();
+          }
+        }
+
         // Proveri da li browser podržava notifikacije
         if (!('Notification' in window)) {
           console.warn("⚠️ [Web FCM] Browser ne podržava notifikacije");
@@ -71,6 +80,8 @@ function Router() {
           console.error("❌ [Web FCM] VAPID key nije konfigurisan");
           return;
         }
+
+        console.log("🔑 [Web FCM] VAPID Key length:", vapidKey.length, "First 10 chars:", vapidKey.substring(0, 10));
 
         const fcmToken = await getToken(messaging, { vapidKey });
 
