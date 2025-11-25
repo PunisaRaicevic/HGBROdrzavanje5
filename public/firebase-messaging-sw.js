@@ -2,12 +2,12 @@ importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDMaf507Om6Dq-RUKmaStCnrfQ9ywUdo44",
-  authDomain: "hgbrodrzavanje-39543.firebaseapp.com",
-  projectId: "hgbrodrzavanje-39543",
-  storageBucket: "hgbrodrzavanje-39543.appspot.com",
-  messagingSenderId: "227433602872",
-  appId: "1:227433602872:web:3670adb0773591e68debcd",
+  apiKey: "AIzaSyAG8vYe5WM_3JhXYUj9C6UIrut4FnRBAxU",
+  authDomain: "hgbtapp.firebaseapp.com",
+  projectId: "hgbtapp",
+  storageBucket: "hgbtapp.firebasestorage.app",
+  messagingSenderId: "375153203002",
+  appId: "1:375153203002:android:d57aea9c9c9cd906372203",
 };
 
 firebase.initializeApp(firebaseConfig);
