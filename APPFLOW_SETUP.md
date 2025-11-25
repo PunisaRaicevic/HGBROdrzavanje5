@@ -1,275 +1,167 @@
-# 🚀 APPFLOW BUILD SETUP - Push Notifikacije
+# 🚀 APPFLOW BUILD SETUP - Firebase Config (Bezbedno!)
 
-## Šta ste već uradili ✅
+## 🔐 BEZBEDNA KONFIGURACIJA ZA PUBLIC REPO
 
-Svi potrebni fajlovi i kod za **jaku push notifikaciju** su već spremni u vašem projektu:
-
-- ✅ Zvučni fajl: `android/app/src/main/res/raw/alert1.mp3` (66KB, custom alarm)
-- ✅ Kod implementiran: `client/src/main.tsx` (hybrid push strategy)
-- ✅ Android permissions: `android/app/src/main/AndroidManifest.xml`
-- ✅ Android notification channel: "reklamacije-alert" sa custom zvukom
-- ✅ Badge sistem, jaka vibracija (ERROR + HEAVY impact)
+Ovaj projekat koristi **Environment Secrets** u AppFlow-u da izbegne commit-ovanje osetljivih Firebase podataka na public GitHub repo.
 
 ---
 
-## 📦 COMMIT I PUSH NA GITHUB
+## ✅ ŠTO SMO URADILI
 
-Sve ove promene trebaju biti commited i pushed na GitHub da bi Appflow mogao da ih build-uje.
-
-### 1. Proverite status
-```bash
-git status
-```
-
-Trebali bi videti:
-- `client/src/main.tsx` (modified)
-- `android/app/src/main/res/raw/alert1.mp3` (new file)
-- `android/app/src/main/AndroidManifest.xml` (modified)
-- `NOTIFICATION_SETUP.md` (new file)
-- `APPFLOW_SETUP.md` (new file)
-- `.gitignore` (new file)
-
-### 2. Dodajte sve promene
-```bash
-git add client/src/main.tsx
-git add android/app/src/main/res/raw/alert1.mp3
-git add android/app/src/main/AndroidManifest.xml
-git add android/app/src/main/capacitor.config.ts
-git add NOTIFICATION_SETUP.md
-git add APPFLOW_SETUP.md
-git add .gitignore
-git add package.json
-git add package-lock.json
-```
-
-### 3. Commitujte promene
-```bash
-git commit -m "feat: Implementiran sistem jakih push notifikacija
-
-- Dodat custom zvučni fajl (alert1.mp3) za Android i iOS
-- Implementirana hybrid push notification strategija
-- Konfigurisane Android permisije (POST_NOTIFICATIONS, VIBRATE, WAKE_LOCK)
-- Kreiran notification channel 'reklamacije-alert' sa custom zvukom
-- Implementirana jaka vibracija (ERROR + HEAVY impact)
-- Implementiran badge sistem sa proper permissions
-- Dodati Capacitor pluginovi: push-notifications, local-notifications, haptics, badge
-- Dokumentacija u NOTIFICATION_SETUP.md"
-```
-
-### 4. Push na GitHub
-```bash
-git push origin main
-# ili ako je vaš branch drugačiji:
-# git push origin <ime-vašeg-brancha>
-```
+- ✅ `google-services.json` je u `.gitignore` (NEĆE biti pushovan na GitHub!)
+- ✅ Kreiran script `scripts/decode-firebase-config.js` koji dekoduje Firebase config iz Environment Secret-a
+- ✅ Dodat `ionic:build:before` hook koji automatski kreira fajl tokom build-a
+- ✅ Base64 enkodovana verzija google-services.json pripremljena
 
 ---
 
-## 🏗️ APPFLOW BUILD PROCES
+## 📋 KAKO DODATI FIREBASE CONFIG U APPFLOW
 
-### Android Build
+### KORAK 1: Kopiraj Base64 String
 
-Kada Appflow pull-uje vaš kod sa GitHub-a, automatski će:
+Kopiraj ovaj **ceo** string (bez razmaka):
 
-1. ✅ **Instalirati npm pakete** - Svi Capacitor pluginovi iz `package.json`
-2. ✅ **Kopirati zvučni fajl** - `android/app/src/main/res/raw/alert1.mp3`
-3. ✅ **Sinhronizovati Capacitor** - `npx cap sync android`
-4. ✅ **Build APK/AAB** - Sa svim resursima i permisijama
+```
+ewogICJwcm9qZWN0X2luZm8iOiB7CiAgICAicHJvamVjdF9udW1iZXIiOiAiMzc1MTUzMjAzMDAyIiwKICAgICJwcm9qZWN0X2lkIjogImhnYnRhcHAiLAogICAgInN0b3JhZ2VfYnVja2V0IjogImhnYnRhcHAuZmlyZWJhc2VzdG9yYWdlLmFwcCIKICB9LAogICJjbGllbnQiOiBbCiAgICB7CiAgICAgICJjbGllbnRfaW5mbyI6IHsKICAgICAgICAibW9iaWxlc2RrX2FwcF9pZCI6ICIxOjM3NTE1MzIwMzAwMjphbmRyb2lkOmQ1N2FlYTljOWM5Y2Q5MDYzNzIyMDMiLAogICAgICAgICJhbmRyb2lkX2NsaWVudF9pbmZvIjogewogICAgICAgICAgInBhY2thZ2VfbmFtZSI6ICJjb20uYnVkdmFuc2thcml2aWplcmEuaG90ZWwiCiAgICAgICAgfQogICAgICB9LAogICAgICAib2F1dGhfY2xpZW50IjogW10sCiAgICAgICJhcGlfa2V5IjogWwogICAgICAgIHsKICAgICAgICAgICJjdXJyZW50X2tleSI6ICJBSXphU3lBRzh2WWU1V01fM0poWFlVajlDNlVJcnV0NEZuUkJBeFUiCiAgICAgICAgfQogICAgICBdLAogICAgICAic2VydmljZXMiOiB7CiAgICAgICAgImFwcGludml0ZV9zZXJ2aWNlIjogewogICAgICAgICAgIm90aGVyX3BsYXRmb3JtX29hdXRoX2NsaWVudCI6IFtdCiAgICAgICAgfQogICAgICB9CiAgICB9CiAgXSwKICAiY29uZmlndXJhdGlvbl92ZXJzaW9uIjogIjEiCn0K
+```
 
-**VAŽNO**: Zvučni fajl `alert1.mp3` je već postavljen u pravom mestu i biće uključen u build automatski!
+### KORAK 2: Otvori AppFlow
 
-### iOS Build
+1. Idi na https://appflow.ionic.io
+2. Selektuj svoj projekat
 
-Za iOS, **još jedan korak** je potreban:
+### KORAK 3: Kreiraj ili Selektuj Environment
 
-1. **Lokalno (jednom)**: Dodajte `alert1.mp3` u iOS projekat preko Xcode-a
-2. **Commitujte iOS projekat** sa dodate sound file-om
-3. **Push na GitHub**
-4. **Appflow build** će preuzeti iOS projekat sa sound file-om
+1. Klikni **Build** → **Environments**
+2. Kreiraj **New Environment** (npr. "Production") ili selektuj postojeći
 
-#### Kako dodati zvuk u iOS projekat:
+### KORAK 4: Dodaj Secret
+
+1. U Environment-u, scroll dole do sekcije **Secrets**
+2. Klikni **New Secret**
+3. Popuni:
+   - **Key**: `GOOGLE_SERVICES_JSON_BASE64`
+   - **Value**: (paste base64 string odozgo - **ceo** string!)
+   - **Type**: Secret (NE Variable!)
+4. Klikni **Add** ili **Save**
+
+### KORAK 5: Pokreni Build
+
+1. Idi na **Build** → **Start Build**
+2. **Bitno**: Selektuj Environment koji si kreirao (onaj sa Secret-om!)
+3. Build Type: **Debug** (testiranje) ili **Release** (produkcija)
+4. Platform: **Android**
+5. Klikni **Start Build**
+
+---
+
+## ⚙️ KAKO RADI AUTOMATSKI?
+
+1. AppFlow pull-uje kod sa GitHub-a
+2. Pre `ionic:build`, pokreće se `ionic:build:before` script
+3. Script `scripts/decode-firebase-config.js`:
+   - Čita `GOOGLE_SERVICES_JSON_BASE64` Environment Secret
+   - Dekoduje base64 → JSON
+   - Kreira `android/app/google-services.json`
+4. Capacitor sync kopira fajl u Android build
+5. Build uspešno završava!
+
+---
+
+## 🧪 TESTIRANJE LOKALNO (Opciono)
+
+Da proveriš da li script radi:
 
 ```bash
-# 1. Otvorite iOS projekat lokalno
-npx cap sync ios
-npx cap open ios
+# Setuj environment variable
+export GOOGLE_SERVICES_JSON_BASE64="ewogICJwcm9qZWN0X2luZm8iOi..."
 
-# 2. U Xcode:
-# - Drag & drop fajl `attached_assets/alert1.mp3` u projekat
-# - ✓ Check "Copy items if needed"
-# - ✓ Check "Add to targets"
-# - Proverite: Build Phases → Copy Bundle Resources → alert1.mp3 mora biti tu
+# Pokreni script
+npm run ionic:build:before
 
-# 3. Zatvorite Xcode i commitujte promene
-git add ios/
-git commit -m "feat(ios): Dodat custom notification zvuk alert1.mp3"
-git push origin main
+# Proveri da li je fajl kreiran
+ls -la android/app/google-services.json
 ```
 
 ---
 
-## 🔥 FIREBASE SETUP ZA APPFLOW
+## 🔒 BEZBEDNOST
 
-### 1. Firebase Android Setup
-
-**Lokalno (jednom):**
-
-1. Kreirajte Firebase projekat: https://console.firebase.google.com/
-2. Dodajte Android aplikaciju:
-   - Package name: Iz `capacitor.config.ts` → `appId`
-   - Download `google-services.json`
-   
-3. Postavite `google-services.json`:
-   ```bash
-   # Kopirajte downloaded fajl u Android projekat
-   cp ~/Downloads/google-services.json android/app/
-   
-   # Dodajte u git
-   git add android/app/google-services.json
-   git commit -m "feat(android): Dodat google-services.json za Firebase"
-   git push origin main
-   ```
-
-**Appflow će automatski preuzeti ovaj fajl i uključiti ga u build!**
-
-### 2. Firebase iOS Setup
-
-1. U Firebase console, dodajte iOS aplikaciju
-2. Download `GoogleService-Info.plist`
-3. Dodajte u iOS projekat preko Xcode-a (isto kao za zvučni fajl)
-4. Commitujte i push-ujte
+- ✅ `google-services.json` NIJE u Git-u (`.gitignore` blokira)
+- ✅ Base64 string je u AppFlow **Secrets** (enkriptovano!)
+- ✅ Lokalna verzija ostaje samo na Replit-u
+- ✅ GitHub repo je PUBLIC ali БЕЗ osetljivih podataka
 
 ---
 
-## 🧪 TESTIRANJE APPFLOW BUILD-A
+## ❓ TROUBLESHOOTING
 
-### 1. Pokrenite Appflow Build
+### Build greška: "google-services.json not found"
 
-U Ionic Appflow dashboard-u:
-- Idite na **Build** tab
-- Kliknite **New Build**
-- Izaberite branch (npr. `main`)
-- Izaberite **Android** ili **iOS**
-- Odaberite build type (Debug ili Release)
-- Kliknite **Build**
+**Uzrok**: Script nije našao Environment Secret
 
-### 2. Download APK/IPA
+**Rešenje**:
+1. Proveri da li si dodao `GOOGLE_SERVICES_JSON_BASE64` kao **Secret** (ne Variable!)
+2. Proveri da li si **selektovao pravi Environment** tokom build-a
+3. Ime Secret-a mora biti **tačno**: `GOOGLE_SERVICES_JSON_BASE64`
 
-Kada build završi:
-- Download APK (Android) ili IPA (iOS)
-- Instalirajte na **pravi uređaj** (ne emulator!)
+### Build greška: "Invalid base64 string"
 
-### 3. Testirajte
+**Uzrok**: Base64 string nije kompletan ili ima razmake
 
-Na pravom uređaju testirajte SVA TRI scenarija:
+**Rešenje**:
+1. Kopiraj **ceo** base64 string iz ovog fajla (bez preloma reda)
+2. Ne dodavaj razmake ili prazne linije
 
-| Scenario | Šta proverite |
-|----------|---------------|
-| **App FOREGROUND** | ✓ Jaka vibracija<br>✓ Custom zvuk (happy bells)<br>✓ JEDNA notifikacija<br>✓ Badge++ |
-| **App BACKGROUND** | ✓ Notifikacija prikazana<br>✓ Custom zvuk<br>✓ Vibracija |
-| **App TERMINATED** | ✓ Notifikacija prikazana<br>✓ Klik otvara app<br>✓ Badge clear |
+### Lokalni development ne radi
 
----
+**Uzrok**: Lokalni `google-services.json` ne postoji
 
-## 📋 BACKEND INTEGRACIJA
-
-Samo još **backend mora poslati pravilne FCM pushes**. Kompletan kod i payload primeri su u **`NOTIFICATION_SETUP.md`**.
-
-### Kratak pregled:
-
-Backend šalje **notification block** + **data block**:
-
-```javascript
-const message = {
-  token: deviceToken,
-  
-  // Za background/terminated
-  notification: {
-    title: "Nova reklamacija #123",
-    body: "Soba 305 - Klima problem",
-  },
-  
-  // Android specifično - KRITIČNO!
-  android: {
-    priority: 'high',
-    notification: {
-      channelId: 'reklamacije-alert',  // Mora biti isti kao u kodu!
-      sound: 'alert1',                  // Bez .mp3
-    }
-  },
-  
-  // Za foreground handling
-  data: {
-    taskId: "123",
-    priority: "urgent",
-    type: 'new_task'
-  },
-  
-  // iOS specifično
-  apns: {
-    payload: {
-      aps: {
-        sound: 'alert1.mp3',  // SA .mp3 za iOS
-        badge: 1
-      }
-    }
-  }
-};
-
-await admin.messaging().send(message);
-```
-
-Pogledajte **`NOTIFICATION_SETUP.md`** za kompletan backend kod!
+**Rešenje**:
+- Script automatski detektuje development mode
+- Lokalni fajl mora da postoji u `android/app/google-services.json` na Replit-u
+- Za development, lokalni fajl se koristi (ne Environment Secret)
 
 ---
 
-## ✅ FINALNI ČEKLIST
+## 🚀 GIT PUSH KOMANDE
 
-### Lokalno (uradite jednom)
-- ⏳ **Commit i push sve promene na GitHub**
-- ⏳ **iOS: Dodajte alert1.mp3 u Xcode projekat** (jednom)
-- ⏳ **Android: Dodajte google-services.json** (jednom)
-- ⏳ **iOS: Dodajte GoogleService-Info.plist** (jednom)
-
-### Appflow (automatski)
-- ✅ **Pull-uje kod sa GitHub-a**
-- ✅ **Instalira Capacitor pluginove**
-- ✅ **Kopira zvučni fajl i Firebase config**
-- ✅ **Build APK/AAB/IPA**
-
-### Backend
-- ⏳ **Implementirati `/api/users/push-token` endpoint**
-- ⏳ **Implementirati FCM slanje sa hybrid payload-om**
-- ⏳ **Testirati na pravom uređaju**
-
----
-
-## 🎯 SLEDEĆI KORACI ZA VAS
+Sada možeš bezbedno da push-uješ sve na GitHub:
 
 ```bash
-# 1. Commit sve promene
-git status
+# 1. Dodaj sve izmene
 git add .
-git commit -m "feat: Kompletiran push notification sistem"
+
+# 2. Commit
+git commit -m "feat: FCM push notifications + secure Firebase config"
+
+# 3. Push na GitHub (BEZBEDNO - nema osetljivih podataka!)
 git push origin main
-
-# 2. (Opciono) Dodajte iOS zvuk lokalno ako želite iOS build
-npx cap sync ios
-npx cap open ios
-# Dodajte alert1.mp3 u Xcode
-# Commit iOS promene
-
-# 3. Pokrenite Appflow build
-# → Idite na Appflow dashboard
-# → New Build → Select branch → Build
-
-# 4. Download i testirajte na pravom uređaju
-
-# 5. Implementirajte backend (vidi NOTIFICATION_SETUP.md)
 ```
 
 ---
 
-**Sa Appflow-om je sve automatizovano! Samo commit, push, i build! 🚀**
+## 📱 POSLE BUILD-A
 
-**Napomena**: Pročitajte `NOTIFICATION_SETUP.md` za sve detalje o backend integraciji i troubleshooting-u!
+1. **Preuzmi APK** iz AppFlow-a kada build završi
+2. **Instaliraj** na Android telefon
+3. **Logiraj se** u aplikaciju
+4. **Testiraj push notifikacije**:
+   - Zaključaj ekran
+   - Sa računara dodeli zadatak
+   - Telefon će: vibrirati + zvuk + notifikacija!
+
+---
+
+## ✅ FINAL ČEKLIST
+
+- [ ] Base64 string kopiran u AppFlow Secrets
+- [ ] Environment kreiran sa Secret-om
+- [ ] Git push urađen (bez google-services.json u repo-u!)
+- [ ] AppFlow build pokrenut sa pravim Environment-om
+- [ ] APK preuzet i instaliran
+- [ ] Push notifikacije testirane na zaključanom ekranu
+
+---
+
+**Sve je spremno! Push kod na GitHub i pokreni AppFlow build! 🎉**
