@@ -47,10 +47,8 @@ android/app/release/
 # But KEEP these important files for Appflow builds:
 !android/app/src/main/res/raw/alert1.mp3
 !android/app/src/main/AndroidManifest.xml
-
-# Security: EXCLUDE Firebase config files from public repo
-android/app/google-services.json
-ios/App/App/GoogleService-Info.plist
+!android/app/google-services.json
+!ios/App/App/GoogleService-Info.plist
 
 # Temporary files
 *.tmp
