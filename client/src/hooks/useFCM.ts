@@ -138,9 +138,40 @@ export const useFCM = (userId?: string) => {
           console.error(`❌ [FCM:${errTime}] Greška pri registraciji:`, err?.message || JSON.stringify(err));
         });
 
-        PushNotifications.addListener('pushNotificationReceived', (notif) => {
+        PushNotifications.addListener('pushNotificationReceived', async (notification) => {
           const notifTime = new Date().toLocaleTimeString();
-          console.log(`📥 [FCM:${notifTime}] Primljena notifikacija (foreground):`, notif.notification.title);
+          console.log(`📥 [FCM:${notifTime}] Primljena notifikacija:`, notification);
+          
+          // 🔥 KLJUČNO: Prikaži LOCAL NOTIFICATION sa zvukom i vibracijom
+          // Ovo će raditi i kada je app u background-u!
+          try {
+            const { LocalNotifications } = await import('@capacitor/local-notifications');
+            
+            // Tražimo dozvolu za local notifikacije
+            const permResult = await LocalNotifications.requestPermissions();
+            if (permResult.display !== 'granted') {
+              console.warn(`⚠️ [FCM:${notifTime}] Local notification dozvola nije odobrena`);
+              return;
+            }
+            
+            // Prikaži notifikaciju SA ZVUKOM
+            await LocalNotifications.schedule({
+              notifications: [
+                {
+                  title: notification.data?.title || notification.notification?.title || 'Novi zadatak',
+                  body: notification.data?.body || notification.notification?.body || 'Imate novi zadatak',
+                  id: Date.now(),
+                  sound: 'default', // ZVUK!
+                  smallIcon: 'ic_stat_icon_config_sample',
+                  channelId: 'reklamacije-alert',
+                  extra: notification.data,
+                },
+              ],
+            });
+            console.log(`✅ [FCM:${notifTime}] Local notification prikazana sa zvukom!`);
+          } catch (error) {
+            console.error(`❌ [FCM:${notifTime}] Greška pri prikazu local notifikacije:`, error);
+          }
         });
 
         PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
