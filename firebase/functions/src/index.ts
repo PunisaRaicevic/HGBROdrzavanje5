@@ -104,11 +104,16 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req: funct
         // koristeći pre-konfigurisani notification channel sa custom zvukom i vibracijom
 
         // --- 5. Pošaljite poruku na SVE aktivne tokene ---
-        // VAŽNO: DATA-ONLY payload (bez notification polja)
-        // Ovo osigurava da se MyFirebaseMessagingService.onMessageReceived() UVEK poziva
+        // KLJUČNO: FULL notification payload za background delivery sa zvukom!
+        // Android OS će sam prikazati notifikaciju kada je screen locked
         const sendPromises = recipientFCMTokens.map((token: string) => {
             const message = {
-                // NEMA notification polja - samo data!
+                // NOTIFICATION payload za Android OS delivery
+                notification: {
+                    title: notificationTitle,
+                    body: notificationBody.substring(0, 200),
+                },
+                // DATA payload za in-app handling
                 data: {
                     title: notificationTitle,
                     body: notificationBody.substring(0, 500),
@@ -118,14 +123,19 @@ export const handleSupabaseWebhook = functions.https.onRequest(async (req: funct
                 },
                 token: token,
                 android: {
-                    priority: 'high' as const, // Visoki prioritet za background delivery
+                    priority: 'high' as const,
+                    notification: {
+                        channelId: 'reklamacije-alert', // Mora se poklapati sa channel ID iz useFCM.ts
+                        sound: 'default',
+                        visibility: 'public' as const,
+                        priority: 'high' as const,
+                    },
                 },
                 apns: {
                     payload: {
                         aps: {
+                            sound: 'default',
                             contentAvailable: true,
-                            // iOS zahteva notification payload za background
-                            // ali Android ne sme imati notification ako zelimo custom handling
                         },
                     },
                 },
