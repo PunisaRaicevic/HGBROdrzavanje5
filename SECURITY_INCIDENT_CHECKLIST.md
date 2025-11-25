@@ -7,64 +7,41 @@
 
 ---
 
-## ✅ ALREADY DONE (BY REPLIT AGENT)
+## ✅ COMPLETED (BY REPLIT AGENT)
 
-- [x] Obrisani lokalni credentials fajlovi iz `attached_assets/`
+- [x] Obrisani lokalni credentials fajlovi iz `attached_assets/` (2 fajla obrisana)
 - [x] Verifikovan `.gitignore` (već pokriva credentials)
 - [x] Verifikovano da aplikacija koristi env variables (sigurno!)
+- [x] **NOVI CREDENTIALS USPEŠNO PRIMENJENI!**
+  - Novi key ID: `3dc3d1aa4a9142c78bf1114e340648dc4cb69487`
+  - Replit Secrets ažurirani (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY)
+  - Server restartovan
+  - Firebase Admin SDK inicijalizovan ✅
+  - **STATUS**: Push notifikacije spremne za testiranje!
 
 ---
 
-## 🔴 IMMEDIATE ACTION REQUIRED (YOU MUST DO)
+## ✅ STEPS 1-3: COMPLETED!
 
-### 1. ROTIRAJTE FIREBASE CREDENTIALS (10 min)
+### ~~1. ROTIRAJTE FIREBASE CREDENTIALS~~ ✅ DONE
+- [x] Novi key generisan: `3dc3d1aa4a9142c78bf1114e340648dc4cb69487`
 
-**Idite na Firebase Console:**
-```
-https://console.firebase.google.com/project/hgbtapp/settings/serviceaccounts/adminsdk
-```
+### ~~2. AŽURIRAJTE REPLIT SECRETS~~ ✅ DONE
+- [x] FIREBASE_PROJECT_ID ažuriran
+- [x] FIREBASE_CLIENT_EMAIL ažuriran
+- [x] FIREBASE_PRIVATE_KEY ažuriran
 
-**Koraci:**
-1. Kliknite "Generate new private key" dugme
-2. Potvrdite "Generate key"
-3. Preuzmite novi JSON fajl (na vaš računar)
-4. **NE DELITE ovaj fajl sa NIKIM!**
-5. **NE UPLOAD-ujte ga na GitHub!**
-
----
-
-### 2. AŽURIRAJTE REPLIT SECRETS (5 min)
-
-**U Replit-u:**
-1. Kliknite na "Tools" → "Secrets" (levi meni)
-2. Pronađite i ažurirajte ova 3 secrets sa vrednostima iz NOVOG JSON fajla:
-
-| Secret Name | JSON Field | Kako da kopirate |
-|-------------|------------|------------------|
-| `FIREBASE_PROJECT_ID` | `"project_id"` | Kopirajte vrednost |
-| `FIREBASE_CLIENT_EMAIL` | `"client_email"` | Kopirajte email adresu |
-| `FIREBASE_PRIVATE_KEY` | `"private_key"` | Kopirajte **CELU** vrednost (sa `\n`) |
-
-**VAŽNO za FIREBASE_PRIVATE_KEY:**
-- Mora biti CELA vrednost uključujući `-----BEGIN PRIVATE KEY-----` i `-----END PRIVATE KEY-----`
-- SA svim `\n` karakterima (ne menjajte ih!)
+### ~~3. RESTARTUJTE REPLIT SERVER~~ ✅ DONE
+- [x] Server restartovan
+- [x] Firebase Admin SDK uspešno inicijalizovan
+- [x] Log potvrđuje: `✅ Firebase Admin SDK uspešno inicijalizovan`
+- [x] Log potvrđuje: `📱 FCM Project: hgbtapp`
 
 ---
 
-### 3. RESTARTUJTE REPLIT SERVER (1 min)
+## 🟡 REMAINING ACTIONS (YOU MUST DO)
 
-Nakon što ažurirate secrets:
-1. U Replit-u idite na Shell
-2. Pokrenite: `npm run dev` (ili restartujte "Start application" workflow)
-3. Proverite log:
-   ```
-   ✅ Firebase Admin SDK uspešno inicijalizovan
-   📱 FCM Project: hgbtapp
-   ```
-
----
-
-### 4. OBRIŠITE CREDENTIALS SA GITHUB-A (15 min)
+### 4. OBRIŠITE CREDENTIALS SA GITHUB-A (15 min) - **KRITIČNO!**
 
 **⚠️ KRITIČNO: Čak i ako obrišete fajl, on ostaje u Git history!**
 
