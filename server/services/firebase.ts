@@ -149,6 +149,107 @@ return false;
 }
 }
 
+async function deactivateInvalidToken(fcmToken: string, userId: string): Promise<void> {
+try {
+const { createClient } = await import('@supabase/supabase-js');
+const supabase = createClient(
+process.env.SUPABASE_URL!,
+process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const { error } = await supabase
+.from('user_device_tokens')
+.update({ is_active: false })
+.eq('fcm_token', fcmToken)
+.eq('user_id', userId);
+
+if (error) {
+console.error(`❌ Greška pri deaktivaciji nevažećeg tokena:`, error);
+} else {
+console.log(`🗑️ Deaktiviran nevažeći FCM token za korisnika ${userId}`);
+}
+} catch (error) {
+console.error('❌ Greška pri deaktivaciji tokena:', error);
+}
+}
+
+export async function sendPushToDeviceTokens(
+tokens: string[],
+title: string,
+body: string,
+userId?: string,
+taskId?: string,
+priority?: 'urgent' | 'normal' | 'can_wait'
+): Promise<{ sent: number; failed: number; invalidTokens: string[] }> {
+if (!firebaseInitialized || tokens.length === 0) {
+return { sent: 0, failed: 0, invalidTokens: [] };
+}
+
+try {
+const message: admin.messaging.MulticastMessage = {
+tokens: tokens.slice(0, 500),
+notification: {
+title,
+body,
+},
+android: {
+priority: 'high',
+notification: {
+channelId: 'reklamacije-alert',
+sound: 'default',
+visibility: 'public',
+priority: 'high',
+defaultVibrateTimings: true,
+},
+},
+apns: {
+payload: {
+aps: {
+sound: 'default',
+badge: 1,
+contentAvailable: true,
+},
+},
+},
+data: {
+taskId: taskId || '',
+priority: priority || 'normal',
+type: 'new_task',
+forceLocal: 'true',
+},
+};
+
+const response = await admin.messaging().sendEachForMulticast(message);
+console.log(`✅ Batch FCM: ${response.successCount} uspešno, ${response.failureCount} neuspešno`);
+
+const invalidTokens: string[] = [];
+if (response.failureCount > 0 && userId) {
+for (let i = 0; i < response.responses.length; i++) {
+const resp = response.responses[i];
+if (!resp.success && resp.error) {
+const errorCode = (resp.error as any).code;
+if (errorCode === 'messaging/registration-token-not-registered' || 
+errorCode === 'messaging/invalid-registration-token') {
+const badToken = tokens[i];
+invalidTokens.push(badToken);
+await deactivateInvalidToken(badToken, userId);
+}
+}
+}
+}
+
+return {
+sent: response.successCount,
+failed: response.failureCount,
+invalidTokens,
+};
+
+} catch (error) {
+console.error('❌ Greška pri batch slanju FCM:', error);
+return { sent: 0, failed: tokens.length, invalidTokens: [] };
+}
+}
+
 export async function sendPushToAllUserDevices(
 userId: string,
 title: string,
@@ -176,23 +277,15 @@ return { sent: 0, failed: 0 };
 
 console.log(`📱 Pronađeno ${tokens.length} aktivnih tokena za korisnika ${userId}`);
 
-const results = await Promise.allSettled(
-tokens.map((t: any) =>
-sendPushNotification({
-token: t.fcm_token,
-title,
-body,
-taskId,
-priority,
-})
-)
-);
+const fcmTokens = tokens.map((t: any) => t.fcm_token);
+const result = await sendPushToDeviceTokens(fcmTokens, title, body, userId, taskId, priority);
 
-const sent = results.filter(r => r.status === 'fulfilled' && r.value === true).length;
-const failed = results.length - sent;
+console.log(`✅ Push notifikacije: ${result.sent} poslato, ${result.failed} neuspešno`);
+if (result.invalidTokens.length > 0) {
+console.log(`🗑️ Deaktivirano ${result.invalidTokens.length} nevažećih tokena`);
+}
 
-console.log(`✅ Push notifikacije: ${sent} poslato, ${failed} neuspešno`);
-return { sent, failed };
+return { sent: result.sent, failed: result.failed };
 
 } catch (error) {
 console.error('❌ Greška pri slanju push notifikacija:', error);

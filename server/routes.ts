@@ -146,31 +146,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Missing record data' });
       }
 
-      const recipientUserId = newRecord.assigned_to;
+      const assignedTo = newRecord.assigned_to;
       const taskTitle = newRecord.title || 'Novi zadatak!';
       const taskDescription = newRecord.description || 'Imate novi zadatak.';
       const taskId = newRecord.id;
 
-      if (!recipientUserId) {
+      if (!assignedTo) {
         console.warn('⚠️ Missing recipient ID - skipping notification');
         return res.status(200).json({ message: 'No recipient for notification' });
       }
 
-      // Send FCM notifications to ALL user devices
-      const { sendPushToAllUserDevices } = await import('./services/firebase');
-      const result = await sendPushToAllUserDevices(
-        recipientUserId,
-        taskTitle,
-        taskDescription.substring(0, 200),
-        taskId,
-        'urgent'
-      );
+      // Support multiple recipients (comma-separated IDs)
+      const recipientUserIds = assignedTo.split(',').map((id: string) => id.trim()).filter(Boolean);
 
-      console.log(`✅ Webhook processed: ${result.sent} sent, ${result.failed} failed`);
+      if (recipientUserIds.length === 0) {
+        console.warn('⚠️ No valid recipient IDs after parsing - skipping notification');
+        return res.status(200).json({ message: 'No recipients for notification' });
+      }
+
+      console.log(`📨 Slanje notifikacija za ${recipientUserIds.length} radnika: ${recipientUserIds.join(', ')}`);
+
+      // Send FCM notifications to ALL recipients
+      const { sendPushToAllUserDevices } = await import('./services/firebase');
+      
+      let totalSent = 0;
+      let totalFailed = 0;
+
+      for (const userId of recipientUserIds) {
+        const result = await sendPushToAllUserDevices(
+          userId,
+          taskTitle,
+          taskDescription.substring(0, 200),
+          taskId,
+          'urgent'
+        );
+        totalSent += result.sent;
+        totalFailed += result.failed;
+      }
+
+      console.log(`✅ Webhook processed: ${totalSent} sent, ${totalFailed} failed (${recipientUserIds.length} recipients)`);
       res.status(200).json({ 
         message: 'Webhook processed', 
-        sent: result.sent, 
-        failed: result.failed 
+        sent: totalSent, 
+        failed: totalFailed,
+        recipients: recipientUserIds.length
       });
 
     } catch (error) {
