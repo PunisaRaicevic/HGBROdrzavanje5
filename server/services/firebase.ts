@@ -62,41 +62,52 @@ const { token, title, body, data = {}, taskId, priority = 'normal' } = payload;
 const message: admin.messaging.Message = {
 token,
 
-notification: {
-title,
-body,
-},
-
-// ---------- ANDROID KONFIGURACIJA (FIKSIRANA ZA ZVUK) ----------
+// ---------- ANDROID KONFIGURACIJA ----------
 android: {
 priority: 'high',
-notification: {
+data: {
+title,
+body,
+taskId: taskId || '',
+priority: priority,
+type: 'new_task',
 channelId: 'reklamacije-alert',
 sound: 'default',
-visibility: 'public',
-priority: 'high',
-        defaultVibrateTimings: true,
+...data,
 },
 },
 
 // ---------- iOS KONFIGURACIJA ----------
 apns: {
+headers: {
+'apns-priority': '10',
+},
 payload: {
 aps: {
-sound: 'default', // Vraćeno na default dok se custom ne konfiguriše
+sound: 'default',
 badge: 1,
 contentAvailable: true,
+alert: {
+title,
+body,
 },
 },
-},
-
-// ---------- DATA BLOK ----------
-data: {
-...data,
 taskId: taskId || '',
 priority: priority,
 type: 'new_task',
-forceLocal: 'true',
+},
+},
+
+// ---------- DATA BLOK (za sve platforme) ----------
+data: {
+title,
+body,
+taskId: taskId || '',
+priority: priority,
+type: 'new_task',
+channelId: 'reklamacije-alert',
+sound: 'default',
+...data,
 },
 };
 
