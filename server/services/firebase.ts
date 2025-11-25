@@ -71,12 +71,11 @@ body,
 android: {
 priority: 'high',
 notification: {
-channelId: 'reklamacije-alert', // <--- KRITIČNA ISPRAVKA: Moramo gađati isti ID kao na klijentu
-sound: 'alert1',
+channelId: 'reklamacije-alert',
+sound: 'default',
+visibility: 'public',
 priority: 'high',
         defaultVibrateTimings: true,
-defaultSound: true,
-          // Uklonjen vibrateTimingsMillis da se ne poništavaju default vrednosti
 },
 },
 
@@ -147,5 +146,56 @@ priority,
 } catch (error) {
 console.error('❌ Greška pri slanju push notifikacije korisniku:', error);
 return false;
+}
+}
+
+export async function sendPushToAllUserDevices(
+userId: string,
+title: string,
+body: string,
+taskId?: string,
+priority?: 'urgent' | 'normal' | 'can_wait'
+): Promise<{ sent: number; failed: number }> {
+try {
+const { createClient } = await import('@supabase/supabase-js');
+const supabase = createClient(
+process.env.SUPABASE_URL!,
+process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const { data: tokens, error } = await supabase
+.from('user_device_tokens')
+.select('fcm_token')
+.eq('user_id', userId)
+.eq('is_active', true);
+
+if (error || !tokens || tokens.length === 0) {
+console.warn(`⚠️ Korisnik ${userId} nema aktivnih device tokena`);
+return { sent: 0, failed: 0 };
+}
+
+console.log(`📱 Pronađeno ${tokens.length} aktivnih tokena za korisnika ${userId}`);
+
+const results = await Promise.allSettled(
+tokens.map((t: any) =>
+sendPushNotification({
+token: t.fcm_token,
+title,
+body,
+taskId,
+priority,
+})
+)
+);
+
+const sent = results.filter(r => r.status === 'fulfilled' && r.value === true).length;
+const failed = results.length - sent;
+
+console.log(`✅ Push notifikacije: ${sent} poslato, ${failed} neuspešno`);
+return { sent, failed };
+
+} catch (error) {
+console.error('❌ Greška pri slanju push notifikacija:', error);
+return { sent: 0, failed: 0 };
 }
 }

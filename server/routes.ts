@@ -125,6 +125,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
 
+  // Supabase Webhook - Task assigned notification
+  app.post("/api/webhooks/tasks", async (req, res) => {
+    try {
+      // Verify webhook secret
+      const webhookSecret = req.headers['x-supabase-webhook-secret'];
+      const expectedSecret = process.env.SUPABASE_WEBHOOK_SECRET;
+
+      if (!expectedSecret || webhookSecret !== expectedSecret) {
+        console.error('❌ Unauthorized webhook access - invalid secret');
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      const webhookData = req.body;
+      console.log('📥 Webhook primljen:', JSON.stringify(webhookData, null, 2));
+
+      const newRecord = webhookData.record;
+      if (!newRecord) {
+        console.error('❌ Missing record in webhook data');
+        return res.status(400).json({ error: 'Missing record data' });
+      }
+
+      const recipientUserId = newRecord.assigned_to;
+      const taskTitle = newRecord.title || 'Novi zadatak!';
+      const taskDescription = newRecord.description || 'Imate novi zadatak.';
+      const taskId = newRecord.id;
+
+      if (!recipientUserId) {
+        console.warn('⚠️ Missing recipient ID - skipping notification');
+        return res.status(200).json({ message: 'No recipient for notification' });
+      }
+
+      // Send FCM notifications to ALL user devices
+      const { sendPushToAllUserDevices } = await import('./services/firebase');
+      const result = await sendPushToAllUserDevices(
+        recipientUserId,
+        taskTitle,
+        taskDescription.substring(0, 200),
+        taskId,
+        'urgent'
+      );
+
+      console.log(`✅ Webhook processed: ${result.sent} sent, ${result.failed} failed`);
+      res.status(200).json({ 
+        message: 'Webhook processed', 
+        sent: result.sent, 
+        failed: result.failed 
+      });
+
+    } catch (error) {
+      console.error('❌ Error processing webhook:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // Authentication endpoint
   app.post("/api/auth/login", async (req, res) => {
     try {
