@@ -15,7 +15,9 @@ import TasksPage from "@/pages/TasksPage";
 import UsersPage from "@/pages/UsersPage";
 import NotFound from "@/pages/not-found";
 import { IonApp, setupIonicReact } from "@ionic/react";
+import { Capacitor } from "@capacitor/core";
 import { useFCM } from "@/hooks/useFCM";
+import { messaging, getToken } from "./firebase";
 
 setupIonicReact({
   mode: "md",
@@ -24,9 +26,82 @@ setupIonicReact({
 function Router() {
   const { user, login, loading } = useAuth();
 
-  // 🔥 Inicijalizuj push notifikacije SAMO na mobilnim uređajima (Android/iOS)
+  // 🔥 Inicijalizuj push notifikacije na mobilnim uređajima
   console.log(`📍 [Router] Current user:`, user?.fullName || 'NOT LOGGED IN', 'ID:', user?.id ? `${user.id.substring(0, 8)}...` : 'UNDEFINED');
   useFCM(user?.id);
+
+  // 🌐 Web FCM setup (samo za browser - NE za Capacitor/Android/iOS!)
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // SKIP Firebase Web SDK na mobilnim platformama - koristi Capacitor FCM umesto toga
+    if (Capacitor.isNativePlatform()) {
+      console.log("📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications");
+      return;
+    }
+
+    const setupWebFCM = async () => {
+      console.log("🔔 [Web FCM] Priprema Firebase Messaging za browser...");
+
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.warn("⚠️ [Web FCM] Nema JWT tokena!");
+        return;
+      }
+
+      console.log("✅ [Web FCM] JWT token dostupan");
+
+      try {
+        // Proveri da li browser podržava notifikacije
+        if (!('Notification' in window)) {
+          console.warn("⚠️ [Web FCM] Browser ne podržava notifikacije");
+          return;
+        }
+
+        // Zatraži dozvolu za notifikacije
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
+          console.warn("⚠️ [Web FCM] Korisnik nije dao dozvolu za notifikacije");
+          return;
+        }
+
+        // Dohvati FCM token za web
+        const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+        if (!vapidKey) {
+          console.error("❌ [Web FCM] VAPID key nije konfigurisan");
+          return;
+        }
+
+        const fcmToken = await getToken(messaging, { vapidKey });
+
+        if (fcmToken) {
+          console.log("✅ [Web FCM] Token dobijen:", fcmToken.substring(0, 20) + "...");
+
+          // Pošalji token na backend
+          const response = await apiRequest("POST", "/api/users/fcm-token", {
+            token: fcmToken,
+          });
+
+          console.log("✅ [Web FCM] Token sačuvan na serveru:", response.status);
+        } else {
+          console.warn("⚠️ [Web FCM] Token nije dobijen");
+        }
+      } catch (error: any) {
+        console.error("❌ [Web FCM] Greška pri inicijalizaciji:", {
+          message: error?.message || String(error),
+          code: error?.code,
+          fullError: error
+        });
+      }
+    };
+
+    // Čekaj malo da se JWT token sačuva
+    const timer = setTimeout(() => {
+      setupWebFCM();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [user?.id]);
 
   if (loading) {
     return (

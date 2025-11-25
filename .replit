@@ -36,6 +36,10 @@ localPort = 40725
 externalPort = 3000
 
 [[ports]]
+localPort = 41507
+externalPort = 8080
+
+[[ports]]
 localPort = 41975
 externalPort = 6000
 
@@ -90,7 +94,7 @@ expertMode = true
 [userenv]
 
 [userenv.shared]
-VITE_FIREBASE_VAPID_KEY = "BBWOsMF2mg2BapbLiVEBbC6lucFdykWmddrNGSRtb7hULCvJZgCmfPzl6_Si7svGMFftiSrs6_Bl9ayFHU0EHLk"
+VITE_FIREBASE_VAPID_KEY = "YEyfKS6BncFnkJyzoJ12VwxsJZPeP0YDBu_94PuUAzM"
 VITE_FIREBASE_API_KEY = "AIzaSyBo2TCzYfiQhML2bGH28a9ilMUVnu0ZepA"
 VITE_FIREBASE_MESSAGING_SENDER_ID = "375153203002"
 VITE_FIREBASE_APP_ID = "1:375153203002:web:dd173c04e3f2304c372203"
