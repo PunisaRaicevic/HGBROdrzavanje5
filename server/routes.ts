@@ -125,6 +125,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
 
+  // Dynamically serve Service Worker with environment variables
+  app.get("/firebase-messaging-sw.js", (req, res) => {
+    const apiKey = process.env.VITE_FIREBASE_API_KEY || "";
+    const messagingSenderId = process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "";
+    const appId = process.env.VITE_FIREBASE_APP_ID || "";
+
+    const swContent = `importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
+
+const firebaseConfig = {
+  apiKey: "${apiKey}",
+  authDomain: "hgbtapp.firebaseapp.com",
+  projectId: "hgbtapp",
+  storageBucket: "hgbtapp.firebasestorage.app",
+  messagingSenderId: "${messagingSenderId}",
+  appId: "${appId}",
+};
+
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
+  console.log('[FCM SW] Primljena background notifikacija:', payload);
+  
+  const notificationTitle = payload.notification?.title || 'Nova notifikacija';
+  const notificationOptions = {
+    body: payload.notification?.body || 'Imate novu poruku',
+    icon: '/icon-192x192.png',
+    badge: '/icon-192x192.png',
+    sound: 'alert1.mp3',
+    vibrate: [200, 100, 200],
+    data: payload.data || {},
+    tag: 'fcm-notification',
+    requireInteraction: false,
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+self.addEventListener('notificationclick', (event) => {
+  console.log('[FCM SW] Kliknuta notifikacija:', event.notification);
+  event.notification.close();
+
+  const taskId = event.notification.data?.taskId;
+  if (taskId) {
+    event.waitUntil(
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        for (const client of clientList) {
+          if (client.url === \`\${self.location.origin}/tasks/\${taskId}\` && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        if (clients.openWindow) {
+          return clients.openWindow(\`/tasks/\${taskId}\`);
+        }
+      })
+    );
+  }
+});`;
+
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Service-Worker-Allowed", "/");
+    res.send(swContent);
+  });
+
   // Supabase Webhook - Task assigned notification
   app.post("/api/webhooks/tasks", async (req, res) => {
     try {
