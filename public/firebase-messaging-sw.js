@@ -7,7 +7,7 @@ const firebaseConfig = {
   projectId: "hgbtapp",
   storageBucket: "hgbtapp.firebasestorage.app",
   messagingSenderId: "375153203002",
-  appId: "1:375153203002:android:d57aea9c9c9cd906372203",
+  appId: "1:375153203002:web:d47dccb37e23043372203",
 };
 
 firebase.initializeApp(firebaseConfig);
