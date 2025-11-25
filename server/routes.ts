@@ -125,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
 
-  // Supabase Webhook - Task assigned notification
+  // Supabase Webhook - Task assigned notification (MULTI-RECIPIENT SUPPORT)
   app.post("/api/webhooks/tasks", async (req, res) => {
     try {
       // Verify webhook secret
@@ -146,31 +146,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Missing record data' });
       }
 
-      const recipientUserId = newRecord.assigned_to;
       const taskTitle = newRecord.title || 'Novi zadatak!';
       const taskDescription = newRecord.description || 'Imate novi zadatak.';
       const taskId = newRecord.id;
 
-      if (!recipientUserId) {
-        console.warn('⚠️ Missing recipient ID - skipping notification');
-        return res.status(200).json({ message: 'No recipient for notification' });
+      // Collect all assigned user IDs from BOTH sources:
+      // 1. Single assigned_to field (legacy/primary assignee)
+      // 2. Multiple task_assignments (team assignments)
+      const recipientUserIds = new Set<string>();
+      
+      if (newRecord.assigned_to) {
+        recipientUserIds.add(newRecord.assigned_to);
       }
 
-      // Send FCM notifications to ALL user devices
-      const { sendPushToAllUserDevices } = await import('./services/firebase');
-      const result = await sendPushToAllUserDevices(
-        recipientUserId,
+      // Create FRESH Supabase client per webhook invocation to avoid race conditions
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      // Query task_assignments table for additional assignees
+      const { data: assignments, error: assignmentsError } = await supabase
+        .from('task_assignments')
+        .select('to_user_id')
+        .eq('task_id', taskId);
+
+      if (!assignmentsError && assignments) {
+        assignments.forEach((assignment: any) => {
+          if (assignment.to_user_id) {
+            recipientUserIds.add(assignment.to_user_id);
+          }
+        });
+      }
+
+      const uniqueRecipients = Array.from(recipientUserIds);
+      
+      if (uniqueRecipients.length === 0) {
+        console.warn('⚠️ No recipients found - skipping notifications');
+        return res.status(200).json({ message: 'No recipients for notification' });
+      }
+
+      console.log(`📬 Fetching device tokens for ${uniqueRecipients.length} workers (task: ${taskId})...`);
+
+      // Fetch ALL device tokens for ALL workers in ONE database query
+      const { data: allTokenRecords, error: tokensError } = await supabase
+        .from('user_device_tokens')
+        .select('id, user_id, fcm_token')
+        .in('user_id', uniqueRecipients)
+        .eq('is_active', true);
+
+      if (tokensError || !allTokenRecords || allTokenRecords.length === 0) {
+        console.warn(`⚠️ No active tokens found for ${uniqueRecipients.length} workers`);
+        return res.status(200).json({ 
+          message: 'No active device tokens', 
+          workers: uniqueRecipients.length,
+          totalSent: 0 
+        });
+      }
+
+      console.log(`📱 Found ${allTokenRecords.length} tokens across ${uniqueRecipients.length} workers`);
+
+      // Send ALL tokens in ONE BATCH using sendEachForMulticast
+      const { sendPushToDeviceTokens } = await import('./services/firebase');
+      const allTokens = allTokenRecords.map((t: any) => t.fcm_token);
+      
+      const result = await sendPushToDeviceTokens(
+        allTokens,
         taskTitle,
         taskDescription.substring(0, 200),
         taskId,
         'urgent'
       );
 
-      console.log(`✅ Webhook processed: ${result.sent} sent, ${result.failed} failed`);
+      // Automatic cleanup of invalid tokens (with safeguard against re-registered tokens)
+      if (result.invalidTokens.length > 0) {
+        console.warn(`🗑️ Deactivating ${result.invalidTokens.length} invalid tokens...`);
+        const invalidIds = allTokenRecords
+          .filter((t: any) => result.invalidTokens.includes(t.fcm_token))
+          .map((t: any) => t.id);
+
+        if (invalidIds.length > 0) {
+          try {
+            await supabase
+              .from('user_device_tokens')
+              .update({ is_active: false })
+              .in('id', invalidIds)
+              .eq('is_active', true);
+            console.log(`✅ Deactivated ${invalidIds.length} invalid tokens`);
+          } catch (cleanupError) {
+            console.error('❌ Failed to cleanup invalid tokens:', cleanupError);
+          }
+        }
+      }
+
+      // Calculate per-worker statistics and log recipients without tokens
+      const workerStats = uniqueRecipients.map(userId => {
+        const workerTokens = allTokenRecords.filter((t: any) => t.user_id === userId);
+        return {
+          userId,
+          tokens: workerTokens.length,
+        };
+      });
+
+      const workersWithTokens = workerStats.filter(w => w.tokens > 0);
+      const workersWithoutTokens = workerStats.filter(w => w.tokens === 0);
+
+      if (workersWithoutTokens.length > 0) {
+        console.warn(`⚠️ ${workersWithoutTokens.length} workers have NO active tokens:`, 
+          workersWithoutTokens.map(w => w.userId).join(', ')
+        );
+      }
+
+      console.log(`✅ Webhook processed (task: ${taskId}): ${result.sent}/${allTokens.length} sent to ${workersWithTokens.length}/${uniqueRecipients.length} workers`);
+      workerStats.forEach(w => {
+        console.log(`   - Worker ${w.userId}: ${w.tokens} tokens`);
+      });
+      
       res.status(200).json({ 
-        message: 'Webhook processed', 
-        sent: result.sent, 
-        failed: result.failed 
+        message: 'Webhook processed',
+        taskId,
+        workers: uniqueRecipients.length,
+        workersWithTokens,
+        totalTokens: allTokens.length,
+        sent: result.sent,
+        failed: result.failed,
+        invalidTokensRemoved: result.invalidTokens.length
       });
 
     } catch (error) {
