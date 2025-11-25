@@ -52,6 +52,12 @@ android/app/release/
 android/app/google-services.json
 ios/App/App/GoogleService-Info.plist
 
+# Security: Block ALL credential files in attached_assets
+attached_assets/*service-account*.txt
+attached_assets/*private-key*.txt
+attached_assets/*credentials*.txt
+attached_assets/*firebase*.json
+
 # Temporary files
 *.tmp
 *.temp
