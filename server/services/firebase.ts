@@ -104,30 +104,7 @@ const response = await admin.messaging().send(message);
 console.log('✅ FCM push notifikacija uspešno poslata:', response);
 return true;
 
-} catch (error: any) {
-// Auto-cleanup invalid/expired FCM tokens
-if (error?.errorInfo?.code === 'messaging/registration-token-not-registered' || 
-    error?.errorInfo?.code === 'messaging/invalid-registration-token') {
-  console.warn(`🗑️ Invalid FCM token detected, removing from database: ${payload.token.substring(0, 20)}...`);
-  
-  try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-    
-    await supabase
-      .from('user_device_tokens')
-      .delete()
-      .eq('fcm_token', payload.token);
-    
-    console.log('✅ Invalid FCM token removed from database');
-  } catch (cleanupError) {
-    console.error('❌ Failed to cleanup invalid FCM token:', cleanupError);
-  }
-}
-
+} catch (error) {
 console.error('❌ Greška pri slanju FCM push notifikacije:', error);
 return false;
 }

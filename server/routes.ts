@@ -146,49 +146,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Missing record data' });
       }
 
-      const assignedToField = newRecord.assigned_to;
+      const recipientUserId = newRecord.assigned_to;
       const taskTitle = newRecord.title || 'Novi zadatak!';
       const taskDescription = newRecord.description || 'Imate novi zadatak.';
       const taskId = newRecord.id;
 
-      if (!assignedToField) {
+      if (!recipientUserId) {
         console.warn('⚠️ Missing recipient ID - skipping notification');
         return res.status(200).json({ message: 'No recipient for notification' });
       }
 
-      // Handle multiple technicians (comma-separated IDs)
-      const recipientUserIds = assignedToField.split(',').map((id: string) => id.trim()).filter(Boolean);
-      console.log(`📨 Sending notifications to ${recipientUserIds.length} worker(s):`, recipientUserIds);
-
-      // Send FCM notifications to ALL users and their devices
+      // Send FCM notifications to ALL user devices
       const { sendPushToAllUserDevices } = await import('./services/firebase');
-      
-      let totalSent = 0;
-      let totalFailed = 0;
+      const result = await sendPushToAllUserDevices(
+        recipientUserId,
+        taskTitle,
+        taskDescription.substring(0, 200),
+        taskId,
+        'urgent'
+      );
 
-      for (const userId of recipientUserIds) {
-        try {
-          const result = await sendPushToAllUserDevices(
-            userId,
-            taskTitle,
-            taskDescription.substring(0, 200),
-            taskId,
-            'urgent'
-          );
-          totalSent += result.sent;
-          totalFailed += result.failed;
-        } catch (error) {
-          console.error(`❌ Error sending notification to user ${userId}:`, error);
-          totalFailed++;
-        }
-      }
-
-      console.log(`✅ Webhook processed: ${totalSent} sent, ${totalFailed} failed (${recipientUserIds.length} recipients)`);
+      console.log(`✅ Webhook processed: ${result.sent} sent, ${result.failed} failed`);
       res.status(200).json({ 
         message: 'Webhook processed', 
-        recipients: recipientUserIds.length,
-        sent: totalSent, 
-        failed: totalFailed 
+        sent: result.sent, 
+        failed: result.failed 
       });
 
     } catch (error) {
