@@ -64,7 +64,8 @@ const resources = {
       submit: 'Submit',
       assign: 'Assign',
       complete: 'Complete',
-      uploadPhoto: 'Upload Photo',
+      uploadPhoto: 'Gallery',
+      takePhoto: 'Camera',
       sendMessage: 'Send Message',
       
       // Common
@@ -288,7 +289,8 @@ const resources = {
       submit: 'Pošalji',
       assign: 'Dodeli',
       complete: 'Završi',
-      uploadPhoto: 'Otpremi sliku',
+      uploadPhoto: 'Galerija',
+      takePhoto: 'Kamera',
       sendMessage: 'Pošalji poruku',
       
       // Common

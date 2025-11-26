@@ -12,12 +12,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, Camera, Send, ClipboardList, Clock, XCircle, X, RotateCcw } from 'lucide-react';
+import { CheckCircle, Camera, Send, ClipboardList, Clock, XCircle, X, RotateCcw, ImagePlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { io, Socket } from 'socket.io-client';
 import type { TaskStatus, Priority } from '@shared/types';
 import { capacitorHaptics } from '@/services/capacitorHaptics';
 import { capacitorNotifications } from '@/services/capacitorNotifications';
+import { capacitorCamera } from '@/services/capacitorCamera';
 import { upsertTaskInCache, scheduleBackgroundHydration, optimisticUpdateTask, removeTaskFromCache } from '@/lib/taskCache';
 import { apiRequest } from '@/lib/queryClient';
 import { ImagePreviewModal } from '@/components/ImagePreviewModal';
@@ -493,6 +494,26 @@ export default function WorkerDashboard() {
   const handlePhotoUpload = () => {
     // Trigger file input click
     fileInputRef.current?.click();
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      const dataUrl = await capacitorCamera.takePhoto();
+      if (dataUrl) {
+        const newPhoto: PhotoPreview = {
+          id: `photo-${Date.now()}`,
+          dataUrl,
+        };
+        setUploadedPhotos(prev => [...prev, newPhoto]);
+      }
+    } catch (error) {
+      console.error('[CAMERA] Error taking photo:', error);
+      toast({
+        title: t('errorOccurred'),
+        description: 'Failed to take photo',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1054,16 +1075,28 @@ export default function WorkerDashboard() {
                         className="hidden"
                         onChange={handleFileChange}
                       />
-                      <Button 
-                        variant="outline" 
-                        onClick={handlePhotoUpload}
-                        type="button"
-                        data-testid="button-upload-photo"
-                        className="w-full min-h-11"
-                      >
-                        <Camera className="w-5 h-5 mr-2" />
-                        {t('uploadPhoto')}
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={handleTakePhoto}
+                          type="button"
+                          data-testid="button-take-photo"
+                          className="flex-1 min-h-11"
+                        >
+                          <Camera className="w-5 h-5 mr-2" />
+                          {t('takePhoto')}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={handlePhotoUpload}
+                          type="button"
+                          data-testid="button-upload-photo"
+                          className="flex-1 min-h-11"
+                        >
+                          <ImagePlus className="w-5 h-5 mr-2" />
+                          {t('uploadPhoto')}
+                        </Button>
+                      </div>
                       
                       {/* Display uploaded photos */}
                       {uploadedPhotos.length > 0 && (
