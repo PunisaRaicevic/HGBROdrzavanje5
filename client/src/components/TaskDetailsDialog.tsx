@@ -515,9 +515,9 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                 <History className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="w-full justify-between px-0 h-auto py-1"
+                    className="w-full justify-between bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                     onClick={() => setShowRecurringHistory(!showRecurringHistory)}
                     data-testid="button-toggle-recurring-history"
                   >
