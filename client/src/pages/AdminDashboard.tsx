@@ -934,14 +934,16 @@ export default function AdminDashboard() {
                     hourIntervals[`${startHour}-${endHour}`] = 0;
                   }
 
+                  let outsideHoursCount = 0;
                   periodTasks.forEach(task => {
                     const hour = new Date(task.created_at).getHours();
-                    // Brojimo samo zadatke u radnom vremenu
                     if (hour >= 7 && hour < 23) {
                       const startHour = hour.toString().padStart(2, '0');
                       const endHour = (hour + 1).toString().padStart(2, '0');
                       const interval = `${startHour}-${endHour}`;
                       hourIntervals[interval]++;
+                    } else {
+                      outsideHoursCount++;
                     }
                   });
 
@@ -950,7 +952,7 @@ export default function AdminDashboard() {
                   return (
                     <div className="space-y-3">
                       <p className="text-xs text-muted-foreground">
-                        Distribucija po satu prijema (radno vrijeme 07-23h)
+                        Distribucija po satu prijema (ukupno {periodTasks.length} zadataka)
                       </p>
                       <div className="space-y-1.5">
                         {Object.entries(hourIntervals).map(([interval, count]) => (
