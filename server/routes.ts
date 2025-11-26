@@ -807,9 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         if (title !== undefined) updateData.title = title;
         if (description !== undefined) updateData.description = description;
-        if (hotel !== undefined) updateData.hotel = hotel;
-        if (blok !== undefined) updateData.blok = blok;
-        if (soba !== undefined) updateData.soba = soba;
+        // Note: hotel, blok, soba are not separate columns in DB - only location exists
         if (room_number !== undefined) updateData.room_number = room_number;
         if (priority !== undefined) updateData.priority = priority;
         if (images !== undefined) updateData.images = images;
@@ -817,14 +815,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (hotel !== undefined && blok !== undefined) {
           updateData.location = soba ? `${hotel}, ${blok}, Soba ${soba}` : `${hotel}, ${blok}`;
         }
-        // Recurrence fields
+        // Recurrence fields (only is_recurring and recurrence_pattern exist in DB)
         if (is_recurring !== undefined) updateData.is_recurring = is_recurring;
         if (recurrence_pattern !== undefined) updateData.recurrence_pattern = recurrence_pattern;
-        if (recurrence_week_days !== undefined) updateData.recurrence_week_days = recurrence_week_days;
-        if (recurrence_month_days !== undefined) updateData.recurrence_month_days = recurrence_month_days;
-        if (recurrence_year_dates !== undefined) updateData.recurrence_year_dates = recurrence_year_dates;
-        if (execution_hour !== undefined) updateData.execution_hour = execution_hour;
-        if (execution_minute !== undefined) updateData.execution_minute = execution_minute;
+        // Note: recurrence_week_days, recurrence_month_days, recurrence_year_dates, 
+        // execution_hour, execution_minute don't exist as separate DB columns yet
+        // They would need to be added via migration if detailed recurrence editing is needed
       }
 
       if (status !== undefined) updateData.status = status;
