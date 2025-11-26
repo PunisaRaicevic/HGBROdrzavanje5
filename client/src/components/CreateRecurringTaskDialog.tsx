@@ -37,9 +37,10 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
   const [recurrenceCount, setRecurrenceCount] = useState(1);
   const [recurrenceUnit, setRecurrenceUnit] = useState<'days' | 'weeks' | 'months' | 'years'>('days');
   const [selectedWeekDays, setSelectedWeekDays] = useState<number[]>([1]); // 0=Sun, 1=Mon, etc.
+  const [selectedMonthDays, setSelectedMonthDays] = useState<number[]>([1]); // Days of month for monthly recurrence
+  const [selectedYearDates, setSelectedYearDates] = useState<{month: number, day: number}[]>([{month: 1, day: 1}]); // Dates for yearly recurrence
   const [executionHour, setExecutionHour] = useState(9); // Default 9:00
   const [executionMinute, setExecutionMinute] = useState(0);
-  const [monthDay, setMonthDay] = useState(1); // Day of month for monthly recurrence
   const [startDate, setStartDate] = useState('');
   const [selectedTechnicians, setSelectedTechnicians] = useState<string[]>([]);
 
@@ -51,10 +52,16 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
 
   const technicians = techniciansResponse?.technicians || [];
 
-  // Automatically trim selectedWeekDays when recurrenceCount decreases
+  // Automatically trim selections when recurrenceCount decreases
   useEffect(() => {
     if (recurrenceUnit === 'weeks' && selectedWeekDays.length > recurrenceCount) {
       setSelectedWeekDays(prev => prev.slice(0, recurrenceCount));
+    }
+    if (recurrenceUnit === 'months' && selectedMonthDays.length > recurrenceCount) {
+      setSelectedMonthDays(prev => prev.slice(0, recurrenceCount));
+    }
+    if (recurrenceUnit === 'years' && selectedYearDates.length > recurrenceCount) {
+      setSelectedYearDates(prev => prev.slice(0, recurrenceCount));
     }
   }, [recurrenceCount, recurrenceUnit]);
 
@@ -174,7 +181,8 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
         recurrence_pattern: isRecurring ? recurrencePattern : 'once',
         recurrence_start_date: isRecurring ? fullStartDate : null,
         recurrence_week_days: isRecurring && recurrenceUnit === 'weeks' ? selectedWeekDays : null,
-        recurrence_month_day: isRecurring && recurrenceUnit === 'months' ? monthDay : null,
+        recurrence_month_days: isRecurring && recurrenceUnit === 'months' ? selectedMonthDays : null,
+        recurrence_year_dates: isRecurring && recurrenceUnit === 'years' ? selectedYearDates : null,
         execution_hour: isRecurring ? executionHour : null,
         execution_minute: isRecurring ? executionMinute : null,
       });
@@ -212,9 +220,10 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
     setRecurrenceCount(1);
     setRecurrenceUnit('days');
     setSelectedWeekDays([1]);
+    setSelectedMonthDays([1]);
+    setSelectedYearDates([{month: 1, day: 1}]);
     setExecutionHour(9);
     setExecutionMinute(0);
-    setMonthDay(1);
     setStartDate('');
     setSelectedTechnicians([]);
   };
@@ -290,6 +299,70 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
   const canSelectWeekDay = (day: number) => {
     if (selectedWeekDays.includes(day)) return true;
     return selectedWeekDays.length < recurrenceCount;
+  };
+
+  // Toggle month day selection
+  const toggleMonthDay = (day: number) => {
+    setSelectedMonthDays(prev => {
+      if (prev.includes(day)) {
+        if (prev.length === 1) return prev;
+        return prev.filter(d => d !== day).sort((a, b) => a - b);
+      }
+      if (prev.length >= recurrenceCount) {
+        return [...prev.slice(1), day].sort((a, b) => a - b);
+      }
+      return [...prev, day].sort((a, b) => a - b);
+    });
+  };
+
+  const canSelectMonthDay = (day: number) => {
+    if (selectedMonthDays.includes(day)) return true;
+    return selectedMonthDays.length < recurrenceCount;
+  };
+
+  // Month names
+  const months = [
+    { value: 1, label: 'Jan', fullLabel: 'Januar' },
+    { value: 2, label: 'Feb', fullLabel: 'Februar' },
+    { value: 3, label: 'Mar', fullLabel: 'Mart' },
+    { value: 4, label: 'Apr', fullLabel: 'April' },
+    { value: 5, label: 'Maj', fullLabel: 'Maj' },
+    { value: 6, label: 'Jun', fullLabel: 'Jun' },
+    { value: 7, label: 'Jul', fullLabel: 'Jul' },
+    { value: 8, label: 'Avg', fullLabel: 'Avgust' },
+    { value: 9, label: 'Sep', fullLabel: 'Septembar' },
+    { value: 10, label: 'Okt', fullLabel: 'Oktobar' },
+    { value: 11, label: 'Nov', fullLabel: 'Novembar' },
+    { value: 12, label: 'Dec', fullLabel: 'Decembar' }
+  ];
+
+  // Add year date
+  const addYearDate = () => {
+    if (selectedYearDates.length < recurrenceCount) {
+      setSelectedYearDates(prev => [...prev, { month: 1, day: 1 }]);
+    }
+  };
+
+  // Remove year date
+  const removeYearDate = (index: number) => {
+    if (selectedYearDates.length > 1) {
+      setSelectedYearDates(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  // Update year date
+  const updateYearDate = (index: number, field: 'month' | 'day', value: number) => {
+    setSelectedYearDates(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  // Get days in month
+  const getDaysInMonth = (month: number) => {
+    const daysPerMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    return daysPerMonth[month - 1];
   };
 
   return (
@@ -614,25 +687,101 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
                     {/* Month day selection - only for monthly recurrence */}
                     {recurrenceUnit === 'months' && (
                       <div className="space-y-2">
-                        <Label>Dan u mjesecu</Label>
-                        <Select 
-                          value={monthDay.toString()} 
-                          onValueChange={(v) => setMonthDay(parseInt(v))}
-                        >
-                          <SelectTrigger className="w-32 border bg-muted" data-testid="select-month-day">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
-                              <SelectItem key={d} value={d.toString()}>{d}.</SelectItem>
-                            ))}
-                            <SelectItem value="29">29. (ako postoji)</SelectItem>
-                            <SelectItem value="30">30. (ako postoji)</SelectItem>
-                            <SelectItem value="31">31. (ako postoji)</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Label>Dani u mjesecu ({selectedMonthDays.length}/{recurrenceCount})</Label>
+                        <div className="flex flex-wrap gap-1">
+                          {Array.from({ length: 31 }, (_, i) => i + 1).map(day => {
+                            const isSelected = selectedMonthDays.includes(day);
+                            const canSelect = canSelectMonthDay(day);
+                            return (
+                              <Button
+                                key={day}
+                                type="button"
+                                size="sm"
+                                variant={isSelected ? 'default' : 'outline'}
+                                onClick={() => toggleMonthDay(day)}
+                                className={cn("w-9 h-9 p-0", !canSelect && !isSelected && "opacity-40")}
+                                disabled={!canSelect && !isSelected}
+                                data-testid={`monthday-${day}`}
+                              >
+                                {day}
+                              </Button>
+                            );
+                          })}
+                        </div>
                         <p className="text-xs text-muted-foreground">
-                          Zadatak se izvršava {monthDay}. dana svakog {recurrenceCount === 1 ? '' : recurrenceCount + '. '}mjeseca
+                          {selectedMonthDays.length < recurrenceCount 
+                            ? `Odaberite jos ${recurrenceCount - selectedMonthDays.length} ${recurrenceCount - selectedMonthDays.length === 1 ? 'dan' : 'dana'}`
+                            : `Odabrano: ${selectedMonthDays.join('., ')}. dan u mjesecu`
+                          }
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Year date selection - only for yearly recurrence */}
+                    {recurrenceUnit === 'years' && (
+                      <div className="space-y-2">
+                        <Label>Datumi u godini ({selectedYearDates.length}/{recurrenceCount})</Label>
+                        <div className="space-y-2">
+                          {selectedYearDates.map((yearDate, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <span className="text-sm text-muted-foreground w-6">{index + 1}.</span>
+                              <Select 
+                                value={yearDate.day.toString()} 
+                                onValueChange={(v) => updateYearDate(index, 'day', parseInt(v))}
+                              >
+                                <SelectTrigger className="w-20 border bg-muted">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: getDaysInMonth(yearDate.month) }, (_, i) => i + 1).map(d => (
+                                    <SelectItem key={d} value={d.toString()}>{d}.</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Select 
+                                value={yearDate.month.toString()} 
+                                onValueChange={(v) => updateYearDate(index, 'month', parseInt(v))}
+                              >
+                                <SelectTrigger className="w-32 border bg-muted">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {months.map(m => (
+                                    <SelectItem key={m.value} value={m.value.toString()}>{m.fullLabel}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              {selectedYearDates.length > 1 && (
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => removeYearDate(index)}
+                                  className="text-destructive"
+                                >
+                                  <Plus className="w-4 h-4 rotate-45" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                          {selectedYearDates.length < recurrenceCount && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={addYearDate}
+                              className="w-full"
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Dodaj datum ({selectedYearDates.length}/{recurrenceCount})
+                            </Button>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedYearDates.length < recurrenceCount 
+                            ? `Dodajte jos ${recurrenceCount - selectedYearDates.length} ${recurrenceCount - selectedYearDates.length === 1 ? 'datum' : 'datuma'}`
+                            : `Odabrano: ${selectedYearDates.map(d => `${d.day}. ${months.find(m => m.value === d.month)?.label}`).join(', ')}`
+                          }
                         </p>
                       </div>
                     )}
@@ -698,8 +847,11 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
                         {recurrenceUnit === 'weeks' && selectedWeekDays.length > 0 && (
                           <> ({selectedWeekDays.map(d => weekDays.find(wd => wd.value === d)?.label).join(', ')})</>
                         )}
-                        {recurrenceUnit === 'months' && (
-                          <> ({monthDay}. dan u mjesecu)</>
+                        {recurrenceUnit === 'months' && selectedMonthDays.length > 0 && (
+                          <> ({selectedMonthDays.join('., ')}. dan)</>
+                        )}
+                        {recurrenceUnit === 'years' && selectedYearDates.length > 0 && (
+                          <> ({selectedYearDates.map(d => `${d.day}. ${months.find(m => m.value === d.month)?.label}`).join(', ')})</>
                         )}
                         {' '}u {executionHour.toString().padStart(2, '0')}:{executionMinute.toString().padStart(2, '0')} sati
                         {startDate && <>, počevši od {new Date(startDate).toLocaleDateString('sr-RS')}</>}
