@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
@@ -557,11 +557,21 @@ export default function AdminDashboard() {
             <CardHeader className="pb-2">
               <Tabs value={taskViewTab} onValueChange={setTaskViewTab} className="w-full">
                 <div className="flex flex-row items-center justify-between gap-4 mb-3">
-                  <TabsList>
-                    <TabsTrigger value="upcoming" data-testid="tab-upcoming-tasks">
-                      Predstojeći zadaci
+                  <TabsList className="grid w-auto grid-cols-2 gap-1">
+                    <TabsTrigger 
+                      value="upcoming" 
+                      data-testid="tab-upcoming-tasks"
+                      className="flex items-center gap-2 px-4"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Predstojeći
                     </TabsTrigger>
-                    <TabsTrigger value="history" data-testid="tab-history-tasks">
+                    <TabsTrigger 
+                      value="history" 
+                      data-testid="tab-history-tasks"
+                      className="flex items-center gap-2 px-4"
+                    >
+                      <History className="h-4 w-4" />
                       Istorija
                     </TabsTrigger>
                   </TabsList>
