@@ -952,7 +952,7 @@ export default function AdminDashboard() {
                   return (
                     <div className="space-y-3">
                       <p className="text-xs text-muted-foreground">
-                        Distribucija po satu prijema (ukupno {periodTasks.length} zadataka)
+                        Distribucija po satu prijema (radno vrijeme 07-23h)
                       </p>
                       <div className="space-y-1.5">
                         {Object.entries(hourIntervals).map(([interval, count]) => (
