@@ -779,6 +779,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status, assigned_to, assigned_to_name, worker_report,
         worker_images, external_company_name, receipt_confirmed_at,
         title, description, hotel, blok, soba, room_number, priority, images,
+        is_recurring, recurrence_pattern, recurrence_week_days, recurrence_month_days,
+        recurrence_year_dates, execution_hour, execution_minute,
       } = req.body;
 
       if (!id) return res.status(400).json({ error: "Task ID is required" });
@@ -792,9 +794,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateData: any = {};
 
       // Basic task details (only sef and admin can edit)
-      if (title !== undefined || description !== undefined || hotel !== undefined || 
+      const isEditingDetails = title !== undefined || description !== undefined || hotel !== undefined || 
           blok !== undefined || soba !== undefined || room_number !== undefined || 
-          priority !== undefined || images !== undefined) {
+          priority !== undefined || images !== undefined;
+      const isEditingRecurrence = is_recurring !== undefined || recurrence_pattern !== undefined ||
+          recurrence_week_days !== undefined || recurrence_month_days !== undefined ||
+          recurrence_year_dates !== undefined || execution_hour !== undefined || execution_minute !== undefined;
+      
+      if (isEditingDetails || isEditingRecurrence) {
         if (sessionUser.role !== 'sef' && sessionUser.role !== 'admin') {
           return res.status(403).json({ error: "Only supervisors and admins can edit task details" });
         }
@@ -810,6 +817,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (hotel !== undefined && blok !== undefined) {
           updateData.location = soba ? `${hotel}, ${blok}, Soba ${soba}` : `${hotel}, ${blok}`;
         }
+        // Recurrence fields
+        if (is_recurring !== undefined) updateData.is_recurring = is_recurring;
+        if (recurrence_pattern !== undefined) updateData.recurrence_pattern = recurrence_pattern;
+        if (recurrence_week_days !== undefined) updateData.recurrence_week_days = recurrence_week_days;
+        if (recurrence_month_days !== undefined) updateData.recurrence_month_days = recurrence_month_days;
+        if (recurrence_year_dates !== undefined) updateData.recurrence_year_dates = recurrence_year_dates;
+        if (execution_hour !== undefined) updateData.execution_hour = execution_hour;
+        if (execution_minute !== undefined) updateData.execution_minute = execution_minute;
       }
 
       if (status !== undefined) updateData.status = status;
