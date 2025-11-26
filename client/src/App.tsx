@@ -26,84 +26,76 @@ setupIonicReact({
 function Router() {
   const { user, login, loading } = useAuth();
 
-  // 🔥 Inicijalizuj push notifikacije na mobilnim uređajima
-<<<<<<< Updated upstream
-  console.log(`📍 [Router] Current user:`, user?.fullName || 'NOT LOGGED IN', 'ID:', user?.id ? `${user.id.substring(0, 8)}...` : 'UNDEFINED');
-=======
->>>>>>> Stashed changes
+  // Inicijalizuj push notifikacije na mobilnim uredjajima
+  console.log(`[Router] Current user:`, user?.fullName || 'NOT LOGGED IN', 'ID:', user?.id ? `${user.id.substring(0, 8)}...` : 'UNDEFINED');
   useFCM(user?.id);
 
-  // 🌐 Web FCM setup (samo za browser - NE za Capacitor/Android/iOS!)
+  // Web FCM setup (samo za browser - NE za Capacitor/Android/iOS!)
   useEffect(() => {
     if (!user?.id) return;
 
     // SKIP Firebase Web SDK na mobilnim platformama - koristi Capacitor FCM umesto toga
     if (Capacitor.isNativePlatform()) {
-      console.log("📱 [Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications");
+      console.log("[Web FCM] Preskakam Web FCM - koristi se Capacitor Push Notifications");
       return;
     }
 
     const setupWebFCM = async () => {
-      console.log("🔔 [Web FCM] Priprema Firebase Messaging za browser...");
+      console.log("[Web FCM] Priprema Firebase Messaging za browser...");
 
       const token = localStorage.getItem('authToken');
       if (!token) {
-        console.warn("⚠️ [Web FCM] Nema JWT tokena!");
+        console.warn("[Web FCM] Nema JWT tokena!");
         return;
       }
 
-      console.log("✅ [Web FCM] JWT token dostupan");
+      console.log("[Web FCM] JWT token dostupan");
 
       try {
-        // Proveri da li browser podržava notifikacije
+        // Proveri da li browser podrzava notifikacije
         if (!('Notification' in window)) {
-          console.warn("⚠️ [Web FCM] Browser ne podržava notifikacije");
+          console.warn("[Web FCM] Browser ne podrzava notifikacije");
           return;
         }
 
-        // Zatraži dozvolu za notifikacije
+        // Zatrazi dozvolu za notifikacije
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
-          console.warn("⚠️ [Web FCM] Korisnik nije dao dozvolu za notifikacije");
+          console.warn("[Web FCM] Korisnik nije dao dozvolu za notifikacije");
           return;
         }
 
         // Dohvati FCM token za web
         const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
         if (!vapidKey) {
-          console.error("❌ [Web FCM] VAPID key nije konfigurisan");
+          console.error("[Web FCM] VAPID key nije konfigurisan");
           return;
         }
 
         const fcmToken = await getToken(messaging, { vapidKey });
 
         if (fcmToken) {
-          console.log("✅ [Web FCM] Token dobijen:", fcmToken.substring(0, 20) + "...");
+          console.log("[Web FCM] Token dobijen:", fcmToken.substring(0, 20) + "...");
 
-          // Pošalji token na backend
+          // Posalji token na backend
           const response = await apiRequest("POST", "/api/users/fcm-token", {
             token: fcmToken,
           });
 
-          console.log("✅ [Web FCM] Token sačuvan na serveru:", response.status);
+          console.log("[Web FCM] Token sacuvan na serveru:", response.status);
         } else {
-          console.warn("⚠️ [Web FCM] Token nije dobijen");
+          console.warn("[Web FCM] Token nije dobijen");
         }
-<<<<<<< Updated upstream
       } catch (error: any) {
-        console.error("❌ [Web FCM] Greška pri inicijalizaciji:", {
+        console.error("[Web FCM] Greska pri inicijalizaciji:", {
           message: error?.message || String(error),
           code: error?.code,
           fullError: error
         });
-=======
-      } catch (error) {
-        console.error("❌ [Web FCM] Greška:", error);
->>>>>>> Stashed changes
       }
     };
 
-    // Čekaj malo da se JWT token sačuva
+    // Cekaj malo da se JWT token sacuva
     const timer = setTimeout(() => {
       setupWebFCM();
     }, 500);
@@ -116,7 +108,7 @@ function Router() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Učitavanje...</p>
+          <p className="mt-4 text-muted-foreground">Ucitavanje...</p>
         </div>
       </div>
     );
