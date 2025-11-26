@@ -14,6 +14,7 @@ import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
+import EditTaskDialog from '@/components/EditTaskDialog';
 import { PeriodPicker } from '@/components/PeriodPicker';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
@@ -66,6 +67,8 @@ export default function AdminDashboard() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [tasksPerPage, setTasksPerPage] = useState<number>(10);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [editTaskOpen, setEditTaskOpen] = useState(false);
+  const [editTaskId, setEditTaskId] = useState<string | null>(null);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   const [tasksPeriodFilter, setTasksPeriodFilter] = useState<string>('7d'); // Default 7 days
   const [tasksStatusFilter, setTasksStatusFilter] = useState<string>('all'); // Status filter for tasks list
@@ -1430,6 +1433,16 @@ export default function AdminDashboard() {
           is_recurring: selectedTask.is_recurring,
           scheduled_for: selectedTask.scheduled_for
         } : null}
+        currentUserRole={user?.role}
+        onEdit={(taskId) => {
+          setEditTaskId(taskId);
+          setEditTaskOpen(true);
+        }}
+      />
+      <EditTaskDialog
+        open={editTaskOpen}
+        onOpenChange={setEditTaskOpen}
+        taskId={editTaskId}
       />
     </div>
   );

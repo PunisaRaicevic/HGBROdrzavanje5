@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch, Trash2, Calendar, FileText, Repeat, CheckCircle, Send, History, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch, Trash2, Calendar, FileText, Repeat, CheckCircle, Send, History, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ImagePreviewModal } from './ImagePreviewModal';
@@ -90,9 +90,10 @@ interface TaskDetailsDialogProps {
   } | null;
   currentUserRole?: string;
   onAssignToWorker?: (taskId: string, taskTitle: string) => void;
+  onEdit?: (taskId: string) => void;
 }
 
-export default function TaskDetailsDialog({ open, onOpenChange, task, currentUserRole, onAssignToWorker }: TaskDetailsDialogProps) {
+export default function TaskDetailsDialog({ open, onOpenChange, task, currentUserRole, onAssignToWorker, onEdit }: TaskDetailsDialogProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRecurringHistory, setShowRecurringHistory] = useState(false);
@@ -292,8 +293,9 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
     return <Badge variant="secondary">{status}</Badge>;
   };
 
-  // Admin and sef can delete any task
+  // Admin and sef can delete and edit any task
   const canDelete = currentUserRole === 'sef' || currentUserRole === 'admin';
+  const canEdit = currentUserRole === 'sef' || currentUserRole === 'admin';
   
   if (!task) return null;
 
@@ -650,11 +652,11 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
         </ScrollArea>
 
         {/* Action Buttons */}
-        {(canDelete || (task.status === 'with_sef' || task.status === 'returned_to_sef')) && (
+        {(canDelete || canEdit || (task.status === 'with_sef' || task.status === 'returned_to_sef')) && (
           <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
             {/* Left side: Assignment actions */}
             {(task.status === 'with_sef' || task.status === 'returned_to_sef') && (
-              <div className="flex gap-2 flex-1">
+              <div className="flex gap-2 flex-1 flex-wrap">
                 {onAssignToWorker && (
                   <Button
                     variant="default"
@@ -682,18 +684,34 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
               </div>
             )}
             
-            {/* Right side: Delete action */}
-            {canDelete && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowDeleteDialog(true)}
-                data-testid="button-delete-task"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Obriši
-              </Button>
-            )}
+            {/* Right side: Edit and Delete actions */}
+            <div className="flex gap-2">
+              {canEdit && onEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onEdit(task.id);
+                    onOpenChange(false);
+                  }}
+                  data-testid="button-edit-task"
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Uredi
+                </Button>
+              )}
+              {canDelete && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteDialog(true)}
+                  data-testid="button-delete-task"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Obriši
+                </Button>
+              )}
+            </div>
           </DialogFooter>
         )}
       </DialogContent>

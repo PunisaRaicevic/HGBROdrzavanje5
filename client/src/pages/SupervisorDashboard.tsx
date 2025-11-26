@@ -24,6 +24,7 @@ import TeamPerformanceDialog from '@/components/TeamPerformanceDialog';
 import DailyReportDialog from '@/components/DailyReportDialog';
 import CreateRecurringTaskDialog from '@/components/CreateRecurringTaskDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
+import EditTaskDialog from '@/components/EditTaskDialog';
 
 // Helper function to calculate elapsed time
 const getElapsedTime = (createdAt: Date): string => {
@@ -51,6 +52,8 @@ export default function SupervisorDashboard() {
   const [dailyReportOpen, setDailyReportOpen] = useState(false);
   const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
   const [selectedTaskForDetails, setSelectedTaskForDetails] = useState<any | null>(null);
+  const [editTaskOpen, setEditTaskOpen] = useState(false);
+  const [editTaskId, setEditTaskId] = useState<string | null>(null);
   
   // Filter state for "Zadaci" tab - same as AdminDashboard
   const [taskViewTab, setTaskViewTab] = useState('upcoming');
@@ -311,6 +314,15 @@ export default function SupervisorDashboard() {
         } : null}
         currentUserRole={user?.role}
         onAssignToWorker={handleAssignToWorker}
+        onEdit={(taskId) => {
+          setEditTaskId(taskId);
+          setEditTaskOpen(true);
+        }}
+      />
+      <EditTaskDialog
+        open={editTaskOpen}
+        onOpenChange={setEditTaskOpen}
+        taskId={editTaskId}
       />
     <div className="space-y-6">
       <div className="flex items-center justify-between">
