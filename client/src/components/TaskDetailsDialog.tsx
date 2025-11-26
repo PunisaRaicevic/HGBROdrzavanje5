@@ -514,7 +514,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
             )}
 
             {/* Recurring Task History - Past Occurrences */}
-            {(task.parent_task_id || task.is_recurring) && pastOccurrences.length > 0 && (
+            {(task.parent_task_id || task.is_recurring) && (
               <div className="flex items-start gap-2">
                 <History className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
@@ -526,7 +526,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                     data-testid="button-toggle-recurring-history"
                   >
                     <span className="text-sm font-medium">
-                      Istorija prethodnih izvršenja ({pastOccurrences.length})
+                      Istorija izvršenja {pastOccurrences.length > 0 ? `(${pastOccurrences.length})` : ''}
                     </span>
                     {showRecurringHistory ? (
                       <ChevronUp className="w-4 h-4" />
@@ -537,6 +537,11 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                   
                   {showRecurringHistory && (
                     <div className="space-y-2 mt-2">
+                      {pastOccurrences.length === 0 && (
+                        <div className="p-4 border rounded-md bg-muted/30 text-center">
+                          <p className="text-sm text-muted-foreground">Zadatak još nije izvršen</p>
+                        </div>
+                      )}
                       {pastOccurrences.map((occurrence, index) => {
                         const isExpanded = expandedHistoryId === occurrence.id;
                         
