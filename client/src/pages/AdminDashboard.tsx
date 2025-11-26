@@ -557,11 +557,11 @@ export default function AdminDashboard() {
             <CardHeader className="pb-2">
               <Tabs value={taskViewTab} onValueChange={setTaskViewTab} className="w-full">
                 <div className="flex flex-row items-center justify-between gap-4 mb-3">
-                  <TabsList className="grid w-auto grid-cols-2 gap-1">
+                  <TabsList className="grid w-auto grid-cols-2 gap-1 bg-blue-100 p-1">
                     <TabsTrigger 
                       value="upcoming" 
                       data-testid="tab-upcoming-tasks"
-                      className="flex items-center gap-2 px-4"
+                      className="flex items-center gap-2 px-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
                     >
                       <Calendar className="h-4 w-4" />
                       Predstojeći
@@ -569,7 +569,7 @@ export default function AdminDashboard() {
                     <TabsTrigger 
                       value="history" 
                       data-testid="tab-history-tasks"
-                      className="flex items-center gap-2 px-4"
+                      className="flex items-center gap-2 px-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
                     >
                       <History className="h-4 w-4" />
                       Istorija
