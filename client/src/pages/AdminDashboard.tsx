@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
@@ -84,7 +83,6 @@ export default function AdminDashboard() {
     start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
     end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
   });
-  const [showReportDialog, setShowReportDialog] = useState(false);
 
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -192,7 +190,7 @@ export default function AdminDashboard() {
   const downloadCSV = () => {
     const reportTasks = getReportTasks();
     
-    const headers = ['Naslov', 'Opis', 'Status', 'Prioritet', 'Lokacija', 'Kreirao', 'Datum kreiranja', 'Datum zavrsenja'];
+    const headers = ['Naslov', 'Opis', 'Status', 'Prioritet', 'Lokacija', 'Kreirao', 'Dodijeljeno radniku', 'Datum kreiranja', 'Datum zavrsenja'];
     const rows = reportTasks.map(task => [
       task.title,
       task.description || '',
@@ -200,6 +198,7 @@ export default function AdminDashboard() {
       task.priority || 'normal',
       task.location || '',
       task.created_by_name || '',
+      task.assigned_to_name || '',
       formatReportDate(task.created_at),
       task.completed_at ? formatReportDate(task.completed_at) : ''
     ]);
@@ -296,6 +295,7 @@ export default function AdminDashboard() {
               <th>Prioritet</th>
               <th>Lokacija</th>
               <th>Kreirao</th>
+              <th>Dodijeljeno</th>
               <th>Datum kreiranja</th>
               <th>Datum zavrsenja</th>
             </tr>
@@ -308,6 +308,7 @@ export default function AdminDashboard() {
                 <td class="${task.priority === 'urgent' ? 'priority-urgent' : ''}">${priorityLabels[task.priority || 'normal'] || task.priority}</td>
                 <td>${task.location || '-'}</td>
                 <td>${task.created_by_name || '-'}</td>
+                <td>${task.assigned_to_name || '-'}</td>
                 <td>${formatReportDate(task.created_at)}</td>
                 <td>${task.completed_at ? formatReportDate(task.completed_at) : '-'}</td>
               </tr>
@@ -850,18 +851,13 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="space-y-3 pb-3">
               <CardTitle>Generisanje izvještaja</CardTitle>
-              <div className="flex items-center gap-2">
-                <PeriodPicker
-                  value={reportRange}
-                  onChange={setReportRange}
-                  granularity={reportGranularity}
-                  onGranularityChange={setReportGranularity}
-                  data-testid="period-picker-report"
-                />
-                <Button size="sm" data-testid="button-generate-report" onClick={() => setShowReportDialog(true)}>
-                  Generiši
-                </Button>
-              </div>
+              <PeriodPicker
+                value={reportRange}
+                onChange={setReportRange}
+                granularity={reportGranularity}
+                onGranularityChange={setReportGranularity}
+                data-testid="period-picker-report"
+              />
             </CardHeader>
             <CardContent className="pt-3">
               {tasksLoading ? (
@@ -877,18 +873,25 @@ export default function AdminDashboard() {
 
                   return (
                     <div className="space-y-3">
-                      <p className="text-xs text-muted-foreground">
-                        Izvještaj sadrži realizovane zadatke sa detaljima o radnicima i vremenu.
-                      </p>
                       <div className="flex gap-2">
                         <div className="flex-1 p-2.5 border rounded-md bg-muted/30">
                           <p className="text-xs text-muted-foreground">Ukupno zadataka</p>
                           <p className="text-lg font-bold mt-0.5">{periodTasks.length}</p>
                         </div>
                         <div className="flex-1 p-2.5 border rounded-md bg-muted/30">
-                          <p className="text-xs text-muted-foreground">Završeno zadataka</p>
+                          <p className="text-xs text-muted-foreground">Zavrseno zadataka</p>
                           <p className="text-lg font-bold text-green-600 mt-0.5">{completedReportTasks.length}</p>
                         </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button className="flex-1" size="sm" onClick={printReport} data-testid="button-print-report">
+                          <Printer className="w-4 h-4 mr-2" />
+                          Stampaj
+                        </Button>
+                        <Button className="flex-1" size="sm" variant="outline" onClick={downloadCSV} data-testid="button-download-csv">
+                          <Download className="w-4 h-4 mr-2" />
+                          Preuzmi CSV
+                        </Button>
                       </div>
                     </div>
                   );
@@ -993,6 +996,7 @@ export default function AdminDashboard() {
           description: selectedTask.description,
           location: selectedTask.location || '',
           priority: (selectedTask.priority || 'normal') as 'urgent' | 'normal' | 'can_wait',
+          status: selectedTask.status,
           time: selectedTask.created_at,
           fromName: selectedTask.created_by_name || '',
           from: selectedTask.created_by || '',
@@ -1000,42 +1004,6 @@ export default function AdminDashboard() {
           worker_images: selectedTask.worker_images
         } : null}
       />
-
-      {/* Report Dialog */}
-      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Izvjestaj za period</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              {reportRange.start.toLocaleDateString('sr-Latn-RS')} - {reportRange.end.toLocaleDateString('sr-Latn-RS')}
-            </p>
-            
-            <div className="flex gap-3">
-              <div className="flex-1 p-3 border rounded-md bg-muted/30 text-center">
-                <p className="text-2xl font-bold">{getReportTasks().length}</p>
-                <p className="text-xs text-muted-foreground">Ukupno zadataka</p>
-              </div>
-              <div className="flex-1 p-3 border rounded-md bg-muted/30 text-center">
-                <p className="text-2xl font-bold text-green-600">{getReportTasks().filter(t => t.status === 'completed').length}</p>
-                <p className="text-xs text-muted-foreground">Zavrseno</p>
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button className="flex-1" onClick={printReport} data-testid="button-print-report">
-                <Printer className="w-4 h-4 mr-2" />
-                Stampaj
-              </Button>
-              <Button className="flex-1" variant="outline" onClick={downloadCSV} data-testid="button-download-csv">
-                <Download className="w-4 h-4 mr-2" />
-                Preuzmi CSV
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
