@@ -27,7 +27,10 @@ function Router() {
   const { user, login, loading } = useAuth();
 
   // 🔥 Inicijalizuj push notifikacije na mobilnim uređajima
+<<<<<<< Updated upstream
   console.log(`📍 [Router] Current user:`, user?.fullName || 'NOT LOGGED IN', 'ID:', user?.id ? `${user.id.substring(0, 8)}...` : 'UNDEFINED');
+=======
+>>>>>>> Stashed changes
   useFCM(user?.id);
 
   // 🌐 Web FCM setup (samo za browser - NE za Capacitor/Android/iOS!)
@@ -86,12 +89,17 @@ function Router() {
         } else {
           console.warn("⚠️ [Web FCM] Token nije dobijen");
         }
+<<<<<<< Updated upstream
       } catch (error: any) {
         console.error("❌ [Web FCM] Greška pri inicijalizaciji:", {
           message: error?.message || String(error),
           code: error?.code,
           fullError: error
         });
+=======
+      } catch (error) {
+        console.error("❌ [Web FCM] Greška:", error);
+>>>>>>> Stashed changes
       }
     };
 
