@@ -864,24 +864,31 @@ export default function AdminDashboard() {
                         });
                       })()
                     ) : (
-                      // Istorija - PAST periods
+                      // Istorija - PAST periods (ISKLJUČUJE današnje zadatke - oni idu u Predstojeći)
                       (() => {
                         const getHistoryTasks = () => {
                           const now = new Date();
                           const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                          const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
                           let startDate: Date | null = null;
                           
-                          let periodFiltered = tasks;
+                          // Prvo isključi sve zadatke kreirane danas - oni idu u "Predstojeći"
+                          const tasksBeforeToday = tasks.filter(task => {
+                            const createdDate = new Date(task.created_at);
+                            return createdDate < todayStart;
+                          });
+                          
+                          let periodFiltered = tasksBeforeToday;
                           
                           if (historyPeriodFilter === '1d') {
-                            periodFiltered = tasks.filter(task => {
+                            // "Danas" u istoriji = jučer (jer današnji su u Predstojeći)
+                            const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+                            periodFiltered = tasksBeforeToday.filter(task => {
                               const taskDate = task.completed_at 
                                 ? new Date(task.completed_at)
                                 : task.scheduled_for 
                                   ? new Date(task.scheduled_for) 
                                   : new Date(task.created_at);
-                              return taskDate >= todayStart && taskDate < todayEnd;
+                              return taskDate >= yesterdayStart && taskDate < todayStart;
                             });
                           } else {
                             switch (historyPeriodFilter) {
@@ -900,13 +907,13 @@ export default function AdminDashboard() {
                             }
                             
                             if (startDate) {
-                              periodFiltered = tasks.filter(task => {
+                              periodFiltered = tasksBeforeToday.filter(task => {
                                 const taskDate = task.completed_at 
                                   ? new Date(task.completed_at)
                                   : task.scheduled_for 
                                     ? new Date(task.scheduled_for) 
                                     : new Date(task.created_at);
-                                return taskDate >= startDate! && taskDate <= now;
+                                return taskDate >= startDate! && taskDate < todayStart;
                               });
                             }
                           }
