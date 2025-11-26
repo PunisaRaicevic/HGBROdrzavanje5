@@ -719,20 +719,17 @@ export default function AdminDashboard() {
                           
                           if (tasksPeriodFilter === '1d') {
                             // "Danas" - prikaži zadatke koji su RELEVANTNI za danas:
-                            // - Ako zadatak IMA scheduled_for, prikaži SAMO ako je zakazan za danas
-                            // - Ako zadatak NEMA scheduled_for, prikaži ako je kreiran danas
+                            // - Periodični (imaju scheduled_for): prikaži ako su zakazani za danas
+                            // - Jednokratni (nemaju scheduled_for): prikaži sve nezavršene
                             periodFiltered = tasks.filter(task => {
-                              const createdDate = new Date(task.created_at);
-                              const isCreatedToday = createdDate >= todayStart && createdDate < todayEnd;
-                              
                               if (task.scheduled_for) {
                                 // Periodični/zakazani zadaci - prikaži SAMO ako su zakazani za danas
                                 const scheduledDate = new Date(task.scheduled_for);
                                 const isScheduledToday = scheduledDate >= todayStart && scheduledDate < todayEnd;
                                 return isScheduledToday;
                               }
-                              // Jednokratni zadaci bez zakazanog datuma - prikaži ako su kreirani danas
-                              return isCreatedToday;
+                              // Jednokratni zadaci bez zakazanog datuma - prikaži sve nezavršene
+                              return task.status !== 'completed';
                             });
                           } else {
                             switch (tasksPeriodFilter) {
@@ -752,17 +749,14 @@ export default function AdminDashboard() {
                             
                             if (endDate) {
                               periodFiltered = tasks.filter(task => {
-                                const createdDate = new Date(task.created_at);
-                                const isCreatedToday = createdDate >= todayStart && createdDate < todayEnd;
-                                
                                 if (task.scheduled_for) {
                                   // Periodični/zakazani zadaci - prikaži ako su zakazani u periodu
                                   const scheduledDate = new Date(task.scheduled_for);
                                   return scheduledDate >= todayStart && scheduledDate <= endDate!;
                                 }
                                 
-                                // Jednokratni zadaci - prikaži ako su kreirani danas ili u periodu
-                                return isCreatedToday || (createdDate >= todayStart && createdDate <= endDate!);
+                                // Jednokratni zadaci - prikaži sve nezavršene
+                                return task.status !== 'completed';
                               });
                             }
                           }
