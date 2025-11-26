@@ -7,8 +7,8 @@ channel = "stable-25_05"
 packages = ["imagemagick", "ffmpeg"]
 
 [deployment]
-deploymentTarget = "autoscale"
-build = ["npm", "run", "build:full"]
+deploymentTarget = "gce"
+build = ["sh", "-c", "npm install && npm run build:full"]
 run = ["npm", "run", "start"]
 
 [[ports]]
