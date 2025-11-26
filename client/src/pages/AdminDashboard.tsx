@@ -51,6 +51,7 @@ interface Task {
   scheduled_for?: string;
   parent_task_id?: string | null;
   is_recurring?: boolean;
+  recurrence_pattern?: string | null;
 }
 
 export default function AdminDashboard() {
@@ -1425,6 +1426,7 @@ export default function AdminDashboard() {
           worker_images: selectedTask.worker_images,
           parent_task_id: selectedTask.parent_task_id,
           is_recurring: selectedTask.is_recurring,
+          recurrence_pattern: selectedTask.recurrence_pattern,
           scheduled_for: selectedTask.scheduled_for
         } : null}
         currentUserRole={user?.role}
