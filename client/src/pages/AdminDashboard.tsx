@@ -47,6 +47,8 @@ interface Task {
   completed_at?: string | null;
   images?: string[];
   worker_images?: string[];
+  scheduled_for?: string;
+  parent_task_id?: string;
 }
 
 export default function AdminDashboard() {
@@ -609,7 +611,11 @@ export default function AdminDashboard() {
                             <div className="space-y-2">
                               <div className="flex items-start justify-between gap-3">
                                 <div className="text-sm text-muted-foreground whitespace-nowrap">
-                                  {formatDate(task.created_at)}
+                                  {task.scheduled_for ? (
+                                    <span>Zakazano: {formatDate(task.scheduled_for)}</span>
+                                  ) : (
+                                    formatDate(task.created_at)
+                                  )}
                                 </div>
                                 {getStatusBadge(task.status)}
                               </div>
