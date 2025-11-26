@@ -1,0 +1,44 @@
+═══════════════════════════════════════════
+index-DXeIuXfT.js:1293 🔍 PLATFORM DETECTION
+index-DXeIuXfT.js:1293 ═══════════════════════════════════════════
+index-DXeIuXfT.js:1293 Platform: android
+index-DXeIuXfT.js:1293 Is Native: true
+index-DXeIuXfT.js:1293 App Prefix: [APP ANDROID]
+index-DXeIuXfT.js:1293 Capacitor Available: true
+index-DXeIuXfT.js:1293 ═══════════════════════════════════════════
+index-DXeIuXfT.js:1293 [APP ANDROID] Remote logger aktiviran
+index-DXeIuXfT.js:1293 [APP ANDROID] ✅ Capacitor je dostupan
+index-DXeIuXfT.js:1293 [APP ANDROID] 🚀 Pokretanje aplikacije...
+index-DXeIuXfT.js:1293 [APP ANDROID] 📱 Platform: android
+index-DXeIuXfT.js:1293 [APP ANDROID] 📱 Is Native: true
+index-DXeIuXfT.js:1293 [APP ANDROID] 📱 Detektovan Android/iOS - Firebase FCM će biti inicijalizovan u App.tsx
+index-DXeIuXfT.js:1293 [APP ANDROID] ✅ Renderujem React aplikaciju...
+index-DXeIuXfT.js:1293 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-DXeIuXfT.js:1293 📱 [useFCM:2:20:16 AM] Hook called with userId: UNDEFINED
+index-DXeIuXfT.js:1293 📱 [useFCM:2:20:16 AM] Window location: https://localhost/
+index-DXeIuXfT.js:1293 ⚠️ [useFCM:2:20:16 AM] Skipping FCM setup - no userId provided
+console.<computed> @ index-DXeIuXfT.js:1293
+index-DXeIuXfT.js:1293 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-DXeIuXfT.js:1293 Uncaught (in promise) FirebaseError: Messaging: This browser doesn't support the API's required to use the Firebase SDK. (messaging/unsupported-browser).
+    at index-DXeIuXfT.js:1293:60
+VM3:348 native App.addListener (#101538432)
+index-DXeIuXfT.js:1293 [AUTH] Clearing old authentication data before login...
+index-DXeIuXfT.js:1293 [AUTH] Attempting login for: kovan
+index-DXeIuXfT.js:1293 [API] Using backend URL: https://0f8348da-785a-4a32-a048-3781e2402d8c-00-1ifebzeou9igx.picard.replit.dev
+index-DXeIuXfT.js:1293 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+(index):1 Access to fetch at 'https://0f8348da-785a-4a32-a048-3781e2402d8c-00-1ifebzeou9igx.picard.replit.dev/api/auth/login' from origin 'https://localhost' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index-DXeIuXfT.js:363  POST https://0f8348da-785a-4a32-a048-3781e2402d8c-00-1ifebzeou9igx.picard.replit.dev/api/auth/login net::ERR_FAILED
+a @ index-DXeIuXfT.js:363
+d @ index-DXeIuXfT.js:363
+sA @ index-DXeIuXfT.js:38
+iA @ index-DXeIuXfT.js:38
+aA @ index-DXeIuXfT.js:38
+tw @ index-DXeIuXfT.js:38
+Ak @ index-DXeIuXfT.js:38
+(anonymous) @ index-DXeIuXfT.js:38
+iy @ index-DXeIuXfT.js:41
+sk @ index-DXeIuXfT.js:38
+Kh @ index-DXeIuXfT.js:38
+Av @ index-DXeIuXfT.js:38
+kA @ index-DXeIuXfT.js:38
+2index-DXeIuXfT.js:1293 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
