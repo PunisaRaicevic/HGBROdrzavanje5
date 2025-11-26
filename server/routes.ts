@@ -778,6 +778,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const {
         status, assigned_to, assigned_to_name, worker_report,
         worker_images, external_company_name, receipt_confirmed_at,
+        title, description, hotel, blok, soba, room_number, priority, images,
       } = req.body;
 
       if (!id) return res.status(400).json({ error: "Task ID is required" });
@@ -789,6 +790,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!currentTask) return res.status(404).json({ error: "Task not found" });
 
       const updateData: any = {};
+
+      // Basic task details (only sef and admin can edit)
+      if (title !== undefined || description !== undefined || hotel !== undefined || 
+          blok !== undefined || soba !== undefined || room_number !== undefined || 
+          priority !== undefined || images !== undefined) {
+        if (sessionUser.role !== 'sef' && sessionUser.role !== 'admin') {
+          return res.status(403).json({ error: "Only supervisors and admins can edit task details" });
+        }
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (hotel !== undefined) updateData.hotel = hotel;
+        if (blok !== undefined) updateData.blok = blok;
+        if (soba !== undefined) updateData.soba = soba;
+        if (room_number !== undefined) updateData.room_number = room_number;
+        if (priority !== undefined) updateData.priority = priority;
+        if (images !== undefined) updateData.images = images;
+        // Update location based on hotel+blok+soba from request body
+        if (hotel !== undefined && blok !== undefined) {
+          updateData.location = soba ? `${hotel}, ${blok}, Soba ${soba}` : `${hotel}, ${blok}`;
+        }
+      }
 
       if (status !== undefined) updateData.status = status;
       if (assigned_to !== undefined) {
