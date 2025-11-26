@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3 } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
@@ -83,6 +84,7 @@ export default function AdminDashboard() {
     start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
     end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
   });
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -166,6 +168,159 @@ export default function AdminDashboard() {
 
   const users = usersData?.users || [];
   const tasks = tasksData?.tasks || [];
+
+  // Get report data
+  const getReportTasks = () => {
+    return tasks.filter(t => {
+      const taskDate = new Date(t.created_at);
+      return taskDate >= reportRange.start && taskDate < reportRange.end;
+    });
+  };
+
+  // Format date for display
+  const formatReportDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString('sr-Latn-RS', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Download CSV
+  const downloadCSV = () => {
+    const reportTasks = getReportTasks();
+    
+    const headers = ['Naslov', 'Opis', 'Status', 'Prioritet', 'Lokacija', 'Kreirao', 'Datum kreiranja', 'Datum zavrsenja'];
+    const rows = reportTasks.map(task => [
+      task.title,
+      task.description || '',
+      task.status,
+      task.priority || 'normal',
+      task.location || '',
+      task.created_by_name || '',
+      formatReportDate(task.created_at),
+      task.completed_at ? formatReportDate(task.completed_at) : ''
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `izvjestaj_${reportRange.start.toISOString().split('T')[0]}_${reportRange.end.toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+
+    toast({
+      title: 'Uspeh',
+      description: 'CSV fajl je preuzet.'
+    });
+  };
+
+  // Print report
+  const printReport = () => {
+    const reportTasks = getReportTasks();
+    const completedTasks = reportTasks.filter(t => t.status === 'completed');
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        title: 'Greska',
+        description: 'Nije moguce otvoriti prozor za stampu.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const statusLabels: { [key: string]: string } = {
+      'pending': 'Na cekanju',
+      'in_progress': 'U toku',
+      'assigned_to_radnik': 'Dodijeljeno radniku',
+      'completed': 'Zavrseno',
+      'cancelled': 'Otkazano'
+    };
+
+    const priorityLabels: { [key: string]: string } = {
+      'urgent': 'Hitno',
+      'normal': 'Normalno',
+      'can_wait': 'Moze sacekati'
+    };
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Izvjestaj - ${reportRange.start.toLocaleDateString('sr-Latn-RS')} - ${reportRange.end.toLocaleDateString('sr-Latn-RS')}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          h1 { text-align: center; margin-bottom: 10px; }
+          .period { text-align: center; color: #666; margin-bottom: 20px; }
+          .summary { display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; }
+          .summary-item { padding: 15px 30px; border: 1px solid #ddd; border-radius: 8px; text-align: center; }
+          .summary-item .value { font-size: 24px; font-weight: bold; }
+          .summary-item .label { font-size: 12px; color: #666; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+          th { background-color: #f5f5f5; }
+          .status-completed { color: green; }
+          .status-pending { color: orange; }
+          .priority-urgent { color: red; font-weight: bold; }
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        </style>
+      </head>
+      <body>
+        <h1>Izvjestaj o zadacima</h1>
+        <p class="period">Period: ${reportRange.start.toLocaleDateString('sr-Latn-RS')} - ${reportRange.end.toLocaleDateString('sr-Latn-RS')}</p>
+        
+        <div class="summary">
+          <div class="summary-item">
+            <div class="value">${reportTasks.length}</div>
+            <div class="label">Ukupno zadataka</div>
+          </div>
+          <div class="summary-item">
+            <div class="value" style="color: green;">${completedTasks.length}</div>
+            <div class="label">Zavrseno</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Naslov</th>
+              <th>Status</th>
+              <th>Prioritet</th>
+              <th>Lokacija</th>
+              <th>Kreirao</th>
+              <th>Datum kreiranja</th>
+              <th>Datum zavrsenja</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${reportTasks.map(task => `
+              <tr>
+                <td>${task.title}</td>
+                <td class="status-${task.status}">${statusLabels[task.status] || task.status}</td>
+                <td class="${task.priority === 'urgent' ? 'priority-urgent' : ''}">${priorityLabels[task.priority || 'normal'] || task.priority}</td>
+                <td>${task.location || '-'}</td>
+                <td>${task.created_by_name || '-'}</td>
+                <td>${formatReportDate(task.created_at)}</td>
+                <td>${task.completed_at ? formatReportDate(task.completed_at) : '-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <script>window.onload = function() { window.print(); }</script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
 
   // Calculate statistics
   const totalUsers = users.length;
@@ -703,7 +858,7 @@ export default function AdminDashboard() {
                   onGranularityChange={setReportGranularity}
                   data-testid="period-picker-report"
                 />
-                <Button size="sm" data-testid="button-generate-report">
+                <Button size="sm" data-testid="button-generate-report" onClick={() => setShowReportDialog(true)}>
                   Generiši
                 </Button>
               </div>
@@ -845,6 +1000,42 @@ export default function AdminDashboard() {
           worker_images: selectedTask.worker_images
         } : null}
       />
+
+      {/* Report Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Izvjestaj za period</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {reportRange.start.toLocaleDateString('sr-Latn-RS')} - {reportRange.end.toLocaleDateString('sr-Latn-RS')}
+            </p>
+            
+            <div className="flex gap-3">
+              <div className="flex-1 p-3 border rounded-md bg-muted/30 text-center">
+                <p className="text-2xl font-bold">{getReportTasks().length}</p>
+                <p className="text-xs text-muted-foreground">Ukupno zadataka</p>
+              </div>
+              <div className="flex-1 p-3 border rounded-md bg-muted/30 text-center">
+                <p className="text-2xl font-bold text-green-600">{getReportTasks().filter(t => t.status === 'completed').length}</p>
+                <p className="text-xs text-muted-foreground">Zavrseno</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button className="flex-1" onClick={printReport} data-testid="button-print-report">
+                <Printer className="w-4 h-4 mr-2" />
+                Stampaj
+              </Button>
+              <Button className="flex-1" variant="outline" onClick={downloadCSV} data-testid="button-download-csv">
+                <Download className="w-4 h-4 mr-2" />
+                Preuzmi CSV
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
