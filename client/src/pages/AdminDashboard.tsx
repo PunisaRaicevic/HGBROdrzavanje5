@@ -693,7 +693,7 @@ export default function AdminDashboard() {
                 <ScrollArea className="h-[500px] pr-4">
                   <div className="space-y-3">
                     {taskViewTab === 'upcoming' ? (
-                      // Predstojeći zadaci - FUTURE periods
+                      // Predstojeći zadaci - FUTURE periods + zadaci kreirani danas
                       (() => {
                         const getFilteredTasks = () => {
                           const now = new Date();
@@ -704,13 +704,18 @@ export default function AdminDashboard() {
                           let periodFiltered = tasks;
                           
                           if (tasksPeriodFilter === '1d') {
+                            // "Danas" - prikaži sve zadatke kreirane danas (bez obzira na status)
+                            // ILI zakazane za danas
                             periodFiltered = tasks.filter(task => {
+                              const createdDate = new Date(task.created_at);
+                              const isCreatedToday = createdDate >= todayStart && createdDate < todayEnd;
+                              
                               if (task.scheduled_for) {
                                 const scheduledDate = new Date(task.scheduled_for);
-                                return scheduledDate >= todayStart && scheduledDate < todayEnd;
+                                const isScheduledToday = scheduledDate >= todayStart && scheduledDate < todayEnd;
+                                return isCreatedToday || isScheduledToday;
                               }
-                              const createdDate = new Date(task.created_at);
-                              return createdDate >= todayStart && createdDate < todayEnd;
+                              return isCreatedToday;
                             });
                           } else {
                             switch (tasksPeriodFilter) {
@@ -730,9 +735,17 @@ export default function AdminDashboard() {
                             
                             if (endDate) {
                               periodFiltered = tasks.filter(task => {
+                                const createdDate = new Date(task.created_at);
+                                const isCreatedToday = createdDate >= todayStart && createdDate < todayEnd;
+                                
+                                // Prikaži ako je kreiran danas ILI ako je zakazan u buducnosti do endDate
+                                if (isCreatedToday) {
+                                  return true;
+                                }
+                                
                                 const taskDate = task.scheduled_for 
                                   ? new Date(task.scheduled_for) 
-                                  : new Date(task.created_at);
+                                  : createdDate;
                                 return taskDate >= todayStart && taskDate <= endDate!;
                               });
                             }
