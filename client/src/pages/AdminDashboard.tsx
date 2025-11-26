@@ -618,14 +618,14 @@ export default function AdminDashboard() {
                 <ScrollArea className="h-[500px] pr-4">
                   <div className="space-y-3">
                     {(() => {
-                      // Filter tasks by period and status
+                      // Filter tasks by period and status - FUTURE periods
                       const getFilteredTasks = () => {
                         const now = new Date();
                         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                         const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-                        let startDate: Date | null = null;
+                        let endDate: Date | null = null;
                         
-                        // First filter by period
+                        // First filter by period - tasks scheduled in the FUTURE
                         let periodFiltered = tasks;
                         
                         if (tasksPeriodFilter === '1d') {
@@ -642,25 +642,26 @@ export default function AdminDashboard() {
                         } else {
                           switch (tasksPeriodFilter) {
                             case '7d':
-                              startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                              endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
                               break;
                             case '30d':
-                              startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                              endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
                               break;
                             case '3m':
-                              startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                              endDate = new Date(now.getFullYear(), now.getMonth() + 3, now.getDate());
                               break;
                             case '6m':
-                              startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                              endDate = new Date(now.getFullYear(), now.getMonth() + 6, now.getDate());
                               break;
                           }
                           
-                          if (startDate) {
+                          if (endDate) {
                             periodFiltered = tasks.filter(task => {
                               const taskDate = task.scheduled_for 
                                 ? new Date(task.scheduled_for) 
                                 : new Date(task.created_at);
-                              return taskDate >= startDate!;
+                              // From today until end date
+                              return taskDate >= todayStart && taskDate <= endDate!;
                             });
                           }
                         }
