@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
@@ -101,10 +101,10 @@ export default function AdminDashboard() {
     refetchOnWindowFocus: true
   });
 
-  // Fetch tasks (auto-refresh every 10 seconds)
-  const { data: tasksData, isLoading: tasksLoading } = useQuery<{ tasks: Task[] }>({
+  // Fetch tasks (auto-refresh every 5 seconds)
+  const { data: tasksData, isLoading: tasksLoading, refetch: refetchTasks } = useQuery<{ tasks: Task[] }>({
     queryKey: ['/api/tasks'],
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 5000, // Refresh every 5 seconds
     refetchOnWindowFocus: true
   });
 
@@ -557,24 +557,35 @@ export default function AdminDashboard() {
             <CardHeader className="pb-2">
               <Tabs value={taskViewTab} onValueChange={setTaskViewTab} className="w-full">
                 <div className="flex flex-row items-center justify-between gap-4 mb-3">
-                  <TabsList className="grid w-auto grid-cols-2 gap-1 bg-blue-100 p-1">
-                    <TabsTrigger 
-                      value="upcoming" 
-                      data-testid="tab-upcoming-tasks"
-                      className="flex items-center gap-2 px-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  <div className="flex items-center gap-2">
+                    <TabsList className="grid w-auto grid-cols-2 gap-1 bg-blue-100 p-1">
+                      <TabsTrigger 
+                        value="upcoming" 
+                        data-testid="tab-upcoming-tasks"
+                        className="flex items-center gap-2 px-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                      >
+                        <Calendar className="h-4 w-4" />
+                        Predstojeći
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="history" 
+                        data-testid="tab-history-tasks"
+                        className="flex items-center gap-2 px-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                      >
+                        <History className="h-4 w-4" />
+                        Istorija
+                      </TabsTrigger>
+                    </TabsList>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => refetchTasks()}
+                      title="Osvježi listu"
+                      data-testid="button-refresh-tasks"
                     >
-                      <Calendar className="h-4 w-4" />
-                      Predstojeći
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="history" 
-                      data-testid="tab-history-tasks"
-                      className="flex items-center gap-2 px-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                    >
-                      <History className="h-4 w-4" />
-                      Istorija
-                    </TabsTrigger>
-                  </TabsList>
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <Select 
                     value={taskViewTab === 'upcoming' 
                       ? (tasksPerPage === 999999 ? 'all' : String(tasksPerPage))
