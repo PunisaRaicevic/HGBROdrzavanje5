@@ -576,8 +576,6 @@ export default function AdminDashboard() {
                   { value: '30d', label: '30 dana' },
                   { value: '3m', label: '3 mjeseca' },
                   { value: '6m', label: '6 mjeseci' },
-                  { value: '1y', label: '1 godina' },
-                  { value: 'all', label: 'Sve' },
                 ].map((period) => (
                   <Button
                     key={period.value}
@@ -641,7 +639,7 @@ export default function AdminDashboard() {
                             const createdDate = new Date(task.created_at);
                             return createdDate >= todayStart && createdDate < todayEnd;
                           });
-                        } else if (tasksPeriodFilter !== 'all') {
+                        } else {
                           switch (tasksPeriodFilter) {
                             case '7d':
                               startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -654,9 +652,6 @@ export default function AdminDashboard() {
                               break;
                             case '6m':
                               startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-                              break;
-                            case '1y':
-                              startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
                               break;
                           }
                           
