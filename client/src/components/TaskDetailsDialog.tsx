@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch, Trash2, Calendar, FileText, Repeat, CheckCircle, Send } from 'lucide-react';
+import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch, Trash2, Calendar, FileText, Repeat, CheckCircle, Send, History, ChevronDown, ChevronUp } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ImagePreviewModal } from './ImagePreviewModal';
@@ -95,6 +95,7 @@ interface TaskDetailsDialogProps {
 export default function TaskDetailsDialog({ open, onOpenChange, task, currentUserRole, onAssignToWorker }: TaskDetailsDialogProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRecurringHistory, setShowRecurringHistory] = useState(false);
   const { toast } = useToast();
 
   // Mutation to send task to external company
@@ -134,7 +135,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   // Fetch all tasks to find next occurrences for recurring tasks
   const { data: allTasksResponse } = useQuery<{ tasks: any[] }>({
     queryKey: ['/api/tasks'],
-    enabled: open && !!task?.parent_task_id, // Only fetch if this is a recurring child task
+    enabled: open && (!!task?.parent_task_id || !!task?.is_recurring), // Fetch for recurring tasks (parent or child)
   });
 
   // Calculate next 3 upcoming dates for recurring tasks
@@ -155,6 +156,37 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
       .slice(0, 3); // Take first 3
 
     return futureTasks.map(t => t.scheduled_for);
+  }, [task, allTasksResponse]);
+
+  // Calculate past occurrences (history) for recurring tasks
+  const pastOccurrences = useMemo(() => {
+    if (!allTasksResponse?.tasks) return [];
+    
+    // Determine the parent_task_id to search for siblings
+    const parentId = task?.parent_task_id || (task?.is_recurring ? task?.id : null);
+    if (!parentId) return [];
+
+    const currentDate = task?.scheduled_for ? new Date(task.scheduled_for) : new Date();
+    
+    // Find all sibling tasks (same parent_task_id) with past scheduled_for dates
+    const pastTasks = allTasksResponse.tasks
+      .filter(t => {
+        // For child tasks, find siblings with same parent
+        if (task?.parent_task_id) {
+          return t.parent_task_id === task.parent_task_id && 
+                 t.id !== task.id && 
+                 t.scheduled_for &&
+                 new Date(t.scheduled_for) < currentDate;
+        }
+        // For parent task, find all children
+        if (task?.is_recurring) {
+          return t.parent_task_id === task.id && t.scheduled_for;
+        }
+        return false;
+      })
+      .sort((a, b) => new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime()); // Newest first
+
+    return pastTasks;
   }, [task, allTasksResponse]);
   
   // Memoize assignment path calculation to avoid recomputation on re-renders
@@ -473,6 +505,105 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Recurring Task History - Past Occurrences */}
+            {(task.parent_task_id || task.is_recurring) && pastOccurrences.length > 0 && (
+              <div className="flex items-start gap-2">
+                <History className="w-5 h-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-between px-0 h-auto py-1"
+                    onClick={() => setShowRecurringHistory(!showRecurringHistory)}
+                    data-testid="button-toggle-recurring-history"
+                  >
+                    <span className="text-sm font-medium">
+                      Istorija prethodnih izvršenja ({pastOccurrences.length})
+                    </span>
+                    {showRecurringHistory ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </Button>
+                  
+                  {showRecurringHistory && (
+                    <div className="space-y-2 mt-2">
+                      {pastOccurrences.map((occurrence, index) => {
+                        const getStatusBadgeSmall = (status: string) => {
+                          switch (status) {
+                            case 'completed':
+                              return <Badge variant="default" className="bg-green-600 text-xs">Završeno</Badge>;
+                            case 'assigned_to_radnik':
+                            case 'in_progress':
+                              return <Badge variant="secondary" className="text-xs">U toku</Badge>;
+                            case 'with_external':
+                              return <Badge variant="outline" className="text-xs">Eksterna</Badge>;
+                            default:
+                              return <Badge variant="secondary" className="text-xs">{status}</Badge>;
+                          }
+                        };
+
+                        return (
+                          <div 
+                            key={occurrence.id} 
+                            className="border rounded-md p-3 bg-muted/30"
+                            data-testid={`recurring-history-${index}`}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <span className="text-sm font-medium">
+                                {new Date(occurrence.scheduled_for).toLocaleDateString('sr-RS', {
+                                  weekday: 'short',
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                              {getStatusBadgeSmall(occurrence.status)}
+                            </div>
+                            {occurrence.assigned_to_name && (
+                              <p className="text-xs text-muted-foreground">
+                                Izvršio: {occurrence.assigned_to_name}
+                              </p>
+                            )}
+                            {occurrence.completed_at && (
+                              <p className="text-xs text-muted-foreground">
+                                Završeno: {new Date(occurrence.completed_at).toLocaleString('sr-RS', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            )}
+                            {occurrence.worker_images && occurrence.worker_images.length > 0 && (
+                              <div className="flex gap-1 mt-2">
+                                {occurrence.worker_images.slice(0, 3).map((img: string, imgIdx: number) => (
+                                  <img 
+                                    key={imgIdx}
+                                    src={img}
+                                    alt={`History ${index} image ${imgIdx + 1}`}
+                                    className="w-12 h-12 rounded object-cover cursor-pointer border"
+                                    onClick={() => setPreviewImage(img)}
+                                  />
+                                ))}
+                                {occurrence.worker_images.length > 3 && (
+                                  <span className="text-xs text-muted-foreground self-center ml-1">
+                                    +{occurrence.worker_images.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
