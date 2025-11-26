@@ -974,8 +974,7 @@ export default function WorkerDashboard() {
                       </Button>
                       <div className="flex flex-col sm:flex-row gap-3">
                         <Button 
-                          variant="outline"
-                          className="flex-1 min-h-14 touch-manipulation"
+                          className="flex-1 min-h-14 touch-manipulation bg-amber-500 hover:bg-amber-600 text-white border-amber-600"
                           onClick={(e) => {
                             console.log('[BUTTON] Return to Operator clicked');
                             e.preventDefault();
