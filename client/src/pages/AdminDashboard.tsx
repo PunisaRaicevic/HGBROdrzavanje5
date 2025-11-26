@@ -48,7 +48,8 @@ interface Task {
   images?: string[];
   worker_images?: string[];
   scheduled_for?: string;
-  parent_task_id?: string;
+  parent_task_id?: string | null;
+  is_recurring?: boolean;
 }
 
 export default function AdminDashboard() {
@@ -1076,7 +1077,10 @@ export default function AdminDashboard() {
           fromName: selectedTask.created_by_name || '',
           from: selectedTask.created_by || '',
           images: selectedTask.images,
-          worker_images: selectedTask.worker_images
+          worker_images: selectedTask.worker_images,
+          parent_task_id: selectedTask.parent_task_id,
+          is_recurring: selectedTask.is_recurring,
+          scheduled_for: selectedTask.scheduled_for
         } : null}
       />
     </div>
