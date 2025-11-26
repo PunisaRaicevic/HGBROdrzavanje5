@@ -12,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, Camera, Send, ClipboardList, Clock, XCircle, X } from 'lucide-react';
+import { CheckCircle, Camera, Send, ClipboardList, Clock, XCircle, X, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { io, Socket } from 'socket.io-client';
 import type { TaskStatus, Priority } from '@shared/types';
@@ -58,7 +58,7 @@ export default function WorkerDashboard() {
   const [workerReport, setWorkerReport] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<PhotoPreview[]>([]);
-  const [actionType, setActionType] = useState<'completed' | 'return' | null>(null);
+  const [actionType, setActionType] = useState<'completed' | 'return' | 'return_to_operator' | null>(null);
   const [isConfirmingReceipt, setIsConfirmingReceipt] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [browserNotificationsEnabled, setBrowserNotificationsEnabled] = useState(false);
@@ -442,6 +442,10 @@ export default function WorkerDashboard() {
     setActionType('return');
   };
 
+  const handleReturnToOperator = () => {
+    setActionType('return_to_operator');
+  };
+
   const handleConfirmReceipt = async () => {
     if (!selectedTask || !user) return;
     
@@ -638,6 +642,8 @@ export default function WorkerDashboard() {
     let newStatus = 'completed';
     if (actionType === 'return') {
       newStatus = 'returned_to_sef';
+    } else if (actionType === 'return_to_operator') {
+      newStatus = 'returned_to_operator';
     }
 
     try {
@@ -950,9 +956,9 @@ export default function WorkerDashboard() {
                     })()}
                     
                     {/* Task Completion and Return Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+                    <div className="flex flex-col gap-3">
                       <Button 
-                        className="flex-1 min-h-14 touch-manipulation"
+                        className="w-full min-h-14 touch-manipulation"
                         onClick={(e) => {
                           console.log('[BUTTON] Task Completed clicked');
                           e.preventDefault();
@@ -966,22 +972,40 @@ export default function WorkerDashboard() {
                         <CheckCircle className="w-5 h-5 mr-2" />
                         <span className="text-lg">{t('taskCompleted')}</span>
                       </Button>
-                      <Button 
-                        variant="destructive"
-                        className="sm:flex-1 min-h-14 touch-manipulation"
-                        onClick={(e) => {
-                          console.log('[BUTTON] Return Task clicked');
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleReturnTask();
-                        }}
-                        onTouchStart={() => console.log('[BUTTON] Return Task touched')}
-                        data-testid={`button-return-task-${selectedTask.id}`}
-                        type="button"
-                      >
-                        <XCircle className="w-5 h-5 mr-2" />
-                        <span className="text-lg">{t('returnToSupervisor')}</span>
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button 
+                          variant="outline"
+                          className="flex-1 min-h-14 touch-manipulation"
+                          onClick={(e) => {
+                            console.log('[BUTTON] Return to Operator clicked');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleReturnToOperator();
+                          }}
+                          onTouchStart={() => console.log('[BUTTON] Return to Operator touched')}
+                          data-testid={`button-return-to-operator-${selectedTask.id}`}
+                          type="button"
+                        >
+                          <RotateCcw className="w-5 h-5 mr-2" />
+                          <span className="text-lg">{t('returnToOperator')}</span>
+                        </Button>
+                        <Button 
+                          variant="destructive"
+                          className="flex-1 min-h-14 touch-manipulation"
+                          onClick={(e) => {
+                            console.log('[BUTTON] Return Task clicked');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleReturnTask();
+                          }}
+                          onTouchStart={() => console.log('[BUTTON] Return Task touched')}
+                          data-testid={`button-return-task-${selectedTask.id}`}
+                          type="button"
+                        >
+                          <XCircle className="w-5 h-5 mr-2" />
+                          <span className="text-lg">{t('returnToSupervisor')}</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -990,20 +1014,28 @@ export default function WorkerDashboard() {
                 {selectedTask.status === 'assigned_to_radnik' && actionType && (
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="font-medium text-base">
-                      {actionType === 'completed' ? t('taskCompletionReport') : t('returnReason')}
+                      {actionType === 'completed' 
+                        ? t('taskCompletionReport') 
+                        : actionType === 'return_to_operator' 
+                          ? t('returnToOperatorReason') 
+                          : t('returnReason')}
                     </h3>
                     
                     <div className="space-y-2">
                       <Label htmlFor="new-task-report" className="text-base">
                         {actionType === 'completed' 
                           ? t('whatDidYouDo')
-                          : t('whyCantComplete')}
+                          : actionType === 'return_to_operator'
+                            ? t('whyReturnToOperator')
+                            : t('whyCantComplete')}
                       </Label>
                       <Textarea
                         id="new-task-report"
                         placeholder={actionType === 'completed'
                           ? t('describeWorkPlaceholder')
-                          : t('describeReturnPlaceholder')
+                          : actionType === 'return_to_operator'
+                            ? t('describeReturnToOperatorPlaceholder')
+                            : t('describeReturnPlaceholder')
                         }
                         value={workerReport}
                         onChange={(e) => setWorkerReport(e.target.value)}
@@ -1085,7 +1117,11 @@ export default function WorkerDashboard() {
                       <span className="text-lg">
                         {updateTaskMutation.isPending 
                           ? t('submitting') 
-                          : actionType === 'completed' ? t('submitCompletionReport') : t('submitReturnReason')}
+                          : actionType === 'completed' 
+                            ? t('submitCompletionReport') 
+                            : actionType === 'return_to_operator'
+                              ? t('submitReturnToOperator')
+                              : t('submitReturnReason')}
                       </span>
                     </Button>
                   </div>
