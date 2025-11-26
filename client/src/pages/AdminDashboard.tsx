@@ -682,7 +682,18 @@ export default function AdminDashboard() {
                                     formatDate(task.created_at)
                                   )}
                                 </div>
-                                {getStatusBadge(task.status)}
+                                <div className="flex flex-col gap-1 items-end">
+                                  {getStatusBadge(task.status)}
+                                  {(task.parent_task_id || task.is_recurring) ? (
+                                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-purple-700">
+                                      Periodičan
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-600">
+                                      Jednokratan
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                               <div>
                                 <h3 className="font-medium text-base mb-2">{task.title}</h3>
@@ -900,7 +911,18 @@ export default function AdminDashboard() {
                                       >
                                         <div className="flex items-start justify-between gap-2 mb-2">
                                           <span className="text-xs text-muted-foreground">{formatDate(task.created_at)}</span>
-                                          {getStatusBadge(task.status)}
+                                          <div className="flex flex-col gap-1 items-end">
+                                            {getStatusBadge(task.status)}
+                                            {(task.parent_task_id || task.is_recurring) ? (
+                                              <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-purple-700">
+                                                Periodičan
+                                              </Badge>
+                                            ) : (
+                                              <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-600">
+                                                Jednokratan
+                                              </Badge>
+                                            )}
+                                          </div>
                                         </div>
                                         <h4 className="font-medium text-sm">{task.title}</h4>
                                         {task.created_by_name && (
