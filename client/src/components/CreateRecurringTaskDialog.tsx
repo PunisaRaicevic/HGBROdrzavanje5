@@ -226,11 +226,11 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
 
   // Get human-readable label for recurrence
   const getRecurrenceLabel = (pattern: string) => {
-    const unitLabels: Record<string, { singular: string; plural: string }> = {
-      'days': { singular: 'dan', plural: 'dana' },
-      'weeks': { singular: 'nedjelju', plural: 'nedjelja' },
-      'months': { singular: 'mjesec', plural: 'mjeseca' },
-      'years': { singular: 'godinu', plural: 'godina' }
+    const unitLabels: Record<string, string> = {
+      'days': 'dnevno',
+      'weeks': 'nedjeljno',
+      'months': 'mjesečno',
+      'years': 'godišnje'
     };
     
     // Parse custom pattern like "3_weeks"
@@ -239,23 +239,22 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
       const count = parseInt(match[1]);
       const unit = match[2] as keyof typeof unitLabels;
       if (unitLabels[unit]) {
-        if (count === 1) {
-          return `Svaki ${unitLabels[unit].singular}`;
+        if (count === 1 && unit === 'days') {
+          return 'Svakog dana';
         }
-        return `Svaka ${count} ${unitLabels[unit].plural}`;
+        if (count === 1) {
+          return `1 put ${unitLabels[unit]}`;
+        }
+        return `${count} puta ${unitLabels[unit]}`;
       }
     }
     
     // Legacy patterns
     const legacyLabels: Record<string, string> = {
-      '1_days': 'Dnevno',
-      '3_days': 'Svaka 3 dana',
-      '7_days': 'Nedeljno',
-      '14_days': 'Dvonedeljno',
-      '1_months': 'Mesečno',
-      '3_months': 'Tromesečno',
-      '6_months': 'Polugodišnje',
-      '12_months': 'Godišnje'
+      '1_days': 'Svakog dana',
+      '1_weeks': '1 put nedjeljno',
+      '1_months': '1 put mjesečno',
+      '1_years': '1 put godišnje'
     };
     return legacyLabels[pattern] || pattern;
   };
@@ -517,14 +516,11 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
                     {/* Frequency selection - two fields */}
                     <div className="space-y-2">
                       <Label>Frekvencija Ponavljanja</Label>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         {recurrenceUnit === 'days' ? (
-                          <>
-                            <span className="text-sm text-muted-foreground">Svakog dana</span>
-                          </>
+                          <span className="text-sm font-medium">Svakog dana</span>
                         ) : (
                           <>
-                            <span className="text-sm text-muted-foreground">Svaka</span>
                             <Select 
                               value={recurrenceCount.toString()} 
                               onValueChange={(v) => setRecurrenceCount(parseInt(v))}
@@ -537,12 +533,17 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
                                   ? [1, 2, 3, 4, 5, 6, 7].map(n => (
                                       <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
                                     ))
-                                  : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map(n => (
-                                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                                    ))
+                                  : recurrenceUnit === 'months'
+                                    ? [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 25, 30].map(n => (
+                                        <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                                      ))
+                                    : [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24, 30, 36, 48, 52].map(n => (
+                                        <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                                      ))
                                 }
                               </SelectContent>
                             </Select>
+                            <span className="text-sm text-muted-foreground">puta</span>
                           </>
                         )}
                         <Select 
@@ -558,16 +559,20 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
                             if (newUnit === 'weeks' && recurrenceCount > 7) {
                               setRecurrenceCount(7);
                             }
+                            // Cap months at 30
+                            if (newUnit === 'months' && recurrenceCount > 30) {
+                              setRecurrenceCount(30);
+                            }
                           }}
                         >
                           <SelectTrigger className="w-32 border bg-muted" data-testid="select-recurrence-unit">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="days">dan (svaki)</SelectItem>
-                            <SelectItem value="weeks">{recurrenceCount === 1 ? 'nedjelja' : 'nedjelja'}</SelectItem>
-                            <SelectItem value="months">{recurrenceCount === 1 ? 'mjesec' : 'mjeseca'}</SelectItem>
-                            <SelectItem value="years">{recurrenceCount === 1 ? 'godina' : 'godina'}</SelectItem>
+                            <SelectItem value="days">dnevno</SelectItem>
+                            <SelectItem value="weeks">nedjeljno</SelectItem>
+                            <SelectItem value="months">mjesečno</SelectItem>
+                            <SelectItem value="years">godišnje</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
