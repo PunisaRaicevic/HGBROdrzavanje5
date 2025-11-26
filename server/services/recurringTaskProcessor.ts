@@ -5,10 +5,12 @@
 
 import { storage } from '../storage';
 import { 
-  calculateNextOccurrence, 
+  calculateNextOccurrence,
+  calculateScheduledDates,
   shouldProcessRecurringTask,
   shouldContinueRecurrence,
-  type RecurrencePattern 
+  type RecurrencePattern,
+  type DetailedRecurrence
 } from '../utils/recurrence';
 
 export interface ProcessingResult {
@@ -36,6 +38,7 @@ const TASKS_TO_MAINTAIN = 8;
 /**
  * Ensure that a recurring template has enough child tasks created in advance
  * Creates multiple child tasks up to TASKS_TO_MAINTAIN
+ * Uses detailed recurrence info (specific days/dates) when available
  * @param templateTask - The recurring template task
  * @returns Number of new child tasks created
  */
@@ -57,34 +60,41 @@ export async function ensureChildTasksExist(templateTask: any): Promise<number> 
     
     console.log(`[RECURRING] Creating ${tasksToCreate} child tasks for template ${templateTask.id}`);
     
-    // Find the latest scheduled_for date among existing children
-    let lastScheduledDate: Date;
-    if (activeChildren.length > 0) {
-      // Find max scheduled_for date
-      const sortedChildren = activeChildren
+    // Build detailed recurrence info from template
+    const details: DetailedRecurrence = {
+      recurrence_week_days: templateTask.recurrence_week_days,
+      recurrence_month_days: templateTask.recurrence_month_days,
+      recurrence_year_dates: templateTask.recurrence_year_dates,
+      execution_hour: templateTask.execution_hour,
+      execution_minute: templateTask.execution_minute,
+    };
+    
+    // Get already scheduled dates to avoid duplicates
+    const existingDates = new Set(
+      activeChildren
         .filter((c: any) => c.scheduled_for)
-        .sort((a: any, b: any) => 
-          new Date(b.scheduled_for).getTime() - new Date(a.scheduled_for).getTime()
-        );
-      lastScheduledDate = sortedChildren.length > 0 
-        ? new Date(sortedChildren[0].scheduled_for)
-        : new Date(templateTask.next_occurrence || templateTask.recurrence_start_date || new Date());
-    } else {
-      // No children yet, start from next_occurrence or recurrence_start_date
-      lastScheduledDate = new Date(templateTask.next_occurrence || templateTask.recurrence_start_date || new Date());
-    }
+        .map((c: any) => new Date(c.scheduled_for).toISOString().split('T')[0])
+    );
+    
+    // Calculate scheduled dates using detailed recurrence
+    const startDate = new Date(templateTask.next_occurrence || templateTask.recurrence_start_date || new Date());
+    const scheduledDates = calculateScheduledDates(
+      startDate,
+      templateTask.recurrence_pattern as RecurrencePattern,
+      details,
+      TASKS_TO_MAINTAIN + existingCount + 10 // Get extra to account for filtering
+    );
+    
+    // Filter out dates that already have child tasks
+    const newDates = scheduledDates.filter(date => {
+      const dateStr = date.toISOString().split('T')[0];
+      return !existingDates.has(dateStr);
+    }).slice(0, tasksToCreate);
     
     let createdCount = 0;
-    let currentDate = lastScheduledDate;
     
-    // Create missing child tasks
-    for (let i = 0; i < tasksToCreate; i++) {
-      // Calculate next occurrence
-      currentDate = calculateNextOccurrence(
-        currentDate,
-        templateTask.recurrence_pattern as RecurrencePattern
-      );
-      
+    // Create child tasks for each scheduled date
+    for (const scheduledDate of newDates) {
       const newTaskData = {
         title: templateTask.title,
         description: templateTask.description,
@@ -101,12 +111,11 @@ export async function ensureChildTasksExist(templateTask: any): Promise<number> 
         parent_task_id: templateTask.id,
         is_recurring: false,
         recurrence_pattern: templateTask.recurrence_pattern,
-        scheduled_for: currentDate.toISOString(),
+        scheduled_for: scheduledDate.toISOString(),
       };
       
       const newTask = await storage.createTask(newTaskData);
       
-      // Create task history for the new instance
       await storage.createTaskHistory({
         task_id: newTask.id,
         user_id: templateTask.created_by,
@@ -120,15 +129,15 @@ export async function ensureChildTasksExist(templateTask: any): Promise<number> 
       });
       
       createdCount++;
-      console.log(`[RECURRING] Created child task ${newTask.id} scheduled for ${currentDate.toISOString()}`);
+      console.log(`[RECURRING] Created child task ${newTask.id} scheduled for ${scheduledDate.toISOString()}`);
     }
     
-    // Update template's next_occurrence to the last created date + one interval
-    const nextOccurrence = calculateNextOccurrence(
-      currentDate,
-      templateTask.recurrence_pattern as RecurrencePattern
-    );
-    await storage.updateTask(templateTask.id, { next_occurrence: nextOccurrence.toISOString() } as any);
+    // Update template's next_occurrence
+    if (newDates.length > 0) {
+      const lastDate = newDates[newDates.length - 1];
+      const nextOccurrence = calculateNextOccurrence(lastDate, templateTask.recurrence_pattern as RecurrencePattern, details);
+      await storage.updateTask(templateTask.id, { next_occurrence: nextOccurrence.toISOString() } as any);
+    }
     
     return createdCount;
   } catch (error) {

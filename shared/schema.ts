@@ -1,5 +1,5 @@
 import { sql, relations } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, integer, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -71,6 +71,11 @@ export const tasks = pgTable("tasks", {
   recurrence_pattern: varchar("recurrence_pattern").default("once"),
   recurrence_start_date: timestamp("recurrence_start_date", { withTimezone: true }),
   next_occurrence: timestamp("next_occurrence", { withTimezone: true }),
+  recurrence_week_days: integer("recurrence_week_days").array(),
+  recurrence_month_days: integer("recurrence_month_days").array(),
+  recurrence_year_dates: jsonb("recurrence_year_dates"),
+  execution_hour: integer("execution_hour"),
+  execution_minute: integer("execution_minute"),
   parent_task_id: varchar("parent_task_id"),
   scheduled_for: timestamp("scheduled_for", { withTimezone: true }),
   worker_report: text("worker_report"),
