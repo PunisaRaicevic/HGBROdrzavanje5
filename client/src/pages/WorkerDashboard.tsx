@@ -901,8 +901,10 @@ export default function WorkerDashboard() {
                       <p className="font-medium break-words">{selectedTask.assignedBy}</p>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-muted-foreground">{t('locationLabel')}</span>
-                      <p className="font-medium break-words">{selectedTask.location}</p>
+                      <span className="text-muted-foreground">{t('reportedAt')}</span>
+                      <p className="font-medium break-words">
+                        {selectedTask.receivedAt.toLocaleDateString('sr-Latn-RS', { day: '2-digit', month: '2-digit', year: 'numeric' })} {selectedTask.receivedAt.toLocaleTimeString('sr-Latn-RS', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
                     </div>
                     {/* Don't show elapsed time for recurring tasks */}
                     {!selectedTask.parent_task_id && (
