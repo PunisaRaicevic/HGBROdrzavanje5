@@ -247,20 +247,36 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
 
   const getRecurrenceLabel = (pattern: string | null) => {
     if (!pattern || pattern === 'once') return null;
-    const labels: Record<string, string> = {
-      '1_days': 'Dnevno',
-      '3_days': 'Svaka 3 dana',
-      '7_days': 'Nedeljno',
-      '14_days': 'Dvonedeljno',
-      '1_months': 'Mesečno',
-      '3_months': 'Tromesečno',
-      '6_months': 'Polugodišnje',
-      '12_months': 'Godišnje',
-      'daily': 'Dnevno',
-      'weekly': 'Nedeljno',
-      'monthly': 'Mesečno'
+    
+    // Handle legacy patterns
+    const legacyLabels: Record<string, string> = {
+      'daily': 'Svakog dana',
+      'weekly': 'Nedjeljno',
+      'monthly': 'Mjesečno'
     };
-    return labels[pattern] || pattern;
+    if (legacyLabels[pattern]) return legacyLabels[pattern];
+    
+    // Parse dynamic patterns like "3_years", "5_months", "2_weeks", "1_days"
+    const match = pattern.match(/^(\d+)_(days|weeks|months|years)$/);
+    if (match) {
+      const count = parseInt(match[1]);
+      const unit = match[2];
+      
+      if (unit === 'days') {
+        return count === 1 ? 'Svakog dana' : `Svaka ${count} dana`;
+      } else if (unit === 'weeks') {
+        if (count === 1) return 'Jednom nedjeljno';
+        return `${count} puta nedjeljno`;
+      } else if (unit === 'months') {
+        if (count === 1) return 'Jednom mjesečno';
+        return `${count} puta mjesečno`;
+      } else if (unit === 'years') {
+        if (count === 1) return 'Jednom godišnje';
+        return `${count} puta godišnje`;
+      }
+    }
+    
+    return pattern;
   };
 
   const getStatusBadge = (status: string) => {
