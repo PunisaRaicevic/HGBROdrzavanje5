@@ -7,11 +7,7 @@ const firebaseConfig = {
   projectId: "hgbtapp",
   storageBucket: "hgbtapp.firebasestorage.app",
   messagingSenderId: "375153203002",
-<<<<<<< Updated upstream
   appId: "1:375153203002:android:d57aea9c9c9cd906372203",
-=======
-  appId: " 1:375153203002:android:d57aea9c9c9cd906372203",
->>>>>>> Stashed changes
 };
 
 const app = initializeApp(firebaseConfig);
