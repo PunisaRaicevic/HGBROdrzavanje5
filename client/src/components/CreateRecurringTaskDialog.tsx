@@ -34,7 +34,12 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
   const [description, setDescription] = useState('');
   const [uploadedPhotos, setUploadedPhotos] = useState<PhotoPreview[]>([]);
   const [isRecurring, setIsRecurring] = useState(false);
-  const [recurrenceType, setRecurrenceType] = useState('1_days');
+  const [recurrenceCount, setRecurrenceCount] = useState(1);
+  const [recurrenceUnit, setRecurrenceUnit] = useState<'days' | 'weeks' | 'months' | 'years'>('days');
+  const [selectedWeekDays, setSelectedWeekDays] = useState<number[]>([1]); // 0=Sun, 1=Mon, etc.
+  const [executionHour, setExecutionHour] = useState(9); // Default 9:00
+  const [executionMinute, setExecutionMinute] = useState(0);
+  const [monthDay, setMonthDay] = useState(1); // Day of month for monthly recurrence
   const [startDate, setStartDate] = useState('');
   const [selectedTechnicians, setSelectedTechnicians] = useState<string[]>([]);
 
@@ -133,6 +138,17 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
         .map(t => t.full_name)
         .join(', ');
 
+      const recurrencePattern = buildRecurrencePattern();
+      
+      // Build start date with time
+      let fullStartDate = startDate;
+      if (isRecurring && startDate) {
+        // Add time component to start date
+        const hour = executionHour.toString().padStart(2, '0');
+        const minute = executionMinute.toString().padStart(2, '0');
+        fullStartDate = `${startDate}T${hour}:${minute}:00`;
+      }
+
       await createTaskMutation.mutateAsync({
         title,
         description,
@@ -148,14 +164,18 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
         assigned_to: selectedTechnicians.join(','),
         assigned_to_name: selectedTechNames,
         is_recurring: isRecurring,
-        recurrence_pattern: isRecurring ? recurrenceType : 'once',
-        recurrence_start_date: isRecurring ? startDate : null,
+        recurrence_pattern: isRecurring ? recurrencePattern : 'once',
+        recurrence_start_date: isRecurring ? fullStartDate : null,
+        recurrence_week_days: isRecurring && recurrenceUnit === 'weeks' ? selectedWeekDays : null,
+        recurrence_month_day: isRecurring && recurrenceUnit === 'months' ? monthDay : null,
+        execution_hour: isRecurring ? executionHour : null,
+        execution_minute: isRecurring ? executionMinute : null,
       });
 
       toast({
         title: "Zadatak Kreiran",
         description: isRecurring
-          ? `Ponavljajući zadatak kreiran (${getRecurrenceLabel(recurrenceType)}).`
+          ? `Ponavljajući zadatak kreiran (${getRecurrenceLabel(recurrencePattern)}).`
           : "Zadatak je uspešno dodeljen majstorima.",
       });
 
@@ -182,13 +202,45 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
     setPriority('normal');
     setUploadedPhotos([]);
     setIsRecurring(false);
-    setRecurrenceType('1_days');
+    setRecurrenceCount(1);
+    setRecurrenceUnit('days');
+    setSelectedWeekDays([1]);
+    setExecutionHour(9);
+    setExecutionMinute(0);
+    setMonthDay(1);
     setStartDate('');
     setSelectedTechnicians([]);
   };
 
+  // Build recurrence pattern from selections
+  const buildRecurrencePattern = () => {
+    return `${recurrenceCount}_${recurrenceUnit}`;
+  };
+
+  // Get human-readable label for recurrence
   const getRecurrenceLabel = (pattern: string) => {
-    const labels: Record<string, string> = {
+    const unitLabels: Record<string, { singular: string; plural: string }> = {
+      'days': { singular: 'dan', plural: 'dana' },
+      'weeks': { singular: 'nedjelju', plural: 'nedjelja' },
+      'months': { singular: 'mjesec', plural: 'mjeseca' },
+      'years': { singular: 'godinu', plural: 'godina' }
+    };
+    
+    // Parse custom pattern like "3_weeks"
+    const match = pattern.match(/^(\d+)_(\w+)$/);
+    if (match) {
+      const count = parseInt(match[1]);
+      const unit = match[2] as keyof typeof unitLabels;
+      if (unitLabels[unit]) {
+        if (count === 1) {
+          return `Svaki ${unitLabels[unit].singular}`;
+        }
+        return `Svaka ${count} ${unitLabels[unit].plural}`;
+      }
+    }
+    
+    // Legacy patterns
+    const legacyLabels: Record<string, string> = {
       '1_days': 'Dnevno',
       '3_days': 'Svaka 3 dana',
       '7_days': 'Nedeljno',
@@ -198,7 +250,29 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
       '6_months': 'Polugodišnje',
       '12_months': 'Godišnje'
     };
-    return labels[pattern] || pattern;
+    return legacyLabels[pattern] || pattern;
+  };
+
+  // Week day names
+  const weekDays = [
+    { value: 0, label: 'Ned', fullLabel: 'Nedjelja' },
+    { value: 1, label: 'Pon', fullLabel: 'Ponedjeljak' },
+    { value: 2, label: 'Uto', fullLabel: 'Utorak' },
+    { value: 3, label: 'Sri', fullLabel: 'Srijeda' },
+    { value: 4, label: 'Čet', fullLabel: 'Četvrtak' },
+    { value: 5, label: 'Pet', fullLabel: 'Petak' },
+    { value: 6, label: 'Sub', fullLabel: 'Subota' }
+  ];
+
+  const toggleWeekDay = (day: number) => {
+    setSelectedWeekDays(prev => {
+      if (prev.includes(day)) {
+        // Don't allow removing all days
+        if (prev.length === 1) return prev;
+        return prev.filter(d => d !== day);
+      }
+      return [...prev, day].sort();
+    });
   };
 
   return (
@@ -422,25 +496,132 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
 
                 {isRecurring && (
                   <>
+                    {/* Frequency selection - two fields */}
                     <div className="space-y-2">
-                      <Label htmlFor="recurrence-type">Frekvencija Ponavljanja</Label>
-                      <Select value={recurrenceType} onValueChange={setRecurrenceType}>
-                        <SelectTrigger data-testid="select-recurrence-type" className="border bg-muted">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1_days">Dnevno</SelectItem>
-                          <SelectItem value="3_days">Svaka 3 dana</SelectItem>
-                          <SelectItem value="7_days">Nedeljno</SelectItem>
-                          <SelectItem value="14_days">Dvonedeljno</SelectItem>
-                          <SelectItem value="1_months">Mesečno</SelectItem>
-                          <SelectItem value="3_months">Tromesečno</SelectItem>
-                          <SelectItem value="6_months">Polugodišnje</SelectItem>
-                          <SelectItem value="12_months">Godišnje</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label>Frekvencija Ponavljanja</Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">Svaka</span>
+                        <Select 
+                          value={recurrenceCount.toString()} 
+                          onValueChange={(v) => setRecurrenceCount(parseInt(v))}
+                        >
+                          <SelectTrigger className="w-20 border bg-muted" data-testid="select-recurrence-count">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 20, 30].map(n => (
+                              <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select 
+                          value={recurrenceUnit} 
+                          onValueChange={(v) => setRecurrenceUnit(v as 'days' | 'weeks' | 'months' | 'years')}
+                        >
+                          <SelectTrigger className="w-32 border bg-muted" data-testid="select-recurrence-unit">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="days">{recurrenceCount === 1 ? 'dan' : 'dana'}</SelectItem>
+                            <SelectItem value="weeks">{recurrenceCount === 1 ? 'nedjelja' : 'nedjelja'}</SelectItem>
+                            <SelectItem value="months">{recurrenceCount === 1 ? 'mjesec' : 'mjeseca'}</SelectItem>
+                            <SelectItem value="years">{recurrenceCount === 1 ? 'godina' : 'godina'}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
+                    {/* Week day selection - only for weekly recurrence */}
+                    {recurrenceUnit === 'weeks' && (
+                      <div className="space-y-2">
+                        <Label>Dani u nedjelji</Label>
+                        <div className="flex flex-wrap gap-1">
+                          {weekDays.map(day => (
+                            <Button
+                              key={day.value}
+                              type="button"
+                              size="sm"
+                              variant={selectedWeekDays.includes(day.value) ? 'default' : 'outline'}
+                              onClick={() => toggleWeekDay(day.value)}
+                              className="w-10"
+                              data-testid={`weekday-${day.value}`}
+                            >
+                              {day.label}
+                            </Button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Odabrano: {selectedWeekDays.map(d => weekDays.find(wd => wd.value === d)?.fullLabel).join(', ')}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Month day selection - only for monthly recurrence */}
+                    {recurrenceUnit === 'months' && (
+                      <div className="space-y-2">
+                        <Label>Dan u mjesecu</Label>
+                        <Select 
+                          value={monthDay.toString()} 
+                          onValueChange={(v) => setMonthDay(parseInt(v))}
+                        >
+                          <SelectTrigger className="w-32 border bg-muted" data-testid="select-month-day">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 28 }, (_, i) => i + 1).map(d => (
+                              <SelectItem key={d} value={d.toString()}>{d}.</SelectItem>
+                            ))}
+                            <SelectItem value="29">29. (ako postoji)</SelectItem>
+                            <SelectItem value="30">30. (ako postoji)</SelectItem>
+                            <SelectItem value="31">31. (ako postoji)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Zadatak se izvršava {monthDay}. dana svakog {recurrenceCount === 1 ? '' : recurrenceCount + '. '}mjeseca
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Execution time */}
+                    <div className="space-y-2">
+                      <Label>Vrijeme izvršavanja</Label>
+                      <div className="flex items-center gap-2">
+                        <Select 
+                          value={executionHour.toString()} 
+                          onValueChange={(v) => setExecutionHour(parseInt(v))}
+                        >
+                          <SelectTrigger className="w-20 border bg-muted" data-testid="select-execution-hour">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 24 }, (_, i) => i).map(h => (
+                              <SelectItem key={h} value={h.toString()}>
+                                {h.toString().padStart(2, '0')}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="text-lg font-medium">:</span>
+                        <Select 
+                          value={executionMinute.toString()} 
+                          onValueChange={(v) => setExecutionMinute(parseInt(v))}
+                        >
+                          <SelectTrigger className="w-20 border bg-muted" data-testid="select-execution-minute">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[0, 15, 30, 45].map(m => (
+                              <SelectItem key={m} value={m.toString()}>
+                                {m.toString().padStart(2, '0')}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="text-sm text-muted-foreground ml-2">sati</span>
+                      </div>
+                    </div>
+
+                    {/* Start date */}
                     <div className="space-y-2">
                       <Label htmlFor="startDate">Datum Početka *</Label>
                       <Input
@@ -452,8 +633,21 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
                         data-testid="input-start-date"
                         className="bg-muted"
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Zadatak će početi {getRecurrenceLabel(recurrenceType).toLowerCase()} od ovog datuma. Za prekid zadatka koristite dugme Obriši u meniju šefa.
+                    </div>
+
+                    {/* Summary */}
+                    <div className="p-3 bg-muted rounded-md">
+                      <p className="text-sm">
+                        <span className="font-medium">Sažetak: </span>
+                        Zadatak se izvršava {getRecurrenceLabel(buildRecurrencePattern()).toLowerCase()}
+                        {recurrenceUnit === 'weeks' && selectedWeekDays.length > 0 && (
+                          <> ({selectedWeekDays.map(d => weekDays.find(wd => wd.value === d)?.label).join(', ')})</>
+                        )}
+                        {recurrenceUnit === 'months' && (
+                          <> ({monthDay}. dan u mjesecu)</>
+                        )}
+                        {' '}u {executionHour.toString().padStart(2, '0')}:{executionMinute.toString().padStart(2, '0')} sati
+                        {startDate && <>, počevši od {new Date(startDate).toLocaleDateString('sr-RS')}</>}
                       </p>
                     </div>
                   </>
