@@ -1,9 +1,11 @@
 /**
  * Cron job system for processing recurring tasks
  * Runs every 15 minutes to check and create new task instances
+ * Also sends scheduled notifications at 8:00 AM for tasks scheduled that day
  */
 
 import { processRecurringTasks } from './services/recurringTaskProcessor';
+import { runScheduledNotificationCheck } from './services/scheduledNotifications';
 
 const CRON_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
 
@@ -25,6 +27,10 @@ async function runRecurringTasksJob() {
     } else {
       console.log('[CRON SCHEDULER] No tasks to process');
     }
+    
+    // Check if scheduled notifications need to be sent (8:00 AM)
+    await runScheduledNotificationCheck();
+    
   } catch (error) {
     console.error('[CRON SCHEDULER] Error processing recurring tasks:', error);
   }

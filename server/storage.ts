@@ -27,6 +27,7 @@ export interface IStorage {
   getTasksByUserId(userId: string): Promise<Task[]>;
   getRecurringTasks(): Promise<Task[]>;
   getChildTasksByParentId(parentId: string): Promise<Task[]>;
+  getTasksScheduledBetween(startDate: string, endDate: string): Promise<Task[]>;
   createTask(task: Partial<InsertTask>): Promise<Task>;
   updateTask(id: string, data: Partial<Task>): Promise<Task | undefined>;
   deleteTask(id: string): Promise<void>;
@@ -208,6 +209,17 @@ export class SupabaseStorage implements IStorage {
       .from('tasks')
       .select('*')
       .eq('parent_task_id', parentId);
+    
+    if (error) throw error;
+    return (data || []) as Task[];
+  }
+
+  async getTasksScheduledBetween(startDate: string, endDate: string): Promise<Task[]> {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .gte('scheduled_for', startDate)
+      .lt('scheduled_for', endDate);
     
     if (error) throw error;
     return (data || []) as Task[];

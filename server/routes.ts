@@ -146,6 +146,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Missing record data' });
       }
 
+      // IMPORTANT: Skip notification for future scheduled tasks (recurring task children)
+      // These will be notified by the daily scheduler at 8:00 AM on their scheduled date
+      if (newRecord.scheduled_for) {
+        const scheduledDate = new Date(newRecord.scheduled_for);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        scheduledDate.setHours(0, 0, 0, 0);
+        
+        if (scheduledDate > today) {
+          console.log(`⏰ Zadatak ${newRecord.id} je zakazan za ${newRecord.scheduled_for} - notifikacija ce biti poslana tog dana u 8h`);
+          return res.status(200).json({ 
+            message: 'Scheduled task - notification will be sent on scheduled date',
+            scheduled_for: newRecord.scheduled_for
+          });
+        }
+      }
+
       const assignedTo = newRecord.assigned_to;
       const taskTitle = newRecord.title || 'Novi zadatak!';
       const taskDescription = newRecord.description || 'Imate novi zadatak.';
