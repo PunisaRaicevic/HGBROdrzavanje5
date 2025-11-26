@@ -800,7 +800,7 @@ export default function AdminDashboard() {
                           .sort((a, b) => {
                             const dateA = a.scheduled_for ? new Date(a.scheduled_for) : new Date(a.created_at);
                             const dateB = b.scheduled_for ? new Date(b.scheduled_for) : new Date(b.created_at);
-                            return dateB.getTime() - dateA.getTime(); // Noviji prvi
+                            return dateA.getTime() - dateB.getTime();
                           })
                           .slice(0, tasksPerPage)
                           .map((task) => {
