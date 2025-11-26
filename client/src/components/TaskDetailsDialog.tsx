@@ -96,6 +96,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRecurringHistory, setShowRecurringHistory] = useState(false);
+  const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Mutation to send task to external company
@@ -158,7 +159,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
     return futureTasks.map(t => t.scheduled_for);
   }, [task, allTasksResponse]);
 
-  // Calculate past occurrences (history) for recurring tasks
+  // Calculate past occurrences (history) for recurring tasks - only completed ones
   const pastOccurrences = useMemo(() => {
     if (!allTasksResponse?.tasks) return [];
     
@@ -168,9 +169,12 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
 
     const currentDate = task?.scheduled_for ? new Date(task.scheduled_for) : new Date();
     
-    // Find all sibling tasks (same parent_task_id) with past scheduled_for dates
+    // Find all sibling tasks (same parent_task_id) that are COMPLETED
     const pastTasks = allTasksResponse.tasks
       .filter(t => {
+        // Must be completed
+        if (t.status !== 'completed') return false;
+        
         // For child tasks, find siblings with same parent
         if (task?.parent_task_id) {
           return t.parent_task_id === task.parent_task_id && 
@@ -534,68 +538,82 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                   {showRecurringHistory && (
                     <div className="space-y-2 mt-2">
                       {pastOccurrences.map((occurrence, index) => {
-                        const getStatusBadgeSmall = (status: string) => {
-                          switch (status) {
-                            case 'completed':
-                              return <Badge variant="default" className="bg-green-600 text-xs">Završeno</Badge>;
-                            case 'assigned_to_radnik':
-                            case 'in_progress':
-                              return <Badge variant="secondary" className="text-xs">U toku</Badge>;
-                            case 'with_external':
-                              return <Badge variant="outline" className="text-xs">Eksterna</Badge>;
-                            default:
-                              return <Badge variant="secondary" className="text-xs">{status}</Badge>;
-                          }
-                        };
-
+                        const isExpanded = expandedHistoryId === occurrence.id;
+                        
                         return (
                           <div 
                             key={occurrence.id} 
-                            className="border rounded-md p-3 bg-muted/30"
+                            className="border rounded-md overflow-hidden"
                             data-testid={`recurring-history-${index}`}
                           >
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <span className="text-sm font-medium">
-                                {new Date(occurrence.scheduled_for).toLocaleDateString('sr-RS', {
-                                  weekday: 'short',
-                                  day: '2-digit',
-                                  month: '2-digit',
-                                  year: 'numeric'
-                                })}
-                              </span>
-                              {getStatusBadgeSmall(occurrence.status)}
-                            </div>
-                            {occurrence.assigned_to_name && (
-                              <p className="text-xs text-muted-foreground">
-                                Izvršio: {occurrence.assigned_to_name}
-                              </p>
-                            )}
-                            {occurrence.completed_at && (
-                              <p className="text-xs text-muted-foreground">
-                                Završeno: {new Date(occurrence.completed_at).toLocaleString('sr-RS', {
-                                  day: '2-digit',
-                                  month: '2-digit',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
-                            )}
-                            {occurrence.worker_images && occurrence.worker_images.length > 0 && (
-                              <div className="flex gap-1 mt-2">
-                                {occurrence.worker_images.slice(0, 3).map((img: string, imgIdx: number) => (
-                                  <img 
-                                    key={imgIdx}
-                                    src={img}
-                                    alt={`History ${index} image ${imgIdx + 1}`}
-                                    className="w-12 h-12 rounded object-cover cursor-pointer border"
-                                    onClick={() => setPreviewImage(img)}
-                                  />
-                                ))}
-                                {occurrence.worker_images.length > 3 && (
-                                  <span className="text-xs text-muted-foreground self-center ml-1">
-                                    +{occurrence.worker_images.length - 3}
-                                  </span>
+                            <button
+                              className="w-full p-3 bg-green-50 hover:bg-green-100 transition-colors text-left flex items-center justify-between gap-2"
+                              onClick={() => setExpandedHistoryId(isExpanded ? null : occurrence.id)}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Badge variant="default" className="bg-green-600 text-xs">Završeno</Badge>
+                                <span className="text-sm font-medium">
+                                  {new Date(occurrence.scheduled_for).toLocaleDateString('sr-RS', {
+                                    weekday: 'short',
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                  })}
+                                </span>
+                              </div>
+                              {isExpanded ? (
+                                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </button>
+                            
+                            {isExpanded && (
+                              <div className="p-3 bg-muted/30 border-t space-y-2">
+                                {occurrence.assigned_to_name && (
+                                  <div className="flex items-center gap-2">
+                                    <User className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-sm">Izvršio: <strong>{occurrence.assigned_to_name}</strong></span>
+                                  </div>
+                                )}
+                                {occurrence.completed_at && (
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-muted-foreground" />
+                                    <span className="text-sm">
+                                      Završeno: {new Date(occurrence.completed_at).toLocaleString('sr-RS', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </span>
+                                  </div>
+                                )}
+                                {occurrence.worker_report && (
+                                  <div className="mt-2 p-2 bg-background rounded border">
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">Izvještaj:</p>
+                                    <p className="text-sm whitespace-pre-wrap">{occurrence.worker_report}</p>
+                                  </div>
+                                )}
+                                {occurrence.worker_images && occurrence.worker_images.length > 0 && (
+                                  <div className="mt-2">
+                                    <p className="text-xs font-medium text-muted-foreground mb-2">Slike:</p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {occurrence.worker_images.map((img: string, imgIdx: number) => (
+                                        <img 
+                                          key={imgIdx}
+                                          src={img}
+                                          alt={`History ${index} image ${imgIdx + 1}`}
+                                          className="w-full h-20 rounded object-cover cursor-pointer border hover:opacity-80"
+                                          onClick={() => setPreviewImage(img)}
+                                        />
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {!occurrence.worker_report && (!occurrence.worker_images || occurrence.worker_images.length === 0) && (
+                                  <p className="text-sm text-muted-foreground italic">Nema dodatnih informacija za ovaj izvještaj.</p>
                                 )}
                               </div>
                             )}
