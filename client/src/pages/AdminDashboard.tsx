@@ -66,6 +66,7 @@ export default function AdminDashboard() {
   const [tasksPerPage, setTasksPerPage] = useState<number>(10);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
+  const [tasksPeriodFilter, setTasksPeriodFilter] = useState<string>('7d'); // Default 7 days
   
   // Period states with date ranges
   const now = new Date();
@@ -547,23 +548,46 @@ export default function AdminDashboard() {
           </div>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-4">
-              <CardTitle>Sve reklamacije</CardTitle>
-              <Select 
-                value={tasksPerPage === 999999 ? 'all' : String(tasksPerPage)} 
-                onValueChange={(val) => setTasksPerPage(val === 'all' ? 999999 : parseInt(val))}
-              >
-                <SelectTrigger className="w-32" data-testid="select-tasks-per-page">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="30">30</SelectItem>
-                  <SelectItem value="all">Sve</SelectItem>
-                </SelectContent>
-              </Select>
+            <CardHeader className="space-y-3 pb-4">
+              <div className="flex flex-row items-center justify-between gap-4">
+                <CardTitle>Sve reklamacije</CardTitle>
+                <Select 
+                  value={tasksPerPage === 999999 ? 'all' : String(tasksPerPage)} 
+                  onValueChange={(val) => setTasksPerPage(val === 'all' ? 999999 : parseInt(val))}
+                >
+                  <SelectTrigger className="w-32" data-testid="select-tasks-per-page">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="30">30</SelectItem>
+                    <SelectItem value="all">Sve</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { value: '1d', label: 'Danas' },
+                  { value: '7d', label: '7 dana' },
+                  { value: '30d', label: '30 dana' },
+                  { value: '3m', label: '3 mjeseca' },
+                  { value: '6m', label: '6 mjeseci' },
+                  { value: '1y', label: '1 godina' },
+                  { value: 'all', label: 'Sve' },
+                ].map((period) => (
+                  <Button
+                    key={period.value}
+                    variant={tasksPeriodFilter === period.value ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setTasksPeriodFilter(period.value)}
+                    data-testid={`period-filter-${period.value}`}
+                  >
+                    {period.label}
+                  </Button>
+                ))}
+              </div>
             </CardHeader>
             <CardContent>
               {tasksLoading ? (
@@ -575,10 +599,50 @@ export default function AdminDashboard() {
               ) : (
                 <ScrollArea className="h-[500px] pr-4">
                   <div className="space-y-3">
-                    {tasks
-                      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                      .slice(0, tasksPerPage)
-                      .map((task) => {
+                    {(() => {
+                      // Filter tasks by period
+                      const getFilteredTasks = () => {
+                        const now = new Date();
+                        let startDate: Date | null = null;
+                        
+                        switch (tasksPeriodFilter) {
+                          case '1d':
+                            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                            break;
+                          case '7d':
+                            startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            break;
+                          case '30d':
+                            startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                            break;
+                          case '3m':
+                            startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                            break;
+                          case '6m':
+                            startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                            break;
+                          case '1y':
+                            startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                            break;
+                          case 'all':
+                          default:
+                            return tasks;
+                        }
+                        
+                        return tasks.filter(task => {
+                          const taskDate = task.scheduled_for 
+                            ? new Date(task.scheduled_for) 
+                            : new Date(task.created_at);
+                          return taskDate >= startDate!;
+                        });
+                      };
+                      
+                      const filteredTasks = getFilteredTasks();
+                      
+                      return filteredTasks
+                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                        .slice(0, tasksPerPage)
+                        .map((task) => {
                         const getStatusBadge = (status: string) => {
                           if (status === 'completed') {
                             return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
@@ -636,7 +700,8 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                         );
-                      })}
+                      });
+                    })()}
                     
                     {tasks.length === 0 && (
                       <p className="text-center text-muted-foreground py-8">
