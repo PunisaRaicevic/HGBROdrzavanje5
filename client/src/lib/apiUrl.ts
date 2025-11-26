@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 
-// 🔥 Backend URL - ISTI KAO U main.tsx
-const BACKEND_URL = "https://0f8348da-785a-4a32-a048-3781e2402d8c-00-1ifebzeou9igx.picard.replit.dev";
+// 🔥 Production Backend URL - Reserved VM (radi 24/7)
+const BACKEND_URL = "https://HGBRTehnickaSluzba.replit.app";
 
 /**
  * Get the full API URL for a given endpoint
