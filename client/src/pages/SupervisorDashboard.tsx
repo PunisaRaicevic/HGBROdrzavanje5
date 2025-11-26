@@ -8,7 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send, CheckCircle, XCircle, Clock, TrendingUp, FileText, Trash2 } from 'lucide-react';
+import { Send, CheckCircle, XCircle, Clock, TrendingUp, FileText, Trash2, Calendar, History, RefreshCw } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
 import StatCard from '@/components/StatCard';
 import SelectTechnicianDialog from '@/components/SelectTechnicianDialog';
@@ -45,8 +52,14 @@ export default function SupervisorDashboard() {
   const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
   const [selectedTaskForDetails, setSelectedTaskForDetails] = useState<any | null>(null);
   
-  // Filter state for "Zadaci" tab
-  const [allTasksFilter, setAllTasksFilter] = useState<'day' | 'week' | 'month'>('day');
+  // Filter state for "Zadaci" tab - same as AdminDashboard
+  const [taskViewTab, setTaskViewTab] = useState('upcoming');
+  const [tasksPeriodFilter, setTasksPeriodFilter] = useState('7d');
+  const [tasksStatusFilter, setTasksStatusFilter] = useState('all');
+  const [historyPeriodFilter, setHistoryPeriodFilter] = useState('7d');
+  const [historyStatusFilter, setHistoryStatusFilter] = useState('all');
+  const [tasksPerPage, setTasksPerPage] = useState(20);
+  const [historyPerPage, setHistoryPerPage] = useState(20);
 
   // Fetch all tasks from API
   const { data: tasksResponse, isLoading } = useQuery<{ tasks: any[] }>({
@@ -168,52 +181,7 @@ export default function SupervisorDashboard() {
   // Get technicians
   const myWorkers = techniciansResponse?.technicians || [];
   
-  // Filter all tasks by selected period
-  const filterTasksByPeriod = (tasks: any[], filter: 'day' | 'week' | 'month') => {
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    // Day range: today only
-    const endOfToday = new Date(startOfToday);
-    endOfToday.setDate(startOfToday.getDate() + 1);
-    
-    // Week range: next 7 days from today
-    const endOfWeek = new Date(startOfToday);
-    endOfWeek.setDate(startOfToday.getDate() + 7);
-    
-    // Month range: next 30 days from today
-    const endOfMonth = new Date(startOfToday);
-    endOfMonth.setDate(startOfToday.getDate() + 30);
-
-    return tasks.filter(task => {
-      // For recurring child tasks, use scheduled_for (planned execution date)
-      // For regular tasks, use created_at
-      const taskDate = task.parent_task_id && task.scheduled_for 
-        ? new Date(task.scheduled_for)
-        : new Date(task.created_at);
-      
-      if (filter === 'day') {
-        return taskDate >= startOfToday && taskDate < endOfToday;
-      } else if (filter === 'week') {
-        return taskDate >= startOfToday && taskDate < endOfWeek;
-      } else if (filter === 'month') {
-        return taskDate >= startOfToday && taskDate < endOfMonth;
-      }
-      return true;
-    });
-  };
   
-  // Filter tasks by period and exclude recurring templates (show only real tasks)
-  // Also exclude tasks that are shown in "Moji zadaci" to avoid duplication
-  const filteredAllTasks = filterTasksByPeriod(tasksResponse?.tasks || [], allTasksFilter)
-    .filter(task => {
-      // Hide recurring templates (parent tasks) - show only actual tasks to do
-      const isTemplate = task.is_recurring && !task.parent_task_id;
-      // Hide tasks that are already shown in "Moji zadaci" tab
-      const isInMyTasks = task.status === 'with_sef' || task.status === 'with_external' || task.status === 'returned_to_sef';
-      return !isTemplate && !isInMyTasks;
-    });
-
   // Calculate stats
   // Assigned today
   const today = new Date();
@@ -573,184 +541,470 @@ export default function SupervisorDashboard() {
               </Card>
             </TabsContent>
 
-            {/* All Tasks Tab with Period Filter */}
+            {/* All Tasks Tab - Same as AdminDashboard with Predstojeći/Istorija tabs */}
             <TabsContent value="all-tasks" className="space-y-4">
               <Card>
-                <CardHeader>
-                  <div className="flex flex-col space-y-3">
-                    <CardTitle>Svi zadaci</CardTitle>
-                    <div className="flex gap-2">
+                <CardHeader className="space-y-3 pb-3">
+                  <Tabs value={taskViewTab} onValueChange={setTaskViewTab} className="w-full">
+                    <div className="flex flex-row items-center justify-between gap-4 mb-3">
+                      <div className="flex items-center gap-2">
+                        <TabsList className="grid w-auto grid-cols-2 gap-1 bg-blue-100 p-1">
+                          <TabsTrigger 
+                            value="upcoming" 
+                            data-testid="tab-upcoming-tasks"
+                            className="flex items-center gap-2 px-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                          >
+                            <Calendar className="h-4 w-4" />
+                            Predstojeći
+                          </TabsTrigger>
+                          <TabsTrigger 
+                            value="history" 
+                            data-testid="tab-history-tasks"
+                            className="flex items-center gap-2 px-4 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                          >
+                            <History className="h-4 w-4" />
+                            Istorija
+                          </TabsTrigger>
+                        </TabsList>
+                      </div>
                       <Button
+                        variant="outline"
                         size="sm"
-                        variant={allTasksFilter === 'day' ? 'default' : 'outline'}
-                        onClick={() => setAllTasksFilter('day')}
-                        data-testid="filter-day"
+                        onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/tasks'] })}
+                        data-testid="button-refresh-tasks"
                       >
-                        Dan
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={allTasksFilter === 'week' ? 'default' : 'outline'}
-                        onClick={() => setAllTasksFilter('week')}
-                        data-testid="filter-week"
-                      >
-                        Nedelja
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={allTasksFilter === 'month' ? 'default' : 'outline'}
-                        onClick={() => setAllTasksFilter('month')}
-                        data-testid="filter-month"
-                      >
-                        Mesec
+                        <RefreshCw className="h-4 w-4" />
                       </Button>
                     </div>
-                  </div>
+
+                    <TabsContent value="upcoming" className="mt-0 space-y-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {[
+                          { value: '1d', label: 'Danas' },
+                          { value: '7d', label: '7 dana' },
+                          { value: '30d', label: '30 dana' },
+                          { value: '3m', label: '3 mjeseca' },
+                          { value: '6m', label: '6 mjeseci' },
+                        ].map((period) => (
+                          <Button
+                            key={period.value}
+                            type="button"
+                            variant={tasksPeriodFilter === period.value ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setTasksPeriodFilter(period.value)}
+                            data-testid={`period-filter-${period.value}`}
+                          >
+                            {period.label}
+                          </Button>
+                        ))}
+                        <div className="ml-2 border-l pl-2">
+                          <Select 
+                            value={tasksStatusFilter} 
+                            onValueChange={setTasksStatusFilter}
+                          >
+                            <SelectTrigger className="w-36" data-testid="select-status-filter">
+                              <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Svi statusi</SelectItem>
+                              <SelectItem value="completed">Završeno</SelectItem>
+                              <SelectItem value="in_progress">U toku</SelectItem>
+                              <SelectItem value="pending">Na čekanju</SelectItem>
+                              <SelectItem value="external">Eksterna</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="history" className="mt-0 space-y-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {[
+                          { value: '1d', label: 'Danas' },
+                          { value: '7d', label: '7 dana' },
+                          { value: '30d', label: '30 dana' },
+                          { value: '3m', label: '3 mjeseca' },
+                          { value: '6m', label: '6 mjeseci' },
+                        ].map((period) => (
+                          <Button
+                            key={period.value}
+                            type="button"
+                            variant={historyPeriodFilter === period.value ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setHistoryPeriodFilter(period.value)}
+                            data-testid={`history-period-filter-${period.value}`}
+                          >
+                            {period.label}
+                          </Button>
+                        ))}
+                        <div className="ml-2 border-l pl-2">
+                          <Select 
+                            value={historyStatusFilter} 
+                            onValueChange={setHistoryStatusFilter}
+                          >
+                            <SelectTrigger className="w-36" data-testid="select-history-status-filter">
+                              <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Svi statusi</SelectItem>
+                              <SelectItem value="completed">Završeno</SelectItem>
+                              <SelectItem value="in_progress">U toku</SelectItem>
+                              <SelectItem value="pending">Na čekanju</SelectItem>
+                              <SelectItem value="external">Eksterna</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-[600px] pr-4">
-                    <div className="space-y-4">
-                      {filteredAllTasks.length === 0 ? (
-                        <p className="text-center text-muted-foreground py-8">
-                          Nema zadataka za izabrani period
-                        </p>
-                      ) : (
-                        filteredAllTasks
-                          .sort((a, b) => {
-                            // Get execution date for each task
-                            const getExecutionDate = (task: any) => {
-                              // For recurring templates, use next_occurrence
-                              if (task.is_recurring && !task.parent_task_id && task.next_occurrence) {
-                                return new Date(task.next_occurrence);
-                              }
-                              // For recurring child tasks, use scheduled_for
-                              if (task.parent_task_id && task.scheduled_for) {
-                                return new Date(task.scheduled_for);
-                              }
-                              // For regular tasks, use created_at
-                              return new Date(task.created_at);
-                            };
-                            
-                            const dateA = getExecutionDate(a).getTime();
-                            const dateB = getExecutionDate(b).getTime();
-                            
-                            // Sort ascending (earliest date first)
-                            return dateA - dateB;
-                          })
-                          .map((task) => {
-                            const getStatusBadge = (status: string) => {
-                              if (status === 'completed') {
-                                return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
-                              } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
-                                return <Badge variant="secondary">U toku</Badge>;
-                              } else if (status === 'with_external') {
-                                return <Badge variant="outline">Eksterna firma</Badge>;
-                              } else if (status === 'with_sef' || status === 'returned_to_sef') {
-                                return <Badge variant="destructive">Kod šefa</Badge>;
-                              }
-                              return <Badge variant="secondary">{status}</Badge>;
-                            };
-
-                            // Format task date - ALL tasks show day of week for consistency
-                            const formatTaskDate = (task: any) => {
-                              let date: Date;
+                  {isLoading ? (
+                    <div className="space-y-3">
+                      <div className="h-20 bg-muted animate-pulse rounded" />
+                      <div className="h-20 bg-muted animate-pulse rounded" />
+                      <div className="h-20 bg-muted animate-pulse rounded" />
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[500px] pr-4">
+                      <div className="space-y-3">
+                        {taskViewTab === 'upcoming' ? (
+                          (() => {
+                            const tasks = tasksResponse?.tasks || [];
+                            const getFilteredTasks = () => {
+                              const now = new Date();
+                              const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                              const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                              let endDate: Date | null = null;
                               
-                              // Determine which date to use
-                              if (task.is_recurring && !task.parent_task_id && task.next_occurrence) {
-                                // For recurring template tasks, use next occurrence
-                                date = new Date(task.next_occurrence);
-                              } else if (task.parent_task_id && task.scheduled_for) {
-                                // For recurring child tasks, use scheduled execution date
-                                date = new Date(task.scheduled_for);
+                              let periodFiltered = tasks;
+                              
+                              if (tasksPeriodFilter === '1d') {
+                                periodFiltered = tasks.filter(task => {
+                                  const createdDate = new Date(task.created_at);
+                                  const isCreatedToday = createdDate >= todayStart && createdDate < todayEnd;
+                                  
+                                  if (task.scheduled_for) {
+                                    const scheduledDate = new Date(task.scheduled_for);
+                                    const isScheduledToday = scheduledDate >= todayStart && scheduledDate < todayEnd;
+                                    return isScheduledToday;
+                                  }
+                                  return isCreatedToday;
+                                });
                               } else {
-                                // For regular tasks, use creation date
-                                date = new Date(task.created_at);
+                                switch (tasksPeriodFilter) {
+                                  case '7d':
+                                    endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                                    break;
+                                  case '30d':
+                                    endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                                    break;
+                                  case '3m':
+                                    endDate = new Date(now.getFullYear(), now.getMonth() + 3, now.getDate());
+                                    break;
+                                  case '6m':
+                                    endDate = new Date(now.getFullYear(), now.getMonth() + 6, now.getDate());
+                                    break;
+                                }
+                                
+                                if (endDate) {
+                                  periodFiltered = tasks.filter(task => {
+                                    const createdDate = new Date(task.created_at);
+                                    const isCreatedToday = createdDate >= todayStart && createdDate < todayEnd;
+                                    
+                                    if (task.scheduled_for) {
+                                      const scheduledDate = new Date(task.scheduled_for);
+                                      return scheduledDate >= todayStart && scheduledDate <= endDate!;
+                                    }
+                                    
+                                    return isCreatedToday || (createdDate >= todayStart && createdDate <= endDate!);
+                                  });
+                                }
                               }
                               
-                              // Format with day of week for ALL tasks (consistent format)
-                              const dayName = date.toLocaleDateString('sr-RS', { weekday: 'long' });
-                              const dateStr = date.toLocaleDateString('sr-RS', { 
-                                day: '2-digit', 
-                                month: '2-digit', 
-                                year: 'numeric'
+                              if (tasksStatusFilter === 'all') {
+                                return periodFiltered;
+                              }
+                              
+                              return periodFiltered.filter(task => {
+                                switch (tasksStatusFilter) {
+                                  case 'completed':
+                                    return task.status === 'completed';
+                                  case 'in_progress':
+                                    return task.status === 'assigned_to_radnik' || 
+                                           task.status === 'with_operator' || 
+                                           task.status === 'in_progress';
+                                  case 'pending':
+                                    return task.status === 'new' || 
+                                           task.status === 'pending' || 
+                                           task.status === 'assigned_to_operator';
+                                  case 'external':
+                                    return task.status === 'with_external';
+                                  default:
+                                    return true;
+                                }
                               });
-                              return `${dayName.charAt(0).toUpperCase() + dayName.slice(1)}, ${dateStr}`;
                             };
-
-                            const getRecurrenceLabel = (pattern: string | null) => {
-                              if (!pattern || pattern === 'once') return null;
-                              const labels: Record<string, string> = {
-                                '1_days': 'Dnevno',
-                                '3_days': 'Svaka 3 dana',
-                                '7_days': 'Nedeljno',
-                                '14_days': 'Dvonedeljno',
-                                '1_months': 'Mesečno',
-                                '3_months': 'Tromesečno',
-                                '6_months': 'Polugodišnje',
-                                '12_months': 'Godišnje',
-                                'daily': 'Dnevno',
-                                'weekly': 'Nedeljno',
-                                'monthly': 'Mesečno'
+                            
+                            const filteredTasks = getFilteredTasks();
+                            
+                            if (filteredTasks.length === 0) {
+                              return (
+                                <p className="text-center text-muted-foreground py-8">
+                                  Nema predstojećih zadataka
+                                </p>
+                              );
+                            }
+                            
+                            return filteredTasks
+                              .sort((a, b) => {
+                                const dateA = a.scheduled_for ? new Date(a.scheduled_for) : new Date(a.created_at);
+                                const dateB = b.scheduled_for ? new Date(b.scheduled_for) : new Date(b.created_at);
+                                return dateA.getTime() - dateB.getTime();
+                              })
+                              .slice(0, tasksPerPage)
+                              .map((task) => {
+                              const getStatusBadge = (status: string) => {
+                                if (status === 'completed') {
+                                  return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                                } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
+                                  return <Badge variant="secondary">U toku</Badge>;
+                                } else if (status === 'with_external') {
+                                  return <Badge variant="outline">Eksterna firma</Badge>;
+                                }
+                                return <Badge variant="secondary">{status}</Badge>;
                               };
-                              return labels[pattern] || pattern;
-                            };
 
-                            const isRecurring = task.is_recurring || !!task.parent_task_id;
-                            const isTemplate = task.is_recurring && !task.parent_task_id;
+                              const formatDate = (dateStr: string) => {
+                                const date = new Date(dateStr);
+                                return date.toLocaleDateString('sr-RS', { 
+                                  day: '2-digit', 
+                                  month: '2-digit', 
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                });
+                              };
 
-                            return (
-                              <Card 
-                                key={task.id} 
-                                className="p-4 cursor-pointer hover-elevate"
-                                onClick={() => handleViewTaskDetails(task)}
-                                data-testid={`all-task-${task.id}`}
-                              >
-                                <div className="space-y-2">
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="text-sm text-muted-foreground whitespace-nowrap">
-                                      {formatTaskDate(task)}
-                                    </div>
-                                    {getStatusBadge(task.status)}
-                                  </div>
-                                  <div>
-                                    <h3 className="font-medium text-base mb-2">{task.title}</h3>
-                                    {task.description && (
-                                      <p className="text-sm mb-2">{task.description}</p>
-                                    )}
-                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                      {isRecurring ? (
-                                        <>
-                                          <Badge variant="outline" className="text-xs">
-                                            Periodičan zadatak {isTemplate ? '(šablon)' : ''}
+                              return (
+                                <div 
+                                  key={task.id} 
+                                  className="p-4 border rounded-md hover-elevate cursor-pointer"
+                                  data-testid={`task-item-${task.id}`}
+                                  onClick={() => handleViewTaskDetails(task)}
+                                >
+                                  <div className="space-y-2">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="text-sm text-muted-foreground whitespace-nowrap">
+                                        {task.scheduled_for ? (
+                                          <span>Zakazano: {formatDate(task.scheduled_for)}</span>
+                                        ) : (
+                                          formatDate(task.created_at)
+                                        )}
+                                      </div>
+                                      <div className="flex flex-col gap-1 items-end">
+                                        {getStatusBadge(task.status)}
+                                        {(task.parent_task_id || task.is_recurring) ? (
+                                          <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-purple-700">
+                                            Periodičan
                                           </Badge>
-                                          {task.recurrence_pattern && getRecurrenceLabel(task.recurrence_pattern) && (
-                                            <Badge variant="secondary" className="text-xs">
-                                              {getRecurrenceLabel(task.recurrence_pattern)}
-                                            </Badge>
-                                          )}
-                                        </>
-                                      ) : (
-                                        <Badge variant="secondary" className="text-xs">
-                                          Pojedinačan
-                                        </Badge>
-                                      )}
+                                        ) : (
+                                          <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-600">
+                                            Jednokratan
+                                          </Badge>
+                                        )}
+                                      </div>
                                     </div>
-                                    <div className="space-y-1 text-sm text-muted-foreground">
-                                      {task.created_by_name && (
-                                        <p>Prijavio: {task.created_by_name}</p>
+                                    <div>
+                                      <h3 className="font-medium text-base mb-2">{task.title}</h3>
+                                      {task.description && (
+                                        <p className="text-sm mb-2">{task.description}</p>
                                       )}
-                                      {task.assigned_to_name && (
-                                        <p>Dodeljeno: {task.assigned_to_name}</p>
-                                      )}
+                                      <div className="space-y-1 text-sm text-muted-foreground">
+                                        {task.created_by_name && (
+                                          <p>Prijavio: {task.created_by_name}</p>
+                                        )}
+                                        {task.assigned_to_name && (
+                                          <p>Dodeljeno: {task.assigned_to_name}</p>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                              </Card>
-                            );
-                          })
-                      )}
-                    </div>
-                  </ScrollArea>
+                              );
+                            });
+                          })()
+                        ) : (
+                          (() => {
+                            const tasks = tasksResponse?.tasks || [];
+                            const getHistoryTasks = () => {
+                              const now = new Date();
+                              const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                              let startDate: Date | null = null;
+                              
+                              const tasksBeforeToday = tasks.filter(task => {
+                                const createdDate = new Date(task.created_at);
+                                return createdDate < todayStart;
+                              });
+                              
+                              let periodFiltered = tasksBeforeToday;
+                              
+                              if (historyPeriodFilter === '1d') {
+                                const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+                                periodFiltered = tasksBeforeToday.filter(task => {
+                                  const taskDate = task.completed_at 
+                                    ? new Date(task.completed_at)
+                                    : task.scheduled_for 
+                                      ? new Date(task.scheduled_for) 
+                                      : new Date(task.created_at);
+                                  return taskDate >= yesterdayStart && taskDate < todayStart;
+                                });
+                              } else {
+                                switch (historyPeriodFilter) {
+                                  case '7d':
+                                    startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                    break;
+                                  case '30d':
+                                    startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                                    break;
+                                  case '3m':
+                                    startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                                    break;
+                                  case '6m':
+                                    startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                                    break;
+                                }
+                                
+                                if (startDate) {
+                                  periodFiltered = tasksBeforeToday.filter(task => {
+                                    const taskDate = task.completed_at 
+                                      ? new Date(task.completed_at)
+                                      : task.scheduled_for 
+                                        ? new Date(task.scheduled_for) 
+                                        : new Date(task.created_at);
+                                    return taskDate >= startDate! && taskDate < todayStart;
+                                  });
+                                }
+                              }
+                              
+                              if (historyStatusFilter === 'all') {
+                                return periodFiltered;
+                              }
+                              
+                              return periodFiltered.filter(task => {
+                                switch (historyStatusFilter) {
+                                  case 'completed':
+                                    return task.status === 'completed';
+                                  case 'in_progress':
+                                    return task.status === 'assigned_to_radnik' || 
+                                           task.status === 'with_operator' || 
+                                           task.status === 'in_progress';
+                                  case 'pending':
+                                    return task.status === 'new' || 
+                                           task.status === 'pending' || 
+                                           task.status === 'assigned_to_operator';
+                                  case 'external':
+                                    return task.status === 'with_external';
+                                  default:
+                                    return true;
+                                }
+                              });
+                            };
+                            
+                            const historyTasks = getHistoryTasks();
+                            
+                            if (historyTasks.length === 0) {
+                              return (
+                                <p className="text-center text-muted-foreground py-8">
+                                  Nema zadataka u istoriji
+                                </p>
+                              );
+                            }
+                            
+                            return historyTasks
+                              .sort((a, b) => {
+                                const dateA = a.completed_at ? new Date(a.completed_at) : new Date(a.created_at);
+                                const dateB = b.completed_at ? new Date(b.completed_at) : new Date(b.created_at);
+                                return dateB.getTime() - dateA.getTime();
+                              })
+                              .slice(0, historyPerPage)
+                              .map((task) => {
+                              const getStatusBadge = (status: string) => {
+                                if (status === 'completed') {
+                                  return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                                } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
+                                  return <Badge variant="secondary">U toku</Badge>;
+                                } else if (status === 'with_external') {
+                                  return <Badge variant="outline">Eksterna firma</Badge>;
+                                }
+                                return <Badge variant="secondary">{status}</Badge>;
+                              };
+
+                              const formatDate = (dateStr: string) => {
+                                const date = new Date(dateStr);
+                                return date.toLocaleDateString('sr-RS', { 
+                                  day: '2-digit', 
+                                  month: '2-digit', 
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                });
+                              };
+
+                              return (
+                                <div 
+                                  key={task.id} 
+                                  className="p-4 border rounded-md hover-elevate cursor-pointer"
+                                  data-testid={`history-task-item-${task.id}`}
+                                  onClick={() => handleViewTaskDetails(task)}
+                                >
+                                  <div className="space-y-2">
+                                    <div className="flex items-start justify-between gap-3">
+                                      <div className="text-sm text-muted-foreground whitespace-nowrap">
+                                        {task.completed_at ? (
+                                          <span>Završeno: {formatDate(task.completed_at)}</span>
+                                        ) : task.scheduled_for ? (
+                                          <span>Zakazano: {formatDate(task.scheduled_for)}</span>
+                                        ) : (
+                                          formatDate(task.created_at)
+                                        )}
+                                      </div>
+                                      <div className="flex flex-col gap-1 items-end">
+                                        {getStatusBadge(task.status)}
+                                        {(task.parent_task_id || task.is_recurring) ? (
+                                          <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-purple-700">
+                                            Periodičan
+                                          </Badge>
+                                        ) : (
+                                          <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-600">
+                                            Jednokratan
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <h3 className="font-medium text-base mb-2">{task.title}</h3>
+                                      {task.description && (
+                                        <p className="text-sm mb-2">{task.description}</p>
+                                      )}
+                                      <div className="space-y-1 text-sm text-muted-foreground">
+                                        {task.created_by_name && (
+                                          <p>Prijavio: {task.created_by_name}</p>
+                                        )}
+                                        {task.assigned_to_name && (
+                                          <p>Dodeljeno: {task.assigned_to_name}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            });
+                          })()
+                        )}
+                      </div>
+                    </ScrollArea>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
