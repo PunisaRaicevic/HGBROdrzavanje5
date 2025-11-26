@@ -4,12 +4,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import "@/lib/i18n";
 import LoginPage from "@/components/LoginPage";
 import AppHeader from "@/components/AppHeader";
-import AppSidebar from "@/components/AppSidebar";
 import Dashboard from "@/pages/Dashboard";
 import TasksPage from "@/pages/TasksPage";
 import UsersPage from "@/pages/UsersPage";
@@ -110,41 +108,32 @@ function Router() {
     return <LoginPage onLogin={login} />;
   }
 
-  const style = {
-    "--sidebar-width": "16rem",
-  };
-
   return (
-    <SidebarProvider style={style as React.CSSProperties}>
-      <div className="flex h-screen w-full overflow-hidden">
-        <AppSidebar />
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <AppHeader />
-          <main className="flex-1 overflow-y-auto p-6">
-            <Switch>
-              <Route path="/" component={Dashboard} />
-              <Route path="/tasks" component={TasksPage} />
-              <Route path="/users" component={UsersPage} />
-              <Route path="/companies">
-                <div className="text-center text-muted-foreground mt-12">
-                  <h2 className="text-2xl font-medium mb-2">
-                    External Companies
-                  </h2>
-                  <p>Coming soon...</p>
-                </div>
-              </Route>
-              <Route path="/settings">
-                <div className="text-center text-muted-foreground mt-12">
-                  <h2 className="text-2xl font-medium mb-2">Settings</h2>
-                  <p>Coming soon...</p>
-                </div>
-              </Route>
-              <Route component={NotFound} />
-            </Switch>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    <div className="flex flex-col h-screen w-full overflow-hidden">
+      <AppHeader />
+      <main className="flex-1 overflow-y-auto p-6">
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/tasks" component={TasksPage} />
+          <Route path="/users" component={UsersPage} />
+          <Route path="/companies">
+            <div className="text-center text-muted-foreground mt-12">
+              <h2 className="text-2xl font-medium mb-2">
+                External Companies
+              </h2>
+              <p>Coming soon...</p>
+            </div>
+          </Route>
+          <Route path="/settings">
+            <div className="text-center text-muted-foreground mt-12">
+              <h2 className="text-2xl font-medium mb-2">Settings</h2>
+              <p>Coming soon...</p>
+            </div>
+          </Route>
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+    </div>
   );
 }
 

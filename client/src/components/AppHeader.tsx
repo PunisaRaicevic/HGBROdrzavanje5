@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { LogOut, Globe, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -172,8 +171,7 @@ export default function AppHeader() {
   return (
     <header className="flex items-center justify-between px-4 py-4 border-b bg-background sticky top-0 z-50">
       <div className="flex items-center gap-3">
-        <SidebarTrigger data-testid="button-sidebar-toggle" />
-        <h1 className="text-xl font-semibold hidden sm:block">{t('hotelManagement')}</h1>
+        <h1 className="text-xl font-semibold">{t('hotelManagement')}</h1>
       </div>
 
       <div className="flex items-center gap-2">
