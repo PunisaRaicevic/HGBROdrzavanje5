@@ -580,6 +580,7 @@ export default function AdminDashboard() {
                 ].map((period) => (
                   <Button
                     key={period.value}
+                    type="button"
                     variant={tasksPeriodFilter === period.value ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setTasksPeriodFilter(period.value)}
