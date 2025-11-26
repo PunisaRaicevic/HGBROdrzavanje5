@@ -518,29 +518,53 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
                     <div className="space-y-2">
                       <Label>Frekvencija Ponavljanja</Label>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Svaka</span>
-                        <Select 
-                          value={recurrenceCount.toString()} 
-                          onValueChange={(v) => setRecurrenceCount(parseInt(v))}
-                        >
-                          <SelectTrigger className="w-20 border bg-muted" data-testid="select-recurrence-count">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 20, 30].map(n => (
-                              <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        {recurrenceUnit === 'days' ? (
+                          <>
+                            <span className="text-sm text-muted-foreground">Svakog dana</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-sm text-muted-foreground">Svaka</span>
+                            <Select 
+                              value={recurrenceCount.toString()} 
+                              onValueChange={(v) => setRecurrenceCount(parseInt(v))}
+                            >
+                              <SelectTrigger className="w-20 border bg-muted" data-testid="select-recurrence-count">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {recurrenceUnit === 'weeks' 
+                                  ? [1, 2, 3, 4, 5, 6, 7].map(n => (
+                                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                                    ))
+                                  : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map(n => (
+                                      <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                                    ))
+                                }
+                              </SelectContent>
+                            </Select>
+                          </>
+                        )}
                         <Select 
                           value={recurrenceUnit} 
-                          onValueChange={(v) => setRecurrenceUnit(v as 'days' | 'weeks' | 'months' | 'years')}
+                          onValueChange={(v) => {
+                            const newUnit = v as 'days' | 'weeks' | 'months' | 'years';
+                            setRecurrenceUnit(newUnit);
+                            // Reset count to 1 when switching to days
+                            if (newUnit === 'days') {
+                              setRecurrenceCount(1);
+                            }
+                            // Cap weeks at 7
+                            if (newUnit === 'weeks' && recurrenceCount > 7) {
+                              setRecurrenceCount(7);
+                            }
+                          }}
                         >
                           <SelectTrigger className="w-32 border bg-muted" data-testid="select-recurrence-unit">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="days">{recurrenceCount === 1 ? 'dan' : 'dana'}</SelectItem>
+                            <SelectItem value="days">dan (svaki)</SelectItem>
                             <SelectItem value="weeks">{recurrenceCount === 1 ? 'nedjelja' : 'nedjelja'}</SelectItem>
                             <SelectItem value="months">{recurrenceCount === 1 ? 'mjesec' : 'mjeseca'}</SelectItem>
                             <SelectItem value="years">{recurrenceCount === 1 ? 'godina' : 'godina'}</SelectItem>
