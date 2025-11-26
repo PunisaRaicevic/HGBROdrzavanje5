@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -50,6 +50,13 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
   });
 
   const technicians = techniciansResponse?.technicians || [];
+
+  // Automatically trim selectedWeekDays when recurrenceCount decreases
+  useEffect(() => {
+    if (recurrenceUnit === 'weeks' && selectedWeekDays.length > recurrenceCount) {
+      setSelectedWeekDays(prev => prev.slice(0, recurrenceCount));
+    }
+  }, [recurrenceCount, recurrenceUnit]);
 
   // Create task mutation
   const createTaskMutation = useMutation({
@@ -271,8 +278,19 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
         if (prev.length === 1) return prev;
         return prev.filter(d => d !== day);
       }
+      // Limit selection to recurrenceCount days
+      if (prev.length >= recurrenceCount) {
+        // Replace oldest selection with new one
+        return [...prev.slice(1), day].sort();
+      }
       return [...prev, day].sort();
     });
+  };
+
+  // Check if a day can be selected (for visual feedback)
+  const canSelectWeekDay = (day: number) => {
+    if (selectedWeekDays.includes(day)) return true;
+    return selectedWeekDays.length < recurrenceCount;
   };
 
   return (
@@ -534,24 +552,32 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
                     {/* Week day selection - only for weekly recurrence */}
                     {recurrenceUnit === 'weeks' && (
                       <div className="space-y-2">
-                        <Label>Dani u nedjelji</Label>
+                        <Label>Dani u nedjelji ({selectedWeekDays.length}/{recurrenceCount})</Label>
                         <div className="flex flex-wrap gap-1">
-                          {weekDays.map(day => (
-                            <Button
-                              key={day.value}
-                              type="button"
-                              size="sm"
-                              variant={selectedWeekDays.includes(day.value) ? 'default' : 'outline'}
-                              onClick={() => toggleWeekDay(day.value)}
-                              className="w-10"
-                              data-testid={`weekday-${day.value}`}
-                            >
-                              {day.label}
-                            </Button>
-                          ))}
+                          {weekDays.map(day => {
+                            const isSelected = selectedWeekDays.includes(day.value);
+                            const canSelect = canSelectWeekDay(day.value);
+                            return (
+                              <Button
+                                key={day.value}
+                                type="button"
+                                size="sm"
+                                variant={isSelected ? 'default' : 'outline'}
+                                onClick={() => toggleWeekDay(day.value)}
+                                className={cn("w-10", !canSelect && !isSelected && "opacity-40")}
+                                disabled={!canSelect && !isSelected}
+                                data-testid={`weekday-${day.value}`}
+                              >
+                                {day.label}
+                              </Button>
+                            );
+                          })}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Odabrano: {selectedWeekDays.map(d => weekDays.find(wd => wd.value === d)?.fullLabel).join(', ')}
+                          {selectedWeekDays.length < recurrenceCount 
+                            ? `Odaberite jos ${recurrenceCount - selectedWeekDays.length} ${recurrenceCount - selectedWeekDays.length === 1 ? 'dan' : 'dana'}`
+                            : `Odabrano: ${selectedWeekDays.map(d => weekDays.find(wd => wd.value === d)?.fullLabel).join(', ')}`
+                          }
                         </p>
                       </div>
                     )}
