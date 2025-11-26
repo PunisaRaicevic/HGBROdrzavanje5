@@ -187,23 +187,33 @@ export default function WorkerProfileDialog({
     return <Badge variant="secondary">{status}</Badge>;
   };
 
-  // Get recurrence label (matching SupervisorDashboard)
   const getRecurrenceLabel = (pattern: string | null) => {
     if (!pattern || pattern === 'once') return null;
-    const labels: Record<string, string> = {
-      '1_days': 'Dnevno',
-      '3_days': 'Svaka 3 dana',
-      '7_days': 'Nedeljno',
-      '14_days': 'Dvonedeljno',
-      '1_months': 'Mesečno',
-      '3_months': 'Tromesečno',
-      '6_months': 'Polugodišnje',
-      '12_months': 'Godišnje',
-      'daily': 'Dnevno',
-      'weekly': 'Nedeljno',
-      'monthly': 'Mesečno'
+    
+    const legacyLabels: Record<string, string> = {
+      'daily': 'Svakog dana',
+      'weekly': 'Nedjeljno',
+      'monthly': 'Mjesečno'
     };
-    return labels[pattern] || pattern;
+    if (legacyLabels[pattern]) return legacyLabels[pattern];
+    
+    const match = pattern.match(/^(\d+)_(days|weeks|months|years)$/);
+    if (match) {
+      const count = parseInt(match[1]);
+      const unit = match[2];
+      
+      if (unit === 'days') {
+        return count === 1 ? 'Svakog dana' : `Svaka ${count} dana`;
+      } else if (unit === 'weeks') {
+        return count === 1 ? 'Jednom nedjeljno' : `${count} puta nedjeljno`;
+      } else if (unit === 'months') {
+        return count === 1 ? 'Jednom mjesečno' : `${count} puta mjesečno`;
+      } else if (unit === 'years') {
+        return count === 1 ? 'Jednom godišnje' : `${count} puta godišnje`;
+      }
+    }
+    
+    return pattern;
   };
 
   // Format shift

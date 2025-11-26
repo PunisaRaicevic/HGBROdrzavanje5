@@ -75,7 +75,7 @@ function setExecutionTime(date: Date, hour?: number | null, minute?: number | nu
  * @param pattern - The recurrence pattern (e.g., "3_years", "2_weeks")
  * @param details - Detailed recurrence info (specific days/dates)
  * @param maxDates - Maximum number of dates to generate
- * @returns Array of scheduled dates
+ * @returns Array of scheduled dates (sorted chronologically)
  */
 export function calculateScheduledDates(
   startDate: Date,
@@ -85,17 +85,18 @@ export function calculateScheduledDates(
 ): Date[] {
   const dates: Date[] = [];
   const now = new Date();
+  const baseDate = new Date(Math.max(startDate.getTime(), now.getTime()));
   const customPattern = parseCustomPattern(pattern);
   
   if (!customPattern) {
-    // Standard patterns - use traditional interval-based calculation
-    let currentDate = new Date(startDate);
+    let currentDate = new Date(baseDate);
     for (let i = 0; i < maxDates; i++) {
       if (i > 0) {
         currentDate = calculateNextOccurrenceSimple(currentDate, pattern);
       }
-      if (currentDate >= now) {
-        dates.push(setExecutionTime(currentDate, details.execution_hour, details.execution_minute));
+      const scheduledDate = setExecutionTime(currentDate, details.execution_hour, details.execution_minute);
+      if (scheduledDate > now) {
+        dates.push(scheduledDate);
       }
     }
     return dates;
@@ -103,11 +104,12 @@ export function calculateScheduledDates(
   
   const { count, unit } = customPattern;
   
-  // For "X times per period" patterns, we need specific dates
   if (unit === 'years' && details.recurrence_year_dates && details.recurrence_year_dates.length > 0) {
-    // X times per year - use recurrence_year_dates
-    const yearDates = details.recurrence_year_dates;
-    const startYear = now.getFullYear();
+    const yearDates = [...details.recurrence_year_dates].sort((a, b) => {
+      if (a.month !== b.month) return a.month - b.month;
+      return a.day - b.day;
+    });
+    const startYear = baseDate.getFullYear();
     
     for (let yearOffset = 0; yearOffset < 5 && dates.length < maxDates; yearOffset++) {
       const year = startYear + yearOffset;
@@ -115,7 +117,7 @@ export function calculateScheduledDates(
         if (dates.length >= maxDates) break;
         const date = new Date(year, dateInfo.month - 1, dateInfo.day);
         date.setHours(details.execution_hour ?? 9, details.execution_minute ?? 0, 0, 0);
-        if (date >= now) {
+        if (date > now && date >= baseDate) {
           dates.push(date);
         }
       }
@@ -124,15 +126,14 @@ export function calculateScheduledDates(
   }
   
   if (unit === 'months' && details.recurrence_month_days && details.recurrence_month_days.length > 0) {
-    // X times per month - use recurrence_month_days
-    const monthDays = details.recurrence_month_days;
-    let currentMonth = now.getMonth();
-    let currentYear = now.getFullYear();
+    const monthDays = [...details.recurrence_month_days].sort((a, b) => a - b);
+    let currentMonth = baseDate.getMonth();
+    let currentYear = baseDate.getFullYear();
     
     for (let monthOffset = 0; monthOffset < 12 && dates.length < maxDates; monthOffset++) {
       const month = currentMonth + monthOffset;
       const year = currentYear + Math.floor(month / 12);
-      const normalizedMonth = month % 12;
+      const normalizedMonth = ((month % 12) + 12) % 12;
       
       for (const day of monthDays) {
         if (dates.length >= maxDates) break;
@@ -140,7 +141,7 @@ export function calculateScheduledDates(
         const safeDay = Math.min(day, lastDayOfMonth);
         const date = new Date(year, normalizedMonth, safeDay);
         date.setHours(details.execution_hour ?? 9, details.execution_minute ?? 0, 0, 0);
-        if (date >= now) {
+        if (date > now && date >= baseDate) {
           dates.push(date);
         }
       }
@@ -149,31 +150,31 @@ export function calculateScheduledDates(
   }
   
   if (unit === 'weeks' && details.recurrence_week_days && details.recurrence_week_days.length > 0) {
-    // X times per week - use recurrence_week_days (0=Sunday, 1=Monday, etc.)
-    const weekDays = details.recurrence_week_days;
-    let currentDate = new Date(now);
-    currentDate.setHours(details.execution_hour ?? 9, details.execution_minute ?? 0, 0, 0);
+    const weekDays = [...details.recurrence_week_days].sort((a, b) => a - b);
+    const executionHour = details.execution_hour ?? 9;
+    const executionMinute = details.execution_minute ?? 0;
     
     for (let dayOffset = 0; dayOffset < 60 && dates.length < maxDates; dayOffset++) {
-      const date = new Date(currentDate);
+      const date = new Date(baseDate);
       date.setDate(date.getDate() + dayOffset);
+      date.setHours(executionHour, executionMinute, 0, 0);
       const dayOfWeek = date.getDay();
       
-      if (weekDays.includes(dayOfWeek)) {
+      if (weekDays.includes(dayOfWeek) && date > now && date >= baseDate) {
         dates.push(new Date(date));
       }
     }
     return dates.slice(0, maxDates);
   }
   
-  // Fallback: treat as interval-based (every X days/weeks/months/years)
-  let currentDate = new Date(startDate);
+  let currentDate = new Date(baseDate);
   for (let i = 0; i < maxDates; i++) {
     if (i > 0) {
       currentDate = calculateNextOccurrenceSimple(currentDate, pattern);
     }
-    if (currentDate >= now) {
-      dates.push(setExecutionTime(currentDate, details.execution_hour, details.execution_minute));
+    const scheduledDate = setExecutionTime(currentDate, details.execution_hour, details.execution_minute);
+    if (scheduledDate > now) {
+      dates.push(scheduledDate);
     }
   }
   return dates;
@@ -349,19 +350,22 @@ export function getRecurrenceLabel(pattern: string): string {
     const { count, unit } = customPattern;
     switch (unit) {
       case 'years':
+        if (count === 1) return 'Jednom godišnje';
         return `${count} puta godišnje`;
       case 'months':
+        if (count === 1) return 'Jednom mjesečno';
         return `${count} puta mjesečno`;
       case 'weeks':
+        if (count === 1) return 'Jednom nedjeljno';
         return `${count} puta nedjeljno`;
       case 'days':
-        if (count === 1) return 'Dnevno';
+        if (count === 1) return 'Svakog dana';
         return `Svaka ${count} dana`;
     }
   }
   
   switch (pattern) {
-    case 'daily': return 'Dnevno';
+    case 'daily': return 'Svakog dana';
     case 'weekly': return 'Nedjeljno';
     case 'monthly': return 'Mjesečno';
     case 'yearly': return 'Godišnje';

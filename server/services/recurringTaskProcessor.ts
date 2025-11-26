@@ -77,7 +77,12 @@ export async function ensureChildTasksExist(templateTask: any): Promise<number> 
     );
     
     // Calculate scheduled dates using detailed recurrence
-    const startDate = new Date(templateTask.next_occurrence || templateTask.recurrence_start_date || new Date());
+    // Use max(now, recurrence_start_date) as base - NOT next_occurrence which may be polluted
+    const now = new Date();
+    const recurrenceStart = templateTask.recurrence_start_date 
+      ? new Date(templateTask.recurrence_start_date) 
+      : now;
+    const startDate = new Date(Math.max(now.getTime(), recurrenceStart.getTime()));
     const scheduledDates = calculateScheduledDates(
       startDate,
       templateTask.recurrence_pattern as RecurrencePattern,
@@ -132,11 +137,16 @@ export async function ensureChildTasksExist(templateTask: any): Promise<number> 
       console.log(`[RECURRING] Created child task ${newTask.id} scheduled for ${scheduledDate.toISOString()}`);
     }
     
-    // Update template's next_occurrence
-    if (newDates.length > 0) {
-      const lastDate = newDates[newDates.length - 1];
-      const nextOccurrence = calculateNextOccurrence(lastDate, templateTask.recurrence_pattern as RecurrencePattern, details);
-      await storage.updateTask(templateTask.id, { next_occurrence: nextOccurrence.toISOString() } as any);
+    // Update template's next_occurrence to the first upcoming occurrence relative to now
+    // This ensures UI shows the correct next scheduled date
+    const upcomingDates = calculateScheduledDates(
+      new Date(),
+      templateTask.recurrence_pattern as RecurrencePattern,
+      details,
+      1
+    );
+    if (upcomingDates.length > 0) {
+      await storage.updateTask(templateTask.id, { next_occurrence: upcomingDates[0].toISOString() } as any);
     }
     
     return createdCount;
