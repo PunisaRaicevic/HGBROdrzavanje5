@@ -140,24 +140,42 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
     enabled: open && (!!task?.parent_task_id || !!task?.is_recurring), // Fetch for recurring tasks (parent or child)
   });
 
-  // Calculate next 3 upcoming dates for recurring tasks
+  // Calculate next 3 upcoming dates for recurring tasks (works for both parent and child tasks)
   const nextOccurrences = useMemo(() => {
-    if (!task?.parent_task_id || !task?.scheduled_for || !allTasksResponse?.tasks) return [];
+    if (!allTasksResponse?.tasks) return [];
     
-    const currentScheduledDate = new Date(task.scheduled_for);
+    const now = new Date();
+    const currentScheduledDate = task?.scheduled_for ? new Date(task.scheduled_for) : now;
     
-    // Find all sibling tasks (same parent_task_id) with future scheduled_for dates
-    const futureTasks = allTasksResponse.tasks
-      .filter(t => 
-        t.parent_task_id === task.parent_task_id && 
-        t.id !== task.id && 
-        t.scheduled_for &&
-        new Date(t.scheduled_for) > currentScheduledDate
-      )
-      .sort((a, b) => new Date(a.scheduled_for).getTime() - new Date(b.scheduled_for).getTime())
-      .slice(0, 3); // Take first 3
-
-    return futureTasks.map(t => t.scheduled_for);
+    // Determine what to search for
+    if (task?.parent_task_id) {
+      // Child task: find sibling tasks with future scheduled_for dates
+      const futureTasks = allTasksResponse.tasks
+        .filter(t => 
+          t.parent_task_id === task.parent_task_id && 
+          t.id !== task.id && 
+          t.scheduled_for &&
+          new Date(t.scheduled_for) > currentScheduledDate &&
+          t.status !== 'completed'
+        )
+        .sort((a, b) => new Date(a.scheduled_for).getTime() - new Date(b.scheduled_for).getTime())
+        .slice(0, 3);
+      return futureTasks.map(t => t.scheduled_for);
+    } else if (task?.is_recurring) {
+      // Parent task: find child tasks with future scheduled_for dates
+      const futureTasks = allTasksResponse.tasks
+        .filter(t => 
+          t.parent_task_id === task.id && 
+          t.scheduled_for &&
+          new Date(t.scheduled_for) > now &&
+          t.status !== 'completed'
+        )
+        .sort((a, b) => new Date(a.scheduled_for).getTime() - new Date(b.scheduled_for).getTime())
+        .slice(0, 3);
+      return futureTasks.map(t => t.scheduled_for);
+    }
+    
+    return [];
   }, [task, allTasksResponse]);
 
   // Calculate past occurrences (history) for recurring tasks - only completed ones
@@ -413,17 +431,23 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
               <div className="flex-1">
                 <p className="text-sm font-medium">Vrijeme prijave</p>
                 <p className="text-sm text-muted-foreground" data-testid="text-task-details-time">
-                  {task.time}
+                  {new Date(task.time).toLocaleString('sr-Latn-RS', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                 </p>
                 
-                {/* Next 3 upcoming dates for recurring tasks */}
-                {task.parent_task_id && nextOccurrences.length > 0 && (
+                {/* Next 3 upcoming dates for recurring tasks (both parent and child) */}
+                {(task.parent_task_id || task.is_recurring) && nextOccurrences.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-border/50">
                     <p className="text-xs font-medium text-muted-foreground mb-1">Sledeća 3 nadolazeća datuma:</p>
                     <div className="flex flex-col gap-0.5">
                       {nextOccurrences.map((date, index) => (
                         <p key={index} className="text-xs text-muted-foreground" data-testid={`text-next-occurrence-${index}`}>
-                          {new Date(date).toLocaleDateString('sr-RS', {
+                          {new Date(date).toLocaleDateString('sr-Latn-RS', {
                             weekday: 'long',
                             day: '2-digit',
                             month: '2-digit',
