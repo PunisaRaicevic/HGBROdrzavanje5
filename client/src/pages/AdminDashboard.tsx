@@ -26,6 +26,7 @@ interface User {
   email: string;
   full_name: string;
   role: string;
+  job_title: string | null;
   department: string | null;
   phone: string | null;
   is_active: boolean;
@@ -516,7 +517,8 @@ export default function AdminDashboard() {
                       <div>
                         <p className="font-medium">{u.full_name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {u.email} - {u.role}
+                          {u.job_title || u.role}
+                          {u.phone && ` | ${u.phone}`}
                         </p>
                       </div>
                       <Button 
