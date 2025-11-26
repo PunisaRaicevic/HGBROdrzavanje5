@@ -549,7 +549,7 @@ export default function AdminDashboard() {
 
         <TabsContent value="tasks" className="space-y-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-medium">Task Management</h2>
+            <h2 className="text-xl font-medium">Upravljanje zadacima</h2>
             <CreateTaskDialog />
           </div>
 
