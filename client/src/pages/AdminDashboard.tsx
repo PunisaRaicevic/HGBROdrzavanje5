@@ -716,7 +716,17 @@ export default function AdminDashboard() {
                           const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
                           let endDate: Date | null = null;
                           
-                          let periodFiltered = tasks;
+                          // Isključi recurring templates - prikazujemo samo child taskove i jednokratne zadatke
+                          const activeTasks = tasks.filter(task => {
+                            // Recurring templates imaju is_recurring=true i nemaju parent_task_id
+                            // Njih ne prikazujemo direktno, samo njihove child taskove
+                            if (task.is_recurring && !task.parent_task_id) {
+                              return false;
+                            }
+                            return true;
+                          });
+                          
+                          let periodFiltered = activeTasks;
                           
                           if (tasksPeriodFilter === '1d') {
                             // "Danas" - prikaži zadatke koji su RELEVANTNI za danas:
@@ -882,8 +892,16 @@ export default function AdminDashboard() {
                           const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                           let startDate: Date | null = null;
                           
+                          // Isključi recurring templates - prikazujemo samo child taskove i jednokratne zadatke
+                          const activeTasks = tasks.filter(task => {
+                            if (task.is_recurring && !task.parent_task_id) {
+                              return false;
+                            }
+                            return true;
+                          });
+                          
                           // Prvo isključi sve zadatke kreirane danas - oni idu u "Predstojeći"
-                          const tasksBeforeToday = tasks.filter(task => {
+                          const tasksBeforeToday = activeTasks.filter(task => {
                             const createdDate = new Date(task.created_at);
                             return createdDate < todayStart;
                           });
