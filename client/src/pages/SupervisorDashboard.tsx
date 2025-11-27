@@ -295,13 +295,7 @@ export default function SupervisorDashboard() {
           room_number: selectedTaskForDetails.room_number,
           priority: selectedTaskForDetails.priority,
           status: selectedTaskForDetails.status,
-          time: new Date(selectedTaskForDetails.created_at).toLocaleString('sr-RS', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
+          time: selectedTaskForDetails.created_at || new Date().toISOString(),
           fromName: selectedTaskForDetails.created_by_name || 'Unknown',
           from: selectedTaskForDetails.created_by || 'operator',
           images: parseTaskImages(selectedTaskForDetails.images),
@@ -310,7 +304,9 @@ export default function SupervisorDashboard() {
           is_recurring: selectedTaskForDetails.is_recurring,
           recurrence_pattern: selectedTaskForDetails.recurrence_pattern,
           worker_report: selectedTaskForDetails.worker_report,
-          created_at: selectedTaskForDetails.created_at
+          created_at: selectedTaskForDetails.created_at,
+          parent_task_id: selectedTaskForDetails.parent_task_id,
+          scheduled_for: selectedTaskForDetails.scheduled_for
         } : null}
         currentUserRole={user?.role}
         onAssignToWorker={handleAssignToWorker}
