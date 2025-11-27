@@ -689,19 +689,25 @@ export default function SupervisorDashboard() {
                               const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
                               let endDate: Date | null = null;
                               
-                              let periodFiltered = tasks;
+                              // Isključi recurring templates - prikazujemo samo child taskove i jednokratne zadatke
+                              const activeTasks = tasks.filter(task => {
+                                if (task.is_recurring && !task.parent_task_id) {
+                                  return false;
+                                }
+                                return true;
+                              });
+                              
+                              let periodFiltered = activeTasks;
                               
                               if (tasksPeriodFilter === '1d') {
-                                periodFiltered = tasks.filter(task => {
-                                  const createdDate = new Date(task.created_at);
-                                  const isCreatedToday = createdDate >= todayStart && createdDate < todayEnd;
-                                  
+                                periodFiltered = activeTasks.filter(task => {
                                   if (task.scheduled_for) {
                                     const scheduledDate = new Date(task.scheduled_for);
                                     const isScheduledToday = scheduledDate >= todayStart && scheduledDate < todayEnd;
                                     return isScheduledToday;
                                   }
-                                  return isCreatedToday;
+                                  const createdDate = new Date(task.created_at);
+                                  return createdDate >= todayStart && createdDate < todayEnd;
                                 });
                               } else {
                                 switch (tasksPeriodFilter) {
@@ -720,16 +726,14 @@ export default function SupervisorDashboard() {
                                 }
                                 
                                 if (endDate) {
-                                  periodFiltered = tasks.filter(task => {
-                                    const createdDate = new Date(task.created_at);
-                                    const isCreatedToday = createdDate >= todayStart && createdDate < todayEnd;
-                                    
+                                  periodFiltered = activeTasks.filter(task => {
                                     if (task.scheduled_for) {
                                       const scheduledDate = new Date(task.scheduled_for);
                                       return scheduledDate >= todayStart && scheduledDate <= endDate!;
                                     }
                                     
-                                    return isCreatedToday || (createdDate >= todayStart && createdDate <= endDate!);
+                                    const createdDate = new Date(task.created_at);
+                                    return createdDate >= todayStart && createdDate <= endDate!;
                                   });
                                 }
                               }
@@ -854,7 +858,15 @@ export default function SupervisorDashboard() {
                               const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                               let startDate: Date | null = null;
                               
-                              const tasksBeforeToday = tasks.filter(task => {
+                              // Isključi recurring templates - prikazujemo samo child taskove i jednokratne zadatke
+                              const activeTasks = tasks.filter(task => {
+                                if (task.is_recurring && !task.parent_task_id) {
+                                  return false;
+                                }
+                                return true;
+                              });
+                              
+                              const tasksBeforeToday = activeTasks.filter(task => {
                                 const createdDate = new Date(task.created_at);
                                 return createdDate < todayStart;
                               });
