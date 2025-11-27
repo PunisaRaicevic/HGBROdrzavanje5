@@ -212,9 +212,18 @@ export default function OperatorDashboard() {
           task.status === 'returned_to_operator'
         );
       case 'forwarded':
-        return allTasks.filter(task => task.status === 'with_sef' || task.status === 'assigned_to_radnik'); // Prosleđeni (šefu ili majstoru)
+        // Prosleđeni ali nepotvrđeni: šefu ili majstoru BEZ potvrde prijema
+        return allTasks.filter(task => 
+          task.status === 'with_sef' || 
+          (task.status === 'assigned_to_radnik' && !task.receipt_confirmed_at)
+        );
       case 'in-progress':
-        return allTasks.filter(task => task.status === 'returned_to_sef'); // U toku (vraćeni šefu)
+        // U toku: majstor potvrdio prijem, ili vraćeno šefu, ili in_progress
+        return allTasks.filter(task => 
+          task.status === 'returned_to_sef' || 
+          task.status === 'in_progress' ||
+          (task.status === 'assigned_to_radnik' && task.receipt_confirmed_at)
+        );
       case 'completed':
         return allTasks.filter(task => task.status === 'completed'); // Završeni
       case 'overdue':
@@ -229,8 +238,17 @@ export default function OperatorDashboard() {
   };
 
   const filteredTasks = getFilteredTasks();
-  const forwardedCount = allTasks.filter(task => task.status === 'with_sef' || task.status === 'assigned_to_radnik').length;
-  const inProgressCount = allTasks.filter(task => task.status === 'returned_to_sef').length;
+  // Prosleđeni: šefu ili majstoru BEZ potvrde prijema
+  const forwardedCount = allTasks.filter(task => 
+    task.status === 'with_sef' || 
+    (task.status === 'assigned_to_radnik' && !task.receipt_confirmed_at)
+  ).length;
+  // U toku: majstor potvrdio prijem, ili vraćeno šefu, ili in_progress
+  const inProgressCount = allTasks.filter(task => 
+    task.status === 'returned_to_sef' || 
+    task.status === 'in_progress' ||
+    (task.status === 'assigned_to_radnik' && task.receipt_confirmed_at)
+  ).length;
   const completedCount = allTasks.filter(task => task.status === 'completed').length;
   const overdueCount = allTasks.filter(task => task.status === 'cancelled').length;
 
