@@ -706,7 +706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         images, status, assigned_to, assigned_to_name, is_recurring, recurrence_pattern, recurrence_start_date,
       } = req.body;
 
-      if (!title || !description || !hotel || !blok || !userId || !userName || !userDepartment) {
+      if (!title || !description || !hotel || !blok || !userId || !userName) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
@@ -721,7 +721,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: status || "new",
         created_by: userId,
         created_by_name: userName,
-        created_by_department: userDepartment,
+        created_by_department: userDepartment || null,
         images: images || null,
       };
 
