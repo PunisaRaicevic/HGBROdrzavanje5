@@ -493,8 +493,8 @@ export default function SupervisorDashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea 
-                    className="pr-4"
+                  <div 
+                    className="overflow-y-auto pr-2"
                     style={{
                       maxHeight: tasksFromOperator.length === 0 
                         ? '200px' 
@@ -643,7 +643,7 @@ export default function SupervisorDashboard() {
                         ))
                       )}
                     </div>
-                  </ScrollArea>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
