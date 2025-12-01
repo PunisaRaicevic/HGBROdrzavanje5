@@ -8,7 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send, CheckCircle, XCircle, Clock, TrendingUp, FileText, Trash2, Calendar, History, RefreshCw } from 'lucide-react';
+import { Send, CheckCircle, XCircle, Clock, TrendingUp, FileText, Trash2, Calendar, History, RefreshCw, Building2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -54,6 +64,11 @@ export default function SupervisorDashboard() {
   const [selectedTaskForDetails, setSelectedTaskForDetails] = useState<any | null>(null);
   const [editTaskOpen, setEditTaskOpen] = useState(false);
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
+  
+  // State for external task completion dialog
+  const [externalCompletionOpen, setExternalCompletionOpen] = useState(false);
+  const [externalCompletionTask, setExternalCompletionTask] = useState<{ id: string; title: string } | null>(null);
+  const [externalCompletionNotes, setExternalCompletionNotes] = useState('');
   
   // Filter state for "Zadaci" tab - same as AdminDashboard
   const [taskViewTab, setTaskViewTab] = useState('upcoming');
@@ -130,18 +145,24 @@ export default function SupervisorDashboard() {
     }
   });
 
-  // Mutation for completing external task
+  // Mutation for completing external task with notes
   const completeExternalTaskMutation = useMutation({
-    mutationFn: async (taskId: string) => {
+    mutationFn: async ({ taskId, completionNotes }: { taskId: string; completionNotes: string }) => {
       return apiRequest('PATCH', `/api/tasks/${taskId}`, { 
-        status: 'completed'
+        status: 'completed',
+        worker_report: completionNotes,
+        completed_by: user?.id,
+        completed_by_name: user?.fullName
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      setExternalCompletionOpen(false);
+      setExternalCompletionTask(null);
+      setExternalCompletionNotes('');
       toast({
         title: "Uspešno!",
-        description: "Zadatak je označen kao završen.",
+        description: "Zadatak externe firme je označen kao završen.",
       });
     },
     onError: (error) => {
@@ -248,6 +269,23 @@ export default function SupervisorDashboard() {
     setTaskDetailsOpen(true);
   };
 
+  // Handle opening external completion dialog
+  const handleOpenExternalCompletion = (task: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExternalCompletionTask({ id: task.id, title: task.title });
+    setExternalCompletionNotes('');
+    setExternalCompletionOpen(true);
+  };
+
+  // Handle submitting external task completion
+  const handleSubmitExternalCompletion = () => {
+    if (!externalCompletionTask) return;
+    completeExternalTaskMutation.mutate({
+      taskId: externalCompletionTask.id,
+      completionNotes: externalCompletionNotes
+    });
+  };
+
   // Safely parse images from task
   const parseTaskImages = (images: any): string[] => {
     if (!images) return [];
@@ -320,6 +358,52 @@ export default function SupervisorDashboard() {
         onOpenChange={setEditTaskOpen}
         taskId={editTaskId}
       />
+      
+      {/* External Task Completion Dialog */}
+      <Dialog open={externalCompletionOpen} onOpenChange={setExternalCompletionOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              Završi zadatak externe firme
+            </DialogTitle>
+            <DialogDescription>
+              {externalCompletionTask?.title}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="completion-notes">Napomene o popravci</Label>
+              <Textarea
+                id="completion-notes"
+                placeholder="Unesite detalje o izvršenoj popravci, korištenim materijalima, trajanju radova..."
+                value={externalCompletionNotes}
+                onChange={(e) => setExternalCompletionNotes(e.target.value)}
+                className="min-h-[120px]"
+                data-testid="textarea-completion-notes"
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setExternalCompletionOpen(false)}
+              data-testid="button-cancel-completion"
+            >
+              Odustani
+            </Button>
+            <Button
+              onClick={handleSubmitExternalCompletion}
+              disabled={completeExternalTaskMutation.isPending}
+              data-testid="button-confirm-completion"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              {completeExternalTaskMutation.isPending ? 'Završavam...' : 'Označi kao završeno'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -841,6 +925,19 @@ export default function SupervisorDashboard() {
                                         )}
                                       </div>
                                     </div>
+                                    {/* Button to complete external company task */}
+                                    {task.status === 'with_external' && (
+                                      <Button
+                                        variant="default"
+                                        size="sm"
+                                        className="mt-3 w-full"
+                                        onClick={(e) => handleOpenExternalCompletion(task, e)}
+                                        data-testid={`button-complete-external-${task.id}`}
+                                      >
+                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                        Završi zadatak
+                                      </Button>
+                                    )}
                                   </div>
                                 </div>
                               );
@@ -1016,6 +1113,19 @@ export default function SupervisorDashboard() {
                                         )}
                                       </div>
                                     </div>
+                                    {/* Button to complete external company task */}
+                                    {task.status === 'with_external' && (
+                                      <Button
+                                        variant="default"
+                                        size="sm"
+                                        className="mt-3 w-full"
+                                        onClick={(e) => handleOpenExternalCompletion(task, e)}
+                                        data-testid={`button-complete-external-history-${task.id}`}
+                                      >
+                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                        Završi zadatak
+                                      </Button>
+                                    )}
                                   </div>
                                 </div>
                               );
