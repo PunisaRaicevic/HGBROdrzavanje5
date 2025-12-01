@@ -494,11 +494,9 @@ export default function SupervisorDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div 
-                    className="overflow-y-auto pr-2"
+                    className={tasksFromOperator.length > 3 ? "overflow-y-auto pr-2" : ""}
                     style={{
-                      maxHeight: tasksFromOperator.length === 0 
-                        ? '200px' 
-                        : `${Math.min(tasksFromOperator.length, 3) * 200}px`
+                      maxHeight: tasksFromOperator.length > 3 ? '600px' : 'auto'
                     }}
                   >
                     <div className="space-y-4">
