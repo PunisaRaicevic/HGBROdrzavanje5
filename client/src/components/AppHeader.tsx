@@ -188,8 +188,8 @@ export default function AppHeader() {
           <span className="text-base font-medium">{i18n.language.toUpperCase()}</span>
         </Button>
 
-        {/* Sound toggle - for workers and operators */}
-        {(user?.role === 'radnik' || user?.role === 'operater') && (
+        {/* Sound toggle - for workers, operators and supervisors */}
+        {(user?.role === 'radnik' || user?.role === 'operater' || user?.role === 'sef') && (
           <Button
             variant={audioEnabled ? "default" : "outline"}
             onClick={toggleAudio}

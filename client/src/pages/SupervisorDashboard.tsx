@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -80,6 +80,75 @@ export default function SupervisorDashboard() {
   const [historyStatusFilter, setHistoryStatusFilter] = useState('all');
   const [tasksPerPage, setTasksPerPage] = useState(20);
   const [historyPerPage, setHistoryPerPage] = useState(20);
+  
+  // Sound notification state
+  const [audioEnabled, setAudioEnabled] = useState(() => {
+    const saved = localStorage.getItem('soundNotificationsEnabled');
+    return saved === 'true';
+  });
+  const [previousNewTaskCount, setPreviousNewTaskCount] = useState<number>(0);
+  const [previousReturnedTaskCount, setPreviousReturnedTaskCount] = useState<number>(0);
+
+  // Listen for sound setting changes from header toggle
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('soundNotificationsEnabled');
+      setAudioEnabled(saved === 'true');
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom event for same-tab updates
+    const handleCustomEvent = () => handleStorageChange();
+    window.addEventListener('soundSettingChanged', handleCustomEvent);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('soundSettingChanged', handleCustomEvent);
+    };
+  }, []);
+
+  // Play notification sound using Web Audio API
+  const playNotificationSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // Create a pleasant notification sound (two-tone)
+      oscillator.frequency.value = 800; // First tone
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+
+      // Second tone
+      setTimeout(() => {
+        const oscillator2 = audioContext.createOscillator();
+        const gainNode2 = audioContext.createGain();
+        
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext.destination);
+        
+        oscillator2.frequency.value = 1000; // Second tone (higher pitch)
+        oscillator2.type = 'sine';
+        
+        gainNode2.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        
+        oscillator2.start(audioContext.currentTime);
+        oscillator2.stop(audioContext.currentTime + 0.1);
+      }, 100);
+    } catch (error) {
+      console.error('Failed to play notification sound:', error);
+    }
+  };
 
   // Fetch all tasks from API
   const { data: tasksResponse, isLoading } = useQuery<{ tasks: any[] }>({
@@ -205,6 +274,43 @@ export default function SupervisorDashboard() {
   const tasksFromOperator = (tasksResponse?.tasks || []).filter(task => 
     task.status === 'with_sef' || task.status === 'with_external' || task.status === 'returned_to_sef'
   );
+
+  // Monitor new tasks and returned tasks - play sound when count increases
+  useEffect(() => {
+    if (isLoading) return;
+    
+    const allTasks = tasksResponse?.tasks || [];
+    
+    // Count tasks with 'with_sef' status (new tasks from operator)
+    const newTaskCount = allTasks.filter(task => task.status === 'with_sef').length;
+    
+    // Count tasks with 'returned_to_sef' status (returned from worker)
+    const returnedTaskCount = allTasks.filter(task => task.status === 'returned_to_sef').length;
+    
+    // Only play sound if not initial load and count increased
+    if (previousNewTaskCount > 0 && newTaskCount > previousNewTaskCount) {
+      if (audioEnabled) {
+        playNotificationSound();
+      }
+      toast({
+        title: "Novi zadatak!",
+        description: `Primljen ${newTaskCount - previousNewTaskCount} novi zadatak od operatera.`,
+      });
+    }
+    
+    if (previousReturnedTaskCount > 0 && returnedTaskCount > previousReturnedTaskCount) {
+      if (audioEnabled) {
+        playNotificationSound();
+      }
+      toast({
+        title: "Zadatak vracen!",
+        description: `Majstor je vratio ${returnedTaskCount - previousReturnedTaskCount} zadatak.`,
+      });
+    }
+    
+    setPreviousNewTaskCount(newTaskCount);
+    setPreviousReturnedTaskCount(returnedTaskCount);
+  }, [tasksResponse, isLoading, audioEnabled]);
   
   // Get technicians
   const myWorkers = techniciansResponse?.technicians || [];
