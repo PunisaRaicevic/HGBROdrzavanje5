@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Loader } from 'lucide-react';
+import { Send, Loader, Mic, MicOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Message {
@@ -24,14 +24,84 @@ export default function AdminAIChat() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Initialize Web Speech API
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'sr-RS';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            setInput(prev => (prev + transcript).trim());
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error);
+        toast({
+          title: 'Greška pri prepoznavanju govora',
+          description: 'Molim pokušajte ponovo.',
+          variant: 'destructive'
+        });
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, [toast]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  const handleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      toast({
+        title: 'Glasovni unos nije dostupan',
+        description: 'Vaš pretraživač ne podržava prepoznavanje govora.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      setInput('');
+      recognitionRef.current.start();
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -119,9 +189,23 @@ export default function AdminAIChat() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyPress={e => e.key === 'Enter' && handleSend()}
-          disabled={loading}
+          disabled={loading || isListening}
           data-testid="input-ai-question"
         />
+        <Button
+          onClick={handleVoiceInput}
+          disabled={loading}
+          size="icon"
+          variant={isListening ? 'default' : 'outline'}
+          data-testid="button-voice-input"
+          title={isListening ? 'Zaustaviti snimanje' : 'Glasovni unos'}
+        >
+          {isListening ? (
+            <Mic className="h-4 w-4 animate-pulse" />
+          ) : (
+            <Mic className="h-4 w-4" />
+          )}
+        </Button>
         <Button
           onClick={handleSend}
           disabled={loading || !input.trim()}
