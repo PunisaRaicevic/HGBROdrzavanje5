@@ -169,12 +169,22 @@ export default function OperatorDashboard() {
     parent_task_id: task.parent_task_id || undefined
   });
   
-  // Get all tasks from API
-  const allTasks = (tasksResponse?.tasks || []).map(mapApiTaskToUiTask);
+  // Get all tasks from API, excluding recurring templates (only show child instances)
+  // Recurring template = is_recurring=true AND parent_task_id=null (this is the "template" that generates children)
+  // Child instance = has parent_task_id (this is the actual task for a specific date)
+  const allTasks = (tasksResponse?.tasks || [])
+    .filter((task: any) => {
+      // Exclude recurring templates - only show actual task instances
+      if (task.is_recurring && !task.parent_task_id) {
+        return false;
+      }
+      return true;
+    })
+    .map(mapApiTaskToUiTask);
   
   // Filter tasks created by this operator (for "My Submitted Complaints" section)
   const mySubmittedTasks = allTasks.filter(task => {
-    const dbTask = tasksResponse?.tasks.find(t => t.id === task.id);
+    const dbTask = tasksResponse?.tasks.find((t: any) => t.id === task.id);
     return dbTask?.created_by === user?.id;
   });
 
