@@ -1125,12 +1125,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return acc;
         }, {});
 
-      // Prepare context for AI
-      const context = `
-You are an AI assistant analyzing hotel management data. Analyze based on this data:
+      // Prepare context for AI - with complete historical data
+      const recentTasks = allTasks.slice(0, 50).map((t: any) => {
+        const createdDate = new Date(t.created_at).toLocaleDateString('sr-RS');
+        return `- [${t.status}] ${t.title} (Priority: ${t.priority || 'normal'}, Created: ${createdDate}, Department: ${t.department || 'N/A'})`;
+      }).join('\n');
 
-TASK STATISTICS:
-- Total Tasks: ${allTasks.length}
+      const context = `
+You are an AI assistant analyzing complete hotel management historical data. Analyze based on this data:
+
+COMPLETE TASK STATISTICS (All Time):
+- Total Tasks in System: ${allTasks.length}
 - By Status: ${JSON.stringify(tasksByStatus)}
 - By Priority: ${JSON.stringify(tasksByPriority)}
 - By Department: ${JSON.stringify(completedByDept)}
@@ -1139,11 +1144,12 @@ USERS:
 - Total Users: ${allUsers.length}
 - By Role: ${JSON.stringify(usersByRole)}
 
-Recent Tasks (last 10):
-${allTasks.slice(0, 10).map((t: any) => `- [${t.status}] ${t.title} (Priority: ${t.priority || 'normal'})`).join('\n')}
+Recent 50 Tasks (Full Historical Data Available):
+${recentTasks}
 
 User asked: "${question}"
 
+Note: You have access to complete historical data from the entire database. Use all statistics and patterns to provide comprehensive analysis.
 Provide insightful analysis in Serbian language. Focus on trends, recommendations, and actionable insights.
 `;
 
