@@ -9,7 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
@@ -74,7 +80,7 @@ export default function AdminDashboard() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   const [tasksPeriodFilter, setTasksPeriodFilter] = useState<string>('7d'); // Default 7 days
   const [tasksStatusFilter, setTasksStatusFilter] = useState<string>('all'); // Status filter for tasks list
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [aiChatOpen, setAiChatOpen] = useState(false);
   const [historyPeriodFilter, setHistoryPeriodFilter] = useState<string>('7d'); // History period filter
   const [historyStatusFilter, setHistoryStatusFilter] = useState<string>('all'); // History status filter
   const [historyPerPage, setHistoryPerPage] = useState<number>(10); // History items per page
@@ -352,6 +358,15 @@ export default function AdminDashboard() {
             {user?.fullName} - {user?.role}
           </p>
         </div>
+        <Button 
+          onClick={() => setAiChatOpen(true)}
+          variant="outline"
+          className="gap-2"
+          data-testid="button-ai-chat"
+        >
+          <Brain className="w-5 h-5" />
+          AI Analiza
+        </Button>
       </div>
 
       {/* Statistics */}
@@ -379,7 +394,7 @@ export default function AdminDashboard() {
 
       {/* Main Admin Features */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="h-9 w-full grid grid-cols-4">
+        <TabsList className="h-9 w-full grid grid-cols-3">
           <TabsTrigger value="users" data-testid="tab-users" className="text-sm">
             <Users className="w-3.5 h-3.5 mr-1.5" />
             Korisnici
@@ -391,10 +406,6 @@ export default function AdminDashboard() {
           <TabsTrigger value="stats" data-testid="tab-stats" className="text-sm">
             <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
             Statistike
-          </TabsTrigger>
-          <TabsTrigger value="ai" data-testid="tab-ai" className="text-sm">
-            <Brain className="w-3.5 h-3.5 mr-1.5" />
-            AI Analiza
           </TabsTrigger>
         </TabsList>
 
@@ -1426,23 +1437,7 @@ export default function AdminDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="ai" className="space-y-4">
-          <Card className="h-[600px]">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Brain className="w-5 h-5" />
-                AI Analiza Podataka
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Pitajte AI o trendovima, statistikama i preporukama za unapredenje rada
-              </p>
-            </CardHeader>
-            <CardContent className="h-[calc(100%-80px)]">
-              <AdminAIChat />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        </Tabs>
 
       {/* Edit User Dialog */}
       <EditUserDialog
@@ -1484,6 +1479,24 @@ export default function AdminDashboard() {
         onOpenChange={setEditTaskOpen}
         taskId={editTaskId}
       />
+
+      {/* AI Chat Dialog */}
+      <Dialog open={aiChatOpen} onOpenChange={setAiChatOpen}>
+        <DialogContent className="max-w-2xl h-[600px] flex flex-col">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="w-5 h-5" />
+              AI Analiza Podataka
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              Pitajte AI o trendovima, statistikama i preporukama za unapredenje rada
+            </p>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <AdminAIChat />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
