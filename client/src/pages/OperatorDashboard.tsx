@@ -35,6 +35,7 @@ type Task = {
   is_recurring?: boolean;
   recurrence_pattern?: string;
   parent_task_id?: string;
+  scheduled_for?: string;
 };
 
 // Helper function to calculate elapsed time
@@ -166,21 +167,88 @@ export default function OperatorDashboard() {
     receipt_confirmed_by_name: task.receipt_confirmed_by_name || undefined,
     is_recurring: task.is_recurring || false,
     recurrence_pattern: task.recurrence_pattern || undefined,
-    parent_task_id: task.parent_task_id || undefined
+    parent_task_id: task.parent_task_id || undefined,
+    scheduled_for: task.scheduled_for || undefined
   });
   
-  // Get all tasks from API, excluding recurring templates (only show child instances)
-  // Recurring template = is_recurring=true AND parent_task_id=null (this is the "template" that generates children)
-  // Child instance = has parent_task_id (this is the actual task for a specific date)
-  const allTasks = (tasksResponse?.tasks || [])
-    .filter((task: any) => {
-      // Exclude recurring templates - only show actual task instances
+  // Get all tasks from API with smart recurring task filtering
+  // Rules:
+  // 1. Exclude recurring templates (is_recurring=true AND no parent_task_id)
+  // 2. For recurring child tasks (has parent_task_id):
+  //    - Show only tasks whose scheduled_for is today or in the past
+  //    - If all are in the future, show only the earliest one (next occurrence)
+  const allTasks = (() => {
+    const rawTasks = tasksResponse?.tasks || [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Group child tasks by parent_task_id
+    const childTasksByParent: Record<string, any[]> = {};
+    const nonRecurringTasks: any[] = [];
+    
+    for (const task of rawTasks) {
+      // Exclude recurring templates
       if (task.is_recurring && !task.parent_task_id) {
-        return false;
+        continue;
       }
-      return true;
-    })
-    .map(mapApiTaskToUiTask);
+      
+      // Group child tasks by parent
+      if (task.parent_task_id) {
+        if (!childTasksByParent[task.parent_task_id]) {
+          childTasksByParent[task.parent_task_id] = [];
+        }
+        childTasksByParent[task.parent_task_id].push(task);
+      } else {
+        // Non-recurring task
+        nonRecurringTasks.push(task);
+      }
+    }
+    
+    // Process each parent's children - keep only relevant ones
+    const filteredChildTasks: any[] = [];
+    for (const parentId in childTasksByParent) {
+      const children = childTasksByParent[parentId];
+      
+      // Sort by scheduled_for date ascending
+      children.sort((a, b) => {
+        const dateA = a.scheduled_for ? new Date(a.scheduled_for).getTime() : 0;
+        const dateB = b.scheduled_for ? new Date(b.scheduled_for).getTime() : 0;
+        return dateA - dateB;
+      });
+      
+      // Find tasks for today or past
+      const todayOrPastTasks = children.filter(task => {
+        if (!task.scheduled_for) return true; // No scheduled date = show it
+        const scheduledDate = new Date(task.scheduled_for);
+        scheduledDate.setHours(0, 0, 0, 0);
+        return scheduledDate <= today;
+      });
+      
+      if (todayOrPastTasks.length > 0) {
+        // Show only today's or past tasks (most recent one that's not completed)
+        const relevant = todayOrPastTasks.filter(t => t.status !== 'completed');
+        if (relevant.length > 0) {
+          filteredChildTasks.push(relevant[relevant.length - 1]); // Most recent
+        } else {
+          // All past ones completed - show earliest future one if exists
+          const futureTasks = children.filter(t => {
+            if (!t.scheduled_for) return false;
+            const scheduledDate = new Date(t.scheduled_for);
+            scheduledDate.setHours(0, 0, 0, 0);
+            return scheduledDate > today;
+          });
+          if (futureTasks.length > 0) {
+            filteredChildTasks.push(futureTasks[0]); // Earliest future
+          }
+        }
+      } else {
+        // All in future - show only the earliest one
+        filteredChildTasks.push(children[0]);
+      }
+    }
+    
+    return [...nonRecurringTasks, ...filteredChildTasks].map(mapApiTaskToUiTask);
+  })();
   
   // Filter tasks created by this operator (for "My Submitted Complaints" section)
   const mySubmittedTasks = allTasks.filter(task => {
