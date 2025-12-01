@@ -24,6 +24,9 @@ const HOTEL_OPTIONS = [
   "Hotel Slovenska plaža",
   "Hotel Aleksandar",
   "Hotel Mogren",
+  "Hotel Palas",
+  "Hotel Castellastva",
+  "Hotel Palas Lux",
 ];
 
 const BLOK_OPTIONS = [

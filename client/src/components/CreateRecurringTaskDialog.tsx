@@ -401,6 +401,9 @@ export default function CreateRecurringTaskDialog({ trigger }: CreateRecurringTa
                     <SelectItem value="Hotel Slovenska plaža">Hotel Slovenska plaža</SelectItem>
                     <SelectItem value="Hotel Aleksandar">Hotel Aleksandar</SelectItem>
                     <SelectItem value="Hotel Mogren">Hotel Mogren</SelectItem>
+                    <SelectItem value="Hotel Palas">Hotel Palas</SelectItem>
+                    <SelectItem value="Hotel Castellastva">Hotel Castellastva</SelectItem>
+                    <SelectItem value="Hotel Palas Lux">Hotel Palas Lux</SelectItem>
                     <SelectItem value="Ostalo">Ostalo</SelectItem>
                   </SelectContent>
                 </Select>
