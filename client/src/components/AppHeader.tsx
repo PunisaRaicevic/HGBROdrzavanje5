@@ -35,6 +35,9 @@ export default function AppHeader() {
     setAudioEnabled(newValue);
     localStorage.setItem('soundNotificationsEnabled', String(newValue));
     
+    // Dispatch custom event for same-tab updates (for OperatorDashboard)
+    window.dispatchEvent(new Event('soundSettingChanged'));
+    
     if (newValue && audioRef.current) {
       audioRef.current.play().catch(() => {});
     }
@@ -185,8 +188,8 @@ export default function AppHeader() {
           <span className="text-base font-medium">{i18n.language.toUpperCase()}</span>
         </Button>
 
-        {/* Sound toggle - only for workers */}
-        {user?.role === 'radnik' && (
+        {/* Sound toggle - for workers and operators */}
+        {(user?.role === 'radnik' || user?.role === 'operater') && (
           <Button
             variant={audioEnabled ? "default" : "outline"}
             onClick={toggleAudio}

@@ -94,6 +94,29 @@ export default function OperatorDashboard() {
   const [previousNewTaskCount, setPreviousNewTaskCount] = useState<number>(0);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(() => {
+    const saved = localStorage.getItem('soundNotificationsEnabled');
+    return saved === 'true';
+  });
+
+  // Listen for sound setting changes from header toggle
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('soundNotificationsEnabled');
+      setAudioEnabled(saved === 'true');
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also listen for custom event for same-tab updates
+    const handleCustomEvent = () => handleStorageChange();
+    window.addEventListener('soundSettingChanged', handleCustomEvent);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('soundSettingChanged', handleCustomEvent);
+    };
+  }, []);
   
   // Fetch all tasks from API
   const { data: tasksResponse, isLoading } = useQuery<{ tasks: any[] }>({
@@ -306,8 +329,11 @@ export default function OperatorDashboard() {
     // 1. Not initial load (previousNewTaskCount > 0)
     // 2. New task count has increased
     // 3. Not currently loading
+    // 4. Audio is enabled
     if (!isLoading && previousNewTaskCount > 0 && newTaskCount > previousNewTaskCount) {
-      playNotificationSound();
+      if (audioEnabled) {
+        playNotificationSound();
+      }
       toast({
         title: "Nova reklamacija!",
         description: `Primljena ${newTaskCount - previousNewTaskCount} nova reklamacija.`,
@@ -315,7 +341,7 @@ export default function OperatorDashboard() {
     }
     
     setPreviousNewTaskCount(newTaskCount);
-  }, [allTasks, isLoading]);
+  }, [allTasks, isLoading, audioEnabled]);
 
   // Filter tasks based on view mode
   const getFilteredTasks = () => {
