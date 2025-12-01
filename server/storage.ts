@@ -21,6 +21,7 @@ export interface IStorage {
   deleteUser(id: string): Promise<boolean>;
   getUsers(): Promise<User[]>;
   getTechnicians(): Promise<User[]>;
+  getUsersByRole(role: string): Promise<User[]>;
   
   getTasks(): Promise<Task[]>;
   getTaskById(id: string): Promise<Task | undefined>;
@@ -152,6 +153,17 @@ export class SupabaseStorage implements IStorage {
       .in('role', ['serviser', 'radnik'])
       .eq('is_active', true)
       .order('full_name', { ascending: true });
+    
+    if (error) throw error;
+    return (data || []) as User[];
+  }
+
+  async getUsersByRole(role: string): Promise<User[]> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('role', role)
+      .eq('is_active', true);
     
     if (error) throw error;
     return (data || []) as User[];

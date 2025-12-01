@@ -125,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeSocket(server);
   console.log("[INIT] Socket.IO initialized for real-time notifications");
 
-  // Supabase Webhook - Task assigned notification (MULTI-RECIPIENT SUPPORT)
+  // Supabase Webhook - Task notification (SUPPORTS WORKERS, OPERATORS, SUPERVISORS)
   app.post("/api/webhooks/tasks", async (req, res) => {
     try {
       // Verify webhook secret
@@ -141,6 +141,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('📥 Webhook primljen:', JSON.stringify(webhookData, null, 2));
 
       const newRecord = webhookData.record;
+      const oldRecord = webhookData.old_record;
+      const eventType = webhookData.type; // INSERT or UPDATE
+      
       if (!newRecord) {
         console.error('❌ Missing record in webhook data');
         return res.status(400).json({ error: 'Missing record data' });
@@ -163,50 +166,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const assignedTo = newRecord.assigned_to;
       const taskTitle = newRecord.title || 'Novi zadatak!';
       const taskDescription = newRecord.description || 'Imate novi zadatak.';
       const taskId = newRecord.id;
+      const taskStatus = newRecord.status;
+      const oldStatus = oldRecord?.status;
 
-      if (!assignedTo) {
-        console.warn('⚠️ Missing recipient ID - skipping notification');
-        return res.status(200).json({ message: 'No recipient for notification' });
-      }
-
-      // Support multiple recipients (comma-separated IDs)
-      const recipientUserIds = assignedTo.split(',').map((id: string) => id.trim()).filter(Boolean);
-
-      if (recipientUserIds.length === 0) {
-        console.warn('⚠️ No valid recipient IDs after parsing - skipping notification');
-        return res.status(200).json({ message: 'No recipients for notification' });
-      }
-
-      console.log(`📨 Slanje notifikacija za ${recipientUserIds.length} radnika: ${recipientUserIds.join(', ')}`);
-
-      // Send FCM notifications to ALL recipients
+      // Import Firebase push function
       const { sendPushToAllUserDevices } = await import('./services/firebase');
       
       let totalSent = 0;
       let totalFailed = 0;
+      let recipientCount = 0;
 
-      for (const userId of recipientUserIds) {
-        const result = await sendPushToAllUserDevices(
-          userId,
-          taskTitle,
-          taskDescription.substring(0, 200),
-          taskId,
-          'urgent'
-        );
-        totalSent += result.sent;
-        totalFailed += result.failed;
+      // Determine recipients based on task status
+      // 1. NEW COMPLAINTS: status 'new' → notify all Operators
+      if (taskStatus === 'new' && (eventType === 'INSERT' || oldStatus !== 'new')) {
+        console.log('📢 Nova reklamacija - slanje notifikacija operaterima');
+        const operators = await storage.getUsersByRole('operater');
+        
+        for (const operator of operators) {
+          const result = await sendPushToAllUserDevices(
+            operator.id,
+            'Nova reklamacija!',
+            taskDescription.substring(0, 200),
+            taskId,
+            'urgent'
+          );
+          totalSent += result.sent;
+          totalFailed += result.failed;
+        }
+        recipientCount = operators.length;
+        console.log(`📨 Notifikacije poslane ${operators.length} operaterima`);
+      }
+      
+      // 2. TASKS SENT TO SUPERVISOR: status 'with_sef' → notify all Supervisors
+      else if (taskStatus === 'with_sef' && oldStatus !== 'with_sef') {
+        console.log('📢 Zadatak proslijedjen sefu - slanje notifikacija sefovima');
+        const supervisors = await storage.getUsersByRole('sef');
+        
+        for (const supervisor of supervisors) {
+          const result = await sendPushToAllUserDevices(
+            supervisor.id,
+            'Novi zadatak od operatera!',
+            `${taskTitle}: ${taskDescription.substring(0, 150)}`,
+            taskId,
+            'urgent'
+          );
+          totalSent += result.sent;
+          totalFailed += result.failed;
+        }
+        recipientCount = supervisors.length;
+        console.log(`📨 Notifikacije poslane ${supervisors.length} sefovima`);
+      }
+      
+      // 3. TASKS RETURNED TO SUPERVISOR: status 'returned_to_sef' → notify all Supervisors
+      else if (taskStatus === 'returned_to_sef' && oldStatus !== 'returned_to_sef') {
+        console.log('📢 Zadatak vracen sefu - slanje notifikacija sefovima');
+        const supervisors = await storage.getUsersByRole('sef');
+        
+        for (const supervisor of supervisors) {
+          const result = await sendPushToAllUserDevices(
+            supervisor.id,
+            'Zadatak vracen od majstora!',
+            `${taskTitle}: ${taskDescription.substring(0, 150)}`,
+            taskId,
+            'urgent'
+          );
+          totalSent += result.sent;
+          totalFailed += result.failed;
+        }
+        recipientCount = supervisors.length;
+        console.log(`📨 Notifikacije poslane ${supervisors.length} sefovima`);
+      }
+      
+      // 4. TASKS ASSIGNED TO WORKERS: has assigned_to field → notify assigned workers
+      else if (newRecord.assigned_to) {
+        const assignedTo = newRecord.assigned_to;
+        
+        // Support multiple recipients (comma-separated IDs)
+        const recipientUserIds = assignedTo.split(',').map((id: string) => id.trim()).filter(Boolean);
+
+        if (recipientUserIds.length > 0) {
+          console.log(`📨 Slanje notifikacija za ${recipientUserIds.length} radnika: ${recipientUserIds.join(', ')}`);
+
+          for (const userId of recipientUserIds) {
+            const result = await sendPushToAllUserDevices(
+              userId,
+              taskTitle,
+              taskDescription.substring(0, 200),
+              taskId,
+              'urgent'
+            );
+            totalSent += result.sent;
+            totalFailed += result.failed;
+          }
+          recipientCount = recipientUserIds.length;
+        }
       }
 
-      console.log(`✅ Webhook processed: ${totalSent} sent, ${totalFailed} failed (${recipientUserIds.length} recipients)`);
+      if (recipientCount === 0) {
+        console.log('ℹ️ Nema primaoca za notifikaciju za ovaj status:', taskStatus);
+        return res.status(200).json({ message: 'No recipients for this status', status: taskStatus });
+      }
+
+      console.log(`✅ Webhook processed: ${totalSent} sent, ${totalFailed} failed (${recipientCount} recipients)`);
       res.status(200).json({ 
         message: 'Webhook processed', 
         sent: totalSent, 
         failed: totalFailed,
-        recipients: recipientUserIds.length
+        recipients: recipientCount
       });
 
     } catch (error) {
