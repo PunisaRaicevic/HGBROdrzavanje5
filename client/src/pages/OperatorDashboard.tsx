@@ -116,7 +116,7 @@ export default function OperatorDashboard() {
     from: task.created_by_department || 'Unknown',
     fromName: task.created_by_name || 'Unknown',
     priority: task.priority as 'urgent' | 'normal' | 'can_wait',
-    time: getElapsedTime(new Date(task.created_at)),
+    time: task.created_at || new Date().toISOString(),
     location: task.location,
     images: parseTaskImages(task.images),
     worker_images: parseTaskImages(task.worker_images),
@@ -419,7 +419,7 @@ export default function OperatorDashboard() {
                       </div>
                       
                       <div className="flex items-center justify-between pt-1 gap-2">
-                        <p className="text-sm text-muted-foreground">{task.time}</p>
+                        <p className="text-sm text-muted-foreground">{getElapsedTime(new Date(task.time))}</p>
                         <Badge 
                           variant={
                             task.priority === 'urgent' ? 'destructive' : 
