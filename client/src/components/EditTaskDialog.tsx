@@ -37,6 +37,7 @@ const BLOK_OPTIONS = [
   "Vila Maslina H-blok",
   "Vila Ruzmarin I-blok",
   "Vila Lavanda L-blok",
+  "Vila Cempresa M-blok",
   "Vila Tilija N-blok",
   "Vila Pinea O-blok",
   "Recepcija",

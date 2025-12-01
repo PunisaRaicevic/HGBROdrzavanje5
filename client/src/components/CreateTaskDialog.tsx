@@ -437,6 +437,7 @@ export default function CreateTaskDialog({ trigger }: CreateTaskDialogProps) {
                       <SelectItem value="Vila Maslina H-blok">Vila Maslina H-blok</SelectItem>
                       <SelectItem value="Vila Ruzmarin I-blok">Vila Ruzmarin I-blok</SelectItem>
                       <SelectItem value="Vila Lavanda L-blok">Vila Lavanda L-blok</SelectItem>
+                      <SelectItem value="Vila Cempresa M-blok">Vila Cempresa M-blok</SelectItem>
                       <SelectItem value="Vila Tilija N-blok">Vila Tilija N-blok</SelectItem>
                       <SelectItem value="Vila Pinea O-blok">Vila Pinea O-blok</SelectItem>
                       <SelectItem value="Ostalo">Ostalo</SelectItem>
