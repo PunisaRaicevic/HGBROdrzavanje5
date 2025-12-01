@@ -9,12 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
 import EditTaskDialog from '@/components/EditTaskDialog';
+import AdminAIChat from '@/components/AdminAIChat';
 import { PeriodPicker } from '@/components/PeriodPicker';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
@@ -73,6 +74,7 @@ export default function AdminDashboard() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   const [tasksPeriodFilter, setTasksPeriodFilter] = useState<string>('7d'); // Default 7 days
   const [tasksStatusFilter, setTasksStatusFilter] = useState<string>('all'); // Status filter for tasks list
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [historyPeriodFilter, setHistoryPeriodFilter] = useState<string>('7d'); // History period filter
   const [historyStatusFilter, setHistoryStatusFilter] = useState<string>('all'); // History status filter
   const [historyPerPage, setHistoryPerPage] = useState<number>(10); // History items per page

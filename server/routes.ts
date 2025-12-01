@@ -1082,5 +1082,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Analysis endpoint - only for admins
+  app.post("/api/admin/analyze", requireAuth, async (req, res) => {
+    try {
+      const { question } = req.body;
+      const sessionUser = await storage.getUserById(req.session.userId);
+      
+      if (!sessionUser || sessionUser.role !== 'admin') {
+        return res.status(403).json({ error: "Only admins can use AI analysis" });
+      }
+
+      if (!question) {
+        return res.status(400).json({ error: "Question is required" });
+      }
+
+      // Fetch data from Supabase for context
+      const allTasks = await storage.getTasks();
+      const allUsers = await storage.getUsers();
+      
+      // Calculate statistics
+      const tasksByStatus = allTasks.reduce((acc: any, task: any) => {
+        acc[task.status] = (acc[task.status] || 0) + 1;
+        return acc;
+      }, {});
+      
+      const tasksByPriority = allTasks.reduce((acc: any, task: any) => {
+        acc[task.priority || 'normal'] = (acc[task.priority || 'normal'] || 0) + 1;
+        return acc;
+      }, {});
+
+      const usersByRole = allUsers.reduce((acc: any, user: any) => {
+        acc[user.role] = (acc[user.role] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Group completed tasks by department
+      const completedByDept = allTasks
+        .filter((t: any) => t.status === 'completed')
+        .reduce((acc: any, task: any) => {
+          const dept = task.department || 'Unknown';
+          acc[dept] = (acc[dept] || 0) + 1;
+          return acc;
+        }, {});
+
+      // Prepare context for AI
+      const context = `
+You are an AI assistant analyzing hotel management data. Analyze based on this data:
+
+TASK STATISTICS:
+- Total Tasks: ${allTasks.length}
+- By Status: ${JSON.stringify(tasksByStatus)}
+- By Priority: ${JSON.stringify(tasksByPriority)}
+- By Department: ${JSON.stringify(completedByDept)}
+
+USERS:
+- Total Users: ${allUsers.length}
+- By Role: ${JSON.stringify(usersByRole)}
+
+Recent Tasks (last 10):
+${allTasks.slice(0, 10).map((t: any) => `- [${t.status}] ${t.title} (Priority: ${t.priority || 'normal'})`).join('\n')}
+
+User asked: "${question}"
+
+Provide insightful analysis in Serbian language. Focus on trends, recommendations, and actionable insights.
+`;
+
+      // Call OpenAI API
+      const OpenAI = await import('openai').then(m => m.default);
+      const client = new OpenAI({
+        apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+        baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL
+      });
+
+      const response = await client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional hotel management analyst. Provide clear, actionable insights in Serbian.'
+          },
+          {
+            role: 'user',
+            content: context
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1000
+      });
+
+      const analysis = response.choices[0]?.message?.content || 'Nije moguće generisati analizu';
+
+      res.json({ analysis });
+    } catch (error) {
+      console.error('[AI ANALYSIS] Error:', error);
+      res.status(500).json({ error: 'Greška pri analizi. Pokušajte ponovo.' });
+    }
+  });
+
   return server;
 }
