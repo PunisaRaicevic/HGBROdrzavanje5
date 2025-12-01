@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ClipboardList, Send, Plus, Clock, AlertCircle, MapPin, CheckCircle, PlayCircle, XCircle } from 'lucide-react';
+import { ClipboardList, Send, Plus, Clock, AlertCircle, MapPin, CheckCircle, PlayCircle, XCircle, Repeat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import SelectTechnicianDialog from '@/components/SelectTechnicianDialog';
@@ -26,12 +26,15 @@ type Task = {
   worker_images?: string[];
   sentTo?: 'supervisor' | 'technician';
   sentAt?: string;
-  assignedToName?: string; // Name of the technician(s) assigned
+  assignedToName?: string;
   status: 'new' | 'with_operator' | 'assigned_to_radnik' | 'with_sef' | 'with_external' | 'returned_to_operator' | 'returned_to_sef' | 'completed' | 'cancelled' | 'in_progress';
   completedAt?: string;
   receipt_confirmed_at?: string;
   receipt_confirmed_by?: string;
   receipt_confirmed_by_name?: string;
+  is_recurring?: boolean;
+  recurrence_pattern?: string;
+  parent_task_id?: string;
 };
 
 // Helper function to calculate elapsed time
@@ -45,6 +48,38 @@ const getElapsedTime = (createdAt: Date): string => {
   if (minutes < 60) return `${minutes} min ago`;
   if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
   return `${days} day${days > 1 ? 's' : ''} ago`;
+};
+
+// Helper function to format recurrence pattern
+const getRecurrenceLabel = (pattern: string | null | undefined): string | null => {
+  if (!pattern || pattern === 'once') return null;
+  
+  const legacyLabels: Record<string, string> = {
+    'daily': 'Svakog dana',
+    'weekly': 'Nedjeljno',
+    'monthly': 'Mjesecno'
+  };
+  if (legacyLabels[pattern]) return legacyLabels[pattern];
+  
+  const match = pattern.match(/^(\d+)_(days|weeks|months|years)$/);
+  if (match) {
+    const count = parseInt(match[1]);
+    const unit = match[2];
+    
+    if (unit === 'days') {
+      return count === 1 ? 'Svakog dana' : `Svaka ${count} dana`;
+    } else if (unit === 'weeks') {
+      if (count === 1) return 'Jednom nedjeljno';
+      return `${count}x nedjeljno`;
+    } else if (unit === 'months') {
+      if (count === 1) return 'Jednom mjesecno';
+      return `${count}x mjesecno`;
+    } else if (unit === 'years') {
+      if (count === 1) return 'Jednom godisnje';
+      return `${count}x godisnje`;
+    }
+  }
+  return null;
 };
 
 export default function OperatorDashboard() {
@@ -128,7 +163,10 @@ export default function OperatorDashboard() {
     completedAt: task.status === 'completed' ? task.updated_at : undefined,
     receipt_confirmed_at: task.receipt_confirmed_at || undefined,
     receipt_confirmed_by: task.receipt_confirmed_by || undefined,
-    receipt_confirmed_by_name: task.receipt_confirmed_by_name || undefined
+    receipt_confirmed_by_name: task.receipt_confirmed_by_name || undefined,
+    is_recurring: task.is_recurring || false,
+    recurrence_pattern: task.recurrence_pattern || undefined,
+    parent_task_id: task.parent_task_id || undefined
   });
   
   // Get all tasks from API
@@ -418,8 +456,16 @@ export default function OperatorDashboard() {
                         )}
                       </div>
                       
-                      <div className="flex items-center justify-between pt-1 gap-2">
-                        <p className="text-sm text-muted-foreground">{getElapsedTime(new Date(task.time))}</p>
+                      <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-muted-foreground">{getElapsedTime(new Date(task.time))}</p>
+                          {(task.is_recurring || task.parent_task_id) && getRecurrenceLabel(task.recurrence_pattern) && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 border-blue-300 text-blue-700">
+                              <Repeat className="w-3 h-3 mr-1" />
+                              {getRecurrenceLabel(task.recurrence_pattern)}
+                            </Badge>
+                          )}
+                        </div>
                         <Badge 
                           variant={
                             task.priority === 'urgent' ? 'destructive' : 
