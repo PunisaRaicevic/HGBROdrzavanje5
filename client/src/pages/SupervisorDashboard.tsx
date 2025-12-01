@@ -35,6 +35,7 @@ import DailyReportDialog from '@/components/DailyReportDialog';
 import CreateRecurringTaskDialog from '@/components/CreateRecurringTaskDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
 import EditTaskDialog from '@/components/EditTaskDialog';
+import { PhotoUpload, PhotoPreview } from '@/components/PhotoUpload';
 
 // Helper function to calculate elapsed time
 const getElapsedTime = (createdAt: Date): string => {
@@ -69,6 +70,7 @@ export default function SupervisorDashboard() {
   const [externalCompletionOpen, setExternalCompletionOpen] = useState(false);
   const [externalCompletionTask, setExternalCompletionTask] = useState<{ id: string; title: string } | null>(null);
   const [externalCompletionNotes, setExternalCompletionNotes] = useState('');
+  const [externalCompletionPhotos, setExternalCompletionPhotos] = useState<PhotoPreview[]>([]);
   
   // Filter state for "Zadaci" tab - same as AdminDashboard
   const [taskViewTab, setTaskViewTab] = useState('upcoming');
@@ -145,12 +147,13 @@ export default function SupervisorDashboard() {
     }
   });
 
-  // Mutation for completing external task with notes
+  // Mutation for completing external task with notes and photos
   const completeExternalTaskMutation = useMutation({
-    mutationFn: async ({ taskId, completionNotes }: { taskId: string; completionNotes: string }) => {
+    mutationFn: async ({ taskId, completionNotes, photos }: { taskId: string; completionNotes: string; photos: string[] }) => {
       return apiRequest('PATCH', `/api/tasks/${taskId}`, { 
         status: 'completed',
         worker_report: completionNotes,
+        worker_images: photos,
         completed_by: user?.id,
         completed_by_name: user?.fullName
       });
@@ -160,6 +163,7 @@ export default function SupervisorDashboard() {
       setExternalCompletionOpen(false);
       setExternalCompletionTask(null);
       setExternalCompletionNotes('');
+      setExternalCompletionPhotos([]);
       toast({
         title: "Uspešno!",
         description: "Zadatak externe firme je označen kao završen.",
@@ -274,15 +278,18 @@ export default function SupervisorDashboard() {
     e.stopPropagation();
     setExternalCompletionTask({ id: task.id, title: task.title });
     setExternalCompletionNotes('');
+    setExternalCompletionPhotos([]);
     setExternalCompletionOpen(true);
   };
 
   // Handle submitting external task completion
   const handleSubmitExternalCompletion = () => {
     if (!externalCompletionTask) return;
+    const photoDataUrls = externalCompletionPhotos.map(p => p.dataUrl);
     completeExternalTaskMutation.mutate({
       taskId: externalCompletionTask.id,
-      completionNotes: externalCompletionNotes
+      completionNotes: externalCompletionNotes,
+      photos: photoDataUrls
     });
   };
 
@@ -379,8 +386,16 @@ export default function SupervisorDashboard() {
                 placeholder="Unesite detalje o izvršenoj popravci, korištenim materijalima, trajanju radova..."
                 value={externalCompletionNotes}
                 onChange={(e) => setExternalCompletionNotes(e.target.value)}
-                className="min-h-[120px]"
+                className="min-h-[100px]"
                 data-testid="textarea-completion-notes"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Fotografije popravke</Label>
+              <PhotoUpload
+                photos={externalCompletionPhotos}
+                onPhotosChange={setExternalCompletionPhotos}
+                label="Dodajte fotografije sa popravke (opciono)"
               />
             </div>
           </div>
