@@ -379,7 +379,7 @@ export default function AdminDashboard() {
 
       {/* Main Admin Features */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="h-9 w-full grid grid-cols-3">
+        <TabsList className="h-9 w-full grid grid-cols-4">
           <TabsTrigger value="users" data-testid="tab-users" className="text-sm">
             <Users className="w-3.5 h-3.5 mr-1.5" />
             Korisnici
@@ -391,6 +391,10 @@ export default function AdminDashboard() {
           <TabsTrigger value="stats" data-testid="tab-stats" className="text-sm">
             <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
             Statistike
+          </TabsTrigger>
+          <TabsTrigger value="ai" data-testid="tab-ai" className="text-sm">
+            <Brain className="w-3.5 h-3.5 mr-1.5" />
+            AI Analiza
           </TabsTrigger>
         </TabsList>
 
@@ -1418,6 +1422,23 @@ export default function AdminDashboard() {
                   );
                 })()
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="ai" className="space-y-4">
+          <Card className="h-[600px]">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="w-5 h-5" />
+                AI Analiza Podataka
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Pitajte AI o trendovima, statistikama i preporukama za unapredenje rada
+              </p>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-80px)]">
+              <AdminAIChat />
             </CardContent>
           </Card>
         </TabsContent>
