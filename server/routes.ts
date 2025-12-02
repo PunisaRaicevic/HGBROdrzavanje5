@@ -1106,28 +1106,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allTasks = await storage.getTasks();
       const allUsers = await storage.getUsers();
       
-      // Fetch additional data from Supabase tables
-      const { data: taskHistory } = await supabase
-        .from('task_history')
-        .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(100);
-      
-      const { data: departments } = await supabase
-        .from('departments')
-        .select('*');
-      
-      const { data: serviceRatings } = await supabase
-        .from('service_ratings')
-        .select('*');
-      
-      const { data: maintenancePlans } = await supabase
-        .from('maintenance_plans')
-        .select('*');
-
-      const { data: taskAssignments } = await supabase
-        .from('task_assignments')
-        .select('*');
+      // Fetch ALL data from Supabase tables for comprehensive AI analysis
+      const [
+        { data: taskHistory },
+        { data: departments },
+        { data: serviceRatings },
+        { data: maintenancePlans },
+        { data: taskAssignments },
+        { data: taskCosts },
+        { data: taskMessages },
+        { data: taskPhotos },
+        { data: taskTemplates },
+        { data: taskTimeline },
+        { data: inventoryItems },
+        { data: inventoryRequests },
+        { data: inventoryTransactions },
+        { data: externalCompanies },
+        { data: guestReports },
+        { data: workSessions },
+        { data: userActivityLog },
+        { data: dailyStats },
+        { data: notifications }
+      ] = await Promise.all([
+        supabase.from('task_history').select('*').order('timestamp', { ascending: false }).limit(200),
+        supabase.from('departments').select('*'),
+        supabase.from('service_ratings').select('*'),
+        supabase.from('maintenance_plans').select('*'),
+        supabase.from('task_assignments').select('*'),
+        supabase.from('task_costs').select('*'),
+        supabase.from('task_messages').select('*').order('created_at', { ascending: false }).limit(100),
+        supabase.from('task_photos').select('*'),
+        supabase.from('task_templates').select('*'),
+        supabase.from('task_timeline').select('*').order('timestamp', { ascending: false }).limit(200),
+        supabase.from('inventory_items').select('*'),
+        supabase.from('inventory_requests').select('*'),
+        supabase.from('inventory_transactions').select('*').order('created_at', { ascending: false }).limit(100),
+        supabase.from('external_companies').select('*'),
+        supabase.from('guest_reports').select('*'),
+        supabase.from('work_sessions').select('*').order('start_time', { ascending: false }).limit(100),
+        supabase.from('user_activity_log').select('*').order('timestamp', { ascending: false }).limit(100),
+        supabase.from('daily_stats').select('*').order('date', { ascending: false }).limit(30),
+        supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100)
+      ]);
       
       // Calculate statistics
       const tasksByStatus = allTasks.reduce((acc: any, task: any) => {
@@ -1165,6 +1185,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return `- [${t.status}] ${t.title} (Priority: ${t.priority || 'normal'}, Created: ${createdDate}, Department: ${t.department || 'N/A'})`;
       }).join('\n');
 
+      // Calculate total costs if available
+      const totalCosts = taskCosts && taskCosts.length > 0
+        ? taskCosts.reduce((sum: number, c: any) => sum + (parseFloat(c.amount) || 0), 0).toFixed(2)
+        : 'N/A';
+
+      // Calculate inventory stats
+      const inventoryStats = {
+        items: inventoryItems?.length || 0,
+        requests: inventoryRequests?.length || 0,
+        transactions: inventoryTransactions?.length || 0
+      };
+
       const systemPrompt = `You are a technical task analysis assistant for a hotel maintenance management system. Your role is to analyze tasks and task execution data from the Supabase database.
 
 CORE PRINCIPLES:
@@ -1180,14 +1212,38 @@ RESPONSE STRUCTURE:
 - End with ONE optional suggestion for related analysis, prefaced with "Additional analysis available:"
 - NEVER execute suggested analysis unless explicitly requested
 
-AVAILABLE DATA FROM DATABASE:
-- tasks: Total ${allTasks.length} (Status: ${JSON.stringify(tasksByStatus)}, Priorities: ${JSON.stringify(tasksByPriority)})
+COMPLETE DATABASE ACCESS - ALL SUPABASE TABLES:
+
+TASK MANAGEMENT:
+- tasks: ${allTasks.length} total (Status: ${JSON.stringify(tasksByStatus)}, Priorities: ${JSON.stringify(tasksByPriority)})
 - task_history: ${taskHistory?.length || 0} status change records
 - task_assignments: ${taskAssignments?.length || 0} technician assignments
-- departments: ${departments?.length || 0} departments configured
-- maintenance_plans: ${maintenancePlans?.length || 0} scheduled maintenance plans
-- service_ratings: ${serviceRatings?.length || 0} ratings (Avg: ${avgRating})
+- task_costs: ${taskCosts?.length || 0} cost records (Total: ${totalCosts} EUR)
+- task_messages: ${taskMessages?.length || 0} messages/comments
+- task_photos: ${taskPhotos?.length || 0} attached photos
+- task_templates: ${taskTemplates?.length || 0} reusable templates
+- task_timeline: ${taskTimeline?.length || 0} timeline events
+
+STAFF & OPERATIONS:
 - users: ${allUsers.length} staff (Roles: ${JSON.stringify(usersByRole)})
+- departments: ${departments?.length || 0} departments configured
+- external_companies: ${externalCompanies?.length || 0} external contractors
+- work_sessions: ${workSessions?.length || 0} work session records
+- user_activity_log: ${userActivityLog?.length || 0} activity logs
+
+MAINTENANCE & INVENTORY:
+- maintenance_plans: ${maintenancePlans?.length || 0} scheduled maintenance plans
+- inventory_items: ${inventoryStats.items} items in inventory
+- inventory_requests: ${inventoryStats.requests} material requests
+- inventory_transactions: ${inventoryStats.transactions} inventory movements
+
+GUEST & QUALITY:
+- guest_reports: ${guestReports?.length || 0} guest-submitted reports
+- service_ratings: ${serviceRatings?.length || 0} ratings (Avg: ${avgRating})
+- notifications: ${notifications?.length || 0} system notifications
+
+ANALYTICS:
+- daily_stats: ${dailyStats?.length || 0} daily statistics records
 - Completed tasks by department: ${JSON.stringify(completedByDept)}
 
 RECENT 50 TASKS:
