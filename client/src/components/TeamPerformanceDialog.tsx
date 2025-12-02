@@ -26,11 +26,21 @@ export default function TeamPerformanceDialog({
   // Get today's tasks
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
   
   const todaysTasks = (tasksResponse?.tasks || []).filter(task => {
-    const createdDate = new Date(task.created_at);
-    createdDate.setHours(0, 0, 0, 0);
-    return createdDate.getTime() === today.getTime();
+    // Isključi recurring templates - prikazujemo samo child taskove i jednokratne zadatke
+    if (task.is_recurring && !task.parent_task_id) {
+      return false;
+    }
+    
+    // Za zakazane zadatke koristi scheduled_for, za obicne created_at
+    const taskDate = task.scheduled_for 
+      ? new Date(task.scheduled_for)
+      : new Date(task.created_at);
+    
+    return taskDate >= today && taskDate < tomorrow;
   });
 
   // Calculate statistics
