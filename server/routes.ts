@@ -1157,6 +1157,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         supabase.from('tasks').select('*').gte('scheduled_for', now.toISOString()).lte('scheduled_for', next7Days.toISOString()).order('scheduled_for', { ascending: true }),
         supabase.from('tasks').select('*').gte('scheduled_for', now.toISOString()).lte('scheduled_for', next30Days.toISOString()).order('scheduled_for', { ascending: true })
       ]);
+
+      // Calculate past 7 days date range
+      const past7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      // Get tasks from LAST 7 days (created or completed)
+      const { data: tasksLast7Days } = await supabase
+        .from('tasks')
+        .select('*')
+        .gte('created_at', past7Days.toISOString())
+        .order('created_at', { ascending: false });
+
+      // Get completed tasks from last 7 days
+      const { data: completedLast7Days } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('status', 'completed')
+        .gte('completed_at', past7Days.toISOString())
+        .order('completed_at', { ascending: false });
       
       // Calculate statistics
       const tasksByStatus = allTasks.reduce((acc: any, task: any) => {
@@ -1225,6 +1243,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Format tasks from LAST 7 days (historical data)
+      const tasksLast7DaysFormatted = tasksLast7Days && tasksLast7Days.length > 0
+        ? tasksLast7Days.map((task: any) => {
+            const createdDate = new Date(task.created_at).toLocaleDateString('sr-RS');
+            const completedDate = task.completed_at ? new Date(task.completed_at).toLocaleDateString('sr-RS') : 'Nije završen';
+            return `- ${task.title} | Kreiran: ${createdDate} | Status: ${task.status} | Prioritet: ${task.priority || 'normal'} | Tehničar: ${task.assigned_to_name || 'Nije dodeljen'} | Završen: ${completedDate}`;
+          }).join('\n')
+        : 'Nema zadataka kreiranih u poslednjih 7 dana.';
+
+      // Statistics for last 7 days
+      const last7DaysStats = {
+        total: tasksLast7Days?.length || 0,
+        completed: completedLast7Days?.length || 0,
+        byStatus: {} as { [key: string]: number },
+        byTechnician: {} as { [key: string]: number }
+      };
+      
+      if (tasksLast7Days) {
+        tasksLast7Days.forEach((task: any) => {
+          last7DaysStats.byStatus[task.status] = (last7DaysStats.byStatus[task.status] || 0) + 1;
+          if (task.assigned_to_name) {
+            last7DaysStats.byTechnician[task.assigned_to_name] = (last7DaysStats.byTechnician[task.assigned_to_name] || 0) + 1;
+          }
+        });
+      }
+
       // Calculate total costs if available
       const totalCosts = taskCosts && taskCosts.length > 0
         ? taskCosts.reduce((sum: number, c: any) => sum + (parseFloat(c.amount) || 0), 0).toFixed(2)
@@ -1277,13 +1321,24 @@ MAINTENANCE & INVENTORY:
 - inventory_requests: ${inventoryStats.requests} material requests
 - inventory_transactions: ${inventoryStats.transactions} inventory movements
 
-===== ZAKAZANI ZADACI - NAREDNIH 7 DANA (${scheduledTasks7Days?.length || 0} zadataka) =====
+===== ZADACI IZ POSLEDNJIH 7 DANA (PROŠLOST) =====
+Ukupno kreirano: ${last7DaysStats.total} zadataka
+Završeno: ${last7DaysStats.completed} zadataka
+Po statusu: ${JSON.stringify(last7DaysStats.byStatus)}
+Po tehničaru: ${JSON.stringify(last7DaysStats.byTechnician)}
+
+DETALJI ZADATAKA (poslednjih 7 dana):
+${tasksLast7DaysFormatted}
+
+===== ZAKAZANI ZADACI - NAREDNIH 7 DANA (BUDUĆNOST) =====
+Ukupno zakazano: ${scheduledTasks7Days?.length || 0} zadataka
 Raspored po danima: ${JSON.stringify(scheduledByDate)}
 
-DETALJI ZAKAZANIH ZADATAKA (7 dana):
+DETALJI ZAKAZANIH ZADATAKA (narednih 7 dana):
 ${scheduledTasks7DaysFormatted}
 
-===== ZAKAZANI ZADACI - NAREDNIH 30 DANA (${scheduledTasks30Days?.length || 0} zadataka) =====
+===== ZAKAZANI ZADACI - NAREDNIH 30 DANA =====
+Ukupno: ${scheduledTasks30Days?.length || 0} zadataka
 ${scheduledTasks30DaysFormatted}
 
 GUEST & QUALITY:
