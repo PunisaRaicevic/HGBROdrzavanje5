@@ -1131,27 +1131,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return `- [${t.status}] ${t.title} (Priority: ${t.priority || 'normal'}, Created: ${createdDate}, Department: ${t.department || 'N/A'})`;
       }).join('\n');
 
-      const context = `
-You are an AI assistant analyzing complete hotel management historical data. Analyze based on this data:
+      const systemPrompt = `You are a professional hotel management analyst.
 
-COMPLETE TASK STATISTICS (All Time):
-- Total Tasks in System: ${allTasks.length}
-- By Status: ${JSON.stringify(tasksByStatus)}
-- By Priority: ${JSON.stringify(tasksByPriority)}
-- By Department: ${JSON.stringify(completedByDept)}
+IMPORTANT RULES:
+1. Answer ONLY the user's question - do not provide unsolicited analysis
+2. Use available data to support your answer
+3. Be concise and focused
+4. Respond in Serbian language
+5. Provide only relevant statistics or recommendations that directly address the question
 
-USERS:
-- Total Users: ${allUsers.length}
-- By Role: ${JSON.stringify(usersByRole)}
+Available Data Context:
+- Total Tasks: ${allTasks.length}
+- Task Status Breakdown: ${JSON.stringify(tasksByStatus)}
+- Priority Distribution: ${JSON.stringify(tasksByPriority)}
+- Department Performance: ${JSON.stringify(completedByDept)}
+- User Breakdown: ${JSON.stringify(usersByRole)}
+- Recent Tasks Sample: 50 most recent tasks available
 
-Recent 50 Tasks (Full Historical Data Available):
-${recentTasks}
-
-User asked: "${question}"
-
-Note: You have access to complete historical data from the entire database. Use all statistics and patterns to provide comprehensive analysis.
-Provide insightful analysis in Serbian language. Focus on trends, recommendations, and actionable insights.
-`;
+DO NOT analyze or discuss topics the user did not ask about.
+DO NOT provide unsolicited statistics or recommendations.
+ONLY respond to the specific question asked.`;
 
       // Call OpenAI API
       const OpenAI = await import('openai').then(m => m.default);
@@ -1165,15 +1164,15 @@ Provide insightful analysis in Serbian language. Focus on trends, recommendation
         messages: [
           {
             role: 'system',
-            content: 'You are a professional hotel management analyst. Provide clear, actionable insights in Serbian.'
+            content: systemPrompt
           },
           {
             role: 'user',
-            content: context
+            content: question
           }
         ],
-        temperature: 0.7,
-        max_tokens: 1000
+        temperature: 0.5,
+        max_tokens: 500
       });
 
       const analysis = response.choices[0]?.message?.content || 'Nije moguće generisati analizu';
