@@ -1113,8 +1113,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const [
         { data: taskHistory },
         { data: departments },
-        { data: serviceRatings },
-        { data: maintenancePlans },
         { data: taskAssignments },
         { data: taskCosts },
         { data: taskMessages },
@@ -1125,7 +1123,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { data: inventoryRequests },
         { data: inventoryTransactions },
         { data: externalCompanies },
-        { data: guestReports },
         { data: workSessions },
         { data: userActivityLog },
         { data: dailyStats },
@@ -1134,8 +1131,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ] = await Promise.all([
         supabase.from('task_history').select('*').order('timestamp', { ascending: false }).limit(500),
         supabase.from('departments').select('*'),
-        supabase.from('service_ratings').select('*'),
-        supabase.from('maintenance_plans').select('*'),
         supabase.from('task_assignments').select('*'),
         supabase.from('task_costs').select('*'),
         supabase.from('task_messages').select('*').order('created_at', { ascending: false }).limit(200),
@@ -1146,7 +1141,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         supabase.from('inventory_requests').select('*'),
         supabase.from('inventory_transactions').select('*').order('created_at', { ascending: false }).limit(200),
         supabase.from('external_companies').select('*'),
-        supabase.from('guest_reports').select('*'),
         supabase.from('work_sessions').select('*').order('start_time', { ascending: false }).limit(200),
         supabase.from('user_activity_log').select('*').order('timestamp', { ascending: false }).limit(200),
         supabase.from('daily_stats').select('*').order('date', { ascending: false }).limit(90),
@@ -1178,11 +1172,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           acc[dept] = (acc[dept] || 0) + 1;
           return acc;
         }, {});
-
-      // Calculate average rating if available
-      const avgRating = serviceRatings && serviceRatings.length > 0
-        ? (serviceRatings.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / serviceRatings.length).toFixed(2)
-        : 'N/A';
 
       // Prepare context for AI - ALL tasks with full date info for AI to filter by period from question
       const allTasksFormatted = allTasks.map((t: any) => {
@@ -1230,14 +1219,16 @@ CORE PRINCIPLES:
 6. Use concrete numbers, dates, and facts from the database
 
 PERIOD EXTRACTION RULES:
-- If user says "danas" -> filter for today's date only
-- If user says "sutra" -> filter for tomorrow's date only
-- If user says "7 dana", "narednih 7 dana", "sledecih 7 dana" -> next 7 days from today
-- If user says "poslednjih 7 dana", "prethodnih 7 dana" -> last 7 days before today
-- If user says "30 dana", "mesec dana" -> 30 days (direction based on context - past/future)
-- If user says "ove sedmice/nedelje" -> current week
-- If user says specific date -> filter for that date
-- If NO period mentioned -> ask user to specify the period
+- Dynamically parse ANY time expression from user's question in Serbian language
+- Recognize relative time expressions: "danas", "sutra", "preksutra", "juce", "prekjuce"
+- Recognize relative periods: "narednih X dana", "poslednjih X dana", "sledecih X dana", "prethodnih X dana"
+- Recognize week expressions: "ove nedelje", "prosle nedelje", "sledece nedelje"
+- Recognize month expressions: "ovog meseca", "proslog meseca", "sledeceg meseca"
+- Recognize specific dates in any format (e.g., "15. decembar", "15.12.2024", "15/12")
+- Recognize date ranges: "od X do Y", "izmedju X i Y"
+- Calculate the actual date range based on CURRENT DATE/TIME provided above
+- If NO time period can be extracted from the question -> ask user to specify the period
+- NEVER assume a default period - always extract from user's words or ask for clarification
 
 RESPONSE STRUCTURE:
 - For simple queries: Provide direct, concise answers (2-3 sentences)
@@ -1265,15 +1256,12 @@ STAFF & OPERATIONS:
 - work_sessions: ${workSessions?.length || 0} work session records
 - user_activity_log: ${userActivityLog?.length || 0} activity logs
 
-MAINTENANCE & INVENTORY:
-- maintenance_plans: ${maintenancePlans?.length || 0} scheduled maintenance plans
+INVENTORY:
 - inventory_items: ${inventoryStats.items} items in inventory
 - inventory_requests: ${inventoryStats.requests} material requests
 - inventory_transactions: ${inventoryStats.transactions} inventory movements
 
-GUEST & QUALITY:
-- guest_reports: ${guestReports?.length || 0} guest-submitted reports
-- service_ratings: ${serviceRatings?.length || 0} ratings (Avg: ${avgRating})
+NOTIFICATIONS:
 - notifications: ${notifications?.length || 0} system notifications
 
 ANALYTICS:
