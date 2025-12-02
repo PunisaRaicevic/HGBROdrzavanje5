@@ -1106,6 +1106,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allTasks = await storage.getTasks();
       const allUsers = await storage.getUsers();
       
+      // Calculate date range for scheduled tasks
+      const now = new Date();
+      const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const next30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
       // Fetch ALL data from Supabase tables for comprehensive AI analysis
       const [
         { data: taskHistory },
@@ -1126,7 +1131,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { data: workSessions },
         { data: userActivityLog },
         { data: dailyStats },
-        { data: notifications }
+        { data: notifications },
+        { data: scheduledTasks7Days },
+        { data: scheduledTasks30Days }
       ] = await Promise.all([
         supabase.from('task_history').select('*').order('timestamp', { ascending: false }).limit(200),
         supabase.from('departments').select('*'),
@@ -1146,7 +1153,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         supabase.from('work_sessions').select('*').order('start_time', { ascending: false }).limit(100),
         supabase.from('user_activity_log').select('*').order('timestamp', { ascending: false }).limit(100),
         supabase.from('daily_stats').select('*').order('date', { ascending: false }).limit(30),
-        supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100)
+        supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100),
+        supabase.from('tasks').select('*').gte('scheduled_for', now.toISOString()).lte('scheduled_for', next7Days.toISOString()).order('scheduled_for', { ascending: true }),
+        supabase.from('tasks').select('*').gte('scheduled_for', now.toISOString()).lte('scheduled_for', next30Days.toISOString()).order('scheduled_for', { ascending: true })
       ]);
       
       // Calculate statistics
@@ -1185,41 +1194,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return `- [${t.status}] ${t.title} (Priority: ${t.priority || 'normal'}, Created: ${createdDate}, Department: ${t.department || 'N/A'})`;
       }).join('\n');
 
-      // Prepare PLANNED MAINTENANCE details
-      const today = new Date();
-      
-      // maintenance_plans table has: equipment_name, equipment_type, location, frequency_days, next_service_date, assigned_to_name
-      const plannedMaintenanceDetails = maintenancePlans && maintenancePlans.length > 0
-        ? maintenancePlans.map((plan: any) => {
-            const nextDue = plan.next_service_date;
-            const nextDueDate = nextDue ? new Date(nextDue) : null;
-            const nextDueStr = nextDueDate ? nextDueDate.toLocaleDateString('sr-RS') : 'Nije definisano';
-            const daysUntil = nextDueDate ? Math.ceil((nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
-            
-            return `- ${plan.equipment_name || 'Bez naziva'} (${plan.equipment_type || 'N/A'}) | Lokacija: ${plan.location || 'N/A'} | Sledeći servis: ${nextDueStr} (za ${daysUntil !== null ? daysUntil : '?'} dana) | Učestalost: svakih ${plan.frequency_days || '?'} dana | Tehničar: ${plan.assigned_to_name || 'Nije dodeljen'} | Aktivan: ${plan.is_active ? 'Da' : 'Ne'}`;
+      // Format SCHEDULED TASKS for next 7 days (from tasks table with scheduled_for field)
+      const scheduledTasks7DaysFormatted = scheduledTasks7Days && scheduledTasks7Days.length > 0
+        ? scheduledTasks7Days.map((task: any) => {
+            const scheduledDate = new Date(task.scheduled_for);
+            const dateStr = scheduledDate.toLocaleDateString('sr-RS');
+            const timeStr = scheduledDate.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' });
+            const isRecurring = task.is_recurring || task.recurrence_pattern ? 'Periodičan' : 'Jednokratan';
+            return `- ${task.title} | Zakazano: ${dateStr} ${timeStr} | Lokacija: ${task.location || 'N/A'} | Tehničar: ${task.assigned_to_name || 'Nije dodeljen'} | Status: ${task.status} | Tip: ${isRecurring}`;
           }).join('\n')
-        : 'NAPOMENA: Tabela maintenance_plans je prazna - nema unetih planova održavanja u bazi.';
+        : 'Nema zakazanih zadataka za narednih 7 dana.';
 
-      // Filter plans for next 7 days specifically
-      const next7DaysPlans = maintenancePlans && maintenancePlans.length > 0
-        ? maintenancePlans.filter((plan: any) => {
-            const nextDue = plan.next_service_date;
-            if (!nextDue) return false;
-            const nextDueDate = new Date(nextDue);
-            const daysUntil = Math.ceil((nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-            return daysUntil >= 0 && daysUntil <= 7;
-          })
-        : [];
-
-      const next7DaysDetails = next7DaysPlans.length > 0
-        ? next7DaysPlans.map((plan: any) => {
-            const nextDue = plan.next_service_date;
-            const nextDueDate = new Date(nextDue);
-            const nextDueStr = nextDueDate.toLocaleDateString('sr-RS');
-            const daysUntil = Math.ceil((nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-            return `- ${plan.equipment_name} (${plan.equipment_type || 'N/A'}) | ${nextDueStr} (za ${daysUntil} dana) | Lokacija: ${plan.location || 'N/A'} | Tehničar: ${plan.assigned_to_name || 'N/A'}`;
+      // Format SCHEDULED TASKS for next 30 days
+      const scheduledTasks30DaysFormatted = scheduledTasks30Days && scheduledTasks30Days.length > 0
+        ? scheduledTasks30Days.map((task: any) => {
+            const scheduledDate = new Date(task.scheduled_for);
+            const dateStr = scheduledDate.toLocaleDateString('sr-RS');
+            const timeStr = scheduledDate.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' });
+            const isRecurring = task.is_recurring || task.recurrence_pattern ? 'Periodičan' : 'Jednokratan';
+            return `- ${task.title} | Zakazano: ${dateStr} ${timeStr} | Tehničar: ${task.assigned_to_name || 'N/A'} | Tip: ${isRecurring}`;
           }).join('\n')
-        : 'Nema planiranih radova za narednih 7 dana (tabela maintenance_plans je prazna).';
+        : 'Nema zakazanih zadataka za narednih 30 dana.';
+
+      // Group scheduled tasks by date for summary
+      const scheduledByDate: { [key: string]: number } = {};
+      if (scheduledTasks7Days) {
+        scheduledTasks7Days.forEach((task: any) => {
+          const dateKey = new Date(task.scheduled_for).toLocaleDateString('sr-RS');
+          scheduledByDate[dateKey] = (scheduledByDate[dateKey] || 0) + 1;
+        });
+      }
 
       // Calculate total costs if available
       const totalCosts = taskCosts && taskCosts.length > 0
@@ -1273,11 +1277,14 @@ MAINTENANCE & INVENTORY:
 - inventory_requests: ${inventoryStats.requests} material requests
 - inventory_transactions: ${inventoryStats.transactions} inventory movements
 
-PLANIRANI RADOVI - NAREDNIH 7 DANA (${next7DaysPlans.length} planova):
-${next7DaysDetails}
+===== ZAKAZANI ZADACI - NAREDNIH 7 DANA (${scheduledTasks7Days?.length || 0} zadataka) =====
+Raspored po danima: ${JSON.stringify(scheduledByDate)}
 
-SVI PLANIRANI RADOVI (maintenance_plans detalji):
-${plannedMaintenanceDetails}
+DETALJI ZAKAZANIH ZADATAKA (7 dana):
+${scheduledTasks7DaysFormatted}
+
+===== ZAKAZANI ZADACI - NAREDNIH 30 DANA (${scheduledTasks30Days?.length || 0} zadataka) =====
+${scheduledTasks30DaysFormatted}
 
 GUEST & QUALITY:
 - guest_reports: ${guestReports?.length || 0} guest-submitted reports
