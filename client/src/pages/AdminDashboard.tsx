@@ -88,10 +88,10 @@ export default function AdminDashboard() {
   
   // Period states with date ranges
   const now = new Date();
-  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month'>('week');
+  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month'>('day');
   const [statsRange, setStatsRange] = useState({
     start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-    end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7)
+    end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
   });
   
   const [analysisGranularity, setAnalysisGranularity] = useState<'day' | 'week' | 'month'>('day');
