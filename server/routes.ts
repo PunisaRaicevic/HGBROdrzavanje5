@@ -1185,25 +1185,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return `- [${t.status}] ${t.title} (Priority: ${t.priority || 'normal'}, Created: ${createdDate}, Department: ${t.department || 'N/A'})`;
       }).join('\n');
 
-      // Prepare PLANNED MAINTENANCE details for next 30 days
+      // Prepare PLANNED MAINTENANCE details
       const today = new Date();
-      const next30Days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
       
+      // maintenance_plans table has: equipment_name, equipment_type, location, frequency_days, next_service_date, assigned_to_name
       const plannedMaintenanceDetails = maintenancePlans && maintenancePlans.length > 0
         ? maintenancePlans.map((plan: any) => {
-            const nextDue = plan.next_due || plan.next_occurrence || plan.scheduled_date;
+            const nextDue = plan.next_service_date;
             const nextDueDate = nextDue ? new Date(nextDue) : null;
             const nextDueStr = nextDueDate ? nextDueDate.toLocaleDateString('sr-RS') : 'Nije definisano';
             const daysUntil = nextDueDate ? Math.ceil((nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
             
-            return `- ${plan.title || plan.name || 'Bez naziva'} | Lokacija: ${plan.location || plan.area || 'N/A'} | Sledeći termin: ${nextDueStr} (za ${daysUntil !== null ? daysUntil : '?'} dana) | Učestalost: ${plan.recurrence_pattern || plan.frequency || 'jednokratno'} | Odeljenje: ${plan.department || 'N/A'}`;
+            return `- ${plan.equipment_name || 'Bez naziva'} (${plan.equipment_type || 'N/A'}) | Lokacija: ${plan.location || 'N/A'} | Sledeći servis: ${nextDueStr} (za ${daysUntil !== null ? daysUntil : '?'} dana) | Učestalost: svakih ${plan.frequency_days || '?'} dana | Tehničar: ${plan.assigned_to_name || 'Nije dodeljen'} | Aktivan: ${plan.is_active ? 'Da' : 'Ne'}`;
           }).join('\n')
-        : 'Nema planiranih radova u bazi.';
+        : 'NAPOMENA: Tabela maintenance_plans je prazna - nema unetih planova održavanja u bazi.';
 
       // Filter plans for next 7 days specifically
       const next7DaysPlans = maintenancePlans && maintenancePlans.length > 0
         ? maintenancePlans.filter((plan: any) => {
-            const nextDue = plan.next_due || plan.next_occurrence || plan.scheduled_date;
+            const nextDue = plan.next_service_date;
             if (!nextDue) return false;
             const nextDueDate = new Date(nextDue);
             const daysUntil = Math.ceil((nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -1213,13 +1213,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const next7DaysDetails = next7DaysPlans.length > 0
         ? next7DaysPlans.map((plan: any) => {
-            const nextDue = plan.next_due || plan.next_occurrence || plan.scheduled_date;
+            const nextDue = plan.next_service_date;
             const nextDueDate = new Date(nextDue);
             const nextDueStr = nextDueDate.toLocaleDateString('sr-RS');
             const daysUntil = Math.ceil((nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-            return `- ${plan.title || plan.name} | ${nextDueStr} (za ${daysUntil} dana) | ${plan.location || plan.area || 'N/A'}`;
+            return `- ${plan.equipment_name} (${plan.equipment_type || 'N/A'}) | ${nextDueStr} (za ${daysUntil} dana) | Lokacija: ${plan.location || 'N/A'} | Tehničar: ${plan.assigned_to_name || 'N/A'}`;
           }).join('\n')
-        : 'Nema planiranih radova za narednih 7 dana.';
+        : 'Nema planiranih radova za narednih 7 dana (tabela maintenance_plans je prazna).';
 
       // Calculate total costs if available
       const totalCosts = taskCosts && taskCosts.length > 0
