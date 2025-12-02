@@ -831,7 +831,6 @@ export default function SupervisorDashboard() {
                     <TabsContent value="history" className="mt-0 space-y-3">
                       <div className="flex flex-wrap items-center gap-2">
                         {[
-                          { value: '1d', label: 'Danas' },
                           { value: '7d', label: '7 dana' },
                           { value: '30d', label: '30 dana' },
                           { value: '3m', label: '3 mjeseca' },
@@ -1085,42 +1084,30 @@ export default function SupervisorDashboard() {
                               
                               let periodFiltered = tasksBeforeToday;
                               
-                              if (historyPeriodFilter === '1d') {
-                                const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+                              switch (historyPeriodFilter) {
+                                case '7d':
+                                  startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                  break;
+                                case '30d':
+                                  startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                                  break;
+                                case '3m':
+                                  startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                                  break;
+                                case '6m':
+                                  startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                                  break;
+                              }
+                              
+                              if (startDate) {
                                 periodFiltered = tasksBeforeToday.filter(task => {
                                   const taskDate = task.completed_at 
                                     ? new Date(task.completed_at)
                                     : task.scheduled_for 
                                       ? new Date(task.scheduled_for) 
                                       : new Date(task.created_at);
-                                  return taskDate >= yesterdayStart && taskDate < todayStart;
+                                  return taskDate >= startDate! && taskDate < todayStart;
                                 });
-                              } else {
-                                switch (historyPeriodFilter) {
-                                  case '7d':
-                                    startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                                    break;
-                                  case '30d':
-                                    startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                                    break;
-                                  case '3m':
-                                    startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-                                    break;
-                                  case '6m':
-                                    startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-                                    break;
-                                }
-                                
-                                if (startDate) {
-                                  periodFiltered = tasksBeforeToday.filter(task => {
-                                    const taskDate = task.completed_at 
-                                      ? new Date(task.completed_at)
-                                      : task.scheduled_for 
-                                        ? new Date(task.scheduled_for) 
-                                        : new Date(task.created_at);
-                                    return taskDate >= startDate! && taskDate < todayStart;
-                                  });
-                                }
                               }
                               
                               if (historyStatusFilter === 'all') {
