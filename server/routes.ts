@@ -1096,9 +1096,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Question is required" });
       }
 
+      // Initialize Supabase client for additional queries
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = process.env.SUPABASE_URL!;
+      const supabaseKey = process.env.SUPABASE_ANON_KEY!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
       // Fetch data from Supabase for context
       const allTasks = await storage.getTasks();
       const allUsers = await storage.getUsers();
+      
+      // Fetch additional data from Supabase tables
+      const { data: taskHistory } = await supabase
+        .from('task_history')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(100);
+      
+      const { data: departments } = await supabase
+        .from('departments')
+        .select('*');
+      
+      const { data: serviceRatings } = await supabase
+        .from('service_ratings')
+        .select('*');
+      
+      const { data: maintenancePlans } = await supabase
+        .from('maintenance_plans')
+        .select('*');
+
+      const { data: taskAssignments } = await supabase
+        .from('task_assignments')
+        .select('*');
       
       // Calculate statistics
       const tasksByStatus = allTasks.reduce((acc: any, task: any) => {
@@ -1125,6 +1154,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return acc;
         }, {});
 
+      // Calculate average rating if available
+      const avgRating = serviceRatings && serviceRatings.length > 0
+        ? (serviceRatings.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / serviceRatings.length).toFixed(2)
+        : 'N/A';
+
       // Prepare context for AI - with complete historical data
       const recentTasks = allTasks.slice(0, 50).map((t: any) => {
         const createdDate = new Date(t.created_at).toLocaleDateString('sr-RS');
@@ -1146,10 +1180,18 @@ RESPONSE STRUCTURE:
 - End with ONE optional suggestion for related analysis, prefaced with "Additional analysis available:"
 - NEVER execute suggested analysis unless explicitly requested
 
-AVAILABLE DATA SOURCES:
-- tasks: All maintenance tasks (Total: ${allTasks.length}, Status: ${JSON.stringify(tasksByStatus)}, Priorities: ${JSON.stringify(tasksByPriority)})
-- Department Performance: ${JSON.stringify(completedByDept)}
-- Users: Staff information (Total: ${allUsers.length}, Roles: ${JSON.stringify(usersByRole)})
+AVAILABLE DATA FROM DATABASE:
+- tasks: Total ${allTasks.length} (Status: ${JSON.stringify(tasksByStatus)}, Priorities: ${JSON.stringify(tasksByPriority)})
+- task_history: ${taskHistory?.length || 0} status change records
+- task_assignments: ${taskAssignments?.length || 0} technician assignments
+- departments: ${departments?.length || 0} departments configured
+- maintenance_plans: ${maintenancePlans?.length || 0} scheduled maintenance plans
+- service_ratings: ${serviceRatings?.length || 0} ratings (Avg: ${avgRating})
+- users: ${allUsers.length} staff (Roles: ${JSON.stringify(usersByRole)})
+- Completed tasks by department: ${JSON.stringify(completedByDept)}
+
+RECENT 50 TASKS:
+${recentTasks}
 
 FORBIDDEN BEHAVIORS:
 - Do not analyze data that wasn't requested
