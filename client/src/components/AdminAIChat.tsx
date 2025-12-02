@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Loader, Mic, MicOff } from 'lucide-react';
+import { Send, Loader, Mic } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import { Capacitor } from '@capacitor/core';
+import { SpeechRecognition } from '@capacitor-community/speech-recognition';
 
 interface Message {
   id: string;
@@ -18,62 +20,92 @@ export default function AdminAIChat() {
     {
       id: '1',
       role: 'assistant',
-      content: 'Pozdrav! Ja sam AI asistent za analizu podataka hotela. Mogu da vam dam analizu:\n\n- Trendove u prijavljivanjima\n- Analizu zadataka po odeljenju\n- Statistiku odgovora\n- Preporuke za poboljšanja\n\nŠta biste hteli da saznate?',
+      content: 'Pozdrav! Ja sam AI asistent za analizu podataka hotela. Mogu da vam dam analizu:\n\n- Trendove u prijavljivanjima\n- Analizu zadataka po odeljenju\n- Statistiku odgovora\n- Preporuke za poboljšanja\n\nSta biste hteli da saznate?',
       timestamp: new Date()
     }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [speechAvailable, setSpeechAvailable] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Initialize Web Speech API
-    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = 'sr-RS';
-
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-
-      recognition.onresult = (event: any) => {
-        let interimTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            setInput(prev => (prev + transcript).trim());
-          } else {
-            interimTranscript += transcript;
+    const initSpeechRecognition = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const available = await SpeechRecognition.available();
+          setSpeechAvailable(available.available);
+          console.log('[SPEECH] Native speech recognition available:', available.available);
+          
+          if (available.available) {
+            const permission = await SpeechRecognition.checkPermissions();
+            console.log('[SPEECH] Permission status:', permission.speechRecognition);
+            
+            if (permission.speechRecognition === 'prompt' || permission.speechRecognition === 'prompt-with-rationale') {
+              const requested = await SpeechRecognition.requestPermissions();
+              console.log('[SPEECH] Permission requested:', requested.speechRecognition);
+            }
           }
+        } catch (error) {
+          console.error('[SPEECH] Error initializing native speech:', error);
+          setSpeechAvailable(false);
         }
-      };
+      } else {
+        const SpeechRecognitionAPI = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+        if (SpeechRecognitionAPI) {
+          const recognition = new SpeechRecognitionAPI();
+          recognition.continuous = false;
+          recognition.interimResults = true;
+          recognition.lang = 'sr-RS';
 
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error', event.error);
-        toast({
-          title: 'Greška pri prepoznavanju govora',
-          description: 'Molim pokušajte ponovo.',
-          variant: 'destructive'
-        });
-        setIsListening(false);
-      };
+          recognition.onstart = () => {
+            setIsListening(true);
+          };
 
-      recognition.onend = () => {
-        setIsListening(false);
-      };
+          recognition.onresult = (event: any) => {
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript;
+              if (event.results[i].isFinal) {
+                setInput(prev => (prev + transcript).trim());
+              }
+            }
+          };
 
-      recognitionRef.current = recognition;
-    }
+          recognition.onerror = (event: any) => {
+            console.error('Speech recognition error', event.error);
+            toast({
+              title: 'Greska pri prepoznavanju govora',
+              description: 'Molim pokusajte ponovo.',
+              variant: 'destructive'
+            });
+            setIsListening(false);
+          };
+
+          recognition.onend = () => {
+            setIsListening(false);
+          };
+
+          recognitionRef.current = recognition;
+          setSpeechAvailable(true);
+          console.log('[SPEECH] Web Speech API available');
+        } else {
+          console.log('[SPEECH] No speech recognition available');
+          setSpeechAvailable(false);
+        }
+      }
+    };
+
+    initSpeechRecognition();
 
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.abort();
+      }
+      if (Capacitor.isNativePlatform()) {
+        SpeechRecognition.stop().catch(() => {});
       }
     };
   }, [toast]);
@@ -84,32 +116,86 @@ export default function AdminAIChat() {
     }
   }, [messages]);
 
-  const handleVoiceInput = () => {
-    if (!recognitionRef.current) {
+  const handleVoiceInput = async () => {
+    if (!speechAvailable) {
       toast({
         title: 'Glasovni unos nije dostupan',
-        description: 'Vaš pretraživač ne podržava prepoznavanje govora.',
+        description: 'Vas uredaj ne podrzava prepoznavanje govora.',
         variant: 'destructive'
       });
       return;
     }
 
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
+    if (Capacitor.isNativePlatform()) {
+      if (isListening) {
+        try {
+          await SpeechRecognition.stop();
+          setIsListening(false);
+        } catch (error) {
+          console.error('[SPEECH] Error stopping:', error);
+        }
+      } else {
+        try {
+          setInput('');
+          setIsListening(true);
+          
+          const result = await SpeechRecognition.start({
+            language: 'sr-RS',
+            maxResults: 5,
+            prompt: 'Govorite...',
+            partialResults: true,
+            popup: false
+          });
+          
+          console.log('[SPEECH] Recognition result:', result);
+          
+          if (result.matches && result.matches.length > 0) {
+            setInput(result.matches[0]);
+          }
+          
+          setIsListening(false);
+        } catch (error: any) {
+          console.error('[SPEECH] Recognition error:', error);
+          setIsListening(false);
+          
+          if (error?.message !== 'User denied access to speech recognition') {
+            toast({
+              title: 'Greska pri prepoznavanju',
+              description: 'Molim pokusajte ponovo.',
+              variant: 'destructive'
+            });
+          }
+        }
+      }
     } else {
-      setInput('');
-      recognitionRef.current.start();
+      if (!recognitionRef.current) {
+        toast({
+          title: 'Glasovni unos nije dostupan',
+          description: 'Vas pretrazivac ne podrzava prepoznavanje govora.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      if (isListening) {
+        recognitionRef.current.stop();
+        setIsListening(false);
+      } else {
+        setInput('');
+        recognitionRef.current.start();
+      }
     }
   };
 
   const handleSend = async () => {
     if (!input.trim()) return;
 
+    const questionText = input;
+    
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content: questionText,
       timestamp: new Date()
     };
 
@@ -118,17 +204,15 @@ export default function AdminAIChat() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/admin/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: input })
-      });
+      console.log('[AI CHAT] Sending question to backend...');
+      const response = await apiRequest('POST', '/api/admin/analyze', { question: questionText });
 
       if (!response.ok) {
-        throw new Error('Greška pri dohvatu analize');
+        throw new Error('Greska pri dohvatu analize');
       }
 
       const data = await response.json();
+      console.log('[AI CHAT] Received response:', data);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -139,14 +223,13 @@ export default function AdminAIChat() {
 
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error('AI Error:', error);
+      console.error('[AI CHAT] Error:', error);
       toast({
-        title: 'Greška',
-        description: 'Nije moguće dobiti analizu. Pokušajte ponovo.',
+        title: 'Greska',
+        description: 'Nije moguce dobiti analizu. Pokusajte ponovo.',
         variant: 'destructive'
       });
       
-      // Remove user message on error
       setMessages(prev => prev.slice(0, -1));
     } finally {
       setLoading(false);
@@ -188,23 +271,19 @@ export default function AdminAIChat() {
           placeholder="Pitajte AI o trendovima, prijavljivanjima..."
           value={input}
           onChange={e => setInput(e.target.value)}
-          onKeyPress={e => e.key === 'Enter' && handleSend()}
+          onKeyPress={e => e.key === 'Enter' && !loading && handleSend()}
           disabled={loading || isListening}
           data-testid="input-ai-question"
         />
         <Button
           onClick={handleVoiceInput}
-          disabled={loading}
+          disabled={loading || !speechAvailable}
           size="icon"
           variant={isListening ? 'default' : 'outline'}
           data-testid="button-voice-input"
           title={isListening ? 'Zaustaviti snimanje' : 'Glasovni unos'}
         >
-          {isListening ? (
-            <Mic className="h-4 w-4 animate-pulse" />
-          ) : (
-            <Mic className="h-4 w-4" />
-          )}
+          <Mic className={`h-4 w-4 ${isListening ? 'animate-pulse' : ''}`} />
         </Button>
         <Button
           onClick={handleSend}
