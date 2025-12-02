@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { Save, X, Trash2 } from 'lucide-react';
+import { Save, X, Trash2, Eye, EyeOff } from 'lucide-react';
 
 interface User {
   id: string;
@@ -39,6 +39,8 @@ interface EditUserDialogProps {
 export default function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps) {
   const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     full_name: '',
@@ -46,7 +48,8 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
     job_title: '',
     department: '',
     phone: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
 
   useEffect(() => {
@@ -58,8 +61,11 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
         job_title: user.job_title || '',
         department: user.department || '',
         phone: user.phone || '',
-        password: ''
+        password: '',
+        confirmPassword: ''
       });
+      setShowPassword(false);
+      setShowConfirmPassword(false);
     }
   }, [user]);
 
@@ -135,6 +141,25 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
         variant: 'destructive'
       });
       return;
+    }
+
+    if (formData.password) {
+      if (formData.password.length < 4) {
+        toast({
+          title: 'Greška',
+          description: 'Lozinka mora imati najmanje 4 karaktera.',
+          variant: 'destructive'
+        });
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        toast({
+          title: 'Greška',
+          description: 'Lozinke se ne poklapaju.',
+          variant: 'destructive'
+        });
+        return;
+      }
     }
 
     updateUserMutation.mutate(formData);
@@ -238,15 +263,55 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
 
             <div className="space-y-2">
               <Label htmlFor="edit-user-password">Nova lozinka (opciono)</Label>
-              <Input
-                id="edit-user-password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                data-testid="input-edit-user-password"
-                placeholder="Ostavi prazno ako ne menjaš"
-              />
+              <div className="relative">
+                <Input
+                  id="edit-user-password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  data-testid="input-edit-user-password"
+                  placeholder="Ostavi prazno ako ne menjas"
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3"
+                  onClick={() => setShowPassword(!showPassword)}
+                  data-testid="button-toggle-password"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </Button>
+              </div>
             </div>
+
+            {formData.password && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-user-confirm-password">Potvrdi novu lozinku</Label>
+                <div className="relative">
+                  <Input
+                    id="edit-user-confirm-password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    data-testid="input-edit-user-confirm-password"
+                    placeholder="Ponovi novu lozinku"
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full px-3"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    data-testid="button-toggle-confirm-password"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
