@@ -1106,12 +1106,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allTasks = await storage.getTasks();
       const allUsers = await storage.getUsers();
       
-      // Calculate date range for scheduled tasks
       const now = new Date();
-      const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      const next30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-      // Fetch ALL data from Supabase tables for comprehensive AI analysis
+      // Fetch ALL data from Supabase tables - NO predefined period filters
+      // AI will extract period from user's question
       const [
         { data: taskHistory },
         { data: departments },
@@ -1132,49 +1130,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { data: userActivityLog },
         { data: dailyStats },
         { data: notifications },
-        { data: scheduledTasks7Days },
-        { data: scheduledTasks30Days }
+        { data: allScheduledTasks }
       ] = await Promise.all([
-        supabase.from('task_history').select('*').order('timestamp', { ascending: false }).limit(200),
+        supabase.from('task_history').select('*').order('timestamp', { ascending: false }).limit(500),
         supabase.from('departments').select('*'),
         supabase.from('service_ratings').select('*'),
         supabase.from('maintenance_plans').select('*'),
         supabase.from('task_assignments').select('*'),
         supabase.from('task_costs').select('*'),
-        supabase.from('task_messages').select('*').order('created_at', { ascending: false }).limit(100),
+        supabase.from('task_messages').select('*').order('created_at', { ascending: false }).limit(200),
         supabase.from('task_photos').select('*'),
         supabase.from('task_templates').select('*'),
-        supabase.from('task_timeline').select('*').order('timestamp', { ascending: false }).limit(200),
+        supabase.from('task_timeline').select('*').order('timestamp', { ascending: false }).limit(500),
         supabase.from('inventory_items').select('*'),
         supabase.from('inventory_requests').select('*'),
-        supabase.from('inventory_transactions').select('*').order('created_at', { ascending: false }).limit(100),
+        supabase.from('inventory_transactions').select('*').order('created_at', { ascending: false }).limit(200),
         supabase.from('external_companies').select('*'),
         supabase.from('guest_reports').select('*'),
-        supabase.from('work_sessions').select('*').order('start_time', { ascending: false }).limit(100),
-        supabase.from('user_activity_log').select('*').order('timestamp', { ascending: false }).limit(100),
-        supabase.from('daily_stats').select('*').order('date', { ascending: false }).limit(30),
-        supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(100),
-        supabase.from('tasks').select('*').gte('scheduled_for', now.toISOString()).lte('scheduled_for', next7Days.toISOString()).order('scheduled_for', { ascending: true }),
-        supabase.from('tasks').select('*').gte('scheduled_for', now.toISOString()).lte('scheduled_for', next30Days.toISOString()).order('scheduled_for', { ascending: true })
+        supabase.from('work_sessions').select('*').order('start_time', { ascending: false }).limit(200),
+        supabase.from('user_activity_log').select('*').order('timestamp', { ascending: false }).limit(200),
+        supabase.from('daily_stats').select('*').order('date', { ascending: false }).limit(90),
+        supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(200),
+        supabase.from('tasks').select('*').not('scheduled_for', 'is', null).order('scheduled_for', { ascending: true })
       ]);
-
-      // Calculate past 7 days date range
-      const past7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      
-      // Get tasks from LAST 7 days (created or completed)
-      const { data: tasksLast7Days } = await supabase
-        .from('tasks')
-        .select('*')
-        .gte('created_at', past7Days.toISOString())
-        .order('created_at', { ascending: false });
-
-      // Get completed tasks from last 7 days
-      const { data: completedLast7Days } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('status', 'completed')
-        .gte('completed_at', past7Days.toISOString())
-        .order('completed_at', { ascending: false });
       
       // Calculate statistics
       const tasksByStatus = allTasks.reduce((acc: any, task: any) => {
@@ -1206,68 +1184,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? (serviceRatings.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) / serviceRatings.length).toFixed(2)
         : 'N/A';
 
-      // Prepare context for AI - with complete historical data
-      const recentTasks = allTasks.slice(0, 50).map((t: any) => {
+      // Prepare context for AI - ALL tasks with full date info for AI to filter by period from question
+      const allTasksFormatted = allTasks.map((t: any) => {
         const createdDate = new Date(t.created_at).toLocaleDateString('sr-RS');
-        return `- [${t.status}] ${t.title} (Priority: ${t.priority || 'normal'}, Created: ${createdDate}, Department: ${t.department || 'N/A'})`;
+        const scheduledDate = t.scheduled_for ? new Date(t.scheduled_for).toLocaleDateString('sr-RS') : null;
+        const completedDate = t.completed_at ? new Date(t.completed_at).toLocaleDateString('sr-RS') : null;
+        const isRecurring = t.is_recurring || t.parent_task_id ? 'Periodican' : 'Jednokratan';
+        return `- ${t.title} | Status: ${t.status} | Prioritet: ${t.priority || 'normal'} | Kreiran: ${createdDate} | Zakazan: ${scheduledDate || 'N/A'} | Zavrsen: ${completedDate || 'Nije'} | Tip: ${isRecurring} | Tehnicar: ${t.assigned_to_name || 'Nije dodeljen'} | Lokacija: ${t.location || 'N/A'}`;
       }).join('\n');
 
-      // Format SCHEDULED TASKS for next 7 days (from tasks table with scheduled_for field)
-      const scheduledTasks7DaysFormatted = scheduledTasks7Days && scheduledTasks7Days.length > 0
-        ? scheduledTasks7Days.map((task: any) => {
+      // Format ALL scheduled tasks (future)
+      const scheduledTasksFormatted = allScheduledTasks && allScheduledTasks.length > 0
+        ? allScheduledTasks.map((task: any) => {
             const scheduledDate = new Date(task.scheduled_for);
             const dateStr = scheduledDate.toLocaleDateString('sr-RS');
             const timeStr = scheduledDate.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' });
-            const isRecurring = task.is_recurring || task.recurrence_pattern ? 'Periodičan' : 'Jednokratan';
-            return `- ${task.title} | Zakazano: ${dateStr} ${timeStr} | Lokacija: ${task.location || 'N/A'} | Tehničar: ${task.assigned_to_name || 'Nije dodeljen'} | Status: ${task.status} | Tip: ${isRecurring}`;
+            const isRecurring = task.is_recurring || task.recurrence_pattern ? 'Periodican' : 'Jednokratan';
+            const isPast = scheduledDate < now ? 'PROSAO' : 'PREDSTOJI';
+            return `- ${task.title} | Datum: ${dateStr} ${timeStr} | ${isPast} | Lokacija: ${task.location || 'N/A'} | Tehnicar: ${task.assigned_to_name || 'Nije dodeljen'} | Status: ${task.status} | Tip: ${isRecurring}`;
           }).join('\n')
-        : 'Nema zakazanih zadataka za narednih 7 dana.';
-
-      // Format SCHEDULED TASKS for next 30 days
-      const scheduledTasks30DaysFormatted = scheduledTasks30Days && scheduledTasks30Days.length > 0
-        ? scheduledTasks30Days.map((task: any) => {
-            const scheduledDate = new Date(task.scheduled_for);
-            const dateStr = scheduledDate.toLocaleDateString('sr-RS');
-            const timeStr = scheduledDate.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' });
-            const isRecurring = task.is_recurring || task.recurrence_pattern ? 'Periodičan' : 'Jednokratan';
-            return `- ${task.title} | Zakazano: ${dateStr} ${timeStr} | Tehničar: ${task.assigned_to_name || 'N/A'} | Tip: ${isRecurring}`;
-          }).join('\n')
-        : 'Nema zakazanih zadataka za narednih 30 dana.';
-
-      // Group scheduled tasks by date for summary
-      const scheduledByDate: { [key: string]: number } = {};
-      if (scheduledTasks7Days) {
-        scheduledTasks7Days.forEach((task: any) => {
-          const dateKey = new Date(task.scheduled_for).toLocaleDateString('sr-RS');
-          scheduledByDate[dateKey] = (scheduledByDate[dateKey] || 0) + 1;
-        });
-      }
-
-      // Format tasks from LAST 7 days (historical data)
-      const tasksLast7DaysFormatted = tasksLast7Days && tasksLast7Days.length > 0
-        ? tasksLast7Days.map((task: any) => {
-            const createdDate = new Date(task.created_at).toLocaleDateString('sr-RS');
-            const completedDate = task.completed_at ? new Date(task.completed_at).toLocaleDateString('sr-RS') : 'Nije završen';
-            return `- ${task.title} | Kreiran: ${createdDate} | Status: ${task.status} | Prioritet: ${task.priority || 'normal'} | Tehničar: ${task.assigned_to_name || 'Nije dodeljen'} | Završen: ${completedDate}`;
-          }).join('\n')
-        : 'Nema zadataka kreiranih u poslednjih 7 dana.';
-
-      // Statistics for last 7 days
-      const last7DaysStats = {
-        total: tasksLast7Days?.length || 0,
-        completed: completedLast7Days?.length || 0,
-        byStatus: {} as { [key: string]: number },
-        byTechnician: {} as { [key: string]: number }
-      };
-      
-      if (tasksLast7Days) {
-        tasksLast7Days.forEach((task: any) => {
-          last7DaysStats.byStatus[task.status] = (last7DaysStats.byStatus[task.status] || 0) + 1;
-          if (task.assigned_to_name) {
-            last7DaysStats.byTechnician[task.assigned_to_name] = (last7DaysStats.byTechnician[task.assigned_to_name] || 0) + 1;
-          }
-        });
-      }
+        : 'Nema zakazanih zadataka.';
 
       // Calculate total costs if available
       const totalCosts = taskCosts && taskCosts.length > 0
@@ -1283,17 +1219,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const systemPrompt = `You are a technical task analysis assistant for a hotel maintenance management system. Your role is to analyze tasks and task execution data from the Supabase database.
 
+CURRENT DATE/TIME: ${now.toLocaleDateString('sr-RS')} ${now.toLocaleTimeString('sr-RS')}
+
 CORE PRINCIPLES:
-1. Answer ONLY what is asked - do not provide unsolicited analysis
-2. Match response length to question complexity (simple question = brief answer)
-3. Base ALL responses on actual data from the database - never invent or assume data
-4. If data is missing or insufficient, clearly state this limitation
-5. Use concrete numbers, dates, and facts from the database
+1. EXTRACT TIME PERIOD FROM USER'S QUESTION - Never use predefined periods
+2. Answer ONLY what is asked - do not provide unsolicited analysis
+3. Match response length to question complexity (simple question = brief answer)
+4. Base ALL responses on actual data from the database - never invent or assume data
+5. If data is missing or insufficient, clearly state this limitation
+6. Use concrete numbers, dates, and facts from the database
+
+PERIOD EXTRACTION RULES:
+- If user says "danas" -> filter for today's date only
+- If user says "sutra" -> filter for tomorrow's date only
+- If user says "7 dana", "narednih 7 dana", "sledecih 7 dana" -> next 7 days from today
+- If user says "poslednjih 7 dana", "prethodnih 7 dana" -> last 7 days before today
+- If user says "30 dana", "mesec dana" -> 30 days (direction based on context - past/future)
+- If user says "ove sedmice/nedelje" -> current week
+- If user says specific date -> filter for that date
+- If NO period mentioned -> ask user to specify the period
 
 RESPONSE STRUCTURE:
 - For simple queries: Provide direct, concise answers (2-3 sentences)
 - For complex queries: Structure with clear sections, but stay focused on the question
-- End with ONE optional suggestion for related analysis, prefaced with "Additional analysis available:"
+- Always state the period you analyzed at the beginning of response
+- End with ONE optional suggestion for related analysis, prefaced with "Dostupna dodatna analiza:"
 - NEVER execute suggested analysis unless explicitly requested
 
 COMPLETE DATABASE ACCESS - ALL SUPABASE TABLES:
@@ -1321,26 +1271,6 @@ MAINTENANCE & INVENTORY:
 - inventory_requests: ${inventoryStats.requests} material requests
 - inventory_transactions: ${inventoryStats.transactions} inventory movements
 
-===== ZADACI IZ POSLEDNJIH 7 DANA (PROŠLOST) =====
-Ukupno kreirano: ${last7DaysStats.total} zadataka
-Završeno: ${last7DaysStats.completed} zadataka
-Po statusu: ${JSON.stringify(last7DaysStats.byStatus)}
-Po tehničaru: ${JSON.stringify(last7DaysStats.byTechnician)}
-
-DETALJI ZADATAKA (poslednjih 7 dana):
-${tasksLast7DaysFormatted}
-
-===== ZAKAZANI ZADACI - NAREDNIH 7 DANA (BUDUĆNOST) =====
-Ukupno zakazano: ${scheduledTasks7Days?.length || 0} zadataka
-Raspored po danima: ${JSON.stringify(scheduledByDate)}
-
-DETALJI ZAKAZANIH ZADATAKA (narednih 7 dana):
-${scheduledTasks7DaysFormatted}
-
-===== ZAKAZANI ZADACI - NAREDNIH 30 DANA =====
-Ukupno: ${scheduledTasks30Days?.length || 0} zadataka
-${scheduledTasks30DaysFormatted}
-
 GUEST & QUALITY:
 - guest_reports: ${guestReports?.length || 0} guest-submitted reports
 - service_ratings: ${serviceRatings?.length || 0} ratings (Avg: ${avgRating})
@@ -1350,8 +1280,11 @@ ANALYTICS:
 - daily_stats: ${dailyStats?.length || 0} daily statistics records
 - Completed tasks by department: ${JSON.stringify(completedByDept)}
 
-RECENT 50 TASKS:
-${recentTasks}
+===== SVI ZADACI (filtriraj po datumu iz pitanja) =====
+${allTasksFormatted}
+
+===== SVI ZAKAZANI ZADACI (filtriraj po datumu iz pitanja) =====
+${scheduledTasksFormatted}
 
 FORBIDDEN BEHAVIORS:
 - Do not analyze data that wasn't requested
@@ -1359,6 +1292,7 @@ FORBIDDEN BEHAVIORS:
 - Do not create hypothetical scenarios
 - Do not pad responses with unnecessary context
 - Do not repeat information already stated
+- Do not use predefined periods - always extract from user's question
 
 TONE: Professional, concise, data-driven. Respond in Serbian language.`;
 
