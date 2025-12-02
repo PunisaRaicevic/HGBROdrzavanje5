@@ -88,10 +88,10 @@ export default function AdminDashboard() {
   
   // Period states with date ranges
   const now = new Date();
-  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month'>('day');
+  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month'>('week');
   const [statsRange, setStatsRange] = useState({
     start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-    end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+    end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7)
   });
   
   const [analysisGranularity, setAnalysisGranularity] = useState<'day' | 'week' | 'month'>('day');
@@ -1108,7 +1108,14 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 (() => {
+                  // Filter tasks - za zakazane zadatke koristi scheduled_for, za ostale created_at
                   const periodTasks = tasks.filter(t => {
+                    // Za zakazane zadatke (child tasks od recurring) koristi scheduled_for
+                    if (t.scheduled_for && t.parent_task_id) {
+                      const scheduledDate = new Date(t.scheduled_for);
+                      return scheduledDate >= statsRange.start && scheduledDate < statsRange.end;
+                    }
+                    // Za obicne zadatke koristi created_at
                     const taskDate = new Date(t.created_at);
                     return taskDate >= statsRange.start && taskDate < statsRange.end;
                   });
