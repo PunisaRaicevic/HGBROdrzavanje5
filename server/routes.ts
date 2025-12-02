@@ -1185,6 +1185,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return `- [${t.status}] ${t.title} (Priority: ${t.priority || 'normal'}, Created: ${createdDate}, Department: ${t.department || 'N/A'})`;
       }).join('\n');
 
+      // Prepare PLANNED MAINTENANCE details for next 30 days
+      const today = new Date();
+      const next30Days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+      
+      const plannedMaintenanceDetails = maintenancePlans && maintenancePlans.length > 0
+        ? maintenancePlans.map((plan: any) => {
+            const nextDue = plan.next_due || plan.next_occurrence || plan.scheduled_date;
+            const nextDueDate = nextDue ? new Date(nextDue) : null;
+            const nextDueStr = nextDueDate ? nextDueDate.toLocaleDateString('sr-RS') : 'Nije definisano';
+            const daysUntil = nextDueDate ? Math.ceil((nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
+            
+            return `- ${plan.title || plan.name || 'Bez naziva'} | Lokacija: ${plan.location || plan.area || 'N/A'} | Sledeći termin: ${nextDueStr} (za ${daysUntil !== null ? daysUntil : '?'} dana) | Učestalost: ${plan.recurrence_pattern || plan.frequency || 'jednokratno'} | Odeljenje: ${plan.department || 'N/A'}`;
+          }).join('\n')
+        : 'Nema planiranih radova u bazi.';
+
+      // Filter plans for next 7 days specifically
+      const next7DaysPlans = maintenancePlans && maintenancePlans.length > 0
+        ? maintenancePlans.filter((plan: any) => {
+            const nextDue = plan.next_due || plan.next_occurrence || plan.scheduled_date;
+            if (!nextDue) return false;
+            const nextDueDate = new Date(nextDue);
+            const daysUntil = Math.ceil((nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            return daysUntil >= 0 && daysUntil <= 7;
+          })
+        : [];
+
+      const next7DaysDetails = next7DaysPlans.length > 0
+        ? next7DaysPlans.map((plan: any) => {
+            const nextDue = plan.next_due || plan.next_occurrence || plan.scheduled_date;
+            const nextDueDate = new Date(nextDue);
+            const nextDueStr = nextDueDate.toLocaleDateString('sr-RS');
+            const daysUntil = Math.ceil((nextDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            return `- ${plan.title || plan.name} | ${nextDueStr} (za ${daysUntil} dana) | ${plan.location || plan.area || 'N/A'}`;
+          }).join('\n')
+        : 'Nema planiranih radova za narednih 7 dana.';
+
       // Calculate total costs if available
       const totalCosts = taskCosts && taskCosts.length > 0
         ? taskCosts.reduce((sum: number, c: any) => sum + (parseFloat(c.amount) || 0), 0).toFixed(2)
@@ -1236,6 +1272,12 @@ MAINTENANCE & INVENTORY:
 - inventory_items: ${inventoryStats.items} items in inventory
 - inventory_requests: ${inventoryStats.requests} material requests
 - inventory_transactions: ${inventoryStats.transactions} inventory movements
+
+PLANIRANI RADOVI - NAREDNIH 7 DANA (${next7DaysPlans.length} planova):
+${next7DaysDetails}
+
+SVI PLANIRANI RADOVI (maintenance_plans detalji):
+${plannedMaintenanceDetails}
 
 GUEST & QUALITY:
 - guest_reports: ${guestReports?.length || 0} guest-submitted reports
