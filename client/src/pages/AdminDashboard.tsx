@@ -1366,7 +1366,7 @@ export default function AdminDashboard() {
           {/* Analiza vremena prijave zadataka */}
           <Card>
             <CardHeader className="space-y-3 pb-4">
-              <CardTitle>Analiza vremena prijave zadataka</CardTitle>
+              <CardTitle>Analiza vremena prijave zadataka <span className="text-sm font-normal text-muted-foreground">(bez periodicnih zadataka)</span></CardTitle>
               <PeriodPicker
                 value={analysisRange}
                 onChange={setAnalysisRange}
@@ -1380,7 +1380,12 @@ export default function AdminDashboard() {
                 <Skeleton className="h-64" />
               ) : (
                 (() => {
+                  // Filtriraj samo jednokratne zadatke (bez periodicnih/autogenerisanih)
                   const periodTasks = tasks.filter(t => {
+                    // Iskljuci periodicne zadatke (template i child tasks)
+                    if (t.is_recurring || t.parent_task_id) {
+                      return false;
+                    }
                     const taskDate = new Date(t.created_at);
                     return taskDate >= analysisRange.start && taskDate < analysisRange.end;
                   });
