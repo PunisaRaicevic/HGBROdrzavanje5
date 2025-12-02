@@ -192,7 +192,10 @@ export default function AdminDashboard() {
   // Get report data
   const getReportTasks = () => {
     return tasks.filter(t => {
-      const taskDate = new Date(t.created_at);
+      // Za zakazane zadatke koristi scheduled_for, za obicne created_at
+      const taskDate = t.scheduled_for 
+        ? new Date(t.scheduled_for) 
+        : new Date(t.created_at);
       return taskDate >= reportRange.start && taskDate < reportRange.end;
     });
   };
@@ -1328,7 +1331,10 @@ export default function AdminDashboard() {
               ) : (
                 (() => {
                   const periodTasks = tasks.filter(t => {
-                    const taskDate = new Date(t.created_at);
+                    // Za zakazane zadatke koristi scheduled_for, za obicne created_at
+                    const taskDate = t.scheduled_for 
+                      ? new Date(t.scheduled_for) 
+                      : new Date(t.created_at);
                     return taskDate >= reportRange.start && taskDate < reportRange.end;
                   });
 
