@@ -46,9 +46,24 @@ export default function TeamPerformanceDialog({
   // Calculate statistics
   const totalTasks = todaysTasks.length;
   const completedTasks = todaysTasks.filter(t => t.status === 'completed').length;
-  const inProgressTasks = todaysTasks.filter(t => t.status === 'with_operator').length;
-  const assignedTasks = todaysTasks.filter(t => t.status === 'assigned_to_radnik').length;
-  const newTasks = todaysTasks.filter(t => t.status === 'with_sef').length;
+  // U toku: with_operator, assigned_to_radnik, with_external
+  const inProgressTasks = todaysTasks.filter(t => 
+    t.status === 'with_operator' || 
+    t.status === 'assigned_to_radnik' || 
+    t.status === 'with_external'
+  ).length;
+  // Novo: new, with_sef
+  const newTasks = todaysTasks.filter(t => 
+    t.status === 'new' || 
+    t.status === 'with_sef'
+  ).length;
+  // Vraceno: returned_to_operator, returned_to_sef
+  const returnedTasks = todaysTasks.filter(t => 
+    t.status === 'returned_to_operator' || 
+    t.status === 'returned_to_sef'
+  ).length;
+  // Otkazano
+  const cancelledTasks = todaysTasks.filter(t => t.status === 'cancelled').length;
 
   // Calculate average resolution time for completed tasks
   const completedWithTime = todaysTasks.filter(t => t.status === 'completed');
@@ -111,7 +126,7 @@ export default function TeamPerformanceDialog({
                 <CardTitle className="text-sm text-muted-foreground">Novo</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold text-orange-600" data-testid="stat-new">{newTasks + assignedTasks}</p>
+                <p className="text-2xl font-bold text-orange-600" data-testid="stat-new">{newTasks}</p>
               </CardContent>
             </Card>
           </div>
@@ -205,20 +220,24 @@ export default function TeamPerformanceDialog({
             <CardContent>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Novi od Operatera</span>
-                  <span className="font-medium">{newTasks}</span>
+                  <span className="text-sm">Novi (cekaju obradu)</span>
+                  <span className="font-medium text-orange-600">{newTasks}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Dodeljeno Majstorima</span>
-                  <span className="font-medium">{assignedTasks}</span>
+                  <span className="text-sm">U Toku (u obradi)</span>
+                  <span className="font-medium text-blue-600">{inProgressTasks}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">U Toku</span>
-                  <span className="font-medium">{inProgressTasks}</span>
+                  <span className="text-sm">Vraceno</span>
+                  <span className="font-medium text-yellow-600">{returnedTasks}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Završeno</span>
                   <span className="font-medium text-green-600">{completedTasks}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Otkazano</span>
+                  <span className="font-medium text-gray-500">{cancelledTasks}</span>
                 </div>
               </div>
             </CardContent>
