@@ -1016,7 +1016,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const childTasks = await storage.getChildTasksByParentId(id);
         const finalizedStatuses = ['completed', 'cancelled'];
         const pendingChildTasks = childTasks.filter(child => !finalizedStatuses.includes(child.status));
+        const completedChildTasks = childTasks.filter(child => finalizedStatuses.includes(child.status));
 
+        // Brisemo samo pending child taskove
         for (const childTask of pendingChildTasks) {
           await storage.createTaskHistory({
             task_id: childTask.id,
@@ -1029,6 +1031,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           await storage.deleteTask(childTask.id);
           deletedChildCount++;
+        }
+
+        // Za completed child taskove - sacuvaj is_recurring=true i ukloni parent_task_id 
+        // da bi ostali vidljivi u istoriji kao periodicni zadaci
+        for (const childTask of completedChildTasks) {
+          await storage.updateTask(childTask.id, {
+            is_recurring: true,  // Oznaci kao periodicni da bi bio vidljiv u istoriji
+            parent_task_id: null // Ukloni referencu na obrisani parent
+          });
         }
       }
 
