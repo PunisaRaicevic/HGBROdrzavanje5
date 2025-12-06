@@ -80,6 +80,7 @@ export default function AdminDashboard() {
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   const [tasksPeriodFilter, setTasksPeriodFilter] = useState<string>('7d'); // Default 7 days
   const [tasksStatusFilter, setTasksStatusFilter] = useState<string>('all'); // Status filter for tasks list
+  const [tasksTypeFilter, setTasksTypeFilter] = useState<string>('all'); // Type filter: all, recurring, one_time
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [historyPeriodFilter, setHistoryPeriodFilter] = useState<string>('7d'); // History period filter
   const [historyStatusFilter, setHistoryStatusFilter] = useState<string>('all'); // History status filter
@@ -657,6 +658,21 @@ export default function AdminDashboard() {
                     ))}
                     <div className="ml-2 border-l pl-2">
                       <Select 
+                        value={tasksTypeFilter} 
+                        onValueChange={setTasksTypeFilter}
+                      >
+                        <SelectTrigger className="w-36" data-testid="select-type-filter">
+                          <SelectValue placeholder="Tip" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Svi tipovi</SelectItem>
+                          <SelectItem value="recurring">Periodicni</SelectItem>
+                          <SelectItem value="one_time">Jednokratni</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="ml-2 border-l pl-2">
+                      <Select 
                         value={tasksStatusFilter} 
                         onValueChange={setTasksStatusFilter}
                       >
@@ -793,11 +809,19 @@ export default function AdminDashboard() {
                             }
                           }
                           
-                          if (tasksStatusFilter === 'all') {
-                            return periodFiltered;
+                          // Filter po tipu zadatka
+                          let typeFiltered = periodFiltered;
+                          if (tasksTypeFilter === 'recurring') {
+                            typeFiltered = periodFiltered.filter(task => task.parent_task_id || task.is_recurring);
+                          } else if (tasksTypeFilter === 'one_time') {
+                            typeFiltered = periodFiltered.filter(task => !task.parent_task_id && !task.is_recurring);
                           }
                           
-                          return periodFiltered.filter(task => {
+                          if (tasksStatusFilter === 'all') {
+                            return typeFiltered;
+                          }
+                          
+                          return typeFiltered.filter(task => {
                             switch (tasksStatusFilter) {
                               case 'completed':
                                 return task.status === 'completed';
