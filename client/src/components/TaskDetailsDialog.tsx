@@ -98,6 +98,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRecurringHistory, setShowRecurringHistory] = useState(false);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
+  const [deleteType, setDeleteType] = useState<'this' | 'all'>('this');
   const { toast } = useToast();
 
   // Mutation to send task to external company
@@ -259,9 +260,14 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
 
   const handleDelete = () => {
     if (task?.id) {
-      deleteMutation.mutate(task.id);
+      // Ako je izabrano 'all' i task ima parent, briši parent (što briše sve child-ove)
+      const taskToDelete = (deleteType === 'all' && task.parent_task_id) 
+        ? task.parent_task_id 
+        : task.id;
+      deleteMutation.mutate(taskToDelete);
     }
     setShowDeleteDialog(false);
+    setDeleteType('this'); // Reset za sledeći put
   };
 
   const getRecurrenceLabel = (pattern: string | null) => {
@@ -745,18 +751,61 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
         onClose={() => setPreviewImage(null)} 
       />
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
+        setShowDeleteDialog(open);
+        if (!open) setDeleteType('this');
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Brisanje zadatka</AlertDialogTitle>
             <AlertDialogDescription>
-              Da li ste sigurni da želite da obrišete ovaj zadatak? Ova akcija se ne može poništiti.
+              {task?.parent_task_id ? (
+                <span>Ovaj zadatak je dio periodicnog ponavljanja. Izaberite opciju brisanja:</span>
+              ) : task?.is_recurring ? (
+                <span>Ovo je periodican zadatak. Brisanjem ce se obrisati i svi budući zakazani zadaci.</span>
+              ) : (
+                <span>Da li ste sigurni da zelite da obrisete ovaj zadatak? Ova akcija se ne moze ponistiti.</span>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          
+          {task?.parent_task_id && (
+            <div className="space-y-3 py-2">
+              <label className="flex items-center gap-3 p-3 border rounded-md cursor-pointer hover:bg-muted/50">
+                <input
+                  type="radio"
+                  name="deleteType"
+                  value="this"
+                  checked={deleteType === 'this'}
+                  onChange={() => setDeleteType('this')}
+                  className="w-4 h-4"
+                />
+                <div>
+                  <p className="font-medium text-sm">Obrisi samo ovaj zadatak</p>
+                  <p className="text-xs text-muted-foreground">Ostali zakazani zadaci ostaju aktivni</p>
+                </div>
+              </label>
+              <label className="flex items-center gap-3 p-3 border rounded-md cursor-pointer hover:bg-muted/50 border-destructive/50">
+                <input
+                  type="radio"
+                  name="deleteType"
+                  value="all"
+                  checked={deleteType === 'all'}
+                  onChange={() => setDeleteType('all')}
+                  className="w-4 h-4"
+                />
+                <div>
+                  <p className="font-medium text-sm text-destructive">Obrisi SVE buduće zadatke</p>
+                  <p className="text-xs text-muted-foreground">Zaustavlja ponavljanje i brise sve nezavrsene zadatke</p>
+                </div>
+              </label>
+            </div>
+          )}
+          
           <AlertDialogFooter>
-            <AlertDialogCancel>Otkaži</AlertDialogCancel>
+            <AlertDialogCancel>Otkazi</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Obriši
+              {deleteType === 'all' ? 'Obrisi sve' : 'Obrisi'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
