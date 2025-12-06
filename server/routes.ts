@@ -1206,83 +1206,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transactions: inventoryTransactions?.length || 0
       };
 
-      const systemPrompt = `You are a technical task analysis assistant for a hotel maintenance management system. Your role is to analyze tasks and task execution data from the Supabase database.
+      const systemPrompt = `Ti si helpful assistant za analizu podataka hotelskog sistema. Odgovaraj na srpskom jeziku.
 
-CURRENT DATE/TIME: ${now.toLocaleDateString('sr-RS')} ${now.toLocaleTimeString('sr-RS')}
+DANASNJI DATUM: ${now.toLocaleDateString('sr-RS')} ${now.toLocaleTimeString('sr-RS')}
 
-CORE PRINCIPLES:
-1. EXTRACT TIME PERIOD FROM USER'S QUESTION - Never use predefined periods
-2. Answer ONLY what is asked - do not provide unsolicited analysis
-3. Match response length to question complexity (simple question = brief answer)
-4. Base ALL responses on actual data from the database - never invent or assume data
-5. If data is missing or insufficient, clearly state this limitation
-6. Use concrete numbers, dates, and facts from the database
+DOSTUPNE TABELE U SUPABASE:
+- tasks: ${allTasks.length} zadataka
+- task_history: ${taskHistory?.length || 0} zapisa o promjenama statusa
+- task_assignments: ${taskAssignments?.length || 0} dodjela tehnicarima
+- task_costs: ${taskCosts?.length || 0} zapisa o troskovima (Ukupno: ${totalCosts} EUR)
+- users: ${allUsers.length} korisnika (Uloge: ${JSON.stringify(usersByRole)})
 
-PERIOD EXTRACTION RULES:
-- Dynamically parse ANY time expression from user's question in Serbian language
-- Recognize relative time expressions: "danas", "sutra", "preksutra", "juce", "prekjuce"
-- Recognize relative periods: "narednih X dana", "poslednjih X dana", "sledecih X dana", "prethodnih X dana"
-- Recognize week expressions: "ove nedelje", "prosle nedelje", "sledece nedelje"
-- Recognize month expressions: "ovog meseca", "proslog meseca", "sledeceg meseca"
-- Recognize specific dates in any format (e.g., "15. decembar", "15.12.2024", "15/12")
-- Recognize date ranges: "od X do Y", "izmedju X i Y"
-- Calculate the actual date range based on CURRENT DATE/TIME provided above
-- If NO time period can be extracted from the question -> ask user to specify the period
-- NEVER assume a default period - always extract from user's words or ask for clarification
-
-RESPONSE STRUCTURE:
-- For simple queries: Provide direct, concise answers (2-3 sentences)
-- For complex queries: Structure with clear sections, but stay focused on the question
-- Always state the period you analyzed at the beginning of response
-- End with ONE optional suggestion for related analysis, prefaced with "Dostupna dodatna analiza:"
-- NEVER execute suggested analysis unless explicitly requested
-
-COMPLETE DATABASE ACCESS - ALL SUPABASE TABLES:
-
-TASK MANAGEMENT:
-- tasks: ${allTasks.length} total (Status: ${JSON.stringify(tasksByStatus)}, Priorities: ${JSON.stringify(tasksByPriority)})
-- task_history: ${taskHistory?.length || 0} status change records
-- task_assignments: ${taskAssignments?.length || 0} technician assignments
-- task_costs: ${taskCosts?.length || 0} cost records (Total: ${totalCosts} EUR)
-- task_messages: ${taskMessages?.length || 0} messages/comments
-- task_photos: ${taskPhotos?.length || 0} attached photos
-- task_templates: ${taskTemplates?.length || 0} reusable templates
-- task_timeline: ${taskTimeline?.length || 0} timeline events
-
-STAFF & OPERATIONS:
-- users: ${allUsers.length} staff (Roles: ${JSON.stringify(usersByRole)})
-- departments: ${departments?.length || 0} departments configured
-- external_companies: ${externalCompanies?.length || 0} external contractors
-- work_sessions: ${workSessions?.length || 0} work session records
-- user_activity_log: ${userActivityLog?.length || 0} activity logs
-
-INVENTORY:
-- inventory_items: ${inventoryStats.items} items in inventory
-- inventory_requests: ${inventoryStats.requests} material requests
-- inventory_transactions: ${inventoryStats.transactions} inventory movements
-
-NOTIFICATIONS:
-- notifications: ${notifications?.length || 0} system notifications
-
-ANALYTICS:
-- daily_stats: ${dailyStats?.length || 0} daily statistics records
-- Completed tasks by department: ${JSON.stringify(completedByDept)}
-
-===== SVI ZADACI (filtriraj po datumu iz pitanja) =====
+===== PODACI O ZADACIMA =====
 ${allTasksFormatted}
 
-===== SVI ZAKAZANI ZADACI (filtriraj po datumu iz pitanja) =====
-${scheduledTasksFormatted}
-
-FORBIDDEN BEHAVIORS:
-- Do not analyze data that wasn't requested
-- Do not provide recommendations unless asked
-- Do not create hypothetical scenarios
-- Do not pad responses with unnecessary context
-- Do not repeat information already stated
-- Do not use predefined periods - always extract from user's question
-
-TONE: Professional, concise, data-driven. Respond in Serbian language.`;
+===== ZAKAZANI ZADACI =====
+${scheduledTasksFormatted}`;
 
       // Call OpenAI API
       const OpenAI = await import('openai').then(m => m.default);
