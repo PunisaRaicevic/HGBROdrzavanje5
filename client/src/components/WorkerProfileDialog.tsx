@@ -440,10 +440,15 @@ export default function WorkerProfileDialog({
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     {isRecurring ? (
                                       <>
-                                        <Badge variant="outline" className="text-xs">
-                                          Periodičan zadatak {isTemplate ? '(šablon)' : ''}
+                                        <Badge 
+                                          variant="outline" 
+                                          className={`text-xs ${task.recurrence_pattern === 'cancelled' 
+                                            ? 'bg-red-50 border-red-200 text-red-700' 
+                                            : ''}`}
+                                        >
+                                          Periodicni zadatak {isTemplate ? '(šablon)' : ''}{task.recurrence_pattern === 'cancelled' && ' (Ukinut)'}
                                         </Badge>
-                                        {task.recurrence_pattern && getRecurrenceLabel(task.recurrence_pattern) && (
+                                        {task.recurrence_pattern && task.recurrence_pattern !== 'cancelled' && getRecurrenceLabel(task.recurrence_pattern) && (
                                           <Badge variant="secondary" className="text-xs">
                                             {getRecurrenceLabel(task.recurrence_pattern)}
                                           </Badge>
@@ -535,10 +540,15 @@ export default function WorkerProfileDialog({
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     {isRecurring ? (
                                       <>
-                                        <Badge variant="outline" className="text-xs">
-                                          Periodičan zadatak {isTemplate ? '(šablon)' : ''}
+                                        <Badge 
+                                          variant="outline" 
+                                          className={`text-xs ${task.recurrence_pattern === 'cancelled' 
+                                            ? 'bg-red-50 border-red-200 text-red-700' 
+                                            : ''}`}
+                                        >
+                                          Periodicni zadatak {isTemplate ? '(šablon)' : ''}{task.recurrence_pattern === 'cancelled' && ' (Ukinut)'}
                                         </Badge>
-                                        {task.recurrence_pattern && getRecurrenceLabel(task.recurrence_pattern) && (
+                                        {task.recurrence_pattern && task.recurrence_pattern !== 'cancelled' && getRecurrenceLabel(task.recurrence_pattern) && (
                                           <Badge variant="secondary" className="text-xs">
                                             {getRecurrenceLabel(task.recurrence_pattern)}
                                           </Badge>
@@ -630,10 +640,15 @@ export default function WorkerProfileDialog({
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     {isRecurring ? (
                                       <>
-                                        <Badge variant="outline" className="text-xs">
-                                          Periodičan zadatak {isTemplate ? '(šablon)' : ''}
+                                        <Badge 
+                                          variant="outline" 
+                                          className={`text-xs ${task.recurrence_pattern === 'cancelled' 
+                                            ? 'bg-red-50 border-red-200 text-red-700' 
+                                            : ''}`}
+                                        >
+                                          Periodicni zadatak {isTemplate ? '(šablon)' : ''}{task.recurrence_pattern === 'cancelled' && ' (Ukinut)'}
                                         </Badge>
-                                        {task.recurrence_pattern && getRecurrenceLabel(task.recurrence_pattern) && (
+                                        {task.recurrence_pattern && task.recurrence_pattern !== 'cancelled' && getRecurrenceLabel(task.recurrence_pattern) && (
                                           <Badge variant="secondary" className="text-xs">
                                             {getRecurrenceLabel(task.recurrence_pattern)}
                                           </Badge>

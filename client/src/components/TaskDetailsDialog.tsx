@@ -353,12 +353,17 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                  'Može Sačekati'}
               </Badge>
               {task.is_recurring && (
-                <Badge variant="outline" className="text-xs">
+                <Badge 
+                  variant="outline" 
+                  className={`text-xs ${task.recurrence_pattern === 'cancelled' 
+                    ? 'bg-red-50 border-red-200 text-red-700' 
+                    : ''}`}
+                >
                   <Repeat className="w-3 h-3 mr-1" />
-                  Periodičan zadatak
+                  Periodicni zadatak{task.recurrence_pattern === 'cancelled' && ' (Ukinut)'}
                 </Badge>
               )}
-              {task.recurrence_pattern && getRecurrenceLabel(task.recurrence_pattern) && (
+              {task.recurrence_pattern && task.recurrence_pattern !== 'cancelled' && getRecurrenceLabel(task.recurrence_pattern) && (
                 <Badge variant="secondary" className="text-xs">
                   {getRecurrenceLabel(task.recurrence_pattern)}
                 </Badge>

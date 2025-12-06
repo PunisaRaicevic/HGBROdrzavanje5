@@ -1033,12 +1033,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           deletedChildCount++;
         }
 
-        // Za completed child taskove - sacuvaj is_recurring=true i ukloni parent_task_id 
-        // da bi ostali vidljivi u istoriji kao periodicni zadaci
+        // Za completed child taskove - sacuvaj is_recurring=true i oznaci kao ukinut
+        // da bi ostali vidljivi u istoriji kao periodicni zadaci sa oznakom "ukinut"
         for (const childTask of completedChildTasks) {
           await storage.updateTask(childTask.id, {
             is_recurring: true,  // Oznaci kao periodicni da bi bio vidljiv u istoriji
-            parent_task_id: null // Ukloni referencu na obrisani parent
+            parent_task_id: null, // Ukloni referencu na obrisani parent
+            recurrence_pattern: 'cancelled' // Marker da je periodični zadatak ukinut
           });
         }
       }

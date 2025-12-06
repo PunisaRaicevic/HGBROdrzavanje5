@@ -900,8 +900,13 @@ export default function AdminDashboard() {
                                   <div className="flex flex-col gap-1 items-end">
                                     {getStatusBadge(task.status)}
                                     {(task.parent_task_id || task.is_recurring) ? (
-                                      <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-purple-700">
-                                        Periodičan
+                                      <Badge 
+                                        variant="outline" 
+                                        className={`text-xs ${task.recurrence_pattern === 'cancelled' 
+                                          ? 'bg-red-50 border-red-200 text-red-700' 
+                                          : 'bg-purple-50 border-purple-200 text-purple-700'}`}
+                                      >
+                                        Periodicni{task.recurrence_pattern === 'cancelled' && ' (Ukinut)'}
                                       </Badge>
                                     ) : (
                                       <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-600">
@@ -1077,8 +1082,13 @@ export default function AdminDashboard() {
                                   <div className="flex flex-col gap-1 items-end">
                                     {getStatusBadge(task.status)}
                                     {(task.parent_task_id || task.is_recurring) ? (
-                                      <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-purple-700">
-                                        Periodičan
+                                      <Badge 
+                                        variant="outline" 
+                                        className={`text-xs ${task.recurrence_pattern === 'cancelled' 
+                                          ? 'bg-red-50 border-red-200 text-red-700' 
+                                          : 'bg-purple-50 border-purple-200 text-purple-700'}`}
+                                      >
+                                        Periodicni{task.recurrence_pattern === 'cancelled' && ' (Ukinut)'}
                                       </Badge>
                                     ) : (
                                       <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-600">
@@ -1308,8 +1318,13 @@ export default function AdminDashboard() {
                                           <div className="flex flex-col gap-1 items-end">
                                             {getStatusBadge(task.status)}
                                             {(task.parent_task_id || task.is_recurring) ? (
-                                              <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-purple-700">
-                                                Periodičan
+                                              <Badge 
+                                                variant="outline" 
+                                                className={`text-xs ${task.recurrence_pattern === 'cancelled' 
+                                                  ? 'bg-red-50 border-red-200 text-red-700' 
+                                                  : 'bg-purple-50 border-purple-200 text-purple-700'}`}
+                                              >
+                                                Periodicni{task.recurrence_pattern === 'cancelled' && ' (Ukinut)'}
                                               </Badge>
                                             ) : (
                                               <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-600">
