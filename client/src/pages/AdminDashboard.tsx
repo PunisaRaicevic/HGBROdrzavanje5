@@ -950,66 +950,43 @@ export default function AdminDashboard() {
                             return true;
                           });
                           
-                          // Istorija prikazuje:
-                          // - Završene zadatke (completed_at < danas)
-                          // - Periodične zadatke zakazane pre danas (scheduled_for < danas)
-                          // - Jednokratne zadatke kreirane pre danas (created_at < danas)
-                          const tasksBeforeToday = activeTasks.filter(task => {
-                            // Završeni zadaci - koristi completed_at
+                          // Odredi relevantni datum za svaki zadatak
+                          const getTaskDate = (task: any): Date => {
+                            // Za završene zadatke - koristi completed_at
                             if (task.status === 'completed' && task.completed_at) {
-                              const completedDate = new Date(task.completed_at);
-                              return completedDate < todayStart;
+                              return new Date(task.completed_at);
                             }
-                            // Periodični zadaci - koristi scheduled_for
+                            // Za periodične/zakazane zadatke - koristi scheduled_for
                             if (task.scheduled_for) {
-                              const scheduledDate = new Date(task.scheduled_for);
-                              return scheduledDate < todayStart;
+                              return new Date(task.scheduled_for);
                             }
-                            // Jednokratni zadaci - koristi created_at
-                            const createdDate = new Date(task.created_at);
-                            return createdDate < todayStart;
-                          });
+                            // Za jednokratne - koristi created_at
+                            return new Date(task.created_at);
+                          };
                           
-                          let periodFiltered = tasksBeforeToday;
-                          
-                          if (historyPeriodFilter === '1d') {
-                            // "Danas" u istoriji = jučer (jer današnji su u Predstojeći)
-                            const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
-                            periodFiltered = tasksBeforeToday.filter(task => {
-                              const taskDate = task.completed_at 
-                                ? new Date(task.completed_at)
-                                : task.scheduled_for 
-                                  ? new Date(task.scheduled_for) 
-                                  : new Date(task.created_at);
-                              return taskDate >= yesterdayStart && taskDate < todayStart;
-                            });
-                          } else {
-                            switch (historyPeriodFilter) {
-                              case '7d':
-                                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                                break;
-                              case '30d':
-                                startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                                break;
-                              case '3m':
-                                startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-                                break;
-                              case '6m':
-                                startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-                                break;
-                            }
-                            
-                            if (startDate) {
-                              periodFiltered = tasksBeforeToday.filter(task => {
-                                const taskDate = task.completed_at 
-                                  ? new Date(task.completed_at)
-                                  : task.scheduled_for 
-                                    ? new Date(task.scheduled_for) 
-                                    : new Date(task.created_at);
-                                return taskDate >= startDate! && taskDate < todayStart;
-                              });
-                            }
+                          // Odredi početni datum na osnovu izabranog perioda
+                          switch (historyPeriodFilter) {
+                            case '7d':
+                              startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                              break;
+                            case '30d':
+                              startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                              break;
+                            case '3m':
+                              startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                              break;
+                            case '6m':
+                              startDate = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                              break;
+                            default:
+                              startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                           }
+                          
+                          // Filtriraj zadatke koji su u izabranom periodu i PRE danas
+                          let periodFiltered = activeTasks.filter(task => {
+                            const taskDate = getTaskDate(task);
+                            return taskDate >= startDate! && taskDate < todayStart;
+                          });
                           
                           if (historyStatusFilter === 'all') {
                             return periodFiltered;
