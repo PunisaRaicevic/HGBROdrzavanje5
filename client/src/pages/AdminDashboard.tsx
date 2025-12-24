@@ -950,8 +950,22 @@ export default function AdminDashboard() {
                             return true;
                           });
                           
-                          // Prvo isključi sve zadatke kreirane danas - oni idu u "Predstojeći"
+                          // Istorija prikazuje:
+                          // - Završene zadatke (completed_at < danas)
+                          // - Periodične zadatke zakazane pre danas (scheduled_for < danas)
+                          // - Jednokratne zadatke kreirane pre danas (created_at < danas)
                           const tasksBeforeToday = activeTasks.filter(task => {
+                            // Završeni zadaci - koristi completed_at
+                            if (task.status === 'completed' && task.completed_at) {
+                              const completedDate = new Date(task.completed_at);
+                              return completedDate < todayStart;
+                            }
+                            // Periodični zadaci - koristi scheduled_for
+                            if (task.scheduled_for) {
+                              const scheduledDate = new Date(task.scheduled_for);
+                              return scheduledDate < todayStart;
+                            }
+                            // Jednokratni zadaci - koristi created_at
                             const createdDate = new Date(task.created_at);
                             return createdDate < todayStart;
                           });
