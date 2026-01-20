@@ -1114,9 +1114,17 @@ export default function SupervisorDashboard() {
                                   startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                               }
                               
-                              // Filtriraj zadatke koji su u izabranom periodu i PRE danas
+                              // Filtriraj zadatke koji su u izabranom periodu
+                              // Završeni zadaci se prikazuju u istoriji (uključujući danas završene)
+                              // Nezavršeni zadaci se prikazuju samo ako su kreirani/zakazani pre danas
+                              const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
                               let periodFiltered = activeTasks.filter(task => {
                                 const taskDate = getTaskDate(task);
+                                // Završeni zadaci - prikaži ako su završeni u izabranom periodu (uključujući danas)
+                                if (task.status === 'completed') {
+                                  return taskDate >= startDate! && taskDate < todayEnd;
+                                }
+                                // Nezavršeni zadaci - prikaži samo ako su pre danas
                                 return taskDate >= startDate! && taskDate < todayStart;
                               });
                               
