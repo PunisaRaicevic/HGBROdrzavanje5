@@ -115,7 +115,7 @@ export default function AdminDashboard() {
   });
 
   // Fetch tasks (auto-refresh every 5 seconds)
-  const { data: tasksData, isLoading: tasksLoading, refetch: refetchTasks } = useQuery<{ tasks: Task[] }>({
+  const { data: tasksData, isLoading: tasksLoading, isFetching: tasksFetching, refetch: refetchTasks } = useQuery<{ tasks: Task[] }>({
     queryKey: ['/api/tasks'],
     refetchInterval: 5000, // Refresh every 5 seconds
     refetchOnWindowFocus: true
@@ -604,10 +604,11 @@ export default function AdminDashboard() {
                       variant="outline"
                       size="icon"
                       onClick={() => refetchTasks()}
+                      disabled={tasksFetching}
                       title="Osvježi listu"
                       data-testid="button-refresh-tasks"
                     >
-                      <RefreshCw className="h-4 w-4" />
+                      <RefreshCw className={`h-4 w-4 ${tasksFetching ? 'animate-spin' : ''}`} />
                     </Button>
                   </div>
                   <Select 
