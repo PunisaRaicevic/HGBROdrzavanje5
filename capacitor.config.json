@@ -14,6 +14,12 @@
         "sound",
         "alert"
       ]
+    },
+    "LiveUpdates": {
+      "appId": "TVOJ_APPFLOW_APP_ID",
+      "channel": "Production",
+      "autoUpdateMethod": "background",
+      "maxVersions": 2
     }
   }
 }
