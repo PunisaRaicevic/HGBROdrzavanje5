@@ -16,8 +16,8 @@
       ]
     },
     "LiveUpdates": {
-      "appId": "TVOJ_APPFLOW_APP_ID",
-      "channel": "Production",
+      "appId": "68be0496",
+      "channel": "prod-1.0.0",
       "autoUpdateMethod": "background",
       "maxVersions": 2
     }
