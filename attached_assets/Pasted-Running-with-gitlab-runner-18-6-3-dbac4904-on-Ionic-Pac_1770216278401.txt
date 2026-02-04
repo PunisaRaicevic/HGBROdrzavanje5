@@ -1,0 +1,1091 @@
+Running with gitlab-runner 18.6.3 (dbac4904)
+  on Ionic Package Android Runner f537d27d9, system ID: r_y2wghl6CoDs5
+  feature flags: FF_USE_POD_ACTIVE_DEADLINE_SECONDS:false
+Preparing the "kubernetes" executor
+Using Kubernetes namespace: ionic-runners
+Using Kubernetes executor with image 319312831725.dkr.ecr.us-west-2.amazonaws.com/appflow-runners/linux:2025.11 ...
+Using attach strategy to execute scripts...
+Using effective pull policy of [Always] for container helper
+Using effective pull policy of [Always] for container init-permissions
+Using effective pull policy of [Always] for container metrics
+Using effective pull policy of [Always] for container build
+Preparing environment
+Waiting for pod ionic-runners/runner-f537d27d9-project-0-concurrent-6-hupev4co to be running, status is Pending
+Waiting for pod ionic-runners/runner-f537d27d9-project-0-concurrent-6-hupev4co to be running, status is Pending
+	ContainersNotInitialized: "containers with incomplete status: [init-permissions]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+Waiting for pod ionic-runners/runner-f537d27d9-project-0-concurrent-6-hupev4co to be running, status is Pending
+	ContainersNotInitialized: "containers with incomplete status: [init-permissions]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+Waiting for pod ionic-runners/runner-f537d27d9-project-0-concurrent-6-hupev4co to be running, status is Pending
+	ContainersNotInitialized: "containers with incomplete status: [init-permissions]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+Waiting for pod ionic-runners/runner-f537d27d9-project-0-concurrent-6-hupev4co to be running, status is Pending
+	ContainersNotInitialized: "containers with incomplete status: [init-permissions]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+Waiting for pod ionic-runners/runner-f537d27d9-project-0-concurrent-6-hupev4co to be running, status is Pending
+	ContainersNotInitialized: "containers with incomplete status: [init-permissions]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+Waiting for pod ionic-runners/runner-f537d27d9-project-0-concurrent-6-hupev4co to be running, status is Pending
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+	ContainersNotReady: "containers with unready status: [build helper metrics]"
+Running on runner-f537d27d9-project-0-concurrent-6-hupev4co via gitlab-runner-c8d4c99c6-j756l...
+
+Getting source from Git repository
+$ pre-clone
+[14:30:22]: Cloning repository...
+[14:30:22]: Configured credentials for github.com
+Gitaly correlation ID: 7b6bea927f3c4940b5ddcfa74dcbde41
+Fetching changes...
+Initialized empty Git repository in /builds/PunisaRaicevic/HGBROdrzavanje5/.git/
+Created fresh repository.
+Checking out 01010539 as detached HEAD (ref is main)...
+
+Updating/initializing submodules...
+Updated submodules
+Configuring submodules to use parent git credentials...
+Pulling LFS files...
+$ setup-fastlane
+[14:30:27]: Cloning complete...
+Fetching latest build process code...
+Cloning into '/builds/appflow-runners'...
+
+Executing "step_script" stage of the job script
+$ pre-build
+[14:30:30]: Building project....
+$ run "fetch-updates"
+Checking for build process updates...
+$ run "build-android"
+[14:30:33]: ---------------------------------
+[14:30:33]: --- Step: add_extra_platforms ---
+[14:30:33]: ---------------------------------
+[14:30:33]: Setting '[:web]' as extra SupportedPlatforms
+[14:30:33]: ------------------------------
+[14:30:33]: --- Step: default_platform ---
+[14:30:33]: ------------------------------
+[14:30:33]: Driving the lane 'android build_capacitor' 🚀
+[14:30:33]: ---------------------------------
+[14:30:33]: --- Step: prepare_environment ---
+[14:30:33]: ---------------------------------
+[14:30:33]: Setting default environment variables to tidy up logs. These can be overridden by setting them in Appflow.
+[14:30:33]: 
+[14:30:33]: Set COREPACK_ENABLE_AUTO_PIN=0 (Suppress yarn warnings)
+[14:30:33]: -------------------------
+[14:30:33]: --- Step: sentry_init ---
+[14:30:33]: -------------------------
+[14:30:33]: ----------------------------
+[14:30:33]: --- Step: begin_building ---
+[14:30:33]: ----------------------------
+[14:30:33]: Began building @ 2026-02-04T14:30:33
+[14:30:34]: ---------------------------
+[14:30:34]: --- Step: build_summary ---
+[14:30:34]: ---------------------------
+
++---------------------------------------------------+
+|                   Build Summary                   |
++---------------------+-----------------------------+
+| Runners Revision    | a83852b                     |
+| Job ID              | 10725043                    |
+| Node.js version     | v22.21.1                    |
+| Cordova CLI version | 12.0.0 (cordova-lib@12.0.2) |
+| npm version         | 11.6.2                      |
+| yarn version        | 1.22.22                     |
++---------------------+-----------------------------+
+
+[14:30:35]: No build credential specified
+[14:30:35]: ---------------------------
+[14:30:35]: --- Step: set_ionic_cli ---
+[14:30:35]: ---------------------------
+[14:30:37]: Preinstalled @ionic/cli compatible with project `react`
+[14:30:37]: ------------------------------------
+[14:30:37]: --- Step: detect_package_manager ---
+[14:30:37]: ------------------------------------
+[14:30:37]: Detecting package manager
+[14:30:37]: Defaulting to npm
+[14:30:37]: ---------------------------------
+[14:30:37]: --- Step: add_git_credentials ---
+[14:30:37]: ---------------------------------
+[14:30:37]: Writing git-credentials files
+[14:30:37]: git-credentials successfully added to project
+[14:30:37]: --------------------------------
+[14:30:37]: --- Step: get_appflow_config ---
+[14:30:37]: --------------------------------
+[14:30:37]: Checking for appflow.config.json
+[14:30:37]: Appflow config not detected
+[14:30:37]: --------------------------------
+[14:30:37]: --- Step: dependency_install ---
+[14:30:37]: --------------------------------
+[14:30:37]: Installing Dependencies (in /builds/PunisaRaicevic/HGBROdrzavanje5)
+[14:30:37]: $ npm ci --quiet 
+[14:30:43]: ▸ npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+[14:30:44]: ▸ npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+[14:30:44]: ▸ npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[14:30:44]: ▸ npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+[14:30:44]: ▸ npm warn deprecated
+[14:30:44]: ▸ npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+[14:30:53]: ▸ npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+[14:30:53]: ▸ npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[14:30:56]: ▸ npm warn deprecated jpeg-exif@1.1.4: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+[14:30:56]: ▸ npm warn deprecated @xmldom/xmldom@0.7.13: this version is no longer supported, please update to at least 0.8.*
+[14:30:56]: ▸ npm warn deprecated @xmldom/xmldom@0.7.13: this version is no longer supported, please update to at least 0.8.*
+[14:31:43]: ▸ added 1166 packages, and audited 1167 packages in 1m
+[14:31:43]: ▸ 124 packages are looking for funding
+[14:31:43]: ▸ run `npm fund` for details
+[14:31:44]: ▸ 23 vulnerabilities (4 low, 6 moderate, 12 high, 1 critical)
+[14:31:44]: ▸ To address issues that do not require attention, run:
+[14:31:44]: ▸ npm audit fix
+[14:31:44]: ▸ To address all issues possible (including breaking changes), run:
+[14:31:44]: ▸ npm audit fix --force
+[14:31:44]: ▸ Some issues need review, and may require choosing
+[14:31:44]: ▸ a different dependency.
+[14:31:44]: ▸ Run `npm audit` for details.
+[14:31:44]: -------------------------------------
+[14:31:44]: --- Step: create_capacitor_config ---
+[14:31:44]: -------------------------------------
+[14:31:44]: -------------------------
+[14:31:44]: --- Step: get_web_dir ---
+[14:31:44]: -------------------------
+[14:31:44]: webDir is `dist/public`
+[14:31:44]: -----------------------------------
+[14:31:44]: --- Step: modify_cap_web_config ---
+[14:31:44]: -----------------------------------
+[14:31:44]: No custom native config detected.
+[14:31:44]: ---------------------------
+[14:31:44]: --- Step: set_java_home ---
+[14:31:44]: ---------------------------
+[14:31:44]: Try to detect the android gradle plugin version
+[14:31:44]: Project Android Gradle Plug-in version is 8.7.2: set Java to 21
+[14:31:44]: ---------------------------
+[14:31:44]: --- Step: build_pro_app ---
+[14:31:44]: ---------------------------
+[14:31:44]: Building app from /builds/PunisaRaicevic/HGBROdrzavanje5
+[14:31:44]: Build script detected...
+[14:31:44]: $ npm run build
+[14:31:44]: ▸ > rest-express@1.0.0 build
+[14:31:44]: ▸ > vite build
+[14:31:45]: ▸ vite v5.4.20 building for production...
+[14:31:45]: ▸ transforming...
+[14:31:47]: ▸ A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+[14:32:00]: ▸ ✓ 2866 modules transformed.
+[14:32:01]: ▸ rendering chunks...
+[14:32:02]: ▸ computing gzip size...
+[14:32:02]: ▸ ../dist/public/index.html                                                                   1.16 kB │ gzip:   0.58 kB
+[14:32:02]: ▸ ../dist/public/assets/budvanska-color-centralno-transparent_1762428184467-Dw53VPqV.png     12.31 kB
+[14:32:02]: ▸ ../dist/public/assets/index-B108tEcy.css                                                  126.76 kB │ gzip:  20.22 kB
+[14:32:02]: ▸ ../dist/public/assets/index-C9Laq3Fp.js                                                     0.11 kB │ gzip:   0.11 kB
+[14:32:02]: ▸ ../dist/public/assets/web-DbrT4c4_.js                                                       0.36 kB │ gzip:   0.25 kB
+[14:32:02]: ▸ ../dist/public/assets/status-tap-DyVwXjv7.js                                                0.51 kB │ gzip:   0.36 kB
+[14:32:02]: ▸ ../dist/public/assets/index8-Ckbs4Xq4.js                                                    0.53 kB │ gzip:   0.37 kB
+[14:32:02]: ▸ ../dist/public/assets/index-DpGnYFcm.js                                                     0.60 kB │ gzip:   0.36 kB
+[14:32:02]: ▸ ../dist/public/assets/web-qk8UlvSm.js                                                       0.80 kB │ gzip:   0.24 kB
+[14:32:02]: ▸ ../dist/public/assets/web-Chi3mR5n.js                                                       0.94 kB │ gzip:   0.47 kB
+[14:32:02]: ▸ ../dist/public/assets/focus-visible-supuXXMI.js                                             0.99 kB │ gzip:   0.51 kB
+[14:32:02]: ▸ ../dist/public/assets/md.transition-Ch5EO5lV.js                                             1.03 kB │ gzip:   0.57 kB
+[14:32:02]: ▸ ../dist/public/assets/keyboard--D4_Fj4c.js                                                  1.28 kB │ gzip:   0.66 kB
+[14:32:02]: ▸ ../dist/public/assets/index7-BkxT0tvk.js                                                    1.63 kB │ gzip:   0.84 kB
+[14:32:02]: ▸ ../dist/public/assets/web-DQgS4L99.js                                                       3.44 kB │ gzip:   1.10 kB
+[14:32:02]: ▸ ../dist/public/assets/input-shims-Co7tIj24.js                                               5.00 kB │ gzip:   2.15 kB
+[14:32:02]: ▸ ../dist/public/assets/swipe-back-B1_mGKQt.js                                                6.81 kB │ gzip:   2.74 kB
+[14:32:02]: ▸ ../dist/public/assets/web-ChcrCLhS.js                                                       8.73 kB │ gzip:   2.97 kB
+[14:32:02]: ▸ ../dist/public/assets/ios.transition-CwgS6Y_h.js                                           10.57 kB │ gzip:   3.09 kB
+[14:32:02]: ▸ ../dist/public/assets/index-B0dCN4GF.js                                                 1,112.36 kB │ gzip: 312.22 kB
+[14:32:02]: ▸ 
+[14:32:02]: ▸ (!) Some chunks are larger than 500 kB after minification. Consider:
+[14:32:02]: ▸ - Using dynamic import() to code-split the application
+[14:32:02]: ▸ - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[14:32:02]: ▸ - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[14:32:02]: ▸ ✓ built in 17.23s
+[14:32:02]: $ ionic info
+[14:32:03]: ▸ [WARN] Error loading @capacitor/ios package.json: Error: Cannot find module '@capacitor/ios/package.json'
+[14:32:03]: ▸ Require stack:
+[14:32:03]: ▸ - /usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli/lib/project/index.js
+[14:32:03]: ▸ - /usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli/lib/index.js
+[14:32:03]: ▸ - /usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli/index.js
+[14:32:03]: ▸ - /usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli/bin/ionic
+[14:32:03]: ▸ Ionic:
+[14:32:03]: ▸ Ionic CLI       : 7.2.1 (/usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli)
+[14:32:03]: ▸ Ionic Framework : @ionic/react 8.7.9
+[14:32:03]: ▸ Capacitor:
+[14:32:03]: ▸ Capacitor CLI      : 7.4.4
+[14:32:03]: ▸ @capacitor/android : 7.4.4
+[14:32:03]: ▸ @capacitor/core    : 7.4.4
+[14:32:03]: ▸ @capacitor/ios     : not installed
+[14:32:03]: ▸ Utility:
+[14:32:03]: ▸ cordova-res : not installed globally
+[14:32:03]: ▸ native-run  : 2.0.1
+[14:32:03]: ▸ System:
+[14:32:03]: ▸ NodeJS : v22.21.1 (/usr/local/nvm/versions/node/v22.21.1/bin/node)
+[14:32:03]: ▸ npm    : 11.6.2
+[14:32:03]: ▸ OS     : Linux 6.12
+[14:32:03]: Generating app manifest...
+[14:32:04]: ----------------------
+[14:32:04]: --- Step: cap_sync ---
+[14:32:04]: ----------------------
+[14:32:04]: $ npx cap sync android
+[14:32:06]: ▸ ✔ Copying web assets from public to android/app/src/main/assets/public in 36.35ms
+[14:32:06]: ▸ ✔ Creating capacitor.config.json in android/app/src/main/assets in 1.54ms
+[14:32:06]: ▸ ✔ copy android in 379.42ms
+[14:32:06]: ▸ ✔ Updating Android plugins in 59.39ms
+[14:32:06]: ▸ [info] Found 9 Capacitor plugins for android:
+[14:32:06]: ▸ @capacitor-community/speech-recognition@7.0.1
+[14:32:06]: ▸ @capacitor/app@7.1.0
+[14:32:06]: ▸ @capacitor/camera@7.0.2
+[14:32:06]: ▸ @capacitor/filesystem@7.1.6
+[14:32:06]: ▸ @capacitor/haptics@7.0.2
+[14:32:06]: ▸ @capacitor/live-updates@0.4.0
+[14:32:06]: ▸ @capacitor/local-notifications@7.0.3
+[14:32:06]: ▸ @capacitor/push-notifications@7.0.3
+[14:32:06]: ▸ @capacitor/share@7.0.0
+[14:32:06]: ▸ ✔ update android in 432.47ms
+[14:32:07]: ▸ [info] Sync finished in 1.391s
+[14:32:07]: -------------------------------
+[14:32:07]: --- Step: cap_custom_deploy ---
+[14:32:07]: -------------------------------
+[14:32:07]: No custom native config detected.
+[14:32:07]: ----------------------------------
+[14:32:07]: --- Step: modify_gradle_config ---
+[14:32:07]: ----------------------------------
+[14:32:07]: No custom native config found... skipping
+[14:32:07]: Building android (in /builds/PunisaRaicevic/HGBROdrzavanje5/android)...
+[14:32:07]: -------------------------
+[14:32:07]: --- Step: bundledebug ---
+[14:32:07]: -------------------------
+[14:32:07]: ▸ Downloading https://services.gradle.org/distributions/gradle-8.11.1-all.zip
+[14:32:10]: ▸ .....................10%......................20%......................30%......................40%......................50%......................60%......................70%......................80%......................90%......................100%
+[14:32:17]: ▸ Welcome to Gradle 8.11.1!
+[14:32:17]: ▸ Here are the highlights of this release:
+[14:32:17]: ▸ - Parallel load and store for Configuration Cache
+[14:32:17]: ▸ - Java compilation errors at the end of the build output
+[14:32:17]: ▸ - Consolidated report for warnings and deprecations
+[14:32:17]: ▸ For more details see https://docs.gradle.org/8.11.1/release-notes.html
+[14:32:17]: ▸ Starting a Gradle Daemon (subsequent builds will be faster)
+[14:33:17]: ▸ > Configure project :app
+[14:33:17]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[14:33:24]: ▸ > Configure project :capacitor-cordova-android-plugins
+[14:33:24]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[14:34:15]: ▸ > Task :app:preBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :app:preDebugBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :app:generateDebugResValues
+[14:34:15]: ▸ > Task :app:processDebugGoogleServices
+[14:34:15]: ▸ > Task :capacitor-android:preBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-android:preDebugBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-android:generateDebugResValues
+[14:34:15]: ▸ > Task :capacitor-android:generateDebugResources
+[14:34:15]: ▸ > Task :capacitor-android:packageDebugResources
+[14:34:15]: ▸ > Task :capacitor-app:preBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-app:preDebugBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-app:generateDebugResValues
+[14:34:15]: ▸ > Task :capacitor-app:generateDebugResources
+[14:34:15]: ▸ > Task :capacitor-app:packageDebugResources
+[14:34:15]: ▸ > Task :capacitor-camera:preBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-camera:preDebugBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-camera:generateDebugResValues
+[14:34:15]: ▸ > Task :capacitor-camera:generateDebugResources
+[14:34:15]: ▸ > Task :capacitor-camera:packageDebugResources
+[14:34:15]: ▸ > Task :capacitor-community-speech-recognition:preBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-community-speech-recognition:preDebugBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-community-speech-recognition:generateDebugResValues
+[14:34:15]: ▸ > Task :capacitor-community-speech-recognition:generateDebugResources
+[14:34:15]: ▸ > Task :capacitor-community-speech-recognition:packageDebugResources
+[14:34:15]: ▸ > Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResValues
+[14:34:15]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResources
+[14:34:15]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugResources
+[14:34:15]: ▸ > Task :capacitor-filesystem:preBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-filesystem:preDebugBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-filesystem:generateDebugResValues
+[14:34:15]: ▸ > Task :capacitor-filesystem:generateDebugResources
+[14:34:15]: ▸ > Task :capacitor-filesystem:packageDebugResources
+[14:34:15]: ▸ > Task :capacitor-haptics:preBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-haptics:preDebugBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-haptics:generateDebugResValues
+[14:34:15]: ▸ > Task :capacitor-haptics:generateDebugResources
+[14:34:15]: ▸ > Task :capacitor-haptics:packageDebugResources
+[14:34:15]: ▸ > Task :capacitor-live-updates:preBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-live-updates:preDebugBuild UP-TO-DATE
+[14:34:15]: ▸ > Task :capacitor-live-updates:generateDebugResValues
+[14:34:15]: ▸ > Task :capacitor-live-updates:generateDebugResources
+[14:34:16]: ▸ > Task :capacitor-live-updates:packageDebugResources
+[14:34:16]: ▸ > Task :capacitor-local-notifications:preBuild UP-TO-DATE
+[14:34:16]: ▸ > Task :capacitor-local-notifications:preDebugBuild UP-TO-DATE
+[14:34:16]: ▸ > Task :capacitor-local-notifications:generateDebugResValues
+[14:34:16]: ▸ > Task :capacitor-local-notifications:generateDebugResources
+[14:34:16]: ▸ > Task :capacitor-local-notifications:packageDebugResources
+[14:34:16]: ▸ > Task :capacitor-push-notifications:preBuild UP-TO-DATE
+[14:34:16]: ▸ > Task :capacitor-push-notifications:preDebugBuild UP-TO-DATE
+[14:34:16]: ▸ > Task :capacitor-push-notifications:generateDebugResValues
+[14:34:16]: ▸ > Task :capacitor-push-notifications:generateDebugResources
+[14:34:16]: ▸ > Task :capacitor-push-notifications:packageDebugResources
+[14:34:16]: ▸ > Task :capacitor-share:preBuild UP-TO-DATE
+[14:34:16]: ▸ > Task :capacitor-share:preDebugBuild UP-TO-DATE
+[14:34:16]: ▸ > Task :capacitor-share:generateDebugResValues
+[14:34:16]: ▸ > Task :capacitor-share:generateDebugResources
+[14:34:16]: ▸ > Task :capacitor-share:packageDebugResources
+[14:34:46]: ▸ > Task :app:mapDebugSourceSetPaths
+[14:35:17]: ▸ > Task :app:generateDebugResources
+[14:35:20]: ▸ > Task :app:createDebugCompatibleScreenManifests
+[14:35:20]: ▸ > Task :app:extractDeepLinksDebug
+[14:35:20]: ▸ > Task :capacitor-android:extractDeepLinksDebug
+[14:35:20]: ▸ > Task :capacitor-app:extractDeepLinksDebug
+[14:35:20]: ▸ > Task :capacitor-camera:extractDeepLinksDebug
+[14:35:20]: ▸ > Task :capacitor-community-speech-recognition:extractDeepLinksDebug
+[14:35:20]: ▸ > Task :capacitor-cordova-android-plugins:extractDeepLinksDebug
+[14:35:20]: ▸ > Task :capacitor-filesystem:extractDeepLinksDebug
+[14:35:20]: ▸ > Task :capacitor-haptics:extractDeepLinksDebug
+[14:35:20]: ▸ > Task :capacitor-app:processDebugManifest
+[14:35:20]: ▸ > Task :capacitor-camera:processDebugManifest
+[14:35:20]: ▸ > Task :capacitor-cordova-android-plugins:processDebugManifest
+[14:35:20]: ▸ > Task :capacitor-community-speech-recognition:processDebugManifest
+[14:35:20]: ▸ > Task :capacitor-android:processDebugManifest
+[14:35:20]: ▸ > Task :capacitor-filesystem:processDebugManifest
+[14:35:21]: ▸ > Task :capacitor-live-updates:extractDeepLinksDebug
+[14:35:21]: ▸ > Task :capacitor-haptics:processDebugManifest
+[14:35:21]: ▸ > Task :capacitor-local-notifications:extractDeepLinksDebug
+[14:35:21]: ▸ > Task :capacitor-live-updates:processDebugManifest
+[14:35:21]: ▸ > Task :capacitor-local-notifications:processDebugManifest
+[14:35:21]: ▸ > Task :capacitor-push-notifications:extractDeepLinksDebug
+[14:35:21]: ▸ > Task :capacitor-share:extractDeepLinksDebug
+[14:35:21]: ▸ > Task :capacitor-push-notifications:processDebugManifest
+[14:35:21]: ▸ > Task :capacitor-share:processDebugManifest
+[14:35:21]: ▸ > Task :capacitor-android:writeDebugAarMetadata
+[14:35:21]: ▸ > Task :app:mergeDebugResources
+[14:35:22]: ▸ > Task :app:processDebugMainManifest
+[14:35:22]: ▸ > Task :app:processDebugManifest
+[14:35:22]: ▸ > Task :app:processApplicationManifestDebugForBundle
+[14:35:22]: ▸ > Task :capacitor-app:writeDebugAarMetadata
+[14:35:22]: ▸ > Task :capacitor-camera:writeDebugAarMetadata
+[14:35:22]: ▸ > Task :capacitor-community-speech-recognition:writeDebugAarMetadata
+[14:35:22]: ▸ > Task :capacitor-cordova-android-plugins:writeDebugAarMetadata
+[14:35:22]: ▸ > Task :capacitor-filesystem:writeDebugAarMetadata
+[14:35:22]: ▸ > Task :capacitor-haptics:writeDebugAarMetadata
+[14:35:22]: ▸ > Task :capacitor-live-updates:writeDebugAarMetadata
+[14:35:22]: ▸ > Task :capacitor-local-notifications:writeDebugAarMetadata
+[14:35:22]: ▸ > Task :capacitor-push-notifications:writeDebugAarMetadata
+[14:35:22]: ▸ > Task :capacitor-share:writeDebugAarMetadata
+[14:35:23]: ▸ > Task :app:checkDebugAarMetadata
+[14:35:23]: ▸ > Task :app:packageDebugResources
+[14:35:23]: ▸ > Task :app:parseDebugLocalResources
+[14:35:24]: ▸ > Task :capacitor-app:compileDebugLibraryResources
+[14:35:24]: ▸ > Task :app:processDebugManifestForPackage
+[14:35:24]: ▸ > Task :capacitor-android:parseDebugLocalResources
+[14:35:24]: ▸ > Task :capacitor-android:compileDebugLibraryResources
+[14:35:24]: ▸ > Task :capacitor-app:parseDebugLocalResources
+[14:35:24]: ▸ > Task :capacitor-camera:compileDebugLibraryResources
+[14:35:24]: ▸ > Task :capacitor-android:generateDebugRFile
+[14:35:24]: ▸ > Task :capacitor-app:generateDebugRFile
+[14:35:24]: ▸ > Task :capacitor-camera:parseDebugLocalResources
+[14:35:24]: ▸ > Task :capacitor-community-speech-recognition:compileDebugLibraryResources
+[14:35:24]: ▸ > Task :capacitor-community-speech-recognition:parseDebugLocalResources
+[14:35:24]: ▸ > Task :capacitor-camera:generateDebugRFile
+[14:35:24]: ▸ > Task :capacitor-community-speech-recognition:generateDebugRFile
+[14:35:24]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugLibraryResources
+[14:35:24]: ▸ > Task :capacitor-cordova-android-plugins:parseDebugLocalResources
+[14:35:24]: ▸ > Task :capacitor-filesystem:compileDebugLibraryResources
+[14:35:24]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugRFile
+[14:35:24]: ▸ > Task :capacitor-filesystem:parseDebugLocalResources
+[14:35:24]: ▸ > Task :capacitor-haptics:compileDebugLibraryResources
+[14:35:24]: ▸ > Task :capacitor-filesystem:generateDebugRFile
+[14:35:24]: ▸ > Task :capacitor-haptics:parseDebugLocalResources
+[14:35:25]: ▸ > Task :capacitor-live-updates:compileDebugLibraryResources
+[14:35:25]: ▸ > Task :capacitor-haptics:generateDebugRFile
+[14:35:25]: ▸ > Task :capacitor-live-updates:parseDebugLocalResources
+[14:35:25]: ▸ > Task :capacitor-live-updates:generateDebugRFile
+[14:35:25]: ▸ > Task :capacitor-local-notifications:compileDebugLibraryResources
+[14:35:25]: ▸ > Task :capacitor-local-notifications:parseDebugLocalResources
+[14:35:25]: ▸ > Task :capacitor-push-notifications:compileDebugLibraryResources
+[14:35:25]: ▸ > Task :capacitor-local-notifications:generateDebugRFile
+[14:35:25]: ▸ > Task :capacitor-push-notifications:parseDebugLocalResources
+[14:35:25]: ▸ > Task :capacitor-share:compileDebugLibraryResources
+[14:35:25]: ▸ > Task :capacitor-push-notifications:generateDebugRFile
+[14:35:25]: ▸ > Task :capacitor-share:parseDebugLocalResources
+[14:35:25]: ▸ > Task :app:mergeDebugShaders
+[14:35:25]: ▸ > Task :capacitor-share:generateDebugRFile
+[14:35:25]: ▸ > Task :app:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :app:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-android:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-android:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-android:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-android:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-app:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-app:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-app:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-app:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-camera:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-camera:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-camera:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-camera:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-community-speech-recognition:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-community-speech-recognition:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-community-speech-recognition:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-community-speech-recognition:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-filesystem:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-filesystem:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-filesystem:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-filesystem:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-haptics:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-haptics:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-haptics:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-haptics:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-live-updates:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-live-updates:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-live-updates:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-live-updates:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-local-notifications:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-local-notifications:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-local-notifications:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-local-notifications:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-push-notifications:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-push-notifications:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-push-notifications:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-push-notifications:packageDebugAssets
+[14:35:27]: ▸ > Task :capacitor-share:mergeDebugShaders
+[14:35:27]: ▸ > Task :capacitor-share:compileDebugShaders NO-SOURCE
+[14:35:27]: ▸ > Task :capacitor-share:generateDebugAssets UP-TO-DATE
+[14:35:27]: ▸ > Task :capacitor-share:packageDebugAssets
+[14:35:28]: ▸ > Task :app:mergeDebugAssets
+[14:35:28]: ▸ > Task :capacitor-android:javaPreCompileDebug
+[14:35:28]: ▸ > Task :capacitor-community-speech-recognition:javaPreCompileDebug
+[14:35:28]: ▸ > Task :capacitor-app:javaPreCompileDebug
+[14:35:28]: ▸ > Task :app:processDebugResources
+[14:35:37]: ▸ > Task :capacitor-android:compileDebugJavaWithJavac
+[14:35:37]: ▸ Note: Some input files use unchecked or unsafe operations.
+[14:35:37]: ▸ Note: Recompile with -Xlint:unchecked for details.
+[14:35:53]: ▸ > Task :capacitor-camera:javaPreCompileDebug
+[14:35:53]: ▸ > Task :capacitor-filesystem:checkKotlinGradlePluginConfigurationErrors
+[14:35:53]: ▸ > Task :capacitor-filesystem:javaPreCompileDebug
+[14:35:53]: ▸ > Task :capacitor-haptics:javaPreCompileDebug
+[14:35:53]: ▸ > Task :capacitor-local-notifications:javaPreCompileDebug
+[14:35:53]: ▸ > Task :capacitor-live-updates:javaPreCompileDebug
+[14:35:53]: ▸ > Task :capacitor-push-notifications:javaPreCompileDebug
+[14:35:53]: ▸ > Task :capacitor-android:bundleLibRuntimeToJarDebug
+[14:35:53]: ▸ > Task :capacitor-android:bundleLibCompileToJarDebug
+[14:35:53]: ▸ > Task :capacitor-share:javaPreCompileDebug
+[14:35:55]: ▸ > Task :app:bundleDebugResources
+[14:35:55]: ▸ > Task :capacitor-community-speech-recognition:compileDebugJavaWithJavac
+[14:35:55]: ▸ > Task :capacitor-community-speech-recognition:bundleLibRuntimeToJarDebug
+[14:35:55]: ▸ > Task :capacitor-app:compileDebugJavaWithJavac
+[14:35:55]: ▸ > Task :capacitor-app:bundleLibRuntimeToJarDebug
+[14:35:58]: ▸ > Task :capacitor-camera:compileDebugJavaWithJavac
+[14:35:58]: ▸ Note: /builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@capacitor/camera/android/src/main/java/com/capacitorjs/plugins/camera/CameraBottomSheetDialogFragment.java uses unchecked or unsafe operations.
+[14:35:58]: ▸ Note: Recompile with -Xlint:unchecked for details.
+[14:36:01]: ▸ > Task :capacitor-camera:bundleLibRuntimeToJarDebug
+[14:36:08]: ▸ > Task :capacitor-haptics:compileDebugJavaWithJavac
+[14:36:08]: ▸ > Task :capacitor-haptics:bundleLibRuntimeToJarDebug
+[14:36:14]: ▸ > Task :capacitor-live-updates:compileDebugJavaWithJavac
+[14:36:14]: ▸ > Task :capacitor-live-updates:bundleLibRuntimeToJarDebug
+[14:36:15]: ▸ > Task :capacitor-local-notifications:compileDebugJavaWithJavac
+[14:36:15]: ▸ > Task :capacitor-local-notifications:bundleLibRuntimeToJarDebug
+[14:36:20]: ▸ > Task :capacitor-push-notifications:compileDebugJavaWithJavac
+[14:36:20]: ▸ > Task :capacitor-push-notifications:bundleLibRuntimeToJarDebug
+[14:36:20]: ▸ > Task :capacitor-share:compileDebugJavaWithJavac
+[14:36:21]: ▸ > Task :capacitor-share:bundleLibRuntimeToJarDebug
+[14:36:21]: ▸ > Task :capacitor-cordova-android-plugins:javaPreCompileDebug
+[14:36:21]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+[14:36:21]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug
+[14:36:22]: ▸ > Task :app:desugarDebugFileDependencies
+[14:36:22]: ▸ > Task :app:javaPreCompileDebug
+[14:36:22]: ▸ > Task :capacitor-app:bundleLibCompileToJarDebug
+[14:36:22]: ▸ > Task :capacitor-camera:bundleLibCompileToJarDebug
+[14:36:22]: ▸ > Task :capacitor-community-speech-recognition:bundleLibCompileToJarDebug
+[14:36:23]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug
+[14:36:23]: ▸ > Task :capacitor-haptics:bundleLibCompileToJarDebug
+[14:36:23]: ▸ > Task :capacitor-live-updates:bundleLibCompileToJarDebug
+[14:36:23]: ▸ > Task :capacitor-local-notifications:bundleLibCompileToJarDebug
+[14:36:23]: ▸ > Task :capacitor-push-notifications:bundleLibCompileToJarDebug
+[14:36:23]: ▸ > Task :app:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-share:bundleLibCompileToJarDebug
+[14:36:23]: ▸ > Task :capacitor-android:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-app:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-camera:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-community-speech-recognition:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-haptics:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-live-updates:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-local-notifications:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-push-notifications:processDebugJavaRes NO-SOURCE
+[14:36:23]: ▸ > Task :capacitor-share:processDebugJavaRes NO-SOURCE
+[14:36:24]: ▸ > Task :app:mergeDebugJniLibFolders
+[14:36:24]: ▸ > Task :capacitor-android:mergeDebugJniLibFolders
+[14:36:24]: ▸ > Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+[14:36:24]: ▸ > Task :app:checkDebugDuplicateClasses
+[14:36:24]: ▸ > Task :capacitor-app:mergeDebugJniLibFolders
+[14:36:24]: ▸ > Task :capacitor-android:copyDebugJniLibsProjectOnly
+[14:36:30]: ▸ > Task :capacitor-filesystem:compileDebugKotlin
+[14:36:30]: ▸ w: file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@capacitor/filesystem/android/src/main/kotlin/com/capacitorjs/plugins/filesystem/FilesystemPlugin.kt:335:31 'downloadFile(PluginCall): Unit' is deprecated. Use @capacitor/file-transfer plugin instead
+[14:36:30]: ▸ w: file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@capacitor/filesystem/android/src/main/kotlin/com/capacitorjs/plugins/filesystem/LegacyFilesystemImplementation.kt:66:29 Type mismatch: inferred type is String? but String was expected
+[14:36:30]: ▸ w: file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@capacitor/filesystem/android/src/main/kotlin/com/capacitorjs/plugins/filesystem/LegacyFilesystemImplementation.kt:143:25 Unnecessary non-null assertion (!!) on a non-null receiver of type Boolean
+[14:36:30]: ▸ w: file:///builds/PunisaRaicevic/HGBROdrzavanje5/node_modules/@capacitor/filesystem/android/src/main/kotlin/com/capacitorjs/plugins/filesystem/LegacyFilesystemImplementation.kt:152:21 Unnecessary non-null assertion (!!) on a non-null receiver of type Boolean
+[14:36:54]: ▸ > Task :app:mergeExtDexDebug
+[14:37:18]: ▸ > Task :capacitor-filesystem:compileDebugJavaWithJavac NO-SOURCE
+[14:37:19]: ▸ > Task :capacitor-filesystem:bundleLibRuntimeToJarDebug
+[14:37:19]: ▸ > Task :capacitor-filesystem:bundleLibCompileToJarDebug
+[14:37:19]: ▸ > Task :capacitor-filesystem:processDebugJavaRes
+[14:37:33]: ▸ > Task :app:compileDebugJavaWithJavac
+[14:37:33]: ▸ > Task :app:dexBuilderDebug
+[14:37:34]: ▸ > Task :app:mergeDebugGlobalSynthetics
+[14:37:36]: ▸ > Task :capacitor-app:mergeDebugNativeLibs NO-SOURCE
+[14:37:36]: ▸ > Task :capacitor-app:copyDebugJniLibsProjectOnly
+[14:37:36]: ▸ > Task :capacitor-camera:mergeDebugJniLibFolders
+[14:37:36]: ▸ > Task :capacitor-camera:mergeDebugNativeLibs NO-SOURCE
+[14:37:36]: ▸ > Task :capacitor-camera:copyDebugJniLibsProjectOnly
+[14:37:36]: ▸ > Task :capacitor-community-speech-recognition:mergeDebugJniLibFolders
+[14:37:36]: ▸ > Task :capacitor-community-speech-recognition:mergeDebugNativeLibs NO-SOURCE
+[14:37:36]: ▸ > Task :capacitor-community-speech-recognition:copyDebugJniLibsProjectOnly
+[14:37:36]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders
+[14:37:36]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+[14:37:36]: ▸ > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly
+[14:37:36]: ▸ > Task :capacitor-filesystem:mergeDebugJniLibFolders
+[14:37:36]: ▸ > Task :capacitor-filesystem:mergeDebugNativeLibs NO-SOURCE
+[14:37:36]: ▸ > Task :capacitor-filesystem:copyDebugJniLibsProjectOnly
+[14:37:36]: ▸ > Task :capacitor-haptics:mergeDebugJniLibFolders
+[14:37:36]: ▸ > Task :capacitor-haptics:mergeDebugNativeLibs NO-SOURCE
+[14:37:36]: ▸ > Task :app:mergeLibDexDebug
+[14:37:36]: ▸ > Task :capacitor-haptics:copyDebugJniLibsProjectOnly
+[14:37:36]: ▸ > Task :capacitor-live-updates:mergeDebugJniLibFolders
+[14:37:36]: ▸ > Task :app:mergeProjectDexDebug
+[14:37:36]: ▸ > Task :capacitor-live-updates:mergeDebugNativeLibs NO-SOURCE
+[14:37:36]: ▸ > Task :capacitor-live-updates:copyDebugJniLibsProjectOnly
+[14:37:36]: ▸ > Task :capacitor-local-notifications:mergeDebugJniLibFolders
+[14:37:36]: ▸ > Task :capacitor-local-notifications:mergeDebugNativeLibs NO-SOURCE
+[14:37:36]: ▸ > Task :capacitor-local-notifications:copyDebugJniLibsProjectOnly
+[14:37:36]: ▸ > Task :capacitor-push-notifications:mergeDebugJniLibFolders
+[14:37:36]: ▸ > Task :capacitor-push-notifications:mergeDebugNativeLibs NO-SOURCE
+[14:37:37]: ▸ > Task :capacitor-push-notifications:copyDebugJniLibsProjectOnly
+[14:37:37]: ▸ > Task :capacitor-share:mergeDebugJniLibFolders
+[14:37:37]: ▸ > Task :capacitor-share:mergeDebugNativeLibs NO-SOURCE
+[14:37:37]: ▸ > Task :capacitor-share:copyDebugJniLibsProjectOnly
+[14:37:37]: ▸ > Task :app:writeDebugAppMetadata
+[14:37:38]: ▸ > Task :app:mergeDebugNativeLibs
+[14:37:38]: ▸ > Task :app:parseDebugIntegrityConfig
+[14:37:38]: ▸ > Task :app:stripDebugDebugSymbols
+[14:37:38]: ▸ Unable to strip the following libraries, packaging them as they are: libdatastore_shared_counter.so.
+[14:37:38]: ▸ > Task :app:mergeDebugJavaResource
+[14:37:38]: ▸ > Task :app:buildDebugPreBundle
+[14:37:39]: ▸ > Task :app:packageDebugBundle
+[14:37:42]: ▸ > Task :app:signDebugBundle
+[14:37:43]: ▸ > Task :app:produceDebugBundleIdeListingFile
+[14:37:43]: ▸ > Task :app:createDebugBundleListingFileRedirect
+[14:37:43]: ▸ > Task :app:bundleDebug
+[14:37:43]: ▸ [Incubating] Problems report is available at: file:///builds/PunisaRaicevic/HGBROdrzavanje5/android/build/reports/problems/problems-report.html
+[14:37:43]: ▸ Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+[14:37:43]: ▸ You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+[14:37:43]: ▸ For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+[14:37:43]: ▸ BUILD SUCCESSFUL in 5m 35s
+[14:37:43]: ▸ 226 actionable tasks: 226 executed
+[14:37:43]: ---------------------------
+[14:37:43]: --- Step: assembledebug ---
+[14:37:43]: ---------------------------
+[14:37:47]: ▸ > Configure project :app
+[14:37:47]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[14:37:49]: ▸ > Configure project :capacitor-cordova-android-plugins
+[14:37:49]: ▸ WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+[14:37:52]: ▸ > Task :app:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :app:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+[14:37:52]: ▸ > Task :app:javaPreCompileDebug UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-android:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-android:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-android:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-app:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-app:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-app:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-camera:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-camera:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-camera:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-community-speech-recognition:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-community-speech-recognition:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-community-speech-recognition:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-cordova-android-plugins:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-filesystem:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-filesystem:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-filesystem:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-haptics:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-haptics:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-haptics:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-live-updates:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-live-updates:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-live-updates:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-local-notifications:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-local-notifications:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-local-notifications:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-push-notifications:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-push-notifications:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-push-notifications:writeDebugAarMetadata UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-share:preBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-share:preDebugBuild UP-TO-DATE
+[14:37:52]: ▸ > Task :capacitor-share:writeDebugAarMetadata UP-TO-DATE
+[14:37:55]: ▸ > Task :app:checkDebugAarMetadata UP-TO-DATE
+[14:37:55]: ▸ > Task :app:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :app:processDebugGoogleServices UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-android:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-android:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-android:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-app:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-app:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-app:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-camera:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-camera:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-camera:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-community-speech-recognition:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-community-speech-recognition:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-community-speech-recognition:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-filesystem:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-filesystem:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-filesystem:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-haptics:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-haptics:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-haptics:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-live-updates:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-live-updates:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-live-updates:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-local-notifications:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-local-notifications:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-local-notifications:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-push-notifications:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-push-notifications:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-push-notifications:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-share:generateDebugResValues UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-share:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-share:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :app:mapDebugSourceSetPaths UP-TO-DATE
+[14:37:55]: ▸ > Task :app:generateDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :app:mergeDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :app:packageDebugResources UP-TO-DATE
+[14:37:55]: ▸ > Task :app:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+[14:37:55]: ▸ > Task :app:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-android:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-android:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-app:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-app:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-camera:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-camera:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-community-speech-recognition:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-community-speech-recognition:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-cordova-android-plugins:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-cordova-android-plugins:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-filesystem:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-filesystem:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-haptics:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-haptics:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-live-updates:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-live-updates:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-local-notifications:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-local-notifications:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-push-notifications:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-push-notifications:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-share:extractDeepLinksDebug UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-share:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :app:processDebugMainManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :app:processDebugManifest UP-TO-DATE
+[14:37:55]: ▸ > Task :app:processDebugManifestForPackage UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-android:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-android:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-android:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-app:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-app:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-app:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-camera:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-camera:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-camera:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-community-speech-recognition:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-community-speech-recognition:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-community-speech-recognition:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-cordova-android-plugins:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-filesystem:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-filesystem:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-filesystem:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-haptics:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-haptics:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-haptics:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-live-updates:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-live-updates:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-live-updates:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-local-notifications:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-local-notifications:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-local-notifications:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-push-notifications:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-push-notifications:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-push-notifications:generateDebugRFile UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-share:compileDebugLibraryResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-share:parseDebugLocalResources UP-TO-DATE
+[14:37:55]: ▸ > Task :capacitor-share:generateDebugRFile UP-TO-DATE
+[14:37:57]: ▸ > Task :app:processDebugResources UP-TO-DATE
+[14:37:57]: ▸ > Task :capacitor-android:javaPreCompileDebug UP-TO-DATE
+[14:37:57]: ▸ > Task :capacitor-android:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:57]: ▸ > Task :capacitor-android:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:57]: ▸ > Task :capacitor-app:javaPreCompileDebug UP-TO-DATE
+[14:37:57]: ▸ > Task :capacitor-app:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:57]: ▸ > Task :capacitor-app:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:57]: ▸ > Task :capacitor-camera:javaPreCompileDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-camera:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-camera:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-community-speech-recognition:javaPreCompileDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-community-speech-recognition:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-community-speech-recognition:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-cordova-android-plugins:javaPreCompileDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-filesystem:checkKotlinGradlePluginConfigurationErrors
+[14:37:58]: ▸ > Task :capacitor-filesystem:compileDebugKotlin UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-filesystem:javaPreCompileDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-filesystem:compileDebugJavaWithJavac NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-filesystem:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-haptics:javaPreCompileDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-haptics:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-haptics:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-live-updates:javaPreCompileDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-live-updates:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-live-updates:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-local-notifications:javaPreCompileDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-local-notifications:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-local-notifications:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-push-notifications:javaPreCompileDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-push-notifications:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-push-notifications:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-share:javaPreCompileDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-share:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-share:bundleLibCompileToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :app:compileDebugJavaWithJavac UP-TO-DATE
+[14:37:58]: ▸ > Task :app:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :app:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :app:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-android:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-android:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-android:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-android:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-app:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-app:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-app:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-app:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-camera:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-camera:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-camera:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-camera:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-community-speech-recognition:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-community-speech-recognition:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-community-speech-recognition:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-community-speech-recognition:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-cordova-android-plugins:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-filesystem:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-filesystem:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-filesystem:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-filesystem:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-haptics:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-haptics:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-haptics:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-haptics:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-live-updates:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-live-updates:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-live-updates:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-live-updates:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-local-notifications:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-local-notifications:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-local-notifications:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-local-notifications:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-push-notifications:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-push-notifications:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-push-notifications:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-push-notifications:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-share:mergeDebugShaders UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-share:compileDebugShaders NO-SOURCE
+[14:37:58]: ▸ > Task :capacitor-share:generateDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-share:packageDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :app:mergeDebugAssets UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-community-speech-recognition:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-android:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-app:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-camera:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-filesystem:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-haptics:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-live-updates:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :app:compressDebugAssets
+[14:37:58]: ▸ > Task :capacitor-local-notifications:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-push-notifications:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-share:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug UP-TO-DATE
+[14:37:58]: ▸ > Task :app:desugarDebugFileDependencies UP-TO-DATE
+[14:37:58]: ▸ > Task :app:dexBuilderDebug UP-TO-DATE
+[14:37:59]: ▸ > Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
+[14:37:59]: ▸ > Task :app:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-android:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-app:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-camera:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-community-speech-recognition:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-filesystem:processDebugJavaRes UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-haptics:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-live-updates:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-local-notifications:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-push-notifications:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-share:processDebugJavaRes NO-SOURCE
+[14:37:59]: ▸ > Task :app:mergeDebugJavaResource UP-TO-DATE
+[14:37:59]: ▸ > Task :app:checkDebugDuplicateClasses UP-TO-DATE
+[14:37:59]: ▸ > Task :app:mergeExtDexDebug UP-TO-DATE
+[14:37:59]: ▸ > Task :app:mergeLibDexDebug UP-TO-DATE
+[14:37:59]: ▸ > Task :app:mergeProjectDexDebug UP-TO-DATE
+[14:37:59]: ▸ > Task :app:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-android:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-android:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-app:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-app:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-app:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-camera:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-camera:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-camera:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-community-speech-recognition:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-community-speech-recognition:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-community-speech-recognition:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-filesystem:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-filesystem:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-filesystem:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-haptics:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-haptics:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-haptics:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-live-updates:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-live-updates:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-live-updates:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-local-notifications:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-local-notifications:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-local-notifications:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-push-notifications:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-push-notifications:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-push-notifications:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-share:mergeDebugJniLibFolders UP-TO-DATE
+[14:37:59]: ▸ > Task :capacitor-share:mergeDebugNativeLibs NO-SOURCE
+[14:37:59]: ▸ > Task :capacitor-share:copyDebugJniLibsProjectOnly UP-TO-DATE
+[14:37:59]: ▸ > Task :app:mergeDebugNativeLibs UP-TO-DATE
+[14:37:59]: ▸ > Task :app:stripDebugDebugSymbols UP-TO-DATE
+[14:38:00]: ▸ > Task :app:validateSigningDebug
+[14:38:00]: ▸ > Task :app:writeDebugAppMetadata UP-TO-DATE
+[14:38:00]: ▸ > Task :app:writeDebugSigningConfigVersions
+[14:38:00]: ▸ > Task :capacitor-android:stripDebugDebugSymbols NO-SOURCE
+[14:38:00]: ▸ > Task :capacitor-android:copyDebugJniLibsProjectAndLocalJars
+[14:38:09]: ▸ > Task :capacitor-android:extractDebugAnnotations
+[14:38:09]: ▸ > Task :capacitor-android:extractDeepLinksForAarDebug
+[14:38:09]: ▸ > Task :capacitor-android:mergeDebugGeneratedProguardFiles
+[14:38:09]: ▸ > Task :capacitor-android:mergeDebugConsumerProguardFiles
+[14:38:09]: ▸ > Task :capacitor-android:prepareDebugArtProfile
+[14:38:09]: ▸ > Task :capacitor-app:stripDebugDebugSymbols NO-SOURCE
+[14:38:09]: ▸ > Task :capacitor-android:prepareLintJarForPublish
+[14:38:09]: ▸ > Task :capacitor-android:mergeDebugJavaResource
+[14:38:09]: ▸ > Task :app:packageDebug
+[14:38:09]: ▸ > Task :app:createDebugApkListingFileRedirect
+[14:38:09]: ▸ > Task :app:assembleDebug
+[14:38:09]: ▸ > Task :capacitor-android:syncDebugLibJars
+[14:38:09]: ▸ > Task :capacitor-android:bundleDebugAar
+[14:38:09]: ▸ > Task :capacitor-android:assembleDebug
+[14:38:09]: ▸ > Task :capacitor-app:copyDebugJniLibsProjectAndLocalJars
+[14:38:09]: ▸ > Task :capacitor-app:extractDebugAnnotations
+[14:38:09]: ▸ > Task :capacitor-app:extractDeepLinksForAarDebug
+[14:38:09]: ▸ > Task :capacitor-app:mergeDebugGeneratedProguardFiles
+[14:38:09]: ▸ > Task :capacitor-app:mergeDebugConsumerProguardFiles
+[14:38:09]: ▸ > Task :capacitor-app:prepareDebugArtProfile
+[14:38:09]: ▸ > Task :capacitor-app:prepareLintJarForPublish
+[14:38:09]: ▸ > Task :capacitor-app:mergeDebugJavaResource
+[14:38:09]: ▸ > Task :capacitor-camera:stripDebugDebugSymbols NO-SOURCE
+[14:38:09]: ▸ > Task :capacitor-app:syncDebugLibJars
+[14:38:09]: ▸ > Task :capacitor-app:bundleDebugAar
+[14:38:09]: ▸ > Task :capacitor-app:assembleDebug
+[14:38:09]: ▸ > Task :capacitor-camera:copyDebugJniLibsProjectAndLocalJars
+[14:38:09]: ▸ > Task :capacitor-camera:extractDebugAnnotations
+[14:38:09]: ▸ > Task :capacitor-camera:extractDeepLinksForAarDebug
+[14:38:09]: ▸ > Task :capacitor-camera:mergeDebugGeneratedProguardFiles
+[14:38:09]: ▸ > Task :capacitor-camera:mergeDebugConsumerProguardFiles
+[14:38:09]: ▸ > Task :capacitor-camera:prepareDebugArtProfile
+[14:38:09]: ▸ > Task :capacitor-camera:prepareLintJarForPublish
+[14:38:09]: ▸ > Task :capacitor-community-speech-recognition:stripDebugDebugSymbols NO-SOURCE
+[14:38:09]: ▸ > Task :capacitor-camera:mergeDebugJavaResource
+[14:38:09]: ▸ > Task :capacitor-community-speech-recognition:copyDebugJniLibsProjectAndLocalJars
+[14:38:10]: ▸ > Task :capacitor-camera:syncDebugLibJars
+[14:38:10]: ▸ > Task :capacitor-camera:bundleDebugAar
+[14:38:10]: ▸ > Task :capacitor-camera:assembleDebug
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:extractDebugAnnotations
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:extractDeepLinksForAarDebug
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:mergeDebugGeneratedProguardFiles
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:mergeDebugConsumerProguardFiles
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:prepareDebugArtProfile
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:prepareLintJarForPublish
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:mergeDebugJavaResource
+[14:38:10]: ▸ > Task :capacitor-cordova-android-plugins:stripDebugDebugSymbols NO-SOURCE
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:syncDebugLibJars
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:bundleDebugAar
+[14:38:10]: ▸ > Task :capacitor-community-speech-recognition:assembleDebug
+[14:38:10]: ▸ > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectAndLocalJars
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:extractDebugAnnotations
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:extractDeepLinksForAarDebug
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugGeneratedProguardFiles
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugConsumerProguardFiles
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:prepareDebugArtProfile
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:prepareLintJarForPublish
+[14:38:16]: ▸ > Task :capacitor-filesystem:stripDebugDebugSymbols NO-SOURCE
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:mergeDebugJavaResource
+[14:38:16]: ▸ > Task :capacitor-filesystem:copyDebugJniLibsProjectAndLocalJars
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:syncDebugLibJars
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:bundleDebugAar
+[14:38:16]: ▸ > Task :capacitor-cordova-android-plugins:assembleDebug
+[14:38:16]: ▸ > Task :capacitor-filesystem:extractDebugAnnotations
+[14:38:16]: ▸ > Task :capacitor-filesystem:extractDeepLinksForAarDebug
+[14:38:16]: ▸ > Task :capacitor-filesystem:mergeDebugGeneratedProguardFiles
+[14:38:16]: ▸ > Task :capacitor-filesystem:mergeDebugConsumerProguardFiles
+[14:38:16]: ▸ > Task :capacitor-filesystem:prepareDebugArtProfile
+[14:38:16]: ▸ > Task :capacitor-filesystem:prepareLintJarForPublish
+[14:38:16]: ▸ > Task :capacitor-haptics:stripDebugDebugSymbols NO-SOURCE
+[14:38:16]: ▸ > Task :capacitor-haptics:copyDebugJniLibsProjectAndLocalJars
+[14:38:16]: ▸ > Task :capacitor-filesystem:mergeDebugJavaResource
+[14:38:16]: ▸ > Task :capacitor-haptics:extractDebugAnnotations
+[14:38:16]: ▸ > Task :capacitor-filesystem:syncDebugLibJars
+[14:38:16]: ▸ > Task :capacitor-filesystem:bundleDebugAar
+[14:38:16]: ▸ > Task :capacitor-filesystem:assembleDebug
+[14:38:16]: ▸ > Task :capacitor-haptics:extractDeepLinksForAarDebug
+[14:38:16]: ▸ > Task :capacitor-haptics:mergeDebugGeneratedProguardFiles
+[14:38:16]: ▸ > Task :capacitor-haptics:mergeDebugConsumerProguardFiles
+[14:38:16]: ▸ > Task :capacitor-haptics:prepareDebugArtProfile
+[14:38:16]: ▸ > Task :capacitor-haptics:prepareLintJarForPublish
+[14:38:16]: ▸ > Task :capacitor-live-updates:stripDebugDebugSymbols NO-SOURCE
+[14:38:16]: ▸ > Task :capacitor-haptics:mergeDebugJavaResource
+[14:38:16]: ▸ > Task :capacitor-live-updates:copyDebugJniLibsProjectAndLocalJars
+[14:38:17]: ▸ > Task :capacitor-live-updates:extractDebugAnnotations
+[14:38:17]: ▸ > Task :capacitor-haptics:syncDebugLibJars
+[14:38:17]: ▸ > Task :capacitor-haptics:bundleDebugAar
+[14:38:17]: ▸ > Task :capacitor-haptics:assembleDebug
+[14:38:17]: ▸ > Task :capacitor-live-updates:extractDeepLinksForAarDebug
+[14:38:17]: ▸ > Task :capacitor-live-updates:mergeDebugGeneratedProguardFiles
+[14:38:17]: ▸ > Task :capacitor-live-updates:mergeDebugConsumerProguardFiles
+[14:38:17]: ▸ > Task :capacitor-live-updates:prepareDebugArtProfile
+[14:38:17]: ▸ > Task :capacitor-live-updates:prepareLintJarForPublish
+[14:38:17]: ▸ > Task :capacitor-live-updates:mergeDebugJavaResource
+[14:38:17]: ▸ > Task :capacitor-local-notifications:stripDebugDebugSymbols NO-SOURCE
+[14:38:17]: ▸ > Task :capacitor-live-updates:syncDebugLibJars
+[14:38:17]: ▸ > Task :capacitor-live-updates:bundleDebugAar
+[14:38:17]: ▸ > Task :capacitor-live-updates:assembleDebug
+[14:38:17]: ▸ > Task :capacitor-local-notifications:copyDebugJniLibsProjectAndLocalJars
+[14:38:17]: ▸ > Task :capacitor-local-notifications:extractDebugAnnotations
+[14:38:17]: ▸ > Task :capacitor-local-notifications:extractDeepLinksForAarDebug
+[14:38:17]: ▸ > Task :capacitor-local-notifications:mergeDebugGeneratedProguardFiles
+[14:38:17]: ▸ > Task :capacitor-local-notifications:mergeDebugConsumerProguardFiles
+[14:38:17]: ▸ > Task :capacitor-local-notifications:prepareDebugArtProfile
+[14:38:17]: ▸ > Task :capacitor-local-notifications:prepareLintJarForPublish
+[14:38:17]: ▸ > Task :capacitor-push-notifications:stripDebugDebugSymbols NO-SOURCE
+[14:38:17]: ▸ > Task :capacitor-local-notifications:mergeDebugJavaResource
+[14:38:17]: ▸ > Task :capacitor-push-notifications:copyDebugJniLibsProjectAndLocalJars
+[14:38:17]: ▸ > Task :capacitor-local-notifications:syncDebugLibJars
+[14:38:17]: ▸ > Task :capacitor-local-notifications:bundleDebugAar
+[14:38:17]: ▸ > Task :capacitor-local-notifications:assembleDebug
+[14:38:17]: ▸ > Task :capacitor-push-notifications:extractDebugAnnotations
+[14:38:17]: ▸ > Task :capacitor-push-notifications:extractDeepLinksForAarDebug
+[14:38:17]: ▸ > Task :capacitor-push-notifications:mergeDebugGeneratedProguardFiles
+[14:38:17]: ▸ > Task :capacitor-push-notifications:mergeDebugConsumerProguardFiles
+[14:38:17]: ▸ > Task :capacitor-push-notifications:prepareDebugArtProfile
+[14:38:17]: ▸ > Task :capacitor-push-notifications:prepareLintJarForPublish
+[14:38:17]: ▸ > Task :capacitor-share:stripDebugDebugSymbols NO-SOURCE
+[14:38:17]: ▸ > Task :capacitor-push-notifications:mergeDebugJavaResource
+[14:38:17]: ▸ > Task :capacitor-share:copyDebugJniLibsProjectAndLocalJars
+[14:38:17]: ▸ > Task :capacitor-push-notifications:syncDebugLibJars
+[14:38:17]: ▸ > Task :capacitor-push-notifications:bundleDebugAar
+[14:38:17]: ▸ > Task :capacitor-push-notifications:assembleDebug
+[14:38:17]: ▸ > Task :capacitor-share:extractDebugAnnotations
+[14:38:17]: ▸ > Task :capacitor-share:extractDeepLinksForAarDebug
+[14:38:17]: ▸ > Task :capacitor-share:mergeDebugGeneratedProguardFiles
+[14:38:17]: ▸ > Task :capacitor-share:mergeDebugConsumerProguardFiles
+[14:38:17]: ▸ > Task :capacitor-share:prepareDebugArtProfile
+[14:38:17]: ▸ > Task :capacitor-share:prepareLintJarForPublish
+[14:38:17]: ▸ > Task :capacitor-share:mergeDebugJavaResource
+[14:38:17]: ▸ > Task :capacitor-share:syncDebugLibJars
+[14:38:17]: ▸ > Task :capacitor-share:bundleDebugAar
+[14:38:17]: ▸ > Task :capacitor-share:assembleDebug
+[14:38:17]: ▸ [Incubating] Problems report is available at: file:///builds/PunisaRaicevic/HGBROdrzavanje5/android/build/reports/problems/problems-report.html
+[14:38:17]: ▸ Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+[14:38:17]: ▸ You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+[14:38:17]: ▸ For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+[14:38:17]: ▸ BUILD SUCCESSFUL in 33s
+[14:38:17]: ▸ 333 actionable tasks: 116 executed, 217 up-to-date
+[14:38:17]: -----------------------------------
+[14:38:17]: --- Step: get_filenames_android ---
+[14:38:17]: -----------------------------------
+[14:38:17]: Checking for apk file /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/build/outputs/apk/debug/app-debug.apk
+[14:38:17]: Detected apk file
+[14:38:17]: Checking for aab file /builds/PunisaRaicevic/HGBROdrzavanje5/android/app/build/outputs/bundle/debug/app-debug.aab
+[14:38:17]: Detected aab file
+[14:38:17]: -----------------------------------------
+[14:38:17]: --- Step: upload_binary_to_play_store ---
+[14:38:17]: -----------------------------------------
+[14:38:17]: ----------------------------------
+[14:38:17]: --- Step: upload_android_files ---
+[14:38:17]: ----------------------------------
+[14:38:20]: Uploaded APK successfully.
+[14:38:22]: Uploaded AAB successfully.
+[14:38:22]: --------------------------------
+[14:38:22]: --- Step: upload_source_maps ---
+[14:38:22]: --------------------------------
+[14:38:22]: No .sourcemaps directory found. Skipping sourcemaps upload.
+[14:38:22]: -------------------------
+[14:38:22]: --- Step: upload_logs ---
+[14:38:22]: -------------------------
+
++--------------------------------------------------+
+|                 fastlane summary                 |
++------+-----------------------------+-------------+
+| Step | Action                      | Time (in s) |
++------+-----------------------------+-------------+
+| 1    | add_extra_platforms         | 0           |
+| 2    | default_platform            | 0           |
+| 3    | prepare_environment         | 0           |
+| 4    | sentry_init                 | 0           |
+| 5    | begin_building              | 0           |
+| 6    | build_summary               | 1           |
+| 7    | set_ionic_cli               | 2           |
+| 8    | detect_package_manager      | 0           |
+| 9    | add_git_credentials         | 0           |
+| 10   | get_appflow_config          | 0           |
+| 11   | dependency_install          | 66          |
+| 12   | create_capacitor_config     | 0           |
+| 13   | get_web_dir                 | 0           |
+| 14   | modify_cap_web_config       | 0           |
+| 15   | set_java_home               | 0           |
+| 16   | build_pro_app               | 19          |
+| 17   | cap_sync                    | 3           |
+| 18   | cap_custom_deploy           | 0           |
+| 19   | modify_gradle_config        | 0           |
+| 20   | bundledebug                 | 336         |
+| 21   | assembledebug               | 34          |
+| 22   | get_filenames_android       | 0           |
+| 23   | upload_binary_to_play_store | 0           |
+| 24   | upload_android_files        | 4           |
+| 25   | upload_source_maps          | 0           |
+| 26   | upload_logs                 | 9           |
++------+-----------------------------+-------------+
+
+[14:38:31]: fastlane.tools just saved you 8 minutes! 🎉
+
+Running after_script
+Running after script...
+$ run "clean-up"
+
+Cleaning up project directory and file based variables
+
+Job succeeded
