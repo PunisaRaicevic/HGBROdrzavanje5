@@ -161,36 +161,39 @@ export default function DailyReportDialog({
     
     const fileName = `dnevni_izvestaj_${today.toISOString().split('T')[0]}.pdf`;
     
-    // Check if running on native mobile platform with plugins available
+    // Check if running on native mobile platform
     if (Capacitor.isNativePlatform()) {
       try {
-        // Convert to base64
-        const pdfBase64 = doc.output('datauristring').split(',')[1];
+        // Convert to base64 for Filesystem
+        const pdfOutput = doc.output('datauristring');
+        const pdfBase64 = pdfOutput.split(',')[1];
         
-        // Save to device cache
-        const result = await Filesystem.writeFile({
+        // Write file to cache directory
+        const writeResult = await Filesystem.writeFile({
           path: fileName,
           data: pdfBase64,
           directory: Directory.Cache
         });
         
-        // Share the file - this opens native share dialog
+        // Use Share plugin to let user save/share the PDF
         await Share.share({
           title: 'Dnevni Izvestaj',
-          url: result.uri,
-          dialogTitle: 'Podeli izvestaj'
+          url: writeResult.uri,
+          dialogTitle: 'Sacuvaj ili podeli izvestaj'
         });
       } catch (error) {
-        console.error('PDF error:', error);
-        // If plugins fail, use data URI download as fallback
-        const pdfDataUri = doc.output('datauristring');
-        const link = document.createElement('a');
-        link.href = pdfDataUri;
-        link.download = fileName;
-        link.click();
+        // Fallback: Open PDF as blob in new window for viewing/download
+        try {
+          const pdfBlob = doc.output('blob');
+          const blobUrl = URL.createObjectURL(pdfBlob);
+          window.open(blobUrl, '_blank');
+        } catch (e) {
+          // Ultimate fallback - just save directly
+          doc.save(fileName);
+        }
       }
     } else {
-      // Web browser - direct download
+      // Web browser - standard download
       doc.save(fileName);
     }
   };
