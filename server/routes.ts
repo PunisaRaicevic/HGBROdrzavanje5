@@ -1114,51 +1114,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const supabaseKey = process.env.SUPABASE_ANON_KEY!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
-      // Fetch data from Supabase for context
+      // Fetch core data - OPTIMIZED: exclude images to reduce payload
       const allTasks = await storage.getTasks();
       const allUsers = await storage.getUsers();
       
       const now = new Date();
 
-      // Fetch ALL data from Supabase tables - NO predefined period filters
-      // AI will extract period from user's question
+      // OPTIMIZED: Fetch only essential tables in smaller batches to reduce CPU load
+      // Batch 1: Core task data
       const [
         { data: taskHistory },
         { data: departments },
-        { data: taskAssignments },
-        { data: taskCosts },
-        { data: taskMessages },
-        { data: taskPhotos },
-        { data: taskTemplates },
-        { data: taskTimeline },
-        { data: inventoryItems },
-        { data: inventoryRequests },
-        { data: inventoryTransactions },
         { data: externalCompanies },
-        { data: workSessions },
-        { data: userActivityLog },
-        { data: dailyStats },
-        { data: notifications },
-        { data: allScheduledTasks }
+        { data: dailyStats }
       ] = await Promise.all([
-        supabase.from('task_history').select('*').order('timestamp', { ascending: false }).limit(500),
+        supabase.from('task_history').select('id, task_id, action, notes, timestamp, user_name').order('timestamp', { ascending: false }).limit(200),
         supabase.from('departments').select('*'),
-        supabase.from('task_assignments').select('*'),
-        supabase.from('task_costs').select('*'),
-        supabase.from('task_messages').select('*').order('created_at', { ascending: false }).limit(200),
-        supabase.from('task_photos').select('*'),
-        supabase.from('task_templates').select('*'),
-        supabase.from('task_timeline').select('*').order('timestamp', { ascending: false }).limit(500),
-        supabase.from('inventory_items').select('*'),
-        supabase.from('inventory_requests').select('*'),
-        supabase.from('inventory_transactions').select('*').order('created_at', { ascending: false }).limit(200),
         supabase.from('external_companies').select('*'),
-        supabase.from('work_sessions').select('*').order('start_time', { ascending: false }).limit(200),
-        supabase.from('user_activity_log').select('*').order('timestamp', { ascending: false }).limit(200),
-        supabase.from('daily_stats').select('*').order('date', { ascending: false }).limit(90),
-        supabase.from('notifications').select('*').order('created_at', { ascending: false }).limit(200),
-        supabase.from('tasks').select('*').not('scheduled_for', 'is', null).order('scheduled_for', { ascending: true })
+        supabase.from('daily_stats').select('*').order('date', { ascending: false }).limit(30)
       ]);
+
+      // Batch 2: Scheduled tasks - OPTIMIZED: exclude images
+      const { data: allScheduledTasks } = await supabase
+        .from('tasks')
+        .select('id, title, status, priority, scheduled_for, assigned_to_name, location, is_recurring, recurrence_pattern')
+        .not('scheduled_for', 'is', null)
+        .order('scheduled_for', { ascending: true })
+        .limit(100);
+
+      // Set unused variables to empty for backwards compatibility
+      const taskAssignments: any[] = [];
+      const taskCosts: any[] = [];
+      const taskMessages: any[] = [];
+      const taskPhotos: any[] = [];
+      const taskTemplates: any[] = [];
+      const taskTimeline: any[] = [];
+      const inventoryItems: any[] = [];
+      const inventoryRequests: any[] = [];
+      const inventoryTransactions: any[] = [];
+      const workSessions: any[] = [];
+      const userActivityLog: any[] = [];
+      const notifications: any[] = [];
       
       // Calculate statistics
       const tasksByStatus = allTasks.reduce((acc: any, task: any) => {
