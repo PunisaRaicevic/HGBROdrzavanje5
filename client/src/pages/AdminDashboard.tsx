@@ -327,6 +327,7 @@ export default function AdminDashboard() {
           <thead>
             <tr>
               <th>Naslov</th>
+              <th>Opis</th>
               <th>Status</th>
               <th>Prioritet</th>
               <th>Lokacija</th>
@@ -340,6 +341,7 @@ export default function AdminDashboard() {
             ${reportTasks.map(task => `
               <tr>
                 <td>${task.title}</td>
+                <td>${task.description || '-'}</td>
                 <td class="status-${task.status}">${statusLabels[task.status] || task.status}</td>
                 <td class="${task.priority === 'urgent' ? 'priority-urgent' : ''}">${priorityLabels[task.priority || 'normal'] || task.priority}</td>
                 <td>${task.location || '-'}</td>
