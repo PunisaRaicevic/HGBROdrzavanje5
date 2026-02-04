@@ -1,0 +1,112 @@
+Treba mi PDF generisanje koje radi na mobilnoj Capacitor aplikaciji (buildano preko Appflow). Trenutno imam     
+  izvještaj koji koristi window.print() i CSV export, ali to ne radi na mobilnom.
+
+  Implementiraj sljedeće:
+
+  1. Instaliraj potrebne pakete:
+     npm install jspdf @capacitor/filesystem @capacitor/share
+
+  2. Kreiraj servis za PDF generisanje (npr. client/src/services/pdfGenerator.ts):
+
+  ```typescript
+  import jsPDF from 'jspdf';
+  import { Filesystem, Directory } from '@capacitor/filesystem';
+  import { Share } from '@capacitor/share';
+  import { Capacitor } from '@capacitor/core';
+
+  export async function generateAndSavePDF(
+    title: string,
+    data: any[],
+    columns: { header: string; key: string }[]
+  ) {
+    const doc = new jsPDF();
+
+    // Naslov
+    doc.setFontSize(18);
+    doc.text(title, 20, 20);
+
+    // Datum
+    doc.setFontSize(10);
+    doc.text(`Datum: ${new Date().toLocaleDateString('sr-RS')}`, 20, 30);
+
+    // Tabela
+    let y = 45;
+    const lineHeight = 8;
+    const pageHeight = 280;
+
+    // Header
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    columns.forEach((col, i) => {
+      doc.text(col.header, 20 + (i * 45), y);
+    });
+
+    y += lineHeight;
+    doc.setFont(undefined, 'normal');
+
+    // Redovi
+    data.forEach((row) => {
+      if (y > pageHeight) {
+        doc.addPage();
+        y = 20;
+      }
+      columns.forEach((col, i) => {
+        const value = String(row[col.key] || '');
+        doc.text(value.substring(0, 20), 20 + (i * 45), y);
+      });
+      y += lineHeight;
+    });
+
+    const fileName = `izvjestaj_${Date.now()}.pdf`;
+
+    // Provjeri da li je mobilna platforma
+    if (Capacitor.isNativePlatform()) {
+      // Mobilno - snimi fajl i ponudi share
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
+
+      const result = await Filesystem.writeFile({
+        path: fileName,
+        data: pdfBase64,
+        directory: Directory.Cache,
+      });
+
+      await Share.share({
+        title: 'Izvještaj',
+        url: result.uri,
+        dialogTitle: 'Podijeli izvještaj',
+      });
+    } else {
+      // Web - standardni download
+      doc.save(fileName);
+    }
+  }
+
+  3. U komponenti za izvještaj (npr. DailyReportDialog), dodaj button i funkciju:
+
+  import { generateAndSavePDF } from '@/services/pdfGenerator';
+
+  const exportToPDF = async () => {
+    const columns = [
+      { header: 'Vrijeme', key: 'created_at' },
+      { header: 'Lokacija', key: 'location' },
+      { header: 'Status', key: 'status' },
+    ];
+
+    await generateAndSavePDF('Dnevni Izvještaj', todaysTasks, columns);
+  };
+
+  // U JSX:
+  <Button onClick={exportToPDF}>
+    <Download className="w-4 h-4 mr-2" />
+    Preuzmi PDF
+  </Button>
+
+  4. Ako koristiš Capacitor, sync-uj:
+  npx cap sync
+
+  VAŽNO:
+  - Na iOS-u trebaš dodati permissions u Info.plist
+  - Na Android-u radi out-of-the-box
+  - Share plugin omogućava korisniku da sačuva PDF ili podijeli putem drugih aplikacija
+
+  ---
