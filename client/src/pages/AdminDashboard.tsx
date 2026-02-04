@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -120,6 +120,16 @@ export default function AdminDashboard() {
     refetchInterval: 5000, // Refresh every 5 seconds
     refetchOnWindowFocus: true
   });
+
+  // Sync selectedTask with latest data from tasks query
+  useEffect(() => {
+    if (selectedTask && tasksData?.tasks) {
+      const updatedTask = tasksData.tasks.find(t => t.id === selectedTask.id);
+      if (updatedTask && updatedTask.status !== selectedTask.status) {
+        setSelectedTask(updatedTask);
+      }
+    }
+  }, [tasksData?.tasks, selectedTask?.id]);
 
   // Create new user mutation
   const createUserMutation = useMutation({

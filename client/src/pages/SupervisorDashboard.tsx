@@ -156,6 +156,16 @@ export default function SupervisorDashboard() {
     refetchInterval: 10000, // Refetch every 10 seconds
   });
 
+  // Sync selectedTaskForDetails with latest data from tasks query
+  useEffect(() => {
+    if (selectedTaskForDetails && tasksResponse?.tasks) {
+      const updatedTask = tasksResponse.tasks.find(t => t.id === selectedTaskForDetails.id);
+      if (updatedTask && updatedTask.status !== selectedTaskForDetails.status) {
+        setSelectedTaskForDetails(updatedTask);
+      }
+    }
+  }, [tasksResponse?.tasks, selectedTaskForDetails?.id]);
+
   // Fetch technicians
   const { data: techniciansResponse } = useQuery<{ technicians: any[] }>({
     queryKey: ['/api/technicians'],
