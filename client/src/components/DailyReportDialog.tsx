@@ -81,6 +81,16 @@ export default function DailyReportDialog({
     return '';
   };
 
+  // Get auth headers with JWT token
+  const getAuthHeaders = (): HeadersInit => {
+    const headers: HeadersInit = {};
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  };
+
   // Export to CSV - using server-side generation
   const exportToCSV = async () => {
     try {
@@ -88,8 +98,9 @@ export default function DailyReportDialog({
       const fileName = `dnevni_izvestaj_${dateStr}.csv`;
       const apiUrl = getApiBaseUrl();
       
-      // Fetch CSV from server
+      // Fetch CSV from server with auth
       const response = await fetch(`${apiUrl}/api/reports/daily/csv?date=${dateStr}`, {
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
       
@@ -130,8 +141,9 @@ export default function DailyReportDialog({
       const fileName = `dnevni_izvestaj_${dateStr}.pdf`;
       const apiUrl = getApiBaseUrl();
       
-      // Fetch PDF from server
+      // Fetch PDF from server with auth
       const response = await fetch(`${apiUrl}/api/reports/daily/pdf?date=${dateStr}`, {
+        headers: getAuthHeaders(),
         credentials: 'include'
       });
       
