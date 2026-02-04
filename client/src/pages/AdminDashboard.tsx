@@ -226,13 +226,12 @@ export default function AdminDashboard() {
   const downloadCSV = () => {
     const reportTasks = getReportTasks();
     
-    const headers = ['Naslov', 'Opis', 'Status', 'Prioritet', 'Lokacija', 'Kreirao', 'Dodijeljeno radniku', 'Datum kreiranja', 'Datum zavrsenja'];
+    const headers = ['Lokacija', 'Opis', 'Status', 'Prioritet', 'Kreirao', 'Dodijeljeno radniku', 'Datum kreiranja', 'Datum zavrsenja'];
     const rows = reportTasks.map(task => [
-      task.title,
+      task.location || '',
       task.description || '',
       task.status,
       task.priority || 'normal',
-      task.location || '',
       task.created_by_name || '',
       task.assigned_to_name || '',
       formatReportDate(task.created_at),
@@ -326,11 +325,10 @@ export default function AdminDashboard() {
         <table>
           <thead>
             <tr>
-              <th>Naslov</th>
+              <th>Lokacija</th>
               <th>Opis</th>
               <th>Status</th>
               <th>Prioritet</th>
-              <th>Lokacija</th>
               <th>Kreirao</th>
               <th>Dodijeljeno</th>
               <th>Datum kreiranja</th>
@@ -340,11 +338,10 @@ export default function AdminDashboard() {
           <tbody>
             ${reportTasks.map(task => `
               <tr>
-                <td>${task.title}</td>
+                <td>${task.location || '-'}</td>
                 <td>${task.description || '-'}</td>
                 <td class="status-${task.status}">${statusLabels[task.status] || task.status}</td>
                 <td class="${task.priority === 'urgent' ? 'priority-urgent' : ''}">${priorityLabels[task.priority || 'normal'] || task.priority}</td>
-                <td>${task.location || '-'}</td>
                 <td>${task.created_by_name || '-'}</td>
                 <td>${task.assigned_to_name || '-'}</td>
                 <td>${formatReportDate(task.created_at)}</td>
