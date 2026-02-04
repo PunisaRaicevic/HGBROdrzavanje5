@@ -950,7 +950,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (execution_minute !== undefined) updateData.execution_minute = execution_minute;
       }
 
-      if (status !== undefined) updateData.status = status;
+      // Prevent overwriting "completed" status with non-completed status (except by admin/sef)
+      // This prevents stale cached data from resetting completed tasks
+      if (status !== undefined) {
+        const protectedStatuses = ['completed', 'cancelled'];
+        const isDowngrade = protectedStatuses.includes(currentTask?.status) && !protectedStatuses.includes(status);
+        const canDowngrade = sessionUser.role === 'admin' || sessionUser.role === 'sef';
+        
+        if (isDowngrade && !canDowngrade) {
+          console.log(`[TASK UPDATE] Blocked status downgrade from ${currentTask?.status} to ${status} by ${sessionUser.role}`);
+          // Don't update status, keep the current one
+        } else {
+          updateData.status = status;
+        }
+      }
       if (assigned_to !== undefined) {
         updateData.assigned_to = assigned_to ? assigned_to.replace(/\s/g, "") : null;
       }

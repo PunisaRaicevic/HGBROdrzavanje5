@@ -452,12 +452,8 @@ export default function WorkerDashboard() {
     
     setIsConfirmingReceipt(true);
     
-    // Don't change status if task is already completed
-    const keepCurrentStatus = selectedTask.status === 'completed';
-    
-    // OPTIMISTIC UPDATE - Update UI immediately
+    // OPTIMISTIC UPDATE - Update UI immediately (don't change status, only update receipt fields)
     const optimisticUpdate = optimisticUpdateTask(selectedTask.id, {
-      status: keepCurrentStatus ? selectedTask.status : 'assigned_to_radnik',
       worker_report: 'Prijem reklamacije potvrđen / Receipt confirmed',
       receipt_confirmed_at: new Date().toISOString(),
     });
@@ -465,16 +461,12 @@ export default function WorkerDashboard() {
     try {
       console.log('[CONFIRM RECEIPT] Sending request for task:', selectedTask.id);
       
-      // Only send receipt_confirmed_at, don't change status if already completed
+      // NEVER send status with receipt confirmation - let server handle status preservation
+      // This prevents overwriting completed status with stale cached status
       const requestData: any = {
         worker_report: 'Prijem reklamacije potvrđen / Receipt confirmed',
         receipt_confirmed_at: new Date().toISOString()
       };
-      
-      // Only set status if task is not completed
-      if (!keepCurrentStatus) {
-        requestData.status = 'assigned_to_radnik';
-      }
       
       const response = await apiRequest('PATCH', `/api/tasks/${selectedTask.id}`, requestData);
 
