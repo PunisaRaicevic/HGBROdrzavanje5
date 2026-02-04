@@ -73,14 +73,23 @@ export default function DailyReportDialog({
     return `${diffMins}m`;
   };
 
+  // Get base API URL - full URL for mobile, relative for web
+  const getApiBaseUrl = () => {
+    if (Capacitor.isNativePlatform()) {
+      return 'https://hgbrtehnickasluzba.replit.app';
+    }
+    return '';
+  };
+
   // Export to CSV - using server-side generation
   const exportToCSV = async () => {
     try {
       const dateStr = today.toISOString().split('T')[0];
       const fileName = `dnevni_izvestaj_${dateStr}.csv`;
+      const apiUrl = getApiBaseUrl();
       
       // Fetch CSV from server
-      const response = await fetch(`/api/reports/daily/csv?date=${dateStr}`, {
+      const response = await fetch(`${apiUrl}/api/reports/daily/csv?date=${dateStr}`, {
         credentials: 'include'
       });
       
@@ -119,9 +128,10 @@ export default function DailyReportDialog({
     try {
       const dateStr = today.toISOString().split('T')[0];
       const fileName = `dnevni_izvestaj_${dateStr}.pdf`;
+      const apiUrl = getApiBaseUrl();
       
       // Fetch PDF from server
-      const response = await fetch(`/api/reports/daily/pdf?date=${dateStr}`, {
+      const response = await fetch(`${apiUrl}/api/reports/daily/pdf?date=${dateStr}`, {
         credentials: 'include'
       });
       
