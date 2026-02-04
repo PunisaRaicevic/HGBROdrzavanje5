@@ -7,6 +7,7 @@ import { initializeSocket, notifyWorkers, notifyTaskUpdate } from "./socket";
 import { z } from "zod";
 import { generateToken, verifyToken, extractTokenFromHeader } from "./auth";
 import { sendOneSignalToUser } from "./services/onesignal";
+import { generateDailyReportPdf, generateTasksCsv } from "./pdfGenerator";
 // --- NOVI IMPORTI ZA NOTIFIKACIJE ---
 import { sendPushNotification } from "./services/notificationService";
 
@@ -698,6 +699,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     return names.join(" → ");
   }
+
+  // Daily Report PDF - server-side generation
+  app.get("/api/reports/daily/pdf", requireAuth, async (req, res) => {
+    try {
+      const dateParam = req.query.date as string;
+      const targetDate = dateParam ? new Date(dateParam) : new Date();
+      const dateStr = targetDate.toLocaleDateString('sr-RS');
+      
+      const allTasks = await storage.getTasks();
+      const todaysTasks = allTasks.filter(task => {
+        if (task.is_recurring && !task.parent_task_id) return false;
+        const taskDate = new Date(task.created_at);
+        return taskDate.toDateString() === targetDate.toDateString();
+      });
+
+      const pdfBuffer = await generateDailyReportPdf({
+        title: `Dnevni Izvestaj - ${dateStr}`,
+        date: dateStr,
+        tasks: todaysTasks
+      });
+
+      const fileName = `dnevni_izvestaj_${targetDate.toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      res.status(500).json({ error: 'Failed to generate PDF' });
+    }
+  });
+
+  // Daily Report CSV - server-side generation
+  app.get("/api/reports/daily/csv", requireAuth, async (req, res) => {
+    try {
+      const dateParam = req.query.date as string;
+      const targetDate = dateParam ? new Date(dateParam) : new Date();
+      
+      const allTasks = await storage.getTasks();
+      const todaysTasks = allTasks.filter(task => {
+        if (task.is_recurring && !task.parent_task_id) return false;
+        const taskDate = new Date(task.created_at);
+        return taskDate.toDateString() === targetDate.toDateString();
+      });
+
+      const csvContent = await generateTasksCsv(todaysTasks);
+      const fileName = `dnevni_izvestaj_${targetDate.toISOString().split('T')[0]}.csv`;
+      
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.send('\ufeff' + csvContent); // BOM for Excel UTF-8
+    } catch (error) {
+      console.error('CSV generation error:', error);
+      res.status(500).json({ error: 'Failed to generate CSV' });
+    }
+  });
 
   app.get("/api/tasks", requireAuth, async (req, res) => {
     try {

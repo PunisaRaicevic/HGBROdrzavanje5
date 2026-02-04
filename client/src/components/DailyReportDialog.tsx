@@ -17,11 +17,10 @@ import {
 } from "@/components/ui/table";
 import { useQuery } from '@tanstack/react-query';
 import { Download, Calendar, User, MapPin, Clock, CheckCircle, XCircle, Printer } from "lucide-react";
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
+import { apiRequest } from '@/lib/queryClient';
 
 interface DailyReportDialogProps {
   open: boolean;
@@ -74,127 +73,95 @@ export default function DailyReportDialog({
     return `${diffMins}m`;
   };
 
-  // Export to CSV
-  const exportToCSV = () => {
-    const headers = [
-      'Vreme Prijave',
-      'Ko Je Prijavio',
-      'Lokacija',
-      'Opis',
-      'Prioritet',
-      'Dodeljen',
-      'Status',
-      'Vreme Rešavanja'
-    ];
-
-    const rows = todaysTasks.map(task => [
-      formatDateTime(task.created_at),
-      task.created_by_name || 'N/A',
-      task.location,
-      task.description || task.title,
-      task.priority === 'urgent' ? 'Hitno' : task.priority === 'normal' ? 'Normalno' : 'Nisko',
-      task.assigned_to_name || 'Nije dodeljeno',
-      task.status === 'completed' ? 'Završeno' : task.status === 'with_operator' ? 'U Toku' : 'Novo',
-      getElapsedTime(task.created_at, task.updated_at)
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `dnevni_izvestaj_${today.toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Export to CSV - using server-side generation
+  const exportToCSV = async () => {
+    try {
+      const dateStr = today.toISOString().split('T')[0];
+      const fileName = `dnevni_izvestaj_${dateStr}.csv`;
+      
+      // Fetch CSV from server
+      const response = await fetch(`/api/reports/daily/csv?date=${dateStr}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch CSV');
+      const csvContent = await response.text();
+      
+      if (Capacitor.isNativePlatform()) {
+        // Mobile: save to Documents and share
+        const base64 = btoa(unescape(encodeURIComponent(csvContent)));
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: base64,
+          directory: Directory.Documents
+        });
+        await Share.share({
+          title: 'Dnevni Izvestaj CSV',
+          url: result.uri,
+          dialogTitle: 'Sacuvaj ili podeli CSV'
+        });
+      } else {
+        // Web: standard download
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+      }
+    } catch (error) {
+      console.error('CSV export error:', error);
+      alert('Greska pri preuzimanju CSV fajla');
+    }
   };
 
-  // Generate and share/download PDF
+  // Generate and share/download PDF - using server-side generation
   const handlePrint = async () => {
-    const doc = new jsPDF();
-    
-    // Title
-    doc.setFontSize(18);
-    doc.text(`Dnevni Izvestaj - ${today.toLocaleDateString('sr-RS')}`, 14, 20);
-    
-    // Summary
-    doc.setFontSize(11);
-    const completedCount = todaysTasks.filter(t => t.status === 'completed').length;
-    const inProgressCount = todaysTasks.filter(t => t.status === 'with_operator').length;
-    doc.text(`Ukupno: ${todaysTasks.length}  |  Zavrseno: ${completedCount}  |  U toku: ${inProgressCount}`, 14, 30);
-    
-    // Table data
-    const tableData = todaysTasks.map(task => [
-      formatDateTime(task.created_at),
-      task.created_by_name || 'N/A',
-      task.location,
-      (task.description || task.title).substring(0, 50) + ((task.description || task.title).length > 50 ? '...' : ''),
-      task.priority === 'urgent' ? 'Hitno' : task.priority === 'normal' ? 'Normalno' : 'Nisko',
-      task.assigned_to_name || 'Nije dodeljeno',
-      task.status === 'completed' ? 'Zavrseno' : task.status === 'with_operator' ? 'U toku' : 'Novo',
-      getElapsedTime(task.created_at, task.status === 'completed' ? task.updated_at : undefined)
-    ]);
-    
-    // Generate table
-    autoTable(doc, {
-      startY: 38,
-      head: [['Prijavljeno', 'Prijavio', 'Lokacija', 'Opis', 'Prioritet', 'Dodeljen', 'Status', 'Vreme']],
-      body: tableData,
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [59, 130, 246] },
-      columnStyles: {
-        0: { cellWidth: 25 },
-        1: { cellWidth: 22 },
-        2: { cellWidth: 20 },
-        3: { cellWidth: 40 },
-        4: { cellWidth: 18 },
-        5: { cellWidth: 22 },
-        6: { cellWidth: 18 },
-        7: { cellWidth: 15 }
+    try {
+      const dateStr = today.toISOString().split('T')[0];
+      const fileName = `dnevni_izvestaj_${dateStr}.pdf`;
+      
+      // Fetch PDF from server
+      const response = await fetch(`/api/reports/daily/pdf?date=${dateStr}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch PDF');
+      const pdfBlob = await response.blob();
+      
+      if (Capacitor.isNativePlatform()) {
+        // Mobile: convert blob to base64, save to Documents, then share
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          try {
+            const base64Data = (reader.result as string).split(',')[1];
+            const result = await Filesystem.writeFile({
+              path: fileName,
+              data: base64Data,
+              directory: Directory.Documents
+            });
+            await Share.share({
+              title: 'Dnevni Izvestaj',
+              url: result.uri,
+              dialogTitle: 'Sacuvaj ili podeli PDF'
+            });
+          } catch (err) {
+            console.error('Save/Share error:', err);
+            alert('Greska pri cuvanju PDF fajla');
+          }
+        };
+        reader.readAsDataURL(pdfBlob);
+      } else {
+        // Web: standard download
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
       }
-    });
-    
-    const fileName = `dnevni_izvestaj_${today.toISOString().split('T')[0]}.pdf`;
-    
-    // Check if running on native mobile platform
-    if (Capacitor.isNativePlatform()) {
-      try {
-        // Convert to base64 for Filesystem
-        const pdfOutput = doc.output('datauristring');
-        const pdfBase64 = pdfOutput.split(',')[1];
-        
-        // Write file to cache directory
-        const writeResult = await Filesystem.writeFile({
-          path: fileName,
-          data: pdfBase64,
-          directory: Directory.Cache
-        });
-        
-        // Use Share plugin to let user save/share the PDF
-        await Share.share({
-          title: 'Dnevni Izvestaj',
-          url: writeResult.uri,
-          dialogTitle: 'Sacuvaj ili podeli izvestaj'
-        });
-      } catch (error) {
-        // Fallback: Open PDF as blob in new window for viewing/download
-        try {
-          const pdfBlob = doc.output('blob');
-          const blobUrl = URL.createObjectURL(pdfBlob);
-          window.open(blobUrl, '_blank');
-        } catch (e) {
-          // Ultimate fallback - just save directly
-          doc.save(fileName);
-        }
-      }
-    } else {
-      // Web browser - standard download
-      doc.save(fileName);
+    } catch (error) {
+      console.error('PDF download error:', error);
+      alert('Greska pri preuzimanju PDF fajla');
     }
   };
 
