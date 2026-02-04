@@ -116,10 +116,6 @@ export default function DailyReportDialog({
 
   // Generate and share/download PDF
   const handlePrint = async () => {
-    console.log('[PDF] Starting PDF generation...');
-    console.log('[PDF] Platform:', Capacitor.getPlatform());
-    console.log('[PDF] isNativePlatform:', Capacitor.isNativePlatform());
-    
     const doc = new jsPDF();
     
     // Title
@@ -164,76 +160,39 @@ export default function DailyReportDialog({
     });
     
     const fileName = `dnevni_izvestaj_${today.toISOString().split('T')[0]}.pdf`;
-    console.log('[PDF] Generated PDF, fileName:', fileName);
     
-    // Check if running on mobile (Capacitor native)
+    // Check if running on native mobile platform with plugins available
     if (Capacitor.isNativePlatform()) {
-      console.log('[PDF] Native platform detected, using Filesystem + Share');
       try {
         // Convert to base64
         const pdfBase64 = doc.output('datauristring').split(',')[1];
-        console.log('[PDF] PDF base64 length:', pdfBase64.length);
         
-        // Save to device
-        console.log('[PDF] Writing to Filesystem...');
+        // Save to device cache
         const result = await Filesystem.writeFile({
           path: fileName,
           data: pdfBase64,
           directory: Directory.Cache
         });
-        console.log('[PDF] File written successfully:', result.uri);
         
-        // Share the file
-        console.log('[PDF] Opening Share dialog...');
+        // Share the file - this opens native share dialog
         await Share.share({
           title: 'Dnevni Izvestaj',
           url: result.uri,
           dialogTitle: 'Podeli izvestaj'
         });
-        console.log('[PDF] Share completed');
       } catch (error) {
-        console.error('[PDF] Error saving/sharing PDF:', error);
-        // Try alternative approach with blob
-        try {
-          console.log('[PDF] Trying blob approach...');
-          const pdfBlob = doc.output('blob');
-          const pdfBase64 = await blobToBase64(pdfBlob);
-          
-          const result = await Filesystem.writeFile({
-            path: fileName,
-            data: pdfBase64,
-            directory: Directory.Documents
-          });
-          console.log('[PDF] Blob approach succeeded:', result.uri);
-          
-          await Share.share({
-            title: 'Dnevni Izvestaj',
-            url: result.uri,
-            dialogTitle: 'Podeli izvestaj'
-          });
-        } catch (fallbackError) {
-          console.error('[PDF] Fallback also failed:', fallbackError);
-          alert('Greska pri generisanju PDF-a. Pokusajte ponovo.');
-        }
+        console.error('PDF error:', error);
+        // If plugins fail, use data URI download as fallback
+        const pdfDataUri = doc.output('datauristring');
+        const link = document.createElement('a');
+        link.href = pdfDataUri;
+        link.download = fileName;
+        link.click();
       }
     } else {
       // Web browser - direct download
-      console.log('[PDF] Web platform, using direct download');
       doc.save(fileName);
     }
-  };
-
-  // Helper function to convert blob to base64
-  const blobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = (reader.result as string).split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
   };
 
   return (
