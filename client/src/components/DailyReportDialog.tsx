@@ -17,6 +17,11 @@ import {
 } from "@/components/ui/table";
 import { useQuery } from '@tanstack/react-query';
 import { Download, Calendar, User, MapPin, Clock, CheckCircle, XCircle, Printer } from "lucide-react";
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 interface DailyReportDialogProps {
   open: boolean;
@@ -109,9 +114,81 @@ export default function DailyReportDialog({
     document.body.removeChild(link);
   };
 
-  // Print report
-  const handlePrint = () => {
-    window.print();
+  // Generate and share/download PDF
+  const handlePrint = async () => {
+    const doc = new jsPDF();
+    
+    // Title
+    doc.setFontSize(18);
+    doc.text(`Dnevni Izvestaj - ${today.toLocaleDateString('sr-RS')}`, 14, 20);
+    
+    // Summary
+    doc.setFontSize(11);
+    const completedCount = todaysTasks.filter(t => t.status === 'completed').length;
+    const inProgressCount = todaysTasks.filter(t => t.status === 'with_operator').length;
+    doc.text(`Ukupno: ${todaysTasks.length}  |  Zavrseno: ${completedCount}  |  U toku: ${inProgressCount}`, 14, 30);
+    
+    // Table data
+    const tableData = todaysTasks.map(task => [
+      formatDateTime(task.created_at),
+      task.created_by_name || 'N/A',
+      task.location,
+      (task.description || task.title).substring(0, 50) + ((task.description || task.title).length > 50 ? '...' : ''),
+      task.priority === 'urgent' ? 'Hitno' : task.priority === 'normal' ? 'Normalno' : 'Nisko',
+      task.assigned_to_name || 'Nije dodeljeno',
+      task.status === 'completed' ? 'Zavrseno' : task.status === 'with_operator' ? 'U toku' : 'Novo',
+      getElapsedTime(task.created_at, task.status === 'completed' ? task.updated_at : undefined)
+    ]);
+    
+    // Generate table
+    autoTable(doc, {
+      startY: 38,
+      head: [['Prijavljeno', 'Prijavio', 'Lokacija', 'Opis', 'Prioritet', 'Dodeljen', 'Status', 'Vreme']],
+      body: tableData,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [59, 130, 246] },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 40 },
+        4: { cellWidth: 18 },
+        5: { cellWidth: 22 },
+        6: { cellWidth: 18 },
+        7: { cellWidth: 15 }
+      }
+    });
+    
+    const fileName = `dnevni_izvestaj_${today.toISOString().split('T')[0]}.pdf`;
+    
+    // Check if running on mobile (Capacitor native)
+    if (Capacitor.isNativePlatform()) {
+      try {
+        // Convert to base64
+        const pdfBase64 = doc.output('datauristring').split(',')[1];
+        
+        // Save to device
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: pdfBase64,
+          directory: Directory.Cache
+        });
+        
+        // Share the file
+        await Share.share({
+          title: 'Dnevni Izvestaj',
+          url: result.uri,
+          dialogTitle: 'Podeli izvestaj'
+        });
+      } catch (error) {
+        console.error('Error saving/sharing PDF:', error);
+        // Fallback to blob download
+        doc.save(fileName);
+      }
+    } else {
+      // Web browser - direct download
+      doc.save(fileName);
+    }
   };
 
   return (
