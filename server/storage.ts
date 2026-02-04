@@ -170,9 +170,24 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getTasks(): Promise<Task[]> {
+    // Select only essential columns, exclude large image data for list view
+    // Images are fetched separately when viewing individual task details
     const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select(`
+        id, title, description, location, room_number, priority, status,
+        created_by, created_by_name, created_by_department,
+        operator_id, operator_name, assigned_to, assigned_to_name, assigned_to_type,
+        sef_id, sef_name, external_company_id, external_company_name,
+        deadline_at, is_overdue, estimated_arrival_time, actual_arrival_time,
+        estimated_completion_time, actual_completion_time, time_spent_minutes,
+        created_at, updated_at, completed_at, worker_report,
+        is_recurring, recurrence_pattern, recurrence_start_date, parent_task_id,
+        next_occurrence, completed_by, completed_by_name,
+        receipt_confirmed_at, receipt_confirmed_by, receipt_confirmed_by_name,
+        scheduled_for, recurrence_week_days, recurrence_month_days,
+        recurrence_year_dates, execution_hour, execution_minute
+      `)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
