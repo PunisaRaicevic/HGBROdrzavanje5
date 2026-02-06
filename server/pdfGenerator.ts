@@ -7,6 +7,75 @@ interface ReportOptions {
   tasks: Task[];
 }
 
+function embedImages(doc: PDFKit.PDFDocument, images: string[]) {
+  const pageWidth = 515;
+  const maxImgWidth = 240;
+  const maxImgHeight = 200;
+  const spacing = 10;
+  let xPos = 40;
+  let imagesInRow = 0;
+
+  for (let i = 0; i < images.length; i++) {
+    try {
+      const imageData = images[i];
+      let imgBuffer: Buffer;
+
+      if (imageData.startsWith('data:')) {
+        const base64Part = imageData.split(',')[1];
+        if (!base64Part) continue;
+        imgBuffer = Buffer.from(base64Part, 'base64');
+      } else if (imageData.startsWith('http')) {
+        doc.fontSize(8).fillColor('#666666').text(`Slika ${i + 1}: ${imageData}`, 40, doc.y);
+        doc.fillColor('#000000');
+        doc.moveDown(0.2);
+        continue;
+      } else {
+        imgBuffer = Buffer.from(imageData, 'base64');
+      }
+
+      if (imgBuffer.length < 100) continue;
+
+      if (doc.y > 580 || (imagesInRow === 0 && doc.y > 650)) {
+        doc.addPage();
+        xPos = 40;
+        imagesInRow = 0;
+      }
+
+      if (imagesInRow >= 2) {
+        doc.moveDown(0.3);
+        xPos = 40;
+        imagesInRow = 0;
+        if (doc.y > 580) {
+          doc.addPage();
+        }
+      }
+
+      const yBefore = doc.y;
+      doc.image(imgBuffer, xPos, doc.y, {
+        fit: [maxImgWidth, maxImgHeight],
+      });
+
+      xPos += maxImgWidth + spacing;
+      imagesInRow++;
+
+      if (imagesInRow >= 2) {
+        doc.y = yBefore + maxImgHeight + spacing;
+        xPos = 40;
+        imagesInRow = 0;
+      }
+    } catch (err) {
+      doc.fontSize(8).fillColor('#cc0000').text(`Slika ${i + 1}: greska pri ucitavanju`, 40, doc.y);
+      doc.fillColor('#000000');
+      doc.moveDown(0.2);
+    }
+  }
+
+  if (imagesInRow > 0) {
+    doc.y = doc.y + maxImgHeight + spacing;
+  }
+  doc.moveDown(0.3);
+}
+
 export async function generateDailyReportPdf(options: ReportOptions): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
@@ -210,19 +279,15 @@ export async function generateTaskReportPdf(task: Task, history: any[]): Promise
       }
 
       if (task.images && task.images.length > 0) {
-        doc.moveDown(0.3);
+        if (doc.y > 500) doc.addPage();
         sectionTitle('SLIKE REKLAMACIJE');
-        doc.fontSize(9).text(`Broj slika: ${task.images.length}`);
-        doc.fontSize(8).fillColor('#666666').text('(Slike su dostupne u aplikaciji)');
-        doc.fillColor('#000000');
+        embedImages(doc, task.images);
       }
 
       if (task.worker_images && task.worker_images.length > 0) {
-        doc.moveDown(0.3);
+        if (doc.y > 500) doc.addPage();
         sectionTitle('SLIKE SERVISERA');
-        doc.fontSize(9).text(`Broj slika: ${task.worker_images.length}`);
-        doc.fontSize(8).fillColor('#666666').text('(Slike su dostupne u aplikaciji)');
-        doc.fillColor('#000000');
+        embedImages(doc, task.worker_images);
       }
 
       doc.moveDown(1);
