@@ -882,47 +882,45 @@ export default function TechnicianDashboard() {
                     )}
                   </div>
 
-                  {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && (
-                    <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <Textarea
-                          placeholder="Napisite poruku..."
-                          value={chatMessage}
-                          onChange={(e) => setChatMessage(e.target.value)}
-                          rows={2}
-                          className="flex-1 resize-none"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              handleSendMessage();
-                            }
-                          }}
-                          data-testid="textarea-chat-message"
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm"
-                          className="flex-1"
-                          onClick={handleSendMessage}
-                          disabled={sendMessageMutation.isPending || !chatMessage.trim()}
-                          data-testid="button-send-message"
-                        >
-                          <Send className="w-4 h-4 mr-2" />
-                          {sendMessageMutation.isPending ? 'Slanje...' : 'Posalji'}
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          size="sm"
-                          onClick={handleDocUpload}
-                          data-testid="button-upload-document"
-                        >
-                          <Upload className="w-4 h-4 mr-2" />
-                          Dokument
-                        </Button>
-                      </div>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Textarea
+                        placeholder="Napisite poruku..."
+                        value={chatMessage}
+                        onChange={(e) => setChatMessage(e.target.value)}
+                        rows={2}
+                        className="flex-1 resize-none"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }}
+                        data-testid="textarea-chat-message"
+                      />
                     </div>
-                  )}
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm"
+                        className="flex-1"
+                        onClick={handleSendMessage}
+                        disabled={sendMessageMutation.isPending || !chatMessage.trim()}
+                        data-testid="button-send-message"
+                      >
+                        <Send className="w-4 h-4 mr-2" />
+                        {sendMessageMutation.isPending ? 'Slanje...' : 'Posalji'}
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDocUpload}
+                        data-testid="button-upload-document"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Dokument
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </>
