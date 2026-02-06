@@ -48,8 +48,6 @@ export default function TechnicianDashboard() {
   const [workerReport, setWorkerReport] = useState('');
   const [uploadedPhotos, setUploadedPhotos] = useState<PhotoPreview[]>([]);
   const [chatMessage, setChatMessage] = useState('');
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatTaskId, setChatTaskId] = useState<string | null>(null);
 
   const { data: tasksData, isLoading: tasksLoading } = useQuery<{ tasks: any[] }>({
     queryKey: ['/api/tasks'],
@@ -78,9 +76,9 @@ export default function TechnicianDashboard() {
   const selectedTask = taskDetailData?.task || selectedTaskFromList;
 
   const { data: messagesData, isLoading: messagesLoading } = useQuery<{ messages: any[] }>({
-    queryKey: ['/api/tasks', chatTaskId || '', 'messages'],
-    enabled: !!chatTaskId && isChatOpen,
-    refetchInterval: isChatOpen ? 5000 : false,
+    queryKey: ['/api/tasks', selectedTaskId || '', 'messages'],
+    enabled: !!selectedTaskId && isDialogOpen,
+    refetchInterval: isDialogOpen ? 5000 : false,
   });
 
   const messages = messagesData?.messages || [];
@@ -225,14 +223,14 @@ export default function TechnicianDashboard() {
   };
 
   const handleSendMessage = async () => {
-    if (!chatTaskId || !chatMessage.trim()) return;
+    if (!selectedTaskId || !chatMessage.trim()) return;
 
     const messageText = chatMessage.trim();
     setChatMessage('');
 
     try {
       await sendMessageMutation.mutateAsync({
-        taskId: chatTaskId,
+        taskId: selectedTaskId,
         message: messageText,
       });
     } catch (error: any) {
@@ -240,11 +238,6 @@ export default function TechnicianDashboard() {
       setChatMessage(messageText);
       toast({ title: 'Greska', description: 'Poruka nije poslata. Pokusajte ponovo.', variant: 'destructive' });
     }
-  };
-
-  const handleOpenChat = (taskId: string) => {
-    setChatTaskId(taskId);
-    setIsChatOpen(true);
   };
 
   const handlePhotoUpload = () => {
@@ -277,7 +270,7 @@ export default function TechnicianDashboard() {
 
   const handleDocFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files || !chatTaskId) return;
+    if (!files || !selectedTaskId) return;
 
     Array.from(files).forEach(file => {
       const reader = new FileReader();
@@ -285,7 +278,7 @@ export default function TechnicianDashboard() {
         const dataUrl = event.target?.result as string;
         try {
           await sendMessageMutation.mutateAsync({
-            taskId: chatTaskId,
+            taskId: selectedTaskId!,
             message: dataUrl,
             document_name: file.name,
           });
@@ -467,26 +460,7 @@ export default function TechnicianDashboard() {
               <ScrollArea className="h-[500px] pr-4">
                 <div className="space-y-3">
                   {acceptedTasks.length > 0 ? (
-                    acceptedTasks.map((task: any) => (
-                      <div key={task.id} className="space-y-1">
-                        {renderTaskCard(task)}
-                        <div className="flex gap-2 px-1">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            className="flex-1 text-xs"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenChat(task.id);
-                            }}
-                            data-testid={`button-chat-${task.id}`}
-                          >
-                            <MessageCircle className="w-3 h-3 mr-1" />
-                            Poruke
-                          </Button>
-                        </div>
-                      </div>
-                    ))
+                    acceptedTasks.map(renderTaskCard)
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-50" />
@@ -719,7 +693,7 @@ export default function TechnicianDashboard() {
                   </div>
                 )}
 
-                {/* ACCEPTED TASK: Complete or Chat */}
+                {/* ACCEPTED TASK: Complete */}
                 {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && !!selectedTask.estimated_arrival_time && (
                   <div className="space-y-4 pt-3 border-t">
                     {currentAction !== 'complete' && (
@@ -731,15 +705,6 @@ export default function TechnicianDashboard() {
                         >
                           <CheckCircle className="w-4 h-4 mr-2" />
                           Zavrsi zadatak
-                        </Button>
-                        <Button 
-                          variant="outline"
-                          className="w-full min-h-12"
-                          onClick={() => handleOpenChat(selectedTask.id)}
-                          data-testid="button-open-chat"
-                        >
-                          <MessageCircle className="w-4 h-4 mr-2" />
-                          Poruke sa sefom/adminom
                         </Button>
                       </div>
                     )}
@@ -845,131 +810,126 @@ export default function TechnicianDashboard() {
                         </div>
                       </div>
                     )}
-                    <Button 
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => handleOpenChat(selectedTask.id)}
-                      data-testid="button-view-messages"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Pogledaj poruke
-                    </Button>
                   </div>
                 )}
+
+                {/* INLINE MESSAGES SECTION */}
+                <div className="pt-3 border-t space-y-3">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Poruke</span>
+                    {messages.length > 0 && (
+                      <Badge variant="secondary" className="text-xs">{messages.length}</Badge>
+                    )}
+                  </div>
+
+                  <div 
+                    ref={chatScrollRef}
+                    className="space-y-2 max-h-[250px] overflow-y-auto pr-1"
+                  >
+                    {messagesLoading ? (
+                      <div className="text-center text-muted-foreground text-xs py-4">
+                        Ucitavanje poruka...
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <div className="text-center text-muted-foreground text-xs py-4">
+                        Nema poruka.
+                      </div>
+                    ) : (
+                      messages.map((msg: any) => {
+                        const isOwnMessage = msg.user_id === user?.id;
+                        const isDocument = msg.action === 'document_uploaded';
+
+                        return (
+                          <div 
+                            key={msg.id} 
+                            className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
+                            data-testid={`message-${msg.id}`}
+                          >
+                            <span className="text-[10px] text-muted-foreground mb-0.5">
+                              {msg.user_name} ({msg.user_role}) - {format(new Date(msg.timestamp), 'dd.MM. HH:mm')}
+                            </span>
+                            <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                              isOwnMessage 
+                                ? 'bg-primary text-primary-foreground' 
+                                : 'bg-muted'
+                            }`}>
+                              {isDocument ? (
+                                <div className="flex items-center gap-2">
+                                  <FileText className="w-4 h-4 flex-shrink-0" />
+                                  <div>
+                                    <p className="font-medium text-xs">{msg.assigned_to || 'Dokument'}</p>
+                                    {msg.message.startsWith('data:') ? (
+                                      <a 
+                                        href={msg.message} 
+                                        download={msg.assigned_to || 'dokument'}
+                                        className="text-xs underline"
+                                      >
+                                        Preuzmi
+                                      </a>
+                                    ) : (
+                                      <p className="text-xs">{msg.message}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <p>{msg.message}</p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Textarea
+                          placeholder="Napisite poruku..."
+                          value={chatMessage}
+                          onChange={(e) => setChatMessage(e.target.value)}
+                          rows={2}
+                          className="flex-1 resize-none"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSendMessage();
+                            }
+                          }}
+                          data-testid="textarea-chat-message"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm"
+                          className="flex-1"
+                          onClick={handleSendMessage}
+                          disabled={sendMessageMutation.isPending || !chatMessage.trim()}
+                          data-testid="button-send-message"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          {sendMessageMutation.isPending ? 'Slanje...' : 'Posalji'}
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          onClick={handleDocUpload}
+                          data-testid="button-upload-document"
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Dokument
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Chat Dialog */}
-      <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col" data-testid="dialog-chat">
-          <DialogHeader>
-            <DialogTitle className="text-lg flex items-center gap-2">
-              <MessageCircle className="w-5 h-5" />
-              Poruke o zadatku
-            </DialogTitle>
-          </DialogHeader>
-
-          <div 
-            ref={chatScrollRef}
-            className="flex-1 overflow-y-auto space-y-3 py-3 min-h-[200px] max-h-[400px]"
-          >
-            {messagesLoading ? (
-              <div className="text-center text-muted-foreground text-sm py-8">
-                Ucitavanje poruka...
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="text-center text-muted-foreground text-sm py-8">
-                Nema poruka. Pocnite konverzaciju.
-              </div>
-            ) : (
-              messages.map((msg: any) => {
-                const isOwnMessage = msg.user_id === user?.id;
-                const isDocument = msg.action === 'document_uploaded';
-
-                return (
-                  <div 
-                    key={msg.id} 
-                    className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
-                    data-testid={`message-${msg.id}`}
-                  >
-                    <span className="text-[10px] text-muted-foreground mb-0.5">
-                      {msg.user_name} ({msg.user_role}) - {format(new Date(msg.timestamp), 'dd.MM. HH:mm')}
-                    </span>
-                    <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                      isOwnMessage 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted'
-                    }`}>
-                      {isDocument ? (
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 flex-shrink-0" />
-                          <div>
-                            <p className="font-medium text-xs">{msg.assigned_to || 'Dokument'}</p>
-                            {msg.message.startsWith('data:') ? (
-                              <a 
-                                href={msg.message} 
-                                download={msg.assigned_to || 'dokument'}
-                                className="text-xs underline"
-                              >
-                                Preuzmi
-                              </a>
-                            ) : (
-                              <p className="text-xs">{msg.message}</p>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <p>{msg.message}</p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          <div className="border-t pt-3 space-y-2">
-            <div className="flex gap-2">
-              <Textarea
-                placeholder="Napisite poruku..."
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                rows={2}
-                className="flex-1 resize-none"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                data-testid="textarea-chat-message"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                className="flex-1"
-                onClick={handleSendMessage}
-                disabled={sendMessageMutation.isPending || !chatMessage.trim()}
-                data-testid="button-send-message"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                {sendMessageMutation.isPending ? 'Slanje...' : 'Posalji'}
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={handleDocUpload}
-                data-testid="button-upload-document"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Dokument
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
