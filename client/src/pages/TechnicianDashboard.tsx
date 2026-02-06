@@ -61,9 +61,11 @@ export default function TechnicianDashboard() {
     (task: any) => task.assigned_to?.includes(user?.id) || task.external_company_id === user?.id
   );
 
-  const newTasks = allTasks.filter((t: any) => t.status === 'with_external' && !t.estimated_arrival_time);
+  const newTasks = allTasks.filter((t: any) => 
+    t.status !== 'completed' && t.status !== 'cancelled' && !t.estimated_arrival_time
+  );
   const acceptedTasks = allTasks.filter((t: any) => 
-    (t.status === 'with_external' && t.estimated_arrival_time) || t.status === 'assigned_to_radnik'
+    t.status !== 'completed' && t.status !== 'cancelled' && !!t.estimated_arrival_time
   );
   const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
 
@@ -609,7 +611,7 @@ export default function TechnicianDashboard() {
                 )}
 
                 {/* NEW TASK: Accept or Decline */}
-                {selectedTask.status === 'with_external' && !selectedTask.estimated_arrival_time && (
+                {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && !selectedTask.estimated_arrival_time && (
                   <div className="space-y-4 pt-3 border-t">
                     {currentAction === null && (
                       <div className="flex gap-3">
@@ -715,8 +717,7 @@ export default function TechnicianDashboard() {
                 )}
 
                 {/* ACCEPTED TASK: Complete or Chat */}
-                {((selectedTask.status === 'with_external' && selectedTask.estimated_arrival_time) || 
-                  selectedTask.status === 'assigned_to_radnik') && (
+                {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && !!selectedTask.estimated_arrival_time && (
                   <div className="space-y-4 pt-3 border-t">
                     {currentAction !== 'complete' && (
                       <div className="flex flex-col gap-2">
