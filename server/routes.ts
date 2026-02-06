@@ -799,6 +799,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return reasons.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
   }
 
+  app.get("/api/tasks/:id/detail", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const task = await storage.getTaskById(id);
+      if (!task) return res.status(404).json({ error: "Task not found" });
+      res.json({ task });
+    } catch (error) {
+      console.error("Error fetching task detail:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/tasks/:id/history", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;

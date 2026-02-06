@@ -69,7 +69,13 @@ export default function TechnicianDashboard() {
   );
   const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
 
-  const selectedTask = allTasks.find((t: any) => t.id === selectedTaskId);
+  const selectedTaskFromList = allTasks.find((t: any) => t.id === selectedTaskId);
+
+  const { data: taskDetailData } = useQuery<{ task: any }>({
+    queryKey: ['/api/tasks', selectedTaskId, 'detail'],
+    enabled: !!selectedTaskId && isDialogOpen,
+  });
+  const selectedTask = taskDetailData?.task || selectedTaskFromList;
 
   const { data: messagesData, isLoading: messagesLoading } = useQuery<{ messages: any[] }>({
     queryKey: ['/api/tasks', chatTaskId || '', 'messages'],
