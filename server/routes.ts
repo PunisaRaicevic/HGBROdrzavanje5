@@ -1132,6 +1132,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Task Messages (chat about specific tasks) - uses task_history with action="message"
+  app.get("/api/tasks/:id/messages", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const history = await storage.getTaskHistory(id);
+      const messages = history
+        .filter((h: any) => h.action === "message" || h.action === "document_uploaded")
+        .map((h: any) => ({
+          id: h.id,
+          task_id: h.task_id,
+          user_id: h.user_id,
+          user_name: h.user_name,
+          user_role: h.user_role,
+          action: h.action,
+          message: h.notes || "",
+          timestamp: h.timestamp,
+          assigned_to: h.assigned_to,
+          assigned_to_name: h.assigned_to_name,
+        }));
+      res.json({ messages });
+    } catch (error) {
+      console.error("Error fetching task messages:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/tasks/:id/messages", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const sessionUser = (req as any).user;
+      const { message, document_name } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      const action = document_name ? "document_uploaded" : "message";
+
+      const history = await storage.createTaskHistory({
+        task_id: id,
+        user_id: sessionUser.id,
+        user_name: sessionUser.full_name,
+        user_role: sessionUser.role,
+        action,
+        notes: message,
+        assigned_to: document_name || null,
+      });
+
+      res.status(201).json({ message: history });
+    } catch (error) {
+      console.error("Error creating task message:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get technicians
   app.get("/api/technicians", requireAuth, async (req, res) => {
     try {
