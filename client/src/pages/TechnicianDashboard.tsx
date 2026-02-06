@@ -693,10 +693,9 @@ export default function TechnicianDashboard() {
                   </div>
                 )}
 
-                {/* ACCEPTED TASK: Complete + Receipt Confirmation */}
-                {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && !!selectedTask.estimated_arrival_time && (
-                  <div className="space-y-4 pt-3 border-t">
-                    {/* Receipt / Invoice Paid Confirmation */}
+                {/* Receipt / Invoice Paid Confirmation - visible for all accepted tasks */}
+                {!!selectedTask.estimated_arrival_time && (
+                  <div className="pt-3 border-t">
                     <label
                       className={`flex items-center gap-3 p-4 rounded-md border-2 cursor-pointer transition-colors ${
                         selectedTask.receipt_confirmed_at
@@ -738,7 +737,12 @@ export default function TechnicianDashboard() {
                         )}
                       </div>
                     </label>
+                  </div>
+                )}
 
+                {/* ACCEPTED TASK: Complete */}
+                {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && !!selectedTask.estimated_arrival_time && (
+                  <div className="space-y-4 pt-3 border-t">
                     {currentAction !== 'complete' && (
                       <div className="flex flex-col gap-2">
                         <Button 
