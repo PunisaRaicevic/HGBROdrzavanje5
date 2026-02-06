@@ -1161,7 +1161,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/tasks/:id/messages", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
-      const sessionUser = (req as any).user;
+      const sessionUser = await storage.getUserById(req.session.userId);
+      if (!sessionUser) return res.status(401).json({ error: "Invalid session" });
       const { message, document_name } = req.body;
 
       if (!message) {
