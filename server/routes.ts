@@ -919,6 +919,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title, description, hotel, blok, soba, room_number, priority, images,
         is_recurring, recurrence_pattern, recurrence_week_days, recurrence_month_days,
         recurrence_year_dates, execution_hour, execution_minute,
+        estimated_arrival_time,
       } = req.body;
 
       if (!id) return res.status(400).json({ error: "Task ID is required" });
@@ -983,6 +984,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (worker_report) updateData.worker_report = worker_report;
       if (worker_images !== undefined) updateData.worker_images = worker_images.length > 0 ? worker_images : [];
       if (external_company_name !== undefined) updateData.external_company_name = external_company_name || null;
+      if (estimated_arrival_time !== undefined) updateData.estimated_arrival_time = estimated_arrival_time;
 
       if (receipt_confirmed_at) {
         const assignedIds = currentTask?.assigned_to ? currentTask.assigned_to.split(",").map((id) => id.trim()) : [];
