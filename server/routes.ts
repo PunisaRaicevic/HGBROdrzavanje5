@@ -1018,7 +1018,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (receipt_confirmed_at) {
         const assignedIds = currentTask?.assigned_to ? currentTask.assigned_to.split(",").map((id) => id.trim()) : [];
-        if (!assignedIds.includes(sessionUser.id)) {
+        const isAssigned = assignedIds.includes(sessionUser.id) || currentTask?.external_company_id === sessionUser.id;
+        if (!isAssigned) {
           return res.status(403).json({ error: "Only assigned worker can confirm receipt" });
         }
         updateData.receipt_confirmed_at = new Date(receipt_confirmed_at);
