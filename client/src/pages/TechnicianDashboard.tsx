@@ -319,13 +319,10 @@ export default function TechnicianDashboard() {
     if (task.status === 'completed') {
       return <Badge variant="outline" className="text-xs text-green-600 border-green-300">Zavrseno</Badge>;
     }
-    if (task.status === 'with_external' && task.estimated_arrival_time) {
+    if (task.estimated_arrival_time) {
       return <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">Prihvaceno</Badge>;
     }
-    if (task.status === 'with_external') {
-      return <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">Novo</Badge>;
-    }
-    return <Badge variant="outline" className="text-xs">{task.status}</Badge>;
+    return <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">Novo</Badge>;
   };
 
   const getElapsedTime = (dateStr: string): string => {
