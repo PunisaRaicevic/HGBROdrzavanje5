@@ -234,6 +234,7 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
                   <SelectItem value="radnik">Otklanjanje reklamacija</SelectItem>
                   <SelectItem value="sef">Šef</SelectItem>
                   <SelectItem value="admin">Administrator</SelectItem>
+                  <SelectItem value="serviser">Treća lica</SelectItem>
                 </SelectContent>
               </Select>
             </div>

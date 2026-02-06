@@ -192,6 +192,7 @@ export default function AdminDashboard() {
       full_name: newUserName,
       password: newUserPassword,
       role: newUserRole,
+      department: newUserRole === 'serviser' ? 'eksterni' : undefined,
       job_title: newUserJobTitle || undefined,
       phone: newUserPhone || undefined
     });
@@ -507,6 +508,7 @@ export default function AdminDashboard() {
                         <SelectItem value="radnik">Otklanjanje reklamacija</SelectItem>
                         <SelectItem value="sef">Šef</SelectItem>
                         <SelectItem value="admin">Administrator</SelectItem>
+                        <SelectItem value="serviser">Treća lica</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
