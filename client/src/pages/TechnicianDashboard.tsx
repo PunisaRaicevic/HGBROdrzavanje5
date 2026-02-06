@@ -96,13 +96,13 @@ export default function TechnicianDashboard() {
   const sendMessageMutation = useMutation({
     mutationFn: async ({ taskId, message, document_name }: { taskId: string; message: string; document_name?: string }) => {
       const response = await apiRequest('POST', `/api/tasks/${taskId}/messages`, { message, document_name });
-      return await response.json();
+      const data = await response.json();
+      return data;
     },
-    onSuccess: () => {
-      if (chatTaskId) {
-        queryClient.invalidateQueries({ queryKey: ['/api/tasks', chatTaskId, 'messages'] });
-      }
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks', variables.taskId, 'messages'] });
     },
+    retry: false,
   });
 
   const handleTaskClick = (taskId: string) => {
@@ -219,14 +219,18 @@ export default function TechnicianDashboard() {
   const handleSendMessage = async () => {
     if (!chatTaskId || !chatMessage.trim()) return;
 
+    const messageText = chatMessage.trim();
+    setChatMessage('');
+
     try {
       await sendMessageMutation.mutateAsync({
         taskId: chatTaskId,
-        message: chatMessage.trim(),
+        message: messageText,
       });
-      setChatMessage('');
-    } catch (error) {
-      toast({ title: 'Greska', description: 'Poruka nije poslata.', variant: 'destructive' });
+    } catch (error: any) {
+      console.error('[CHAT] Message send failed:', error);
+      setChatMessage(messageText);
+      toast({ title: 'Greska', description: 'Poruka nije poslata. Pokusajte ponovo.', variant: 'destructive' });
     }
   };
 

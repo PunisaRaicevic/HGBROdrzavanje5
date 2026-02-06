@@ -1180,7 +1180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         assigned_to: document_name || null,
       });
 
-      res.status(201).json({ message: history });
+      res.json({ success: true, message: history });
     } catch (error) {
       console.error("Error creating task message:", error);
       res.status(500).json({ error: "Internal server error" });
