@@ -1101,6 +1101,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       notifyTaskUpdate(task);
+
+      // Push notifications to admin/sef when serviser performs key actions
+      if (sessionUser.role === 'serviser' || sessionUser.role === 'treca_lica') {
+        const notifyAdminAndSef = async (title: string, body: string) => {
+          try {
+            const { sendPushToAllUserDevices } = await import('./services/firebase');
+            const admins = await storage.getUsersByRole('admin');
+            const supervisors = await storage.getUsersByRole('sef');
+            const recipients = [...admins, ...supervisors];
+            for (const recipient of recipients) {
+              sendPushToAllUserDevices(
+                recipient.id,
+                title,
+                body,
+                task.id,
+                task.priority as 'urgent' | 'normal' | 'can_wait'
+              ).catch(err => console.error(`Push greska za ${recipient.id}:`, err));
+              sendOneSignalToUser(
+                recipient.id,
+                title,
+                body,
+                task.id,
+                task.priority as 'urgent' | 'normal' | 'can_wait'
+              ).catch(err => console.error(`OneSignal greska za ${recipient.id}:`, err));
+            }
+          } catch (err) {
+            console.error('Greska pri slanju notifikacija admin/sef:', err);
+          }
+        };
+
+        if (estimated_arrival_time && !currentTask?.estimated_arrival_time) {
+          notifyAdminAndSef(
+            `Zadatak prihvacen #${task.id.slice(0, 8)}`,
+            `${sessionUser.full_name} je prihvatio zadatak: ${task.location || task.title}`
+          );
+        }
+
+        if (receipt_confirmed_at) {
+          notifyAdminAndSef(
+            `Racun placen #${task.id.slice(0, 8)}`,
+            `${sessionUser.full_name} je potvrdio da je racun placen: ${task.location || task.title}`
+          );
+        }
+      }
+
       res.json({ task });
     } catch (error) {
       console.error("Error updating task:", error);
@@ -1225,6 +1270,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notes: message,
         assigned_to: document_name || null,
       });
+
+      // Push notifications to admin/sef when serviser sends a message
+      if (sessionUser.role === 'serviser' || sessionUser.role === 'treca_lica') {
+        try {
+          const task = await storage.getTaskById(id);
+          const { sendPushToAllUserDevices } = await import('./services/firebase');
+          const admins = await storage.getUsersByRole('admin');
+          const supervisors = await storage.getUsersByRole('sef');
+          const recipients = [...admins, ...supervisors];
+          const taskRef = task ? (task.location || task.title) : `#${id.slice(0, 8)}`;
+          const pushTitle = document_name
+            ? `Novi dokument - ${taskRef}`
+            : `Nova poruka - ${taskRef}`;
+          const pushBody = document_name
+            ? `${sessionUser.full_name} je poslao dokument: ${document_name}`
+            : `${sessionUser.full_name}: ${message.length > 100 ? message.slice(0, 100) + '...' : message}`;
+
+          for (const recipient of recipients) {
+            sendPushToAllUserDevices(
+              recipient.id,
+              pushTitle,
+              pushBody,
+              id,
+              (task?.priority as 'urgent' | 'normal' | 'can_wait') || 'normal'
+            ).catch(err => console.error(`Push greska za ${recipient.id}:`, err));
+            sendOneSignalToUser(
+              recipient.id,
+              pushTitle,
+              pushBody,
+              id,
+              (task?.priority as 'urgent' | 'normal' | 'can_wait') || 'normal'
+            ).catch(err => console.error(`OneSignal greska za ${recipient.id}:`, err));
+          }
+        } catch (err) {
+          console.error('Greska pri slanju notifikacija za poruku:', err);
+        }
+      }
 
       res.json({ success: true, message: history });
     } catch (error) {
