@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch, Trash2, Calendar, FileText, Repeat, CheckCircle, Send, History, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
+import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch, Trash2, Calendar, FileText, Repeat, CheckCircle, Send, History, ChevronDown, ChevronUp, Pencil, Download } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ImagePreviewModal } from './ImagePreviewModal';
@@ -99,7 +99,38 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   const [showRecurringHistory, setShowRecurringHistory] = useState(false);
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'this' | 'all'>('this');
+  const [isDownloadingReport, setIsDownloadingReport] = useState(false);
   const { toast } = useToast();
+
+  const canGenerateReport = currentUserRole === 'sef' || currentUserRole === 'admin';
+
+  const handleDownloadReport = async () => {
+    if (!task) return;
+    setIsDownloadingReport(true);
+    try {
+      const response = await fetch(`/api/tasks/${task.id}/report`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to generate report');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const disposition = response.headers.get('Content-Disposition');
+      const filenameMatch = disposition?.match(/filename="(.+)"/);
+      a.download = filenameMatch ? filenameMatch[1] : `izvjestaj_${task.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast({ title: 'Uspjesno', description: 'Izvjestaj je preuzet.' });
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast({ title: 'Greska', description: 'Nije moguce generisati izvjestaj.', variant: 'destructive' });
+    } finally {
+      setIsDownloadingReport(false);
+    }
+  };
 
   // Mutation to send task to external company
   const sendToExternalMutation = useMutation({
@@ -719,8 +750,20 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
               </div>
             )}
             
-            {/* Right side: Edit and Delete actions */}
+            {/* Right side: Report, Edit and Delete actions */}
             <div className="flex gap-2">
+              {canGenerateReport && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadReport}
+                  disabled={isDownloadingReport}
+                  data-testid="button-generate-report"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {isDownloadingReport ? 'Generisanje...' : 'Izvjestaj PDF'}
+                </Button>
+              )}
               {canEdit && onEdit && (
                 <Button
                   variant="outline"

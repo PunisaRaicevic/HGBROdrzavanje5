@@ -7,7 +7,7 @@ import { initializeSocket, notifyWorkers, notifyTaskUpdate } from "./socket";
 import { z } from "zod";
 import { generateToken, verifyToken, extractTokenFromHeader } from "./auth";
 import { sendOneSignalToUser } from "./services/onesignal";
-import { generateDailyReportPdf, generateTasksCsv } from "./pdfGenerator";
+import { generateDailyReportPdf, generateTasksCsv, generateTaskReportPdf } from "./pdfGenerator";
 // --- NOVI IMPORTI ZA NOTIFIKACIJE ---
 import { sendPushNotification } from "./services/notificationService";
 
@@ -807,6 +807,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ task });
     } catch (error) {
       console.error("Error fetching task detail:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/tasks/:id/report", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const sessionUser = await storage.getUserById(req.session.userId);
+      if (!sessionUser) return res.status(401).json({ error: "Invalid session" });
+
+      if (sessionUser.role !== 'admin' && sessionUser.role !== 'sef') {
+        return res.status(403).json({ error: "Only admins and supervisors can generate reports" });
+      }
+
+      const task = await storage.getTaskById(id);
+      if (!task) return res.status(404).json({ error: "Task not found" });
+
+      const history = await storage.getTaskHistory(id);
+
+      const pdfBuffer = await generateTaskReportPdf(task, history);
+
+      const safeTitle = (task.title || 'zadatak').replace(/[^a-zA-Z0-9\u0400-\u04FF\u0100-\u017F ]/g, '_').substring(0, 40);
+      const filename = `izvjestaj_${safeTitle}_${new Date().toISOString().slice(0, 10)}.pdf`;
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating task report:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
