@@ -1144,6 +1144,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             `${sessionUser.full_name} je potvrdio da je racun placen: ${task.location || task.title}`
           );
         }
+
+        if (status === 'returned_to_sef' && currentTask?.status !== 'returned_to_sef') {
+          const reason = worker_report || 'Bez navedenog razloga';
+          notifyAdminAndSef(
+            `Zadatak odbijen #${task.id.slice(0, 8)}`,
+            `${sessionUser.full_name} je odbio zadatak: ${task.location || task.title}. ${reason}`
+          );
+        }
       }
 
       res.json({ task });
