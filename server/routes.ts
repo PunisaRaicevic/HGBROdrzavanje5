@@ -266,6 +266,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // 5. TASKS ASSIGNED TO EXTERNAL COMPANY (serviser/treca lica)
+      if (newRecord.external_company_id && (!oldRecord || oldRecord.external_company_id !== newRecord.external_company_id)) {
+        console.log(`📢 Zadatak dodijeljen eksternoj firmi: ${newRecord.external_company_id}`);
+        const extResult = await sendPushToAllUserDevices(
+          newRecord.external_company_id,
+          'Novi zadatak za vas!',
+          `${newRecord.location || taskTitle}: ${taskDescription.substring(0, 150)}`,
+          taskId,
+          'urgent'
+        );
+        sendOneSignalToUser(
+          newRecord.external_company_id,
+          'Novi zadatak za vas!',
+          `${newRecord.location || taskTitle}: ${taskDescription.substring(0, 150)}`,
+          taskId,
+          'urgent'
+        ).catch(err => console.error('OneSignal greska za ext company:', err));
+        totalSent += extResult.sent;
+        totalFailed += extResult.failed;
+        if (recipientCount === 0) recipientCount = 1;
+      }
+
       if (recipientCount === 0) {
         console.log('ℹ️ Nema primaoca za notifikaciju za ovaj status:', taskStatus);
         return res.status(200).json({ message: 'No recipients for this status', status: taskStatus });
@@ -1313,6 +1335,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         } catch (err) {
           console.error('Greska pri slanju notifikacija za poruku:', err);
+        }
+      }
+
+      // Push notifications to serviser when admin/sef sends a message on their task
+      if (sessionUser.role === 'admin' || sessionUser.role === 'sef') {
+        try {
+          const task = await storage.getTaskById(id);
+          if (task) {
+            const { sendPushToAllUserDevices } = await import('./services/firebase');
+            const taskRef = task.location || task.title;
+            const pushTitle = document_name
+              ? `Novi dokument - ${taskRef}`
+              : `Nova poruka - ${taskRef}`;
+            const pushBody = document_name
+              ? `${sessionUser.full_name} je poslao dokument: ${document_name}`
+              : `${sessionUser.full_name}: ${message.length > 100 ? message.slice(0, 100) + '...' : message}`;
+
+            const servisRecipients: string[] = [];
+            if (task.external_company_id) servisRecipients.push(task.external_company_id);
+            if (task.assigned_to) {
+              const assignedIds = task.assigned_to.split(',').map((i: string) => i.trim()).filter(Boolean);
+              for (const aid of assignedIds) {
+                if (!servisRecipients.includes(aid)) {
+                  const assignedUser = await storage.getUserById(aid);
+                  if (assignedUser && (assignedUser.role === 'serviser' || assignedUser.role === 'treca_lica')) {
+                    servisRecipients.push(aid);
+                  }
+                }
+              }
+            }
+
+            for (const recipientId of servisRecipients) {
+              sendPushToAllUserDevices(
+                recipientId,
+                pushTitle,
+                pushBody,
+                id,
+                (task.priority as 'urgent' | 'normal' | 'can_wait') || 'normal'
+              ).catch(err => console.error(`Push greska za serviser ${recipientId}:`, err));
+              sendOneSignalToUser(
+                recipientId,
+                pushTitle,
+                pushBody,
+                id,
+                (task.priority as 'urgent' | 'normal' | 'can_wait') || 'normal'
+              ).catch(err => console.error(`OneSignal greska za serviser ${recipientId}:`, err));
+            }
+          }
+        } catch (err) {
+          console.error('Greska pri slanju notifikacija serviseru za poruku:', err);
         }
       }
 
