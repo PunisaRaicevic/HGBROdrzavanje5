@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -19,12 +19,15 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch, Trash2, Calendar, FileText, Repeat, CheckCircle, Send, History, ChevronDown, ChevronUp, Pencil, Download } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { MapPin, Clock, User, AlertCircle, Image as ImageIcon, GitBranch, Trash2, Calendar, FileText, Repeat, CheckCircle, Send, History, ChevronDown, ChevronUp, Pencil, Download, MessageCircle, Upload } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ImagePreviewModal } from './ImagePreviewModal';
 import { useToast } from '@/hooks/use-toast';
 import { queryClient, apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/contexts/AuthContext';
+import { format } from 'date-fns';
 
 // Helper function to get unique user names from task history
 const getTaskAssignmentPath = (history: any[]): string => {
@@ -100,9 +103,13 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
   const [deleteType, setDeleteType] = useState<'this' | 'all'>('this');
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
+  const [chatMessage, setChatMessage] = useState('');
+  const chatScrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const canGenerateReport = currentUserRole === 'sef' || currentUserRole === 'admin';
+  const canChat = currentUserRole === 'sef' || currentUserRole === 'admin';
 
   const handleDownloadReport = async () => {
     if (!task) return;
@@ -165,6 +172,71 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
     queryKey: [`/api/tasks/${task?.id}/history`],
     enabled: open && !!task?.id, // Only fetch when dialog is open
   });
+
+  const { data: messagesData, isLoading: messagesLoading } = useQuery<{ messages: any[] }>({
+    queryKey: ['/api/tasks', task?.id || '', 'messages'],
+    queryFn: async () => {
+      const res = await fetch(`/api/tasks/${task?.id}/messages`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch messages');
+      return res.json();
+    },
+    enabled: open && !!task?.id && canChat,
+    refetchInterval: open && canChat ? 5000 : false,
+  });
+
+  const chatMessages = messagesData?.messages || [];
+
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+
+  const sendMessageMutation = useMutation({
+    mutationFn: async (variables: { taskId: string; message: string; document_name?: string }) => {
+      const response = await apiRequest('POST', `/api/tasks/${variables.taskId}/messages`, {
+        message: variables.message,
+        document_name: variables.document_name,
+      });
+      return response;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks', variables.taskId, 'messages'] });
+      setChatMessage('');
+    },
+    onError: () => {
+      toast({ title: 'Greska', description: 'Poruka nije poslata.', variant: 'destructive' });
+    },
+  });
+
+  const handleSendMessage = async () => {
+    if (!task || !chatMessage.trim()) return;
+    await sendMessageMutation.mutateAsync({
+      taskId: task.id,
+      message: chatMessage.trim(),
+    });
+  };
+
+  const handleDocUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file || !task) return;
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const dataUrl = ev.target?.result as string;
+        await sendMessageMutation.mutateAsync({
+          taskId: task.id,
+          message: dataUrl,
+          document_name: file.name,
+        });
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  };
 
   // Fetch all tasks to find next occurrences for recurring tasks
   const { data: allTasksResponse } = useQuery<{ tasks: any[] }>({
@@ -555,6 +627,118 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                         data-testid={`img-worker-details-${index}`}
                       />
                     ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Chat / Messages Section for Admin and Sef */}
+            {canChat && (
+              <div className="border-t pt-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageCircle className="w-5 h-5 text-muted-foreground" />
+                  <p className="text-sm font-medium">Poruke</p>
+                  {chatMessages.length > 0 && (
+                    <Badge variant="secondary" className="text-xs">{chatMessages.length}</Badge>
+                  )}
+                </div>
+
+                <div
+                  ref={chatScrollRef}
+                  className="space-y-2 max-h-[250px] overflow-y-auto pr-1 mb-3"
+                >
+                  {messagesLoading ? (
+                    <div className="text-center text-muted-foreground text-xs py-4">
+                      Ucitavanje poruka...
+                    </div>
+                  ) : chatMessages.length === 0 ? (
+                    <div className="text-center text-muted-foreground text-xs py-4">
+                      Nema poruka. Napisite prvu poruku.
+                    </div>
+                  ) : (
+                    chatMessages.map((msg: any) => {
+                      const isOwnMessage = msg.user_id === user?.id;
+                      const isDocument = msg.action === 'document_uploaded';
+
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
+                          data-testid={`message-${msg.id}`}
+                        >
+                          <span className="text-[10px] text-muted-foreground mb-0.5">
+                            {msg.user_name} ({msg.user_role}) - {format(new Date(msg.timestamp), 'dd.MM. HH:mm')}
+                          </span>
+                          <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                            isOwnMessage
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          }`}>
+                            {isDocument ? (
+                              <div className="flex items-center gap-2">
+                                <FileText className="w-4 h-4 flex-shrink-0" />
+                                <div>
+                                  <p className="font-medium text-xs">{msg.assigned_to || 'Dokument'}</p>
+                                  {msg.message.startsWith('data:') ? (
+                                    <a
+                                      href={msg.message}
+                                      download={msg.assigned_to || 'dokument'}
+                                      className="text-xs underline"
+                                    >
+                                      Preuzmi
+                                    </a>
+                                  ) : (
+                                    <p className="text-xs">{msg.message}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <p>{msg.message}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Textarea
+                      placeholder="Napisite poruku..."
+                      value={chatMessage}
+                      onChange={(e) => setChatMessage(e.target.value)}
+                      rows={2}
+                      className="flex-1 resize-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      data-testid="textarea-admin-chat-message"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={handleSendMessage}
+                      disabled={sendMessageMutation.isPending || !chatMessage.trim()}
+                      data-testid="button-admin-send-message"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      {sendMessageMutation.isPending ? 'Slanje...' : 'Posalji'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDocUpload}
+                      data-testid="button-admin-upload-document"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Dokument
+                    </Button>
                   </div>
                 </div>
               </div>
