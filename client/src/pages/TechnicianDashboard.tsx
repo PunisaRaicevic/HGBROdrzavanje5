@@ -578,6 +578,51 @@ export default function TechnicianDashboard() {
                   )}
                 </div>
 
+                {/* Receipt / Invoice Paid Confirmation - Moved here per user request */}
+                {selectedTask.status === 'completed' && (
+                  <label
+                    className={`flex items-center gap-3 p-4 rounded-md border-2 cursor-pointer transition-colors ${
+                      selectedTask.receipt_confirmed_at
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-dashed border-muted-foreground/30 hover:border-muted-foreground/50'
+                    }`}
+                    data-testid="label-receipt-confirmed"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!selectedTask.receipt_confirmed_at}
+                      onChange={async () => {
+                        if (selectedTask.receipt_confirmed_at) return;
+                        try {
+                          await updateTaskMutation.mutateAsync({
+                            taskId: selectedTask.id,
+                            data: {
+                              receipt_confirmed_at: new Date().toISOString(),
+                            },
+                          });
+                          queryClient.invalidateQueries({ queryKey: ['/api/tasks', selectedTaskId, 'detail'] });
+                          toast({ title: 'Uspjesno', description: 'Potvrdjeno da je racun placen.' });
+                        } catch (error) {
+                          toast({ title: 'Greska', description: 'Nije moguce potvrditi.', variant: 'destructive' });
+                        }
+                      }}
+                      disabled={!!selectedTask.receipt_confirmed_at || updateTaskMutation.isPending}
+                      className="w-6 h-6 accent-green-600 cursor-pointer flex-shrink-0"
+                      data-testid="checkbox-receipt-confirmed"
+                    />
+                    <div className="flex-1">
+                      <span className="font-medium text-sm">
+                        {selectedTask.receipt_confirmed_at ? 'Racun placen' : 'Potvrdi da je racun placen'}
+                      </span>
+                      {selectedTask.receipt_confirmed_at && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Potvrdio: {selectedTask.receipt_confirmed_by_name || 'N/A'} - {format(new Date(selectedTask.receipt_confirmed_at), 'dd.MM.yyyy HH:mm')}
+                        </p>
+                      )}
+                    </div>
+                  </label>
+                )}
+
                 <div>
                   <span className="text-xs text-muted-foreground">Opis:</span>
                   <p className="text-sm mt-1">{selectedTask.description}</p>
@@ -803,48 +848,6 @@ export default function TechnicianDashboard() {
                       <span className="font-medium">Zadatak zavrsen</span>
                     </div>
 
-                    {/* Receipt / Invoice Paid Confirmation */}
-                    <label
-                      className={`flex items-center gap-3 p-4 rounded-md border-2 cursor-pointer transition-colors ${
-                        selectedTask.receipt_confirmed_at
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-dashed border-muted-foreground/30 hover:border-muted-foreground/50'
-                      }`}
-                      data-testid="label-receipt-confirmed"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={!!selectedTask.receipt_confirmed_at}
-                        onChange={async () => {
-                          if (selectedTask.receipt_confirmed_at) return;
-                          try {
-                            await updateTaskMutation.mutateAsync({
-                              taskId: selectedTask.id,
-                              data: {
-                                receipt_confirmed_at: new Date().toISOString(),
-                              },
-                            });
-                            queryClient.invalidateQueries({ queryKey: ['/api/tasks', selectedTaskId, 'detail'] });
-                            toast({ title: 'Uspjesno', description: 'Potvrdjeno da je racun placen.' });
-                          } catch (error) {
-                            toast({ title: 'Greska', description: 'Nije moguce potvrditi.', variant: 'destructive' });
-                          }
-                        }}
-                        disabled={!!selectedTask.receipt_confirmed_at || updateTaskMutation.isPending}
-                        className="w-6 h-6 accent-green-600 cursor-pointer flex-shrink-0"
-                        data-testid="checkbox-receipt-confirmed"
-                      />
-                      <div className="flex-1">
-                        <span className="font-medium text-sm">
-                          {selectedTask.receipt_confirmed_at ? 'Racun placen' : 'Potvrdi da je racun placen'}
-                        </span>
-                        {selectedTask.receipt_confirmed_at && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            Potvrdio: {selectedTask.receipt_confirmed_by_name || 'N/A'} - {format(new Date(selectedTask.receipt_confirmed_at), 'dd.MM.yyyy HH:mm')}
-                          </p>
-                        )}
-                      </div>
-                    </label>
                     {selectedTask.worker_report && (
                       <div>
                         <span className="text-xs text-muted-foreground">Izvjestaj:</span>
