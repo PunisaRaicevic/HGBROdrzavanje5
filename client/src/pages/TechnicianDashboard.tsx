@@ -41,6 +41,7 @@ export default function TechnicianDashboard() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentAction, setCurrentAction] = useState<TaskAction>(null);
+  const [activeTab, setActiveTab] = useState('new');
 
   const [declineReason, setDeclineReason] = useState('');
   const [arrivalDate, setArrivalDate] = useState('');
@@ -139,23 +140,26 @@ export default function TechnicianDashboard() {
     }
 
     const arrivalDateTime = new Date(`${arrivalDate}T${arrivalTime}`);
+    const messageText = `Zadatak prihvacen. Planirani dolazak: ${format(arrivalDateTime, 'dd.MM.yyyy HH:mm')}`;
 
     try {
       await updateTaskMutation.mutateAsync({
         taskId: selectedTask.id,
         data: {
           estimated_arrival_time: arrivalDateTime.toISOString(),
-          worker_report: `Zadatak prihvacen. Planirani dolazak: ${format(arrivalDateTime, 'dd.MM.yyyy HH:mm')}`,
+          worker_report: messageText,
         },
       });
 
-      await sendMessageMutation.mutateAsync({
+      sendMessageMutation.mutate({
         taskId: selectedTask.id,
-        message: `Zadatak prihvacen. Planirani dolazak: ${format(arrivalDateTime, 'dd.MM.yyyy HH:mm')}`,
+        message: messageText,
       });
 
       toast({ title: 'Uspjesno', description: 'Zadatak prihvacen.' });
+      setActiveTab('accepted');
       handleCloseDialog();
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     } catch (error) {
       toast({ title: 'Greska', description: 'Doslo je do greske.', variant: 'destructive' });
     }
@@ -171,22 +175,25 @@ export default function TechnicianDashboard() {
       return;
     }
 
+    const declineMessage = `Zadatak odbijen. Razlog: ${declineReason}`;
+
     try {
       await updateTaskMutation.mutateAsync({
         taskId: selectedTask.id,
         data: {
           status: 'returned_to_sef',
-          worker_report: `Zadatak odbijen. Razlog: ${declineReason}`,
+          worker_report: declineMessage,
         },
       });
 
-      await sendMessageMutation.mutateAsync({
+      sendMessageMutation.mutate({
         taskId: selectedTask.id,
-        message: `Zadatak odbijen. Razlog: ${declineReason}`,
+        message: declineMessage,
       });
 
       toast({ title: 'Uspjesno', description: 'Zadatak odbijen i vracen.' });
       handleCloseDialog();
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     } catch (error) {
       toast({ title: 'Greska', description: 'Doslo je do greske.', variant: 'destructive' });
     }
@@ -216,7 +223,9 @@ export default function TechnicianDashboard() {
       });
 
       toast({ title: 'Uspjesno', description: 'Zadatak zavrsen.' });
+      setActiveTab('completed');
       handleCloseDialog();
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
     } catch (error) {
       toast({ title: 'Greska', description: 'Doslo je do greske.', variant: 'destructive' });
     }
@@ -428,7 +437,7 @@ export default function TechnicianDashboard() {
           <CardTitle className="text-lg">Moji zadaci</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="new" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="new" className="text-xs" data-testid="tab-new-tasks">
                 Novi ({newTasks.length})
