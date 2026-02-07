@@ -115,22 +115,62 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
     if (!task) return;
     setIsDownloadingReport(true);
     try {
+      toast({ title: 'Priprema...', description: 'Generisanje izvještaja u toku.' });
       const response = await fetch(`/api/tasks/${task.id}/report`, {
         credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to generate report');
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const disposition = response.headers.get('Content-Disposition');
-      const filenameMatch = disposition?.match(/filename="(.+)"/);
-      a.download = filenameMatch ? filenameMatch[1] : `izvjestaj_${task.id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      toast({ title: 'Uspjesno', description: 'Izvjestaj je preuzet.' });
+      
+      // Provjera da li smo u Capacitor okruženju
+      const isCapacitor = (window as any).Capacitor !== undefined;
+      
+      if (isCapacitor) {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64data = reader.result as string;
+          const base64Content = base64data.split(',')[1];
+          const fileName = `izvjestaj_${task.id}.pdf`;
+          
+          try {
+            const { Filesystem, Directory } = (window as any).Capacitor.Plugins;
+            const savedFile = await Filesystem.writeFile({
+              path: fileName,
+              data: base64Content,
+              directory: Directory.Documents,
+              recursive: true
+            });
+            
+            const { FileOpener } = (window as any).Capacitor.Plugins;
+            if (FileOpener) {
+              await FileOpener.showOpenWithDialog({
+                path: savedFile.uri,
+                contentType: 'application/pdf'
+              });
+            } else {
+              window.open(savedFile.uri, '_blank');
+            }
+            toast({ title: 'Uspješno', description: 'Izvještaj je generisan.' });
+          } catch (err) {
+            console.error('Filesystem/FileOpener error:', err);
+            window.open(url, '_blank');
+          }
+        };
+        reader.readAsDataURL(blob);
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        const disposition = response.headers.get('Content-Disposition');
+        const filenameMatch = disposition?.match(/filename="(.+)"/);
+        a.download = filenameMatch ? filenameMatch[1] : `izvjestaj_${task.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        toast({ title: 'Uspješno', description: 'Izvještaj je preuzet.' });
+      }
     } catch (error) {
       console.error('Error downloading report:', error);
       toast({ title: 'Greska', description: 'Nije moguce generisati izvjestaj.', variant: 'destructive' });

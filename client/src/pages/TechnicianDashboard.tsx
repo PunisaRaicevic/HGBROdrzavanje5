@@ -249,6 +249,70 @@ export default function TechnicianDashboard() {
     }
   };
 
+  const handleDownloadReport = async (taskId: string) => {
+    try {
+      toast({ title: 'Priprema...', description: 'Generisanje izvještaja u toku.' });
+      const response = await fetch(`/api/tasks/${taskId}/report`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to generate report');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Provjera da li smo u Capacitor okruženju
+      const isCapacitor = (window as any).Capacitor !== undefined;
+      
+      if (isCapacitor) {
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64data = reader.result as string;
+          const base64Content = base64data.split(',')[1];
+          const fileName = `izvjestaj_${taskId}.pdf`;
+          
+          try {
+            const { Filesystem, Directory } = (window as any).Capacitor.Plugins;
+            const savedFile = await Filesystem.writeFile({
+              path: fileName,
+              data: base64Content,
+              directory: Directory.Documents,
+              recursive: true
+            });
+            
+            const { FileOpener } = (window as any).Capacitor.Plugins;
+            if (FileOpener) {
+              await FileOpener.showOpenWithDialog({
+                path: savedFile.uri,
+                contentType: 'application/pdf'
+              });
+            } else {
+              window.open(savedFile.uri, '_blank');
+            }
+            toast({ title: 'Uspješno', description: 'Izvještaj je generisan.' });
+          } catch (err) {
+            console.error('Filesystem/FileOpener error:', err);
+            window.open(url, '_blank');
+          }
+        };
+        reader.readAsDataURL(blob);
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        const disposition = response.headers.get('Content-Disposition');
+        const filenameMatch = disposition?.match(/filename="(.+)"/);
+        a.download = filenameMatch ? filenameMatch[1] : `izvjestaj_${taskId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        toast({ title: 'Uspješno', description: 'Izvještaj je preuzet.' });
+      }
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      toast({ title: 'Greška', description: 'Nije moguće generisati izvještaj.', variant: 'destructive' });
+    }
+  };
+
   const handlePhotoUpload = () => {
     fileInputRef.current?.click();
   };
@@ -504,6 +568,20 @@ export default function TechnicianDashboard() {
                               </p>
                             </div>
                             <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                          </div>
+                          <div className="mt-3 flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 text-xs h-8"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownloadReport(task.id);
+                              }}
+                            >
+                              <FileText className="w-3 h-3 mr-1" />
+                              Preuzmi izvještaj
+                            </Button>
                           </div>
                         </CardContent>
                       </Card>
