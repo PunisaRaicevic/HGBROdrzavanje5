@@ -893,49 +893,55 @@ export default function TechnicianDashboard() {
                         Nema poruka.
                       </div>
                     ) : (
-                      messages.map((msg: any) => {
-                        const isOwnMessage = msg.user_id === user?.id;
-                        const isDocument = msg.action === 'document_uploaded';
-
-                        return (
-                          <div 
-                            key={msg.id} 
-                            className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
-                            data-testid={`message-${msg.id}`}
-                          >
-                            <span className="text-[10px] text-muted-foreground mb-0.5">
-                              {msg.user_name} ({msg.user_role}) - {format(new Date(msg.timestamp), 'dd.MM. HH:mm')}
-                            </span>
-                            <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                              isOwnMessage 
-                                ? 'bg-primary text-primary-foreground' 
-                                : 'bg-muted'
-                            }`}>
-                              {isDocument ? (
-                                <div className="flex items-center gap-2">
-                                  <FileText className="w-4 h-4 flex-shrink-0" />
-                                  <div>
-                                    <p className="font-medium text-xs">{msg.assigned_to || 'Dokument'}</p>
-                                    {msg.message.startsWith('data:') ? (
-                                      <a 
-                                        href={msg.message} 
-                                        download={msg.assigned_to || 'dokument'}
-                                        className="text-xs underline"
-                                      >
-                                        Preuzmi
-                                      </a>
-                                    ) : (
-                                      <p className="text-xs">{msg.message}</p>
-                                    )}
-                                  </div>
-                                </div>
-                              ) : (
-                                <p>{msg.message}</p>
-                              )}
-                            </div>
-                          </div>
+                      (() => {
+                        const sortedMessages = [...messages].sort((a, b) => 
+                          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
                         );
-                      })
+
+                        return sortedMessages.map((msg: any) => {
+                          const isOwnMessage = msg.user_id === user?.id;
+                          const isDocument = msg.action === 'document_uploaded';
+
+                          return (
+                            <div 
+                              key={msg.id} 
+                              className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'}`}
+                              data-testid={`message-${msg.id}`}
+                            >
+                              <span className="text-[10px] text-muted-foreground mb-0.5">
+                                {msg.user_name} ({msg.user_role}) - {format(new Date(msg.timestamp), 'dd.MM. HH:mm')}
+                              </span>
+                              <div className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                                isOwnMessage 
+                                  ? 'bg-primary text-primary-foreground' 
+                                  : 'bg-muted'
+                              }`}>
+                                {isDocument ? (
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="w-4 h-4 flex-shrink-0" />
+                                    <div>
+                                      <p className="font-medium text-xs">{msg.assigned_to || 'Dokument'}</p>
+                                      {msg.message.startsWith('data:') ? (
+                                        <a 
+                                          href={msg.message} 
+                                          download={msg.assigned_to || 'dokument'}
+                                          className="text-xs underline"
+                                        >
+                                          Preuzmi
+                                        </a>
+                                      ) : (
+                                        <p className="text-xs">{msg.message}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <p>{msg.message}</p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()
                     )}
                   </div>
 
