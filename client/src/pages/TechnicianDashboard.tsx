@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { 
   CheckCircle, XCircle, Camera, Send, ClipboardList, MapPin, Clock, 
   FileText, MessageCircle, CalendarClock, AlertTriangle, Upload,
@@ -274,7 +274,10 @@ export default function TechnicianDashboard() {
   };
 
   const handleDocUpload = () => {
-    docInputRef.current?.click();
+    if (docInputRef.current) {
+      docInputRef.current.value = '';
+      docInputRef.current.click();
+    }
   };
 
   const handleDocFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -518,30 +521,32 @@ export default function TechnicianDashboard() {
         </CardContent>
       </Card>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={handleFileChange}
-      />
-      <input
-        ref={docInputRef}
-        type="file"
-        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-        multiple
-        className="hidden"
-        onChange={handleDocFileChange}
-      />
-
       {/* Task Details Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-task-details">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="absolute opacity-0 pointer-events-none"
+            style={{ width: 0, height: 0, overflow: 'hidden' }}
+            onChange={handleFileChange}
+          />
+          <input
+            ref={docInputRef}
+            type="file"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+            multiple
+            className="absolute opacity-0 pointer-events-none"
+            style={{ width: 0, height: 0, overflow: 'hidden' }}
+            onChange={handleDocFileChange}
+          />
           {selectedTask && (
             <>
               <DialogHeader>
                 <DialogTitle className="text-lg">{selectedTask.title}</DialogTitle>
+                <DialogDescription className="sr-only">Detalji zadatka i komunikacija</DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4 mt-2">
