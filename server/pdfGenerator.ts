@@ -264,7 +264,11 @@ export async function generateTaskReportPdf(task: Task, history: any[]): Promise
           );
           doc.font('Helvetica').text(` (${entry.user_name || 'N/A'}, ${entry.user_role || 'N/A'})`);
 
-          if (entry.notes) {
+          if (entry.action === 'document_uploaded') {
+            const fileName = entry.assigned_to || 'Dokument';
+            doc.fontSize(8).fillColor('#2563eb').text(`   Sadržaj: ${fileName}`, { indent: 15 });
+            doc.fillColor('#000000');
+          } else if (entry.notes) {
             doc.fontSize(8).text(`   ${entry.notes}`, { indent: 15 });
           }
           if (entry.status_to) {
