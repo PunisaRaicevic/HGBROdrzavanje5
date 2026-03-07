@@ -1564,30 +1564,17 @@ ${allTasksFormatted}
 ===== ZAKAZANI ZADACI =====
 ${scheduledTasksFormatted}`;
 
-      // Call OpenAI API
-      const OpenAI = await import('openai').then(m => m.default);
-      const client = new OpenAI({
-        apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-        baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL
+      // Call Gemini API via Replit AI Integrations
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(process.env.AI_INTEGRATIONS_GEMINI_API_KEY!);
+      
+      const model = genAI.getGenerativeModel({ 
+        model: 'gemini-2.5-flash',
+        systemInstruction: systemPrompt
       });
 
-      const response = await client.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: question
-          }
-        ],
-        temperature: 0.5,
-        max_tokens: 500
-      });
-
-      const analysis = response.choices[0]?.message?.content || 'Nije moguće generisati analizu';
+      const result = await model.generateContent(question);
+      const analysis = result.response.text() || 'Nije moguće generisati analizu';
 
       res.json({ analysis });
     } catch (error) {

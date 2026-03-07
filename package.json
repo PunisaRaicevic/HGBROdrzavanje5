@@ -33,6 +33,7 @@
     "@capacitor/local-notifications": "^7.0.3",
     "@capacitor/push-notifications": "^7.0.3",
     "@capacitor/share": "^7.0.0",
+    "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.10.0",
     "@ionic/pwa-elements": "^3.3.0",
     "@ionic/react": "^8.7.9",
