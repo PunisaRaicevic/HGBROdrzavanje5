@@ -239,20 +239,20 @@ export default function AdminAIChat() {
   return (
     <div className="flex flex-col h-full gap-4 p-4">
       <ScrollArea className="flex-1 border rounded-lg p-4">
-        <div className="space-y-4">
+        <div className="space-y-4 pr-4">
           {messages.map(msg => (
             <div
               key={msg.id}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-lg p-3 ${
+                className={`rounded-lg p-3 ${
                   msg.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-primary text-primary-foreground max-w-[85%]'
                     : 'bg-muted text-muted-foreground'
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                 <span className="text-xs opacity-70 mt-2 block">
                   {msg.timestamp.toLocaleTimeString('sr-RS', {
                     hour: '2-digit',

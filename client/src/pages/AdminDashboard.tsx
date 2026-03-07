@@ -1572,7 +1572,7 @@ export default function AdminDashboard() {
 
       {/* AI Chat Dialog */}
       <Dialog open={aiChatOpen} onOpenChange={setAiChatOpen}>
-        <DialogContent className="max-w-2xl h-[600px] flex flex-col">
+        <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
           <DialogHeader className="pb-2">
             <DialogTitle className="flex items-center gap-2">
               <Brain className="w-5 h-5" />
