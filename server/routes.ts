@@ -1582,7 +1582,7 @@ ${scheduledTasksFormatted}`;
             parts: [{ text: `${systemPrompt}\n\nPitanje: ${question}` }]
           }
         ],
-        config: { maxOutputTokens: 1000 }
+        config: { maxOutputTokens: 8192 }
       });
 
       const candidate = response.candidates?.[0];
