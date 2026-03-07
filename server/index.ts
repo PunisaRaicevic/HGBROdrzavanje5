@@ -3,6 +3,8 @@ import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
 import cors from "cors";
 import { registerRoutes } from "./routes";
+import { registerChatRoutes } from "./replit_integrations/chat";
+import { registerImageRoutes } from "./replit_integrations/image";
 import { setupVite, serveStatic, log } from "./vite";
 import { startCronScheduler } from "./cron";
 import { initializeFirebase } from "./services/firebase";
@@ -122,6 +124,10 @@ app.use((req, res, next) => {
   initializeFirebase();
 
   const server = await registerRoutes(app);
+
+  // Register AI Chat and Image Generation routes
+  registerChatRoutes(app);
+  registerImageRoutes(app);
 
   // ==========================================
   // 3. GLOBAL ERROR HANDLER (Popravljen)

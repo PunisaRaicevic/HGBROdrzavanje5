@@ -1565,16 +1565,29 @@ ${allTasksFormatted}
 ${scheduledTasksFormatted}`;
 
       // Call Gemini API via Replit AI Integrations
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(process.env.AI_INTEGRATIONS_GEMINI_API_KEY!);
-      
-      const model = genAI.getGenerativeModel({ 
-        model: 'gemini-2.5-flash',
-        systemInstruction: systemPrompt
+      const { GoogleGenAI } = await import('@google/genai');
+      const genAI = new GoogleGenAI({
+        apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY,
+        httpOptions: {
+          apiVersion: "",
+          baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL,
+        },
       });
 
-      const result = await model.generateContent(question);
-      const analysis = result.response.text() || 'Nije moguće generisati analizu';
+      const response = await genAI.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: `${systemPrompt}\n\nPitanje: ${question}` }]
+          }
+        ],
+        config: { maxOutputTokens: 1000 }
+      });
+
+      const candidate = response.candidates?.[0];
+      const textPart = candidate?.content?.parts?.find((part: any) => 'text' in part);
+      const analysis = (textPart as any)?.text || 'Nije moguće generisati analizu';
 
       res.json({ analysis });
     } catch (error) {
