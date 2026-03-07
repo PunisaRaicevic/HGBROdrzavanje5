@@ -5,6 +5,9 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { getApiUrl } from '@/lib/apiUrl';
 import { useToast } from '@/hooks/use-toast';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -252,55 +255,45 @@ export default function TechnicianDashboard() {
   const handleDownloadReport = async (taskId: string) => {
     try {
       toast({ title: 'Priprema...', description: 'Generisanje izvještaja u toku.' });
-      const response = await fetch(`/api/tasks/${taskId}/report`, {
+      const apiUrl = getApiUrl(`/api/tasks/${taskId}/report`);
+      const response = await fetch(apiUrl, {
         credentials: 'include',
       });
       if (!response.ok) throw new Error('Failed to generate report');
       
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      
-      // Provjera da li smo u Capacitor okruženju
-      const isCapacitor = (window as any).Capacitor !== undefined;
-      
-      if (isCapacitor) {
+      const pdfBlob = await response.blob();
+      const fileName = `izvjestaj_${taskId}.pdf`;
+
+      if (Capacitor.isNativePlatform()) {
         const reader = new FileReader();
         reader.onloadend = async () => {
-          const base64data = reader.result as string;
-          const base64Content = base64data.split(',')[1];
-          const fileName = `izvjestaj_${taskId}.pdf`;
-          
           try {
-            const { Filesystem, Directory } = (window as any).Capacitor.Plugins;
-            const savedFile = await Filesystem.writeFile({
+            const base64Data = (reader.result as string).split(',')[1];
+            const result = await Filesystem.writeFile({
               path: fileName,
-              data: base64Content,
+              data: base64Data,
               directory: Directory.Documents,
               recursive: true
             });
-            
-            const { FileOpener } = (window as any).Capacitor.Plugins;
-            if (FileOpener) {
-              await FileOpener.showOpenWithDialog({
-                path: savedFile.uri,
-                contentType: 'application/pdf'
-              });
-            } else {
-              window.open(savedFile.uri, '_blank');
-            }
+            await Share.share({
+              title: 'Izvještaj o zadatku',
+              url: result.uri,
+              dialogTitle: 'Sacuvaj ili podijeli PDF'
+            });
             toast({ title: 'Uspješno', description: 'Izvještaj je generisan.' });
           } catch (err) {
-            console.error('Filesystem/FileOpener error:', err);
-            window.open(url, '_blank');
+            console.error('Filesystem/Share error:', err);
+            toast({ title: 'Greška', description: 'Nije moguće sacuvati PDF.', variant: 'destructive' });
           }
         };
-        reader.readAsDataURL(blob);
+        reader.readAsDataURL(pdfBlob);
       } else {
+        const url = window.URL.createObjectURL(pdfBlob);
         const a = document.createElement('a');
         a.href = url;
         const disposition = response.headers.get('Content-Disposition');
         const filenameMatch = disposition?.match(/filename="(.+)"/);
-        a.download = filenameMatch ? filenameMatch[1] : `izvjestaj_${taskId}.pdf`;
+        a.download = filenameMatch ? filenameMatch[1] : fileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

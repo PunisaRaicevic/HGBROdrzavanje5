@@ -1456,39 +1456,35 @@ export default function AdminDashboard() {
               ) : (
                 (() => {
                   // Filtriraj samo jednokratne zadatke (bez periodicnih/autogenerisanih)
+                  // Koristimo lokalni datum za poredjenje jer PeriodPicker generise lokalne datume
                   const periodTasks = tasks.filter(t => {
-                    // Iskljuci periodicne zadatke (template i child tasks)
                     if (t.is_recurring || t.parent_task_id) {
                       return false;
                     }
                     const taskDate = new Date(t.created_at);
-                    // Konvertuj oba datuma na UTC midnight za poredjenje
-                    const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
-                    const startDateUTC = new Date(analysisRange.start.getUTCFullYear(), analysisRange.start.getUTCMonth(), analysisRange.start.getUTCDate());
-                    const endDateUTC = new Date(analysisRange.end.getUTCFullYear(), analysisRange.end.getUTCMonth(), analysisRange.end.getUTCDate());
-                    return taskDateUTC >= startDateUTC && taskDateUTC < endDateUTC;
+                    // Koristimo lokalni datum zadatka (ne UTC) jer range datumi su lokalni
+                    const taskLocalMidnight = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+                    const rangeStart = new Date(analysisRange.start.getFullYear(), analysisRange.start.getMonth(), analysisRange.start.getDate());
+                    const rangeEnd = new Date(analysisRange.end.getFullYear(), analysisRange.end.getMonth(), analysisRange.end.getDate());
+                    return taskLocalMidnight >= rangeStart && taskLocalMidnight < rangeEnd;
                   });
 
-                  // Grupiranje po satima za SVE periode (radno vrijeme 7-23h)
+                  // Grupiranje po satima - prikazi sve sate 00-24h
                   const hourIntervals: { [key: string]: number } = {};
                   
-                  // Kreiraj intervale za radno vrijeme 7-23h
-                  for (let i = 7; i < 23; i++) {
+                  for (let i = 0; i < 24; i++) {
                     const startHour = i.toString().padStart(2, '0');
-                    const endHour = (i + 1).toString().padStart(2, '0');
-                    hourIntervals[`${startHour}-${endHour}`] = 0;
+                    const endHour = (i + 1 === 24 ? 0 : i + 1).toString().padStart(2, '0');
+                    hourIntervals[`${startHour}-${i + 1 === 24 ? '24' : endHour}`] = 0;
                   }
 
-                  let outsideHoursCount = 0;
                   periodTasks.forEach(task => {
                     const hour = new Date(task.created_at).getHours();
-                    if (hour >= 7 && hour < 23) {
-                      const startHour = hour.toString().padStart(2, '0');
-                      const endHour = (hour + 1).toString().padStart(2, '0');
-                      const interval = `${startHour}-${endHour}`;
+                    const startHour = hour.toString().padStart(2, '0');
+                    const endHour = (hour + 1 === 24 ? '24' : (hour + 1).toString().padStart(2, '0'));
+                    const interval = `${startHour}-${endHour}`;
+                    if (hourIntervals[interval] !== undefined) {
                       hourIntervals[interval]++;
-                    } else {
-                      outsideHoursCount++;
                     }
                   });
 
@@ -1496,17 +1492,22 @@ export default function AdminDashboard() {
 
                   return (
                     <div className="space-y-3">
-                      <p className="text-xs text-muted-foreground">
-                        Distribucija po satu prijema (radno vrijeme 07-23h)
-                      </p>
-                      <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground">
+                          Distribucija po satu prijema (24h)
+                        </p>
+                        <p className="text-xs font-medium text-foreground">
+                          Ukupno: {periodTasks.length} zadataka
+                        </p>
+                      </div>
+                      <div className="space-y-1">
                         {Object.entries(hourIntervals).map(([interval, count]) => (
                           <div key={interval} className="flex items-center gap-2">
-                            <span className="text-xs w-14 text-muted-foreground font-medium">{interval}</span>
-                            <div className="flex-1 bg-muted rounded-md h-7 relative overflow-hidden">
+                            <span className="text-xs w-12 text-muted-foreground font-mono">{interval}</span>
+                            <div className="flex-1 bg-muted rounded h-5 relative overflow-hidden">
                               <div 
-                                className="bg-primary h-full flex items-center px-2 text-primary-foreground text-xs font-medium"
-                                style={{ width: `${(count / maxCount) * 100}%`, minWidth: count > 0 ? '24px' : '0' }}
+                                className="bg-primary h-full flex items-center px-1.5 text-primary-foreground text-xs font-medium transition-all"
+                                style={{ width: `${(count / maxCount) * 100}%`, minWidth: count > 0 ? '20px' : '0' }}
                               >
                                 {count > 0 && count}
                               </div>
