@@ -208,7 +208,11 @@ export default function AdminDashboard() {
       const taskDate = t.scheduled_for 
         ? new Date(t.scheduled_for) 
         : new Date(t.created_at);
-      return taskDate >= reportRange.start && taskDate < reportRange.end;
+      // Konvertuj oba datuma na UTC midnight za poredjenje
+      const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
+      const startDateUTC = new Date(reportRange.start.getUTCFullYear(), reportRange.start.getUTCMonth(), reportRange.start.getUTCDate());
+      const endDateUTC = new Date(reportRange.end.getUTCFullYear(), reportRange.end.getUTCMonth(), reportRange.end.getUTCDate());
+      return taskDateUTC >= startDateUTC && taskDateUTC < endDateUTC;
     });
   };
 
@@ -1000,12 +1004,17 @@ export default function AdminDashboard() {
                           const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
                           let periodFiltered = activeTasks.filter(task => {
                             const taskDate = getTaskDate(task);
+                            // Konvertuj sve datume na UTC midnight
+                            const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
+                            const startDateUTC = new Date(startDate!.getUTCFullYear(), startDate!.getUTCMonth(), startDate!.getUTCDate());
+                            const todayStartUTC = new Date(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), todayStart.getUTCDate());
+                            const todayEndUTC = new Date(todayEnd.getUTCFullYear(), todayEnd.getUTCMonth(), todayEnd.getUTCDate());
                             // Završeni zadaci - prikaži ako su završeni u izabranom periodu (uključujući danas)
                             if (task.status === 'completed') {
-                              return taskDate >= startDate! && taskDate < todayEnd;
+                              return taskDateUTC >= startDateUTC && taskDateUTC < todayEndUTC;
                             }
                             // Nezavršeni zadaci - prikaži samo ako su pre danas
-                            return taskDate >= startDate! && taskDate < todayStart;
+                            return taskDateUTC >= startDateUTC && taskDateUTC < todayStartUTC;
                           });
                           
                           if (historyStatusFilter === 'all') {
@@ -1161,11 +1170,17 @@ export default function AdminDashboard() {
                     // Za zakazane zadatke (child tasks od recurring) koristi scheduled_for
                     if (t.scheduled_for && t.parent_task_id) {
                       const scheduledDate = new Date(t.scheduled_for);
-                      return scheduledDate >= statsRange.start && scheduledDate < statsRange.end;
+                      const scheduledDateUTC = new Date(scheduledDate.getUTCFullYear(), scheduledDate.getUTCMonth(), scheduledDate.getUTCDate());
+                      const startDateUTC = new Date(statsRange.start.getUTCFullYear(), statsRange.start.getUTCMonth(), statsRange.start.getUTCDate());
+                      const endDateUTC = new Date(statsRange.end.getUTCFullYear(), statsRange.end.getUTCMonth(), statsRange.end.getUTCDate());
+                      return scheduledDateUTC >= startDateUTC && scheduledDateUTC < endDateUTC;
                     }
                     // Za obicne zadatke koristi created_at
                     const taskDate = new Date(t.created_at);
-                    return taskDate >= statsRange.start && taskDate < statsRange.end;
+                    const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
+                    const startDateUTC = new Date(statsRange.start.getUTCFullYear(), statsRange.start.getUTCMonth(), statsRange.start.getUTCDate());
+                    const endDateUTC = new Date(statsRange.end.getUTCFullYear(), statsRange.end.getUTCMonth(), statsRange.end.getUTCDate());
+                    return taskDateUTC >= startDateUTC && taskDateUTC < endDateUTC;
                   });
                   const completedTasks = periodTasks.filter(t => t.status === 'completed');
                   const inProgressTasks = periodTasks.filter(t => 
@@ -1385,7 +1400,11 @@ export default function AdminDashboard() {
                     const taskDate = t.scheduled_for 
                       ? new Date(t.scheduled_for) 
                       : new Date(t.created_at);
-                    return taskDate >= reportRange.start && taskDate < reportRange.end;
+                    // Konvertuj oba datuma na UTC midnight za poredjenje
+                    const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
+                    const startDateUTC = new Date(reportRange.start.getUTCFullYear(), reportRange.start.getUTCMonth(), reportRange.start.getUTCDate());
+                    const endDateUTC = new Date(reportRange.end.getUTCFullYear(), reportRange.end.getUTCMonth(), reportRange.end.getUTCDate());
+                    return taskDateUTC >= startDateUTC && taskDateUTC < endDateUTC;
                   });
 
                   const completedReportTasks = periodTasks.filter(t => t.status === 'completed');
@@ -1443,7 +1462,11 @@ export default function AdminDashboard() {
                       return false;
                     }
                     const taskDate = new Date(t.created_at);
-                    return taskDate >= analysisRange.start && taskDate < analysisRange.end;
+                    // Konvertuj oba datuma na UTC midnight za poredjenje
+                    const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
+                    const startDateUTC = new Date(analysisRange.start.getUTCFullYear(), analysisRange.start.getUTCMonth(), analysisRange.start.getUTCDate());
+                    const endDateUTC = new Date(analysisRange.end.getUTCFullYear(), analysisRange.end.getUTCMonth(), analysisRange.end.getUTCDate());
+                    return taskDateUTC >= startDateUTC && taskDateUTC < endDateUTC;
                   });
 
                   // Grupiranje po satima za SVE periode (radno vrijeme 7-23h)
