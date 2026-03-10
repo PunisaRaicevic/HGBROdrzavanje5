@@ -191,6 +191,8 @@ export default function AdminAIChat() {
     if (!input.trim()) return;
 
     const questionText = input;
+    // Sacuvaj historiju PRIJE dodavanja nove poruke - saljemo prethodne poruke
+    const conversationHistory = messages.map(m => ({ role: m.role, content: m.content }));
     
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -204,8 +206,11 @@ export default function AdminAIChat() {
     setLoading(true);
 
     try {
-      console.log('[AI CHAT] Sending question to backend...');
-      const response = await apiRequest('POST', '/api/admin/analyze', { question: questionText });
+      console.log('[AI CHAT] Sending question to backend with history length:', conversationHistory.length);
+      const response = await apiRequest('POST', '/api/admin/analyze', { 
+        question: questionText,
+        history: conversationHistory
+      });
 
       if (!response.ok) {
         throw new Error('Greska pri dohvatu analize');

@@ -1430,7 +1430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Analysis endpoint - only for admins
   app.post("/api/admin/analyze", requireAuth, async (req, res) => {
     try {
-      const { question } = req.body;
+      const { question, history } = req.body;
       const sessionUser = await storage.getUserById(req.session.userId);
       
       if (!sessionUser || sessionUser.role !== 'admin') {
@@ -1574,14 +1574,44 @@ ${scheduledTasksFormatted}`;
         },
       });
 
+      // Konstruisi multi-turn razgovor za Gemini
+      // Gemini koristi 'user' i 'model' role (ne 'assistant')
+      // Sistemski prompt se ubacuje u prvu user poruku
+      const conversationHistory: { role: string; content: string }[] = history || [];
+      
+      let contents: { role: string; parts: { text: string }[] }[] = [];
+
+      // Filtriraj historiju - preskoci welcome assistant poruku ako je prva
+      // i konstruisi naizmjenicni user/model niz
+      const filteredHistory = conversationHistory.filter((m, idx) => {
+        // Preskoci pocetnu welcome assistant poruku (nema smisla slati Gemini-ju)
+        if (idx === 0 && m.role === 'assistant') return false;
+        return true;
+      });
+
+      if (filteredHistory.length === 0) {
+        // Nema historije - standardni jednokratni poziv
+        contents = [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nPitanje: ${question}` }] }];
+      } else {
+        // Postoji historija - construisi multi-turn
+        // Prvu user poruku obogati sa sistemskim kontekstom
+        let firstUserAdded = false;
+        for (const msg of filteredHistory) {
+          const geminiRole = msg.role === 'user' ? 'user' : 'model';
+          if (msg.role === 'user' && !firstUserAdded) {
+            contents.push({ role: 'user', parts: [{ text: `${systemPrompt}\n\nPitanje: ${msg.content}` }] });
+            firstUserAdded = true;
+          } else {
+            contents.push({ role: geminiRole, parts: [{ text: msg.content }] });
+          }
+        }
+        // Dodaj tekuce pitanje kao zadnju user poruku
+        contents.push({ role: 'user', parts: [{ text: question }] });
+      }
+
       const response = await genAI.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `${systemPrompt}\n\nPitanje: ${question}` }]
-          }
-        ],
+        contents,
         config: { maxOutputTokens: 8192 }
       });
 
