@@ -25,6 +25,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
+  // Heartbeat - ažurira last_seen svakih 60 sekundi dok je korisnik ulogovan
+  useEffect(() => {
+    if (!user) return;
+    const sendHeartbeat = () => {
+      const token = localStorage.getItem('authToken');
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      fetch(getApiUrl('/api/heartbeat'), { method: 'POST', credentials: 'include', headers }).catch(() => {});
+    };
+    sendHeartbeat(); // odmah pri prijavi
+    const interval = setInterval(sendHeartbeat, 60000);
+    return () => clearInterval(interval);
+  }, [user?.id]);
+
   useEffect(() => {
     const validateSession = async () => {
       const storedUser = localStorage.getItem('user');

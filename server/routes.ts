@@ -113,6 +113,7 @@ async function requireAdmin(req: any, res: any, next: any) {
       if (payload.role !== "admin") {
         return res.status(403).json({ error: "Admin access required" });
       }
+      updateLastSeenThrottled(payload.userId);
       return next();
     }
   }
@@ -123,6 +124,7 @@ async function requireAdmin(req: any, res: any, next: any) {
   if (req.session.userRole !== "admin") {
     return res.status(403).json({ error: "Admin access required" });
   }
+  updateLastSeenThrottled(req.session.userId);
   next();
 }
 
@@ -450,6 +452,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json({ message: "Logged out successfully" });
     });
+  });
+
+  // Heartbeat - svaki ulogovani korisnik poziva ovo periodično da bi bio vidljiv kao online
+  app.post("/api/heartbeat", requireAuth, (req, res) => {
+    res.json({ ok: true });
   });
 
   // Register OneSignal Player ID
