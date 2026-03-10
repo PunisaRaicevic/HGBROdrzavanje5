@@ -106,6 +106,7 @@ export default function AdminAIChat() {
       }
       if (Capacitor.isNativePlatform()) {
         SpeechRecognition.stop().catch(() => {});
+        SpeechRecognition.removeAllListeners().catch(() => {});
       }
     };
   }, [toast]);
@@ -130,16 +131,34 @@ export default function AdminAIChat() {
       if (isListening) {
         try {
           await SpeechRecognition.stop();
+          await SpeechRecognition.removeAllListeners();
           setIsListening(false);
         } catch (error) {
           console.error('[SPEECH] Error stopping:', error);
+          setIsListening(false);
         }
       } else {
         try {
           setInput('');
           setIsListening(true);
           
-          const result = await SpeechRecognition.start({
+          // Registruj listener za parcijalne rezultate (real-time feedback)
+          await SpeechRecognition.addListener('partialResults', (data: any) => {
+            if (data.matches && data.matches.length > 0) {
+              setInput(data.matches[0]);
+            }
+          });
+
+          // Listener za kraj snimanja
+          await SpeechRecognition.addListener('listeningState', (data: any) => {
+            if (data.status === 'stopped') {
+              SpeechRecognition.removeAllListeners();
+              setIsListening(false);
+            }
+          });
+          
+          // Pokretanje - partialResults: true znaci da dobijamo events, start() se resolves odmah
+          await SpeechRecognition.start({
             language: 'sr-RS',
             maxResults: 5,
             prompt: 'Govorite...',
@@ -147,15 +166,10 @@ export default function AdminAIChat() {
             popup: false
           });
           
-          console.log('[SPEECH] Recognition result:', result);
-          
-          if (result.matches && result.matches.length > 0) {
-            setInput(result.matches[0]);
-          }
-          
-          setIsListening(false);
+          console.log('[SPEECH] Native recognition started');
         } catch (error: any) {
           console.error('[SPEECH] Recognition error:', error);
+          await SpeechRecognition.removeAllListeners();
           setIsListening(false);
           
           if (error?.message !== 'User denied access to speech recognition') {
