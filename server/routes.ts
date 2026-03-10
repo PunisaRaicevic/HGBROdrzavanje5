@@ -53,6 +53,18 @@ const updateUserSchema = z.object({
 });
 
 // Authentication middleware
+// In-memory throttle za last_seen update - update DB max jednom na 30 sekundi po korisniku
+const lastSeenThrottle = new Map<string, number>();
+
+function updateLastSeenThrottled(userId: string) {
+  const now = Date.now();
+  const lastUpdate = lastSeenThrottle.get(userId) || 0;
+  if (now - lastUpdate > 30000) {
+    lastSeenThrottle.set(userId, now);
+    storage.updateUser(userId, { last_seen: new Date().toISOString() } as any).catch(() => {});
+  }
+}
+
 async function requireAuth(req: any, res: any, next: any) {
   const authHeader = req.headers.authorization;
   const token = extractTokenFromHeader(authHeader);
@@ -70,12 +82,14 @@ async function requireAuth(req: any, res: any, next: any) {
       req.session.username = payload.username;
       req.session.fullName = payload.fullName;
       console.log(`[AUTH] User authenticated via JWT: ${payload.userId}`);
+      updateLastSeenThrottled(payload.userId);
       return next();
     }
   }
 
   if (req.session.userId) {
     console.log(`[AUTH] User authenticated via session: ${req.session.userId}`);
+    updateLastSeenThrottled(req.session.userId);
     return next();
   }
 

@@ -39,6 +39,7 @@ interface User {
   phone: string | null;
   is_active: boolean;
   created_at: string;
+  last_seen: string | null;
 }
 
 interface Task {
@@ -59,6 +60,27 @@ interface Task {
   parent_task_id?: string | null;
   is_recurring?: boolean;
   recurrence_pattern?: string | null;
+}
+
+function formatLastSeen(lastSeen: string | null): { label: string; online: boolean } {
+  if (!lastSeen) return { label: 'Nikad prijavljen', online: false };
+  const diffMs = Date.now() - new Date(lastSeen).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 5) return { label: 'Onlajn', online: true };
+  if (diffMin < 60) return { label: `Aktivan/na prije ${diffMin} min`, online: false };
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) {
+    const t = new Date(lastSeen);
+    const hh = String(t.getHours()).padStart(2, '0');
+    const mm = String(t.getMinutes()).padStart(2, '0');
+    return { label: `Aktivan/na u ${hh}:${mm}`, online: false };
+  }
+  const diffDays = Math.floor(diffH / 24);
+  if (diffDays < 7) return { label: `Aktivan/na prije ${diffDays} dana`, online: false };
+  const d = new Date(lastSeen);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  return { label: `Aktivan/na ${dd}.${mo}.`, online: false };
 }
 
 export default function AdminDashboard() {
@@ -556,30 +578,51 @@ export default function AdminDashboard() {
                 <p className="text-muted-foreground text-center py-4">Nema korisnika</p>
               ) : (
                 <div className="space-y-2">
-                  {users.map((u) => (
+                  {users.map((u) => {
+                    const { label: lastSeenLabel, online } = formatLastSeen(u.last_seen ?? null);
+                    return (
                     <div 
                       key={u.id} 
                       className="flex items-center justify-between p-3 border rounded-md"
                       data-testid={`user-item-${u.id}`}
                     >
-                      <div>
-                        <p className="font-medium">{u.full_name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {u.job_title || u.role}
-                          {u.phone && ` | ${u.phone}`}
-                        </p>
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className="relative mt-1 flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium text-slate-600">
+                            {u.full_name.charAt(0).toUpperCase()}
+                          </div>
+                          <span
+                            className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${online ? 'bg-green-500' : 'bg-slate-300'}`}
+                            data-testid={`status-dot-${u.id}`}
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium leading-tight">{u.full_name}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {u.job_title || u.role}
+                            {u.phone && ` | ${u.phone}`}
+                          </p>
+                          <p
+                            className={`text-xs mt-0.5 ${online ? 'text-green-600 font-medium' : 'text-muted-foreground'}`}
+                            data-testid={`last-seen-${u.id}`}
+                          >
+                            {lastSeenLabel}
+                          </p>
+                        </div>
                       </div>
                       <Button 
                         variant="outline" 
                         size="sm"
                         onClick={() => setEditingUser(u)}
                         data-testid={`button-edit-user-${u.id}`}
+                        className="flex-shrink-0 ml-2"
                       >
                         <Edit className="w-4 h-4 mr-2" />
                         Izmeni
                       </Button>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

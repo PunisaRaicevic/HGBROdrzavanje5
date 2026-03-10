@@ -84,6 +84,20 @@ Preferred communication style: Simple, everyday language. NO EMOJI allowed.
 ### Image Generation (Planned - Routes Registered)
 - **POST `/api/generate-image`** - Generate image using Gemini 2.5 Flash Image model. Accepts `prompt` parameter.
 
+## Recent Changes (Session 2026-03-10)
+
+### User Online/Last-Seen Status - COMPLETE
+- Added `last_seen` timestamptz column to `users` table in Supabase
+- Added throttled `updateLastSeenThrottled()` in `server/routes.ts` - updates DB max once per 30 seconds per user, fire-and-forget
+- `requireAuth` middleware now calls `updateLastSeenThrottled` on every authenticated request (JWT + session)
+- Updated `User` interface in `AdminDashboard.tsx` with `last_seen: string | null`
+- Added `formatLastSeen()` helper: < 5 min = "Onlajn" (green), < 60 min = "Aktivan/na prije X min", < 24h = time, < 7d = days, older = DD.MM.
+- Admin user list now shows avatar with initial letter, green/grey status dot, and last-seen text
+
+### Fixed Mobile Speech Recognition (Session 2026-03-07)
+- Added `RECORD_AUDIO` permission to `AndroidManifest.xml`
+- Refactored `AdminAIChat` native speech recognition to use `addListener('partialResults')` and `addListener('listeningState')` event listeners instead of awaiting Promise result
+
 ## Recent Changes (Session 2026-03-07)
 
 ### Gemini AI Integration - COMPLETE
