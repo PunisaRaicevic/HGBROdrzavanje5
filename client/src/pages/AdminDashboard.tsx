@@ -73,7 +73,9 @@ function formatLastSeen(lastSeen: string | null): { label: string; online: boole
     const t = new Date(lastSeen);
     const hh = String(t.getHours()).padStart(2, '0');
     const mm = String(t.getMinutes()).padStart(2, '0');
-    return { label: `Aktivan/na u ${hh}:${mm}`, online: false };
+    const dd = String(t.getDate()).padStart(2, '0');
+    const mo = String(t.getMonth() + 1).padStart(2, '0');
+    return { label: `Aktivan/na ${dd}.${mo}. u ${hh}:${mm}`, online: false };
   }
   const diffDays = Math.floor(diffH / 24);
   if (diffDays < 7) return { label: `Aktivan/na prije ${diffDays} dana`, online: false };
