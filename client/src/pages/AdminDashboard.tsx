@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X, MapPin } from 'lucide-react';
+import { useLocation } from 'wouter';
 import {
   Dialog,
   DialogContent,
@@ -89,6 +90,7 @@ export default function AdminDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [newUserUsername, setNewUserUsername] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserName, setNewUserName] = useState('');
@@ -435,7 +437,7 @@ export default function AdminDashboard() {
 
       {/* Main Admin Features */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="h-9 w-full grid grid-cols-3">
+        <TabsList className="h-9 w-full grid grid-cols-4">
           <TabsTrigger value="users" data-testid="tab-users" className="text-sm">
             <Users className="w-3.5 h-3.5 mr-1.5" />
             Korisnici
@@ -447,6 +449,10 @@ export default function AdminDashboard() {
           <TabsTrigger value="stats" data-testid="tab-stats" className="text-sm">
             <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
             Statistike
+          </TabsTrigger>
+          <TabsTrigger value="locations" data-testid="tab-locations" className="text-sm" onClick={() => navigate('/staff-locations')}>
+            <MapPin className="w-3.5 h-3.5 mr-1.5" />
+            Lokacije
           </TabsTrigger>
         </TabsList>
 
