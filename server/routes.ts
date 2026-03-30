@@ -1647,5 +1647,98 @@ ${scheduledTasksFormatted}`;
     }
   });
 
+  // Google Maps API key config endpoint
+  app.get("/api/config/maps", requireAuth, (req, res) => {
+    const apiKey = process.env.GOOGLE_API_KEY || "";
+    res.json({ apiKey });
+  });
+
+  // POST /api/users/location — authenticated user sends their GPS location
+  app.post("/api/users/location", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const { latitude, longitude } = req.body;
+
+      if (latitude === undefined || longitude === undefined) {
+        return res.status(400).json({ error: "Latitude and longitude are required" });
+      }
+
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        return res.status(400).json({ error: "Invalid coordinates" });
+      }
+
+      await storage.updateUser(userId, {
+        latitude: lat.toString(),
+        longitude: lng.toString(),
+        location_updated_at: new Date() as any,
+        last_active_at: new Date() as any,
+      } as any);
+
+      res.json({ ok: true });
+    } catch (error) {
+      console.error("[LOCATION] Error updating user location:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // GET /api/users/locations — admin gets all user locations
+  app.get("/api/users/locations", requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getUsers();
+      const activeUsers = users.filter((u) => u.is_active);
+
+      const ONLINE_THRESHOLD_MS = 30 * 60 * 1000;
+      const LOCATION_THRESHOLD_MS = 60 * 60 * 1000;
+      const now = Date.now();
+
+      const isOnline = (u: any) =>
+        u.last_active_at && now - new Date(u.last_active_at).getTime() < ONLINE_THRESHOLD_MS;
+      const hasLocation = (u: any) =>
+        u.latitude && u.longitude && u.location_updated_at &&
+        now - new Date(u.location_updated_at).getTime() < LOCATION_THRESHOLD_MS;
+
+      const locations = activeUsers
+        .filter((u) => hasLocation(u))
+        .map((u: any) => ({
+          id: u.id,
+          full_name: u.full_name,
+          role: u.role,
+          department: u.department,
+          latitude: parseFloat(u.latitude),
+          longitude: parseFloat(u.longitude),
+          location_updated_at: u.location_updated_at,
+          last_active_at: u.last_active_at,
+          is_online: isOnline(u),
+        }));
+
+      const onlineNoGps = activeUsers
+        .filter((u) => isOnline(u) && !hasLocation(u))
+        .map((u: any) => ({
+          id: u.id,
+          full_name: u.full_name,
+          role: u.role,
+          department: u.department,
+          last_active_at: u.last_active_at,
+        }));
+
+      const offline = activeUsers
+        .filter((u) => !isOnline(u) && !hasLocation(u))
+        .map((u: any) => ({
+          id: u.id,
+          full_name: u.full_name,
+          role: u.role,
+          department: u.department,
+          last_active_at: u.last_active_at,
+        }));
+
+      res.json({ locations, onlineNoGps, offline });
+    } catch (error) {
+      console.error("[LOCATION] Error fetching user locations:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   return server;
 }

@@ -84,6 +84,25 @@ Preferred communication style: Simple, everyday language. NO EMOJI allowed.
 ### Image Generation (Planned - Routes Registered)
 - **POST `/api/generate-image`** - Generate image using Gemini 2.5 Flash Image model. Accepts `prompt` parameter.
 
+## Recent Changes (Session 2026-03-30)
+
+### Staff Location Tracking - COMPLETE
+- Added 4 new columns to `users` table in Supabase: `latitude`, `longitude`, `location_updated_at`, `last_active_at`
+- Updated `shared/schema.ts` with new location columns
+- Added `GET /api/config/maps` endpoint (returns GOOGLE_API_KEY to authenticated users)
+- Added `POST /api/users/location` (requireAuth) - saves GPS coordinates for logged-in user
+- Added `GET /api/users/locations` (requireAdmin) - returns 3 lists: locations (GPS active < 60min), onlineNoGps (active < 30min, no GPS), offline
+- Created `client/src/hooks/useGeolocation.ts` - sends GPS every 60s via navigator.geolocation
+- Called `useGeolocation(user?.id)` in App.tsx Router component
+- Created `client/src/pages/StaffLocationsPage.tsx` with Google Maps, colored markers by role, sidebar with 3 status lists, 30s auto-refresh
+- Registered `/staff-locations` route in App.tsx; removed `p-6` padding for map page
+- Added "Lokacije osoblja" link (MapPin icon) to AppSidebar.tsx, visible only to admin
+- Installed `@googlemaps/js-api-loader` package; uses existing `GOOGLE_API_KEY` env var
+
+### Vite Base URL Fix (Live Updates white screen fix)
+- Set `base: process.env.NODE_ENV === "production" ? "./" : "/"` in vite.config.ts
+- Fixes blank white screen in Appflow Live Updates (absolute asset paths → relative)
+
 ## Recent Changes (Session 2026-03-10)
 
 ### User Online/Last-Seen Status - COMPLETE

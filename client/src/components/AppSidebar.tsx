@@ -1,5 +1,5 @@
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { LayoutDashboard, ClipboardList, Users, Building2, Settings } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Users, Building2, Settings, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +26,12 @@ export default function AppSidebar() {
       title: t('users'),
       url: '/users',
       icon: Users,
+      allowedRoles: ['admin'], // Admin only
+    },
+    {
+      title: 'Lokacije osoblja',
+      url: '/staff-locations',
+      icon: MapPin,
       allowedRoles: ['admin'], // Admin only
     },
     {
