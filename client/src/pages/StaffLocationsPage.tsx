@@ -1,7 +1,7 @@
 /// <reference types="@types/google.maps" />
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Loader } from '@googlemaps/js-api-loader';
+import { setOptions as setMapsOptions, importLibrary as importMapsLibrary } from '@googlemaps/js-api-loader';
 import { MapPin, RefreshCw, Wifi, WifiOff, Navigation } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -131,15 +131,12 @@ export default function StaffLocationsPage() {
   useEffect(() => {
     if (!mapsConfig?.apiKey || mapReady) return;
 
-    const loader = new Loader({
-      apiKey: mapsConfig.apiKey,
-      version: 'weekly',
-    } as any);
+    setMapsOptions({ key: mapsConfig.apiKey, v: 'weekly' });
 
-    (loader as any).importLibrary('maps').then(() => {
+    importMapsLibrary('maps').then(({ Map, InfoWindow }) => {
       if (!mapRef.current) return;
 
-      const map = new google.maps.Map(mapRef.current, {
+      const map = new Map(mapRef.current, {
         center: HOTEL_CENTER,
         zoom: 14,
         mapTypeControl: false,
@@ -148,9 +145,9 @@ export default function StaffLocationsPage() {
       });
 
       googleMapRef.current = map;
-      infoWindowRef.current = new google.maps.InfoWindow();
+      infoWindowRef.current = new InfoWindow();
       setMapReady(true);
-    }).catch((err: any) => {
+    }).catch((err: Error) => {
       console.error('[MAPS] Failed to load Google Maps:', err);
       setMapError('Nije moguće učitati Google Maps. Provjerite API ključ.');
     });

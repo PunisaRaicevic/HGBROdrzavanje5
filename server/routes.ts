@@ -456,6 +456,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Heartbeat - svaki ulogovani korisnik poziva ovo periodično da bi bio vidljiv kao online
   app.post("/api/heartbeat", requireAuth, (req, res) => {
+    const userId = req.session.userId;
+    if (userId) {
+      storage.updateUser(userId, { last_active_at: new Date() }).catch(() => {});
+    }
     res.json({ ok: true });
   });
 
@@ -1669,12 +1673,13 @@ ${scheduledTasksFormatted}`;
         return res.status(400).json({ error: "Invalid coordinates" });
       }
 
+      const now = new Date();
       await storage.updateUser(userId, {
         latitude: lat.toString(),
         longitude: lng.toString(),
-        location_updated_at: new Date() as any,
-        last_active_at: new Date() as any,
-      } as any);
+        location_updated_at: now,
+        last_active_at: now,
+      });
 
       res.json({ ok: true });
     } catch (error) {
@@ -1693,21 +1698,23 @@ ${scheduledTasksFormatted}`;
       const LOCATION_THRESHOLD_MS = 60 * 60 * 1000;
       const now = Date.now();
 
-      const isOnline = (u: any) =>
-        u.last_active_at && now - new Date(u.last_active_at).getTime() < ONLINE_THRESHOLD_MS;
-      const hasLocation = (u: any) =>
-        u.latitude && u.longitude && u.location_updated_at &&
+      type ActiveUser = (typeof activeUsers)[number];
+
+      const isOnline = (u: ActiveUser) =>
+        !!u.last_active_at && now - new Date(u.last_active_at).getTime() < ONLINE_THRESHOLD_MS;
+      const hasLocation = (u: ActiveUser) =>
+        !!u.latitude && !!u.longitude && !!u.location_updated_at &&
         now - new Date(u.location_updated_at).getTime() < LOCATION_THRESHOLD_MS;
 
       const locations = activeUsers
         .filter((u) => hasLocation(u))
-        .map((u: any) => ({
+        .map((u) => ({
           id: u.id,
           full_name: u.full_name,
           role: u.role,
           department: u.department,
-          latitude: parseFloat(u.latitude),
-          longitude: parseFloat(u.longitude),
+          latitude: parseFloat(u.latitude!),
+          longitude: parseFloat(u.longitude!),
           location_updated_at: u.location_updated_at,
           last_active_at: u.last_active_at,
           is_online: isOnline(u),
@@ -1715,7 +1722,7 @@ ${scheduledTasksFormatted}`;
 
       const onlineNoGps = activeUsers
         .filter((u) => isOnline(u) && !hasLocation(u))
-        .map((u: any) => ({
+        .map((u) => ({
           id: u.id,
           full_name: u.full_name,
           role: u.role,
@@ -1725,7 +1732,7 @@ ${scheduledTasksFormatted}`;
 
       const offline = activeUsers
         .filter((u) => !isOnline(u) && !hasLocation(u))
-        .map((u: any) => ({
+        .map((u) => ({
           id: u.id,
           full_name: u.full_name,
           role: u.role,
