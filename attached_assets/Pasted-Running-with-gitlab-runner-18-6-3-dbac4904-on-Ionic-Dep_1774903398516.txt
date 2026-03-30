@@ -1,0 +1,253 @@
+Running with gitlab-runner 18.6.3 (dbac4904)
+  on Ionic Deploy Runner c9648220a, system ID: r_y2wghl6CoDs5
+  feature flags: FF_USE_POD_ACTIVE_DEADLINE_SECONDS:false
+Preparing the "kubernetes" executor
+Using Kubernetes namespace: ionic-runners
+Using Kubernetes executor with image 319312831725.dkr.ecr.us-west-2.amazonaws.com/appflow-runners/linux:2025.11 ...
+Using attach strategy to execute scripts...
+Using effective pull policy of [Always] for container build
+Using effective pull policy of [Always] for container helper
+Using effective pull policy of [Always] for container init-permissions
+Using effective pull policy of [Always] for container metrics
+Preparing environment
+Waiting for pod ionic-runners/runner-c9648220a-project-0-concurrent-4-cokwp0p0 to be running, status is Pending
+Running on runner-c9648220a-project-0-concurrent-4-cokwp0p0 via gitlab-runner-c8d4c99c6-j756l...
+
+Getting source from Git repository
+$ pre-clone
+[20:40:35]: Cloning repository...
+[20:40:35]: Configured credentials for github.com
+[20:40:35]: Configured credential helper for LFS
+Gitaly correlation ID: ffc986dc27364c8faf36ea3e5f08dc0f
+Fetching changes...
+Initialized empty Git repository in /builds/PunisaRaicevic/HGBROdrzavanje5/.git/
+Created fresh repository.
+Checking out 41dbebbe as detached HEAD (ref is main)...
+
+Updating/initializing submodules...
+Updated submodules
+Configuring submodules to use parent git credentials...
+Pulling LFS files...
+$ setup-fastlane
+[20:40:39]: Cloning complete...
+Fetching latest build process code...
+Cloning into '/builds/appflow-runners'...
+
+Executing "step_script" stage of the job script
+$ pre-build
+[20:40:41]: Building project....
+$ run "fetch-updates"
+Checking for build process updates...
+$ run "build-app"
+[20:40:44]: ---------------------------------
+[20:40:44]: --- Step: add_extra_platforms ---
+[20:40:44]: ---------------------------------
+[20:40:44]: Setting '[:web]' as extra SupportedPlatforms
+[20:40:44]: ------------------------------
+[20:40:44]: --- Step: default_platform ---
+[20:40:44]: ------------------------------
+[20:40:44]: Driving the lane 'web build_capacitor' 🚀
+[20:40:44]: ---------------------------------
+[20:40:44]: --- Step: prepare_environment ---
+[20:40:44]: ---------------------------------
+[20:40:44]: Setting default environment variables to tidy up logs. These can be overridden by setting them in Appflow.
+[20:40:44]: 
+[20:40:44]: Set COREPACK_ENABLE_AUTO_PIN=0 (Suppress yarn warnings)
+[20:40:44]: -------------------------
+[20:40:44]: --- Step: sentry_init ---
+[20:40:44]: -------------------------
+[20:40:44]: ----------------------------
+[20:40:44]: --- Step: begin_building ---
+[20:40:44]: ----------------------------
+[20:40:44]: Began building @ 2026-03-30T20:40:44
+[20:40:44]: ---------------------------
+[20:40:44]: --- Step: build_summary ---
+[20:40:44]: ---------------------------
+
++---------------------------------------------------+
+|                   Build Summary                   |
++---------------------+-----------------------------+
+| Runners Revision    | f9420db                     |
+| Job ID              | 10835951                    |
+| Node.js version     | v22.21.1                    |
+| Cordova CLI version | 12.0.0 (cordova-lib@12.0.2) |
+| npm version         | 10.9.4                      |
+| yarn version        | 1.22.22                     |
++---------------------+-----------------------------+
+
+[20:40:45]: ---------------------------
+[20:40:45]: --- Step: set_ionic_cli ---
+[20:40:45]: ---------------------------
+[20:40:47]: Preinstalled @ionic/cli compatible with project `react`
+[20:40:47]: ------------------------------------
+[20:40:47]: --- Step: detect_package_manager ---
+[20:40:47]: ------------------------------------
+[20:40:47]: Detecting package manager
+[20:40:47]: Defaulting to npm
+[20:40:47]: ---------------------------------
+[20:40:47]: --- Step: add_git_credentials ---
+[20:40:47]: ---------------------------------
+[20:40:47]: Writing git-credentials files
+[20:40:47]: git-credentials successfully added to project
+[20:40:47]: --------------------------------
+[20:40:47]: --- Step: get_appflow_config ---
+[20:40:47]: --------------------------------
+[20:40:47]: Checking for appflow.config.json
+[20:40:47]: Appflow config not detected
+[20:40:47]: --------------------------------
+[20:40:47]: --- Step: dependency_install ---
+[20:40:47]: --------------------------------
+[20:40:47]: Installing Dependencies (in /builds/PunisaRaicevic/HGBROdrzavanje5)
+[20:40:47]: $ npm ci --quiet 
+[20:40:50]: ▸ npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+[20:40:50]: ▸ npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+[20:40:50]: ▸ npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported
+[20:40:50]: ▸ npm warn deprecated q@1.5.1: You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+[20:40:50]: ▸ npm warn deprecated
+[20:40:50]: ▸ npm warn deprecated (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
+[20:40:53]: ▸ npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+[20:40:55]: ▸ npm warn deprecated jpeg-exif@1.1.4: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+[20:40:55]: ▸ npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+[20:40:55]: ▸ npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[20:40:57]: ▸ npm warn deprecated @xmldom/xmldom@0.7.13: this version is no longer supported, please update to at least 0.8.*
+[20:40:57]: ▸ npm warn deprecated @xmldom/xmldom@0.7.13: this version is no longer supported, please update to at least 0.8.*
+[20:41:17]: ▸ added 1187 packages, and audited 1188 packages in 30s
+[20:41:17]: ▸ 132 packages are looking for funding
+[20:41:17]: ▸ run `npm fund` for details
+[20:41:17]: ▸ 40 vulnerabilities (12 low, 10 moderate, 15 high, 3 critical)
+[20:41:17]: ▸ To address issues that do not require attention, run:
+[20:41:17]: ▸ npm audit fix
+[20:41:17]: ▸ To address all issues possible (including breaking changes), run:
+[20:41:17]: ▸ npm audit fix --force
+[20:41:17]: ▸ Some issues need review, and may require choosing
+[20:41:17]: ▸ a different dependency.
+[20:41:17]: ▸ Run `npm audit` for details.
+[20:41:17]: -------------------------------------
+[20:41:17]: --- Step: create_capacitor_config ---
+[20:41:17]: -------------------------------------
+[20:41:17]: -------------------------
+[20:41:17]: --- Step: get_web_dir ---
+[20:41:17]: -------------------------
+[20:41:17]: webDir is `dist/public`
+[20:41:17]: ---------------------------
+[20:41:17]: --- Step: build_pro_app ---
+[20:41:17]: ---------------------------
+[20:41:17]: Building app from /builds/PunisaRaicevic/HGBROdrzavanje5
+[20:41:17]: Build script detected...
+[20:41:17]: $ npm run build
+[20:41:17]: ▸ > rest-express@1.0.0 build
+[20:41:17]: ▸ > vite build
+[20:41:18]: ▸ vite v5.4.20 building for production...
+[20:41:18]: ▸ transforming...
+[20:41:20]: ▸ A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+[20:41:26]: ▸ ✓ 2866 modules transformed.
+[20:41:27]: ▸ rendering chunks...
+[20:41:27]: ▸ computing gzip size...
+[20:41:27]: ▸ ../dist/public/index.html                                                                   1.16 kB │ gzip:   0.58 kB
+[20:41:27]: ▸ ../dist/public/assets/budvanska-color-centralno-transparent_1762428184467-Dw53VPqV.png     12.31 kB
+[20:41:27]: ▸ ../dist/public/assets/index-CbZnoCPw.css                                                  127.56 kB │ gzip:  20.39 kB
+[20:41:27]: ▸ ../dist/public/assets/index-CNjJz0zD.js                                                     0.11 kB │ gzip:   0.11 kB
+[20:41:27]: ▸ ../dist/public/assets/web-CfJmjFzc.js                                                       0.36 kB │ gzip:   0.25 kB
+[20:41:27]: ▸ ../dist/public/assets/status-tap-Cz_COVVs.js                                                0.51 kB │ gzip:   0.36 kB
+[20:41:27]: ▸ ../dist/public/assets/index8-XOc-C763.js                                                    0.53 kB │ gzip:   0.36 kB
+[20:41:27]: ▸ ../dist/public/assets/index-BT8nMUrW.js                                                     0.60 kB │ gzip:   0.36 kB
+[20:41:27]: ▸ ../dist/public/assets/web-bfuV0Ezb.js                                                       0.80 kB │ gzip:   0.24 kB
+[20:41:27]: ▸ ../dist/public/assets/web-ITKYZFDc.js                                                       0.94 kB │ gzip:   0.47 kB
+[20:41:27]: ▸ ../dist/public/assets/focus-visible-supuXXMI.js                                             0.99 kB │ gzip:   0.51 kB
+[20:41:27]: ▸ ../dist/public/assets/md.transition-oAqYI1z_.js                                             1.03 kB │ gzip:   0.57 kB
+[20:41:27]: ▸ ../dist/public/assets/keyboard-ardolbfl.js                                                  1.28 kB │ gzip:   0.66 kB
+[20:41:27]: ▸ ../dist/public/assets/index7-g5rpU2JE.js                                                    1.63 kB │ gzip:   0.84 kB
+[20:41:27]: ▸ ../dist/public/assets/web-9UxmHwaw.js                                                       3.44 kB │ gzip:   1.09 kB
+[20:41:27]: ▸ ../dist/public/assets/input-shims-BZePi56N.js                                               5.00 kB │ gzip:   2.15 kB
+[20:41:27]: ▸ ../dist/public/assets/swipe-back-BLgdcQfX.js                                                6.81 kB │ gzip:   2.74 kB
+[20:41:27]: ▸ ../dist/public/assets/web-lkF7iO-Q.js                                                       8.73 kB │ gzip:   2.97 kB
+[20:41:27]: ▸ ../dist/public/assets/ios.transition-D_5kJ454.js                                           10.57 kB │ gzip:   3.09 kB
+[20:41:27]: ▸ ../dist/public/assets/index-BCm2iGhT.js                                                 1,137.73 kB │ gzip: 319.75 kB
+[20:41:27]: ▸ 
+[20:41:27]: ▸ (!) Some chunks are larger than 500 kB after minification. Consider:
+[20:41:27]: ▸ - Using dynamic import() to code-split the application
+[20:41:27]: ▸ - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+[20:41:27]: ▸ - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[20:41:27]: ▸ ✓ built in 9.28s
+[20:41:27]: $ ionic info
+[20:41:28]: ▸ [WARN] Error loading @capacitor/ios package.json: Error: Cannot find module '@capacitor/ios/package.json'
+[20:41:28]: ▸ Require stack:
+[20:41:28]: ▸ - /usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli/lib/project/index.js
+[20:41:28]: ▸ - /usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli/lib/index.js
+[20:41:28]: ▸ - /usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli/index.js
+[20:41:28]: ▸ - /usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli/bin/ionic
+[20:41:28]: ▸ Ionic:
+[20:41:28]: ▸ Ionic CLI       : 7.2.1 (/usr/local/nvm/versions/node/v22.21.1/lib/node_modules/@ionic/cli)
+[20:41:28]: ▸ Ionic Framework : @ionic/react 8.7.9
+[20:41:28]: ▸ Capacitor:
+[20:41:28]: ▸ Capacitor CLI      : 7.4.4
+[20:41:28]: ▸ @capacitor/android : 7.4.4
+[20:41:28]: ▸ @capacitor/core    : 7.4.4
+[20:41:28]: ▸ @capacitor/ios     : not installed
+[20:41:28]: ▸ Utility:
+[20:41:28]: ▸ cordova-res : not installed globally
+[20:41:28]: ▸ native-run  : 2.0.1
+[20:41:28]: ▸ System:
+[20:41:28]: ▸ NodeJS : v22.21.1 (/usr/local/nvm/versions/node/v22.21.1/bin/node)
+[20:41:28]: ▸ npm    : 10.9.4
+[20:41:28]: ▸ OS     : Linux 6.12
+[20:41:28]: Generating app manifest...
+[20:41:28]: ------------------------
+[20:41:28]: --- Step: upload_app ---
+[20:41:28]: ------------------------
+[20:41:28]: Uploading app static assets...
+[20:41:30]: Uploaded app static assets successfully.
+[20:41:30]: ----------------------------
+[20:41:30]: --- Step: upload_app_zip ---
+[20:41:30]: ----------------------------
+[20:41:30]: Compressing app...
+[20:41:30]: Compressed app successfully
+[20:41:30]: Uploading app .zip...
+[20:41:31]: Uploaded app .zip successfully.
+[20:41:31]: --------------------------------
+[20:41:31]: --- Step: upload_app_preview ---
+[20:41:31]: --------------------------------
+[20:41:31]: No app preview requested
+[20:41:31]: --------------------------------
+[20:41:31]: --- Step: upload_source_maps ---
+[20:41:31]: --------------------------------
+[20:41:31]: No .sourcemaps directory found. Skipping sourcemaps upload.
+[20:41:31]: -------------------------
+[20:41:31]: --- Step: upload_logs ---
+[20:41:31]: -------------------------
+
++----------------------------------------------+
+|               fastlane summary               |
++------+-------------------------+-------------+
+| Step | Action                  | Time (in s) |
++------+-------------------------+-------------+
+| 1    | add_extra_platforms     | 0           |
+| 2    | default_platform        | 0           |
+| 3    | prepare_environment     | 0           |
+| 4    | sentry_init             | 0           |
+| 5    | begin_building          | 0           |
+| 6    | build_summary           | 1           |
+| 7    | set_ionic_cli           | 1           |
+| 8    | detect_package_manager  | 0           |
+| 9    | add_git_credentials     | 0           |
+| 10   | get_appflow_config      | 0           |
+| 11   | dependency_install      | 30          |
+| 12   | create_capacitor_config | 0           |
+| 13   | get_web_dir             | 0           |
+| 14   | build_pro_app           | 10          |
+| 15   | upload_app              | 1           |
+| 16   | upload_app_zip          | 1           |
+| 17   | upload_app_preview      | 0           |
+| 18   | upload_source_maps      | 0           |
+| 19   | upload_logs             | 3           |
++------+-------------------------+-------------+
+
+[20:41:35]: fastlane.tools finished successfully 🎉
+
+Running after_script
+Running after script...
+$ run "clean-up"
+
+Cleaning up project directory and file based variables
+
+Job succeeded
