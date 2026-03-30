@@ -1653,7 +1653,7 @@ ${scheduledTasksFormatted}`;
 
   // Google Maps API key config endpoint
   app.get("/api/config/maps", requireAuth, (req, res) => {
-    const apiKey = process.env.GOOGLE_API_KEY || "";
+    const apiKey = process.env.VITE_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_API_KEY || "";
     res.json({ apiKey });
   });
 
