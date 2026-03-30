@@ -98,6 +98,7 @@ export default function StaffLocationsPage() {
   const markersRef = useRef<Map<string, google.maps.Marker>>(new Map());
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const [selectedUser, setSelectedUser] = useState<LocationUser | null>(null);
+  const selectedUserRef = useRef<LocationUser | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
 
@@ -156,6 +157,7 @@ export default function StaffLocationsPage() {
   const focusOnUser = useCallback((u: LocationUser) => {
     if (!googleMapRef.current) return;
     setSelectedUser(u);
+    selectedUserRef.current = u;
     googleMapRef.current.panTo({ lat: u.latitude, lng: u.longitude });
     googleMapRef.current.setZoom(16);
 
@@ -197,6 +199,7 @@ export default function StaffLocationsPage() {
 
         marker.addListener('click', () => {
           setSelectedUser(u);
+          selectedUserRef.current = u;
           if (infoWindowRef.current) {
             infoWindowRef.current.setContent(buildInfoContent(u));
             infoWindowRef.current.open(map, marker);
@@ -212,7 +215,7 @@ export default function StaffLocationsPage() {
       markersRef.current.delete(id);
     });
 
-    if (data.locations.length > 1) {
+    if (data.locations.length > 1 && !selectedUserRef.current) {
       const bounds = new google.maps.LatLngBounds();
       data.locations.forEach((u) => bounds.extend({ lat: u.latitude, lng: u.longitude }));
       map.fitBounds(bounds, 80);

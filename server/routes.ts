@@ -1651,8 +1651,8 @@ ${scheduledTasksFormatted}`;
     }
   });
 
-  // Google Maps API key config endpoint
-  app.get("/api/config/maps", requireAuth, (req, res) => {
+  // Google Maps API key config endpoint (admin-only, key not needed by other roles)
+  app.get("/api/config/maps", requireAdmin, (req, res) => {
     const apiKey = process.env.VITE_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_API_KEY || "";
     res.json({ apiKey });
   });
