@@ -259,7 +259,7 @@ export default function StaffLocationsPage() {
         <div className="flex items-center justify-between px-3 py-2.5">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setLocation('/admin')}
+              onClick={() => setLocation('/')}
               className="md:hidden p-1 rounded-md hover:bg-accent transition-colors"
               data-testid="button-back"
               aria-label="Nazad"
