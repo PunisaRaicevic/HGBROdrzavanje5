@@ -2,8 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { setOptions as setMapsOptions, importLibrary as importMapsLibrary } from '@googlemaps/js-api-loader';
-import { MapPin, RefreshCw, Wifi, WifiOff, Navigation } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { MapPin, RefreshCw, Wifi, WifiOff, Navigation, List, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -101,6 +100,7 @@ export default function StaffLocationsPage() {
   const selectedUserRef = useRef<LocationUser | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [mobileView, setMobileView] = useState<'map' | 'list'>('map');
 
   const isAdmin = user?.role === 'admin';
 
@@ -254,39 +254,71 @@ export default function StaffLocationsPage() {
 
   return (
     <div className="flex flex-col h-full" data-testid="staff-locations-page">
-      <div className="flex items-center justify-between px-4 py-3 border-b bg-background shrink-0">
-        <div className="flex items-center gap-3">
-          <MapPin className="h-5 w-5 text-primary" />
-          <h1 className="text-lg font-semibold">Lokacije osoblja</h1>
+      {/* Header */}
+      <div className="shrink-0 border-b bg-background">
+        <div className="flex items-center justify-between px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLocation('/admin')}
+              className="md:hidden p-1 rounded-md hover:bg-accent transition-colors"
+              data-testid="button-back"
+              aria-label="Nazad"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <MapPin className="h-4 w-4 text-primary" />
+            <h1 className="text-base font-semibold">Lokacije osoblja</h1>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full" data-testid="badge-online">
+              <Wifi className="h-3 w-3" />{onlineCount}
+            </span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-full" data-testid="badge-on-map">
+              <Navigation className="h-3 w-3" />{mapCount}
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full" data-testid="badge-offline">
+              <WifiOff className="h-3 w-3" />{offlineCount}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              data-testid="button-refresh-locations"
+              disabled={isLoading}
+              className="h-7 w-7 p-0"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="gap-1 text-green-700 bg-green-100">
-            <Wifi className="h-3 w-3" />
-            {onlineCount} online
-          </Badge>
-          <Badge variant="secondary" className="gap-1 text-blue-700 bg-blue-100">
-            <Navigation className="h-3 w-3" />
-            {mapCount} na mapi
-          </Badge>
-          <Badge variant="secondary" className="gap-1 text-gray-600 bg-gray-100">
-            <WifiOff className="h-3 w-3" />
-            {offlineCount} offline
-          </Badge>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            data-testid="button-refresh-locations"
-            disabled={isLoading}
+        {/* Mobile toggle: Mapa / Lista */}
+        <div className="md:hidden flex border-t">
+          <button
+            onClick={() => setMobileView('map')}
+            data-testid="toggle-map-view"
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-colors border-b-2 ${
+              mobileView === 'map' ? 'text-primary border-primary' : 'text-muted-foreground border-transparent'
+            }`}
           >
-            <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-            Osvježi
-          </Button>
+            <MapPin className="h-4 w-4" />
+            Mapa
+          </button>
+          <button
+            onClick={() => setMobileView('list')}
+            data-testid="toggle-list-view"
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-colors border-b-2 ${
+              mobileView === 'list' ? 'text-primary border-primary' : 'text-muted-foreground border-transparent'
+            }`}
+          >
+            <List className="h-4 w-4" />
+            Lista
+          </button>
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 relative bg-muted">
+        {/* Map panel */}
+        <div className={`relative bg-muted flex-1 ${mobileView === 'list' ? 'hidden md:block' : 'block'}`}>
           {mapError && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center text-muted-foreground p-8">
@@ -306,7 +338,8 @@ export default function StaffLocationsPage() {
           <div ref={mapRef} className="w-full h-full" />
         </div>
 
-        <div className="w-72 shrink-0 border-l bg-background flex flex-col overflow-hidden">
+        {/* List panel */}
+        <div className={`w-full md:w-72 md:shrink-0 border-l bg-background flex-col overflow-hidden ${mobileView === 'map' ? 'hidden md:flex' : 'flex'}`}>
           <ScrollArea className="flex-1">
             <div className="p-3 space-y-3">
               <Card data-testid="card-on-map">
