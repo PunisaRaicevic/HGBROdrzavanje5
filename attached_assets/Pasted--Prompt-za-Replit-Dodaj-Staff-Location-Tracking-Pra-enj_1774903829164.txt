@@ -1,0 +1,290 @@
+# Prompt za Replit: Dodaj Staff Location Tracking (Praćenje lokacija zaposlenih)
+
+Dodaj kompletnu funkcionalnost za praćenje lokacija zaposlenih na Google Maps mapi. Samo admin može vidjeti lokacije svih zaposlenih. Svaki ulogovani korisnik automatski šalje svoju GPS lokaciju svakih 60 sekundi.
+
+---
+
+## 1. BAZA PODATAKA — Dodaj kolone u `users` tabelu
+
+Dodaj 4 nove kolone u postojeću `users` tabelu:
+
+```sql
+ALTER TABLE users ADD COLUMN IF NOT EXISTS latitude TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS longitude TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS location_updated_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active_at TIMESTAMPTZ;
+```
+
+Ako koristiš Drizzle ORM, dodaj u schema definiciju `users` tabele:
+```ts
+latitude: text("latitude"),
+longitude: text("longitude"),
+location_updated_at: timestamp("location_updated_at", { withTimezone: true }),
+last_active_at: timestamp("last_active_at", { withTimezone: true }),
+```
+
+---
+
+## 2. BACKEND — Dva nova API endpointa
+
+### Endpoint 1: POST `/api/users/location` (autentifikovani korisnici šalju svoju lokaciju)
+
+- Middleware: `requireAuth` (mora biti ulogovan)
+- Request body: `{ latitude: number, longitude: number }`
+- Validacija: lat mora biti -90 do 90, lng mora biti -180 do 180
+- Ažurira u bazi za tog korisnika: `latitude`, `longitude`, `location_updated_at = now()`, `last_active_at = now()`
+- Odgovor: `{ ok: true }`
+
+```ts
+app.post("/api/users/location", requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId; // ili kako god dobijaš ID ulogovanog korisnika
+    const { latitude, longitude } = req.body;
+
+    if (latitude === undefined || longitude === undefined) {
+      return res.status(400).json({ error: "Latitude and longitude are required" });
+    }
+
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return res.status(400).json({ error: "Invalid coordinates" });
+    }
+
+    await storage.updateUser(userId, {
+      latitude: lat.toString(),
+      longitude: lng.toString(),
+      location_updated_at: new Date(),
+      last_active_at: new Date(),
+    });
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Error updating user location:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+```
+
+### Endpoint 2: GET `/api/users/locations` (admin dobija sve lokacije)
+
+- Middleware: `requireAdmin` (samo admin)
+- Dohvata sve aktivne korisnike i dijeli ih u 3 kategorije:
+  - **locations** — imaju GPS lokaciju mlađu od 60 minuta (prikazuju se na mapi)
+  - **onlineNoGps** — aktivni u zadnjih 30 minuta ali nemaju GPS
+  - **offline** — neaktivni i bez lokacije
+
+```ts
+app.get("/api/users/locations", requireAdmin, async (req, res) => {
+  try {
+    const users = await storage.getUsers();
+    const activeUsers = users.filter((u) => u.is_active && u.role !== 'guest_display');
+
+    const ONLINE_THRESHOLD_MS = 30 * 60 * 1000;   // 30 minuta
+    const LOCATION_THRESHOLD_MS = 60 * 60 * 1000;  // 60 minuta
+    const now = Date.now();
+
+    const isOnline = (u) => u.last_active_at && (now - new Date(u.last_active_at).getTime()) < ONLINE_THRESHOLD_MS;
+    const hasLocation = (u) => u.latitude && u.longitude && u.location_updated_at && (now - new Date(u.location_updated_at).getTime()) < LOCATION_THRESHOLD_MS;
+
+    const locations = activeUsers
+      .filter((u) => hasLocation(u))
+      .map((u) => ({
+        id: u.id, full_name: u.full_name, role: u.role, department: u.department,
+        latitude: parseFloat(u.latitude), longitude: parseFloat(u.longitude),
+        location_updated_at: u.location_updated_at, last_active_at: u.last_active_at,
+        is_online: isOnline(u),
+      }));
+
+    const onlineNoGps = activeUsers
+      .filter((u) => isOnline(u) && !hasLocation(u))
+      .map((u) => ({
+        id: u.id, full_name: u.full_name, role: u.role, department: u.department,
+        last_active_at: u.last_active_at,
+      }));
+
+    const offline = activeUsers
+      .filter((u) => !isOnline(u) && !hasLocation(u))
+      .map((u) => ({
+        id: u.id, full_name: u.full_name, role: u.role, department: u.department,
+        last_active_at: u.last_active_at,
+      }));
+
+    res.json({ locations, onlineNoGps, offline });
+  } catch (error) {
+    console.error("Error fetching user locations:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+```
+
+---
+
+## 3. FRONTEND — Hook za automatsko slanje lokacije (`useGeolocation`)
+
+Napravi hook `useGeolocation.ts` koji se poziva u glavnoj App komponenti kad je korisnik ulogovan. Koristi browser `navigator.geolocation` API.
+
+```ts
+import { useEffect, useRef } from 'react';
+
+const LOCATION_INTERVAL_MS = 60000; // svakih 60 sekundi
+
+export function useGeolocation(userId: string | undefined) {
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    if (!('geolocation' in navigator)) return;
+
+    const sendLocation = (lat: number, lng: number) => {
+      fetch('/api/users/location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ latitude: lat, longitude: lng }),
+      }).catch((err) => console.warn('[GEO] Failed:', err.message));
+    };
+
+    const fetchAndSend = () => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => sendLocation(pos.coords.latitude, pos.coords.longitude),
+        (err) => console.warn('[GEO] Position unavailable:', err.message),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    };
+
+    // Pošalji odmah i onda svakih 60 sekundi
+    fetchAndSend();
+    intervalRef.current = setInterval(fetchAndSend, LOCATION_INTERVAL_MS);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [userId]);
+}
+```
+
+**Pozovi hook u App.tsx:**
+```tsx
+// Unutar glavne App komponente, nakon što dobiješ ulogovanog korisnika:
+useGeolocation(user?.id);
+```
+
+---
+
+## 4. FRONTEND — Stranica sa mapom (`StaffLocationsPage`)
+
+Napravi novu stranicu `/staff-locations` dostupnu SAMO admin korisnicima. Stranica prikazuje Google Maps sa markerima za svakog zaposlenog.
+
+### Potreban paket:
+```bash
+npm install @googlemaps/js-api-loader
+```
+
+### Environment varijabla:
+Dodaj `VITE_GOOGLE_MAPS_API_KEY` (ili odgovarajući prefix za tvoj bundler) sa validnim Google Maps API ključem.
+
+### Funkcionalnosti stranice:
+
+**Mapa (Google Maps):**
+- Defaultni centar: koordinate tvog hotela (podesi lat/lng)
+- Zoom: 14
+- Markeri su krugovi obojeni po roli zaposlenog
+- Inicijali zaposlenog kao label na markeru
+- Online korisnici: pun opacity + zeleni border markera
+- Offline korisnici: 50% opacity + sivi border markera
+- Klik na marker otvara info prozor sa detaljima (ime, rola, odjeljenje, GPS vrijeme, online status)
+- Kad ima više markera, mapa automatski podesi zoom da svi budu vidljivi (`fitBounds`)
+
+**Boje markera po rolama (prilagodi svojim rolama):**
+```ts
+const ROLE_COLORS: Record<string, string> = {
+  admin: '#ef4444',       // crvena
+  operater: '#f97316',    // narandžasta
+  sef: '#8b5cf6',         // ljubičasta
+  radnik: '#3b82f6',      // plava
+  serviser: '#06b6d4',    // cyan
+  recepcioner: '#10b981', // zelena
+  sobarica: '#ec4899',    // pink
+  sef_domacinstva: '#a855f7', // tamno ljubičasta
+  menadzer: '#f59e0b',    // žuta
+};
+```
+
+**Sidebar (desna strana, 1/4 širine):**
+
+1. **"Na mapi" kartica** — lista korisnika koji imaju GPS lokaciju
+   - Avatar krug u boji role sa inicijalom
+   - Zelena/siva tačkica za online/offline status
+   - Ime, rola, vrijeme zadnjeg GPS ažuriranja
+   - Klik na korisnika → mapa se centrira na njega i zoomira
+
+2. **"Online - bez GPS" kartica** (zelena pozadina) — korisnici aktivni ali bez lokacije
+
+3. **"Offline" kartica** (siva pozadina) — neaktivni korisnici
+
+4. **Detalji odabranog korisnika** — prikazuje se kad klikneš na markere ili korisnika u listi:
+   - Rola, odjeljenje, tačne koordinate, GPS vrijeme, zadnja aktivnost
+
+5. **Legenda** — boja za svaku rolu
+
+**Header:**
+- Naslov: "Lokacije osoblja"
+- Badges: X online, X na mapi, X offline
+- Dugme "Osvježi" za ručno osvježavanje
+
+**Auto-refresh:** Podaci se automatski osvježavaju svakih 30 sekundi (`refetchInterval: 30000`).
+
+**Helper funkcija za relativno vrijeme:**
+```ts
+function formatTimeAgo(dateStr: string | null): string {
+  if (!dateStr) return 'N/A';
+  const diffMin = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
+  if (diffMin < 1) return 'upravo sada';
+  if (diffMin < 60) return `prije ${diffMin} min`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `prije ${diffHours}h`;
+  return `prije ${Math.floor(diffHours / 24)}d`;
+}
+```
+
+---
+
+## 5. NAVIGACIJA
+
+Dodaj link u sidebar/meni aplikacije:
+- Tekst: "Lokacije osoblja"
+- Ikona: MapPin
+- Ruta: `/staff-locations`
+- Vidljivo **samo admin** korisnicima
+
+Registruj rutu u routeru:
+```tsx
+<Route path="/staff-locations" component={StaffLocationsPage} />
+```
+
+---
+
+## 6. REZIME TOKA PODATAKA
+
+```
+Korisnik se uloguje
+  → useGeolocation hook se aktivira
+  → Šalje GPS koordinate na POST /api/users/location svakih 60s
+  → Backend čuva latitude, longitude, location_updated_at, last_active_at u users tabeli
+  → Admin otvori /staff-locations
+  → Frontend pozove GET /api/users/locations (auto-refresh 30s)
+  → Backend vrati 3 liste: locations (GPS), onlineNoGps, offline
+  → Frontend prikaže markere na Google Maps + sidebar sa listama
+```
+
+## NAPOMENE:
+- Koordinate se čuvaju kao TEXT u bazi (ne kao float) radi fleksibilnosti
+- Online prag: 30 minuta neaktivnosti = offline
+- GPS prag: lokacija starija od 60 minuta se ne prikazuje na mapi
+- Samo admin ima pristup GET /api/users/locations endpointu
+- Stranica `/staff-locations` redirectuje ne-admin korisnike na početnu
+- Google Maps API ključ mora imati uključen Maps JavaScript API
