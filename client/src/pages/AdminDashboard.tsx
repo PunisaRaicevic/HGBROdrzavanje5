@@ -1023,11 +1023,11 @@ export default function AdminDashboard() {
                             if (task.status === 'completed' && task.completed_at) {
                               return new Date(task.completed_at);
                             }
-                            // Za periodične/zakazane zadatke - koristi scheduled_for
-                            if (task.scheduled_for) {
+                            // Za child taskove periodičnih zadataka - koristi scheduled_for (datum perioda)
+                            if (task.scheduled_for && task.parent_task_id) {
                               return new Date(task.scheduled_for);
                             }
-                            // Za jednokratne - koristi created_at
+                            // Za sve ostale (jednokratne) - koristi created_at
                             return new Date(task.created_at);
                           };
                           
