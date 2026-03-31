@@ -721,7 +721,7 @@ export default function SupervisorDashboard() {
                                 className="w-full"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  completeExternalTaskMutation.mutate(task.id);
+                                  handleOpenExternalCompletion(task, e);
                                 }}
                                 disabled={completeExternalTaskMutation.isPending}
                                 data-testid={`button-complete-external-${task.id}`}
