@@ -951,7 +951,7 @@ export default function WorkerDashboard() {
                 </div>
 
                 {/* Action Buttons for Assigned Tasks */}
-                {selectedTask.status === 'assigned_to_radnik' && !actionType && (
+                {(selectedTask.status === 'assigned_to_radnik' || selectedTask.status === 'with_sef') && !actionType && (
                   <div className="space-y-3 pt-4 border-t">
                     {/* Confirm Receipt Button */}
                     {(() => {
@@ -1033,7 +1033,7 @@ export default function WorkerDashboard() {
                 )}
 
                 {/* Work Report Section for Assigned Tasks after action selected */}
-                {selectedTask.status === 'assigned_to_radnik' && actionType && (
+                {(selectedTask.status === 'assigned_to_radnik' || selectedTask.status === 'with_sef') && actionType && (
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="font-medium text-base">
                       {actionType === 'completed' 
