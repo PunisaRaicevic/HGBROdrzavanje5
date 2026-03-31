@@ -1055,17 +1055,17 @@ export default function AdminDashboard() {
                           const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
                           let periodFiltered = activeTasks.filter(task => {
                             const taskDate = getTaskDate(task);
-                            // Konvertuj sve datume na UTC midnight
-                            const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
-                            const startDateUTC = new Date(startDate!.getUTCFullYear(), startDate!.getUTCMonth(), startDate!.getUTCDate());
-                            const todayStartUTC = new Date(todayStart.getUTCFullYear(), todayStart.getUTCMonth(), todayStart.getUTCDate());
-                            const todayEndUTC = new Date(todayEnd.getUTCFullYear(), todayEnd.getUTCMonth(), todayEnd.getUTCDate());
+                            // Koristi LOKALNE datume (ne UTC) - izbjegava timezone pomak za UTC+ zone
+                            const taskLocalDate = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+                            const startLocalDate = new Date(startDate!.getFullYear(), startDate!.getMonth(), startDate!.getDate());
+                            const todayStartLocal = new Date(todayStart.getFullYear(), todayStart.getMonth(), todayStart.getDate());
+                            const todayEndLocal = new Date(todayEnd.getFullYear(), todayEnd.getMonth(), todayEnd.getDate());
                             // Završeni zadaci - prikaži ako su završeni u izabranom periodu (uključujući danas)
                             if (task.status === 'completed') {
-                              return taskDateUTC >= startDateUTC && taskDateUTC < todayEndUTC;
+                              return taskLocalDate >= startLocalDate && taskLocalDate < todayEndLocal;
                             }
-                            // Nezavršeni zadaci - prikaži samo ako su pre danas
-                            return taskDateUTC >= startDateUTC && taskDateUTC < todayStartUTC;
+                            // Nezavršeni zadaci - prikaži samo ako su kreirani/zakazani pre danas
+                            return taskLocalDate >= startLocalDate && taskLocalDate < todayStartLocal;
                           });
                           
                           if (historyStatusFilter === 'all') {
