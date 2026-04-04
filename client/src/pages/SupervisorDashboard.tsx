@@ -914,6 +914,10 @@ export default function SupervisorDashboard() {
                                     const isScheduledToday = scheduledDate >= todayStart && scheduledDate < todayEnd;
                                     return isScheduledToday;
                                   }
+                                  // Aktivni zadaci (nisu završeni/otkazani) - uvijek prikaži
+                                  const isActive = task.status !== 'completed' && task.status !== 'cancelled';
+                                  if (isActive) return true;
+                                  // Završeni/otkazani - prikaži samo ako su kreirani danas
                                   const createdDate = new Date(task.created_at);
                                   return createdDate >= todayStart && createdDate < todayEnd;
                                 });
@@ -939,7 +943,10 @@ export default function SupervisorDashboard() {
                                       const scheduledDate = new Date(task.scheduled_for);
                                       return scheduledDate >= todayStart && scheduledDate <= endDate!;
                                     }
-                                    
+                                    // Aktivni zadaci - uvijek prikaži
+                                    const isActive = task.status !== 'completed' && task.status !== 'cancelled';
+                                    if (isActive) return true;
+                                    // Završeni/otkazani - prikaži ako su kreirani u periodu
                                     const createdDate = new Date(task.created_at);
                                     return createdDate >= todayStart && createdDate <= endDate!;
                                   });
