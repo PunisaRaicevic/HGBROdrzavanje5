@@ -544,8 +544,8 @@ export default function WorkerDashboard() {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
-          title: "Invalid File",
-          description: "Please select an image file (JPG, PNG, etc.)",
+          title: "Nevažeći fajl",
+          description: "Molimo izaberite sliku (JPG, PNG, itd.)",
           variant: "destructive",
         });
         continue;
@@ -554,8 +554,8 @@ export default function WorkerDashboard() {
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: "File Too Large",
-          description: "Image must be smaller than 5MB",
+          title: "Fajl previše velik",
+          description: "Maksimalno dozvoljeno je 5MB po slici",
           variant: "destructive",
         });
         continue;
