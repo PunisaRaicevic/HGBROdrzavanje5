@@ -68,6 +68,11 @@ function Router() {
           return;
         }
 
+        if (!messaging) {
+          console.warn("[Web FCM] Messaging nije inicijalizovan");
+          return;
+        }
+
         const fcmToken = await getToken(messaging, { vapidKey });
 
         if (fcmToken) {

@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getMessaging, getToken } from "firebase/messaging";
+import { getMessaging, getToken, type Messaging } from "firebase/messaging";
+import { Capacitor } from "@capacitor/core";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAG8vYe5WM_3JhXYUj9C6UIrut4FnRBAxU",
@@ -11,6 +12,18 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const messaging = getMessaging(app);
+
+// getMessaging() requires Service Worker API which is NOT available
+// in Capacitor native WebView (Android/iOS).
+// On native platforms we use @capacitor/push-notifications instead.
+let messaging: Messaging | null = null;
+
+if (!Capacitor.isNativePlatform()) {
+  try {
+    messaging = getMessaging(app);
+  } catch (e) {
+    console.warn("[Firebase] Web Messaging init failed:", e);
+  }
+}
 
 export { messaging, getToken };

@@ -84,6 +84,15 @@ Preferred communication style: Simple, everyday language. NO EMOJI allowed.
 ### Image Generation (Planned - Routes Registered)
 - **POST `/api/generate-image`** - Generate image using Gemini 2.5 Flash Image model. Accepts `prompt` parameter.
 
+## Recent Changes (Session 2026-04-08)
+
+### White Screen on Android Fix - COMPLETE
+- **Root cause**: `firebase.ts` called `getMessaging(app)` at module level. Firebase Web Messaging SDK requires Service Worker API which does NOT exist in Capacitor's Android/iOS WebView. This caused the entire module to crash at startup before React could render anything.
+- **Fix**: `getMessaging()` is now wrapped in `!Capacitor.isNativePlatform()` guard. On native, `messaging = null` (correct: native push uses `@capacitor/push-notifications` not Web Firebase SDK).
+- **Additional fix**: Added null check in `App.tsx` before calling `getToken(messaging, ...)`.
+- **Vite base path**: Confirmed `base: process.env.NODE_ENV === "production" ? "./" : "/"` works correctly. Production builds output `./assets/...` (relative paths) required by Capacitor.
+- **Critical rule**: `server/vite.ts` imports vite config as a plain object — NEVER use `defineConfig(async () => {})` form as it returns a Promise that can't be spread into `createViteServer()`.
+
 ## Recent Changes (Session 2026-03-30)
 
 ### Staff Location Tracking - COMPLETE
