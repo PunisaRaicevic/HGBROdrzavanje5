@@ -147,6 +147,12 @@ export default function AdminDashboard() {
     refetchOnWindowFocus: true
   });
 
+  // Fetch full task details (including images) when a task is selected
+  const { data: selectedTaskDetail } = useQuery<{ task: any }>({
+    queryKey: ['/api/tasks', selectedTask?.id, 'detail'],
+    enabled: !!selectedTask?.id,
+  });
+
   // Sync selectedTask with latest data from tasks query
   useEffect(() => {
     if (selectedTask && tasksData?.tasks) {
@@ -1602,8 +1608,8 @@ export default function AdminDashboard() {
           time: selectedTask.created_at || new Date().toISOString(),
           fromName: selectedTask.created_by_name || '',
           from: selectedTask.created_by || '',
-          images: selectedTask.images,
-          worker_images: selectedTask.worker_images,
+          images: selectedTaskDetail?.task?.images ?? selectedTask.images,
+          worker_images: selectedTaskDetail?.task?.worker_images ?? selectedTask.worker_images,
           assigned_to_name: selectedTask.assigned_to_name,
           parent_task_id: selectedTask.parent_task_id,
           is_recurring: selectedTask.is_recurring,

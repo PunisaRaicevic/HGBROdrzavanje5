@@ -63,6 +63,7 @@ export default function SupervisorDashboard() {
   const [dailyReportOpen, setDailyReportOpen] = useState(false);
   const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
   const [selectedTaskForDetails, setSelectedTaskForDetails] = useState<any | null>(null);
+  const [selectedTaskForDetailsId, setSelectedTaskForDetailsId] = useState<string | null>(null);
   const [editTaskOpen, setEditTaskOpen] = useState(false);
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
   
@@ -154,6 +155,12 @@ export default function SupervisorDashboard() {
   const { data: tasksResponse, isLoading } = useQuery<{ tasks: any[] }>({
     queryKey: ['/api/tasks'],
     refetchInterval: 10000, // Refetch every 10 seconds
+  });
+
+  // Fetch full task details (including images) when a task is selected
+  const { data: taskDetailForDetails } = useQuery<{ task: any }>({
+    queryKey: ['/api/tasks', selectedTaskForDetailsId, 'detail'],
+    enabled: !!selectedTaskForDetailsId,
   });
 
   // Sync selectedTaskForDetails with latest data from tasks query
@@ -386,6 +393,7 @@ export default function SupervisorDashboard() {
   // Handle opening task details
   const handleViewTaskDetails = (task: any) => {
     setSelectedTaskForDetails(task);
+    setSelectedTaskForDetailsId(task.id);
     setTaskDetailsOpen(true);
   };
 
@@ -459,8 +467,8 @@ export default function SupervisorDashboard() {
           time: selectedTaskForDetails.created_at || new Date().toISOString(),
           fromName: selectedTaskForDetails.created_by_name || 'Unknown',
           from: selectedTaskForDetails.created_by || 'operator',
-          images: parseTaskImages(selectedTaskForDetails.images),
-          worker_images: parseTaskImages(selectedTaskForDetails.worker_images),
+          images: parseTaskImages(taskDetailForDetails?.task?.images ?? selectedTaskForDetails.images),
+          worker_images: parseTaskImages(taskDetailForDetails?.task?.worker_images ?? selectedTaskForDetails.worker_images),
           assigned_to_name: selectedTaskForDetails.assigned_to_name,
           is_recurring: selectedTaskForDetails.is_recurring,
           recurrence_pattern: selectedTaskForDetails.recurrence_pattern,

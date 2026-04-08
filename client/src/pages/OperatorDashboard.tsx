@@ -93,6 +93,7 @@ export default function OperatorDashboard() {
   const [currentTaskForTechnician, setCurrentTaskForTechnician] = useState<{ id: string; title: string } | null>(null);
   const [previousNewTaskCount, setPreviousNewTaskCount] = useState<number>(0);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(() => {
     const saved = localStorage.getItem('soundNotificationsEnabled');
@@ -122,6 +123,12 @@ export default function OperatorDashboard() {
   const { data: tasksResponse, isLoading } = useQuery<{ tasks: any[] }>({
     queryKey: ['/api/tasks'],
     refetchInterval: 10000, // Refetch every 10 seconds for real-time updates
+  });
+
+  // Fetch full task details (including images) when a task is selected
+  const { data: taskDetailResponse } = useQuery<{ task: any }>({
+    queryKey: ['/api/tasks', selectedTaskId, 'detail'],
+    enabled: !!selectedTaskId,
   });
 
   // Mutation to update task status
@@ -538,6 +545,7 @@ export default function OperatorDashboard() {
                     className="p-5 cursor-pointer hover-elevate transition-all" 
                     onClick={() => {
                       setSelectedTask(task);
+                      setSelectedTaskId(task.id);
                       setTaskDetailsOpen(true);
                     }}
                     data-testid={`card-task-${task.id}`}
@@ -761,7 +769,11 @@ export default function OperatorDashboard() {
       <TaskDetailsDialog
         open={taskDetailsOpen}
         onOpenChange={setTaskDetailsOpen}
-        task={selectedTask}
+        task={selectedTask && taskDetailResponse?.task ? {
+          ...selectedTask,
+          images: parseTaskImages(taskDetailResponse.task.images),
+          worker_images: parseTaskImages(taskDetailResponse.task.worker_images),
+        } : selectedTask}
       />
 
       {/* Technician Selection Dialog */}
