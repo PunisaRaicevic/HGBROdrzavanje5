@@ -840,7 +840,11 @@ export default function AdminDashboard() {
                             // "Danas" - prikaži zadatke koji su RELEVANTNI za danas:
                             // - Periodični (imaju scheduled_for): prikaži ako su zakazani za danas
                             // - Jednokratni (nemaju scheduled_for): prikaži ako su KREIRANI danas
+                            // - Vraćeni zadaci: uvijek vidljivi bez obzira na datum
                             periodFiltered = activeTasks.filter(task => {
+                              if (task.status === 'returned_to_operator' || task.status === 'returned_to_sef') {
+                                return true;
+                              }
                               if (task.scheduled_for) {
                                 // Periodični/zakazani zadaci - prikaži SAMO ako su zakazani za danas
                                 const scheduledDate = new Date(task.scheduled_for);
@@ -869,6 +873,10 @@ export default function AdminDashboard() {
                             
                             if (endDate) {
                               periodFiltered = activeTasks.filter(task => {
+                                // Vraćeni zadaci su uvijek vidljivi bez obzira na datum kreiranja
+                                if (task.status === 'returned_to_operator' || task.status === 'returned_to_sef') {
+                                  return true;
+                                }
                                 if (task.scheduled_for) {
                                   // Periodični/zakazani zadaci - prikaži ako su zakazani u periodu
                                   const scheduledDate = new Date(task.scheduled_for);

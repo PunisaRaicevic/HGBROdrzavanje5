@@ -917,6 +917,7 @@ export default function SupervisorDashboard() {
                               
                               if (tasksPeriodFilter === '1d') {
                                 periodFiltered = activeTasks.filter(task => {
+                                  if (task.status === 'returned_to_sef') return true;
                                   if (task.scheduled_for) {
                                     const scheduledDate = new Date(task.scheduled_for);
                                     const isScheduledToday = scheduledDate >= todayStart && scheduledDate < todayEnd;
@@ -943,6 +944,7 @@ export default function SupervisorDashboard() {
                                 
                                 if (endDate) {
                                   periodFiltered = activeTasks.filter(task => {
+                                    if (task.status === 'returned_to_sef') return true;
                                     if (task.scheduled_for) {
                                       const scheduledDate = new Date(task.scheduled_for);
                                       return scheduledDate >= todayStart && scheduledDate <= endDate!;
