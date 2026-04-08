@@ -386,7 +386,9 @@ export default function WorkerDashboard() {
   });
   
   const completedTasks = allTasks.filter(t => t.status === 'completed' && isToday(t.completedAt));
-  const returnedTasks = allTasks.filter(t => t.status === 'returned_to_sef');
+  const returnedTasks = allTasks.filter(t => 
+    t.status === 'returned_to_sef' || t.status === 'returned_to_operator'
+  );
 
   const selectedTask = allTasks.find(t => t.id === selectedTaskId);
 
@@ -800,12 +802,22 @@ export default function WorkerDashboard() {
                             <p className="text-lg text-foreground">
                               {task.description}
                             </p>
-                            {/* Don't show elapsed time for recurring tasks */}
-                            {!task.parent_task_id && (
-                              <p className="text-lg text-foreground">
-                                {getElapsedTime(task.receivedAt)} {t('ago')}
-                              </p>
-                            )}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Badge variant="outline" className={
+                                task.status === 'returned_to_operator' 
+                                  ? 'border-amber-500 text-amber-700 bg-amber-50'
+                                  : 'border-red-500 text-red-700 bg-red-50'
+                              }>
+                                {task.status === 'returned_to_operator' 
+                                  ? 'Vraćeno operateru' 
+                                  : 'Vraćeno šefu'}
+                              </Badge>
+                              {!task.parent_task_id && (
+                                <span className="text-base text-muted-foreground">
+                                  {getElapsedTime(task.receivedAt)} {t('ago')}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <XCircle className="w-8 h-8 text-orange-500 flex-shrink-0" />
                         </div>
