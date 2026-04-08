@@ -901,7 +901,9 @@ export default function AdminDashboard() {
                               case 'in_progress':
                                 return task.status === 'assigned_to_radnik' || 
                                        task.status === 'with_operator' || 
-                                       task.status === 'in_progress';
+                                       task.status === 'in_progress' ||
+                                       task.status === 'returned_to_operator' ||
+                                       task.status === 'returned_to_sef';
                               case 'pending':
                                 return task.status === 'new' || 
                                        task.status === 'pending' || 
@@ -935,10 +937,16 @@ export default function AdminDashboard() {
                           const getStatusBadge = (status: string) => {
                             if (status === 'completed') {
                               return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
-                            } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
+                            } else if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') {
                               return <Badge variant="secondary">U toku</Badge>;
+                            } else if (status === 'returned_to_operator' || status === 'returned_to_sef') {
+                              return <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-300">Vraćeno</Badge>;
                             } else if (status === 'with_external') {
                               return <Badge variant="outline">Eksterna firma</Badge>;
+                            } else if (status === 'new') {
+                              return <Badge variant="outline">Novo</Badge>;
+                            } else if (status === 'with_sef') {
+                              return <Badge variant="secondary">Sa šefom</Badge>;
                             }
                             return <Badge variant="secondary">{status}</Badge>;
                           };
@@ -1085,7 +1093,9 @@ export default function AdminDashboard() {
                               case 'in_progress':
                                 return task.status === 'assigned_to_radnik' || 
                                        task.status === 'with_operator' || 
-                                       task.status === 'in_progress';
+                                       task.status === 'in_progress' ||
+                                       task.status === 'returned_to_operator' ||
+                                       task.status === 'returned_to_sef';
                               case 'pending':
                                 return task.status === 'new' || 
                                        task.status === 'pending' || 
@@ -1119,10 +1129,16 @@ export default function AdminDashboard() {
                           const getStatusBadge = (status: string) => {
                             if (status === 'completed') {
                               return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
-                            } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
+                            } else if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') {
                               return <Badge variant="secondary">U toku</Badge>;
+                            } else if (status === 'returned_to_operator' || status === 'returned_to_sef') {
+                              return <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-300">Vraćeno</Badge>;
                             } else if (status === 'with_external') {
                               return <Badge variant="outline">Eksterna firma</Badge>;
+                            } else if (status === 'new') {
+                              return <Badge variant="outline">Novo</Badge>;
+                            } else if (status === 'with_sef') {
+                              return <Badge variant="secondary">Sa šefom</Badge>;
                             }
                             return <Badge variant="secondary">{status}</Badge>;
                           };
