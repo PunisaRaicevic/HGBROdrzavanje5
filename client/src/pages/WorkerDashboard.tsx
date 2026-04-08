@@ -319,6 +319,12 @@ export default function WorkerDashboard() {
     refetchInterval: 30000, // Reduced to 30 seconds - Socket.IO handles real-time updates
   });
 
+  // Fetch full task details (including images) when a task is selected
+  const { data: taskDetailResponse } = useQuery<{ task: any }>({
+    queryKey: ['/api/tasks', selectedTaskId, 'detail'],
+    enabled: !!selectedTaskId,
+  });
+
   // Helper function to check if a date is today
   const isToday = (date: Date | null | undefined): boolean => {
     if (!date) return false;
@@ -390,7 +396,14 @@ export default function WorkerDashboard() {
     t.status === 'returned_to_sef' || t.status === 'returned_to_operator'
   );
 
-  const selectedTask = allTasks.find(t => t.id === selectedTaskId);
+  const selectedTaskBase = allTasks.find(t => t.id === selectedTaskId);
+  const selectedTask = selectedTaskBase && taskDetailResponse?.task
+    ? {
+        ...selectedTaskBase,
+        reporterImages: taskDetailResponse.task.images || [],
+        worker_report: taskDetailResponse.task.worker_report || selectedTaskBase.worker_report || '',
+      }
+    : selectedTaskBase;
 
   const getElapsedTime = (receivedAt: Date): string => {
     const now = new Date();
