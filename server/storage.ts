@@ -182,6 +182,7 @@ export class SupabaseStorage implements IStorage {
         deadline_at, is_overdue, estimated_arrival_time, actual_arrival_time,
         estimated_completion_time, actual_completion_time, time_spent_minutes,
         created_at, updated_at, completed_at, worker_report,
+        images, worker_images,
         is_recurring, recurrence_pattern, recurrence_start_date, parent_task_id,
         next_occurrence, completed_by, completed_by_name,
         receipt_confirmed_at, receipt_confirmed_by, receipt_confirmed_by_name,
