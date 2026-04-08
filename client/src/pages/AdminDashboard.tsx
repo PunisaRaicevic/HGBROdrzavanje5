@@ -1223,27 +1223,28 @@ export default function AdminDashboard() {
               ) : (
                 (() => {
                   // Filter tasks - za zakazane zadatke koristi scheduled_for, za ostale created_at
+                  // Koristi LOKALNE datume (ne UTC) da izbjegnemo timezone pomak za UTC+ zone
                   const periodTasks = tasks.filter(t => {
+                    const rangeStartLocal = new Date(statsRange.start.getFullYear(), statsRange.start.getMonth(), statsRange.start.getDate());
+                    const rangeEndLocal = new Date(statsRange.end.getFullYear(), statsRange.end.getMonth(), statsRange.end.getDate());
                     // Za zakazane zadatke (child tasks od recurring) koristi scheduled_for
                     if (t.scheduled_for && t.parent_task_id) {
                       const scheduledDate = new Date(t.scheduled_for);
-                      const scheduledDateUTC = new Date(scheduledDate.getUTCFullYear(), scheduledDate.getUTCMonth(), scheduledDate.getUTCDate());
-                      const startDateUTC = new Date(statsRange.start.getUTCFullYear(), statsRange.start.getUTCMonth(), statsRange.start.getUTCDate());
-                      const endDateUTC = new Date(statsRange.end.getUTCFullYear(), statsRange.end.getUTCMonth(), statsRange.end.getUTCDate());
-                      return scheduledDateUTC >= startDateUTC && scheduledDateUTC < endDateUTC;
+                      const scheduledLocal = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate());
+                      return scheduledLocal >= rangeStartLocal && scheduledLocal < rangeEndLocal;
                     }
-                    // Za obicne zadatke koristi created_at
+                    // Za obicne zadatke koristi created_at (u lokalnom vremenu)
                     const taskDate = new Date(t.created_at);
-                    const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
-                    const startDateUTC = new Date(statsRange.start.getUTCFullYear(), statsRange.start.getUTCMonth(), statsRange.start.getUTCDate());
-                    const endDateUTC = new Date(statsRange.end.getUTCFullYear(), statsRange.end.getUTCMonth(), statsRange.end.getUTCDate());
-                    return taskDateUTC >= startDateUTC && taskDateUTC < endDateUTC;
+                    const taskLocal = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+                    return taskLocal >= rangeStartLocal && taskLocal < rangeEndLocal;
                   });
                   const completedTasks = periodTasks.filter(t => t.status === 'completed');
                   const inProgressTasks = periodTasks.filter(t => 
                     t.status === 'assigned_to_radnik' || 
                     t.status === 'with_operator' || 
-                    t.status === 'in_progress'
+                    t.status === 'in_progress' ||
+                    t.status === 'returned_to_operator' ||
+                    t.status === 'returned_to_sef'
                   );
                   const pendingTasks = periodTasks.filter(t => 
                     t.status === 'new' || 
@@ -1354,12 +1355,15 @@ export default function AdminDashboard() {
                                   filteredTasks = pendingTasks;
                                 } else if (selectedStatusFilter === 'external') {
                                   filteredTasks = externalTasks;
+                                } else {
+                                  // Bez filtera - prikaži sve zadatke iz perioda
+                                  filteredTasks = periodTasks;
                                 }
 
                                 if (filteredTasks.length === 0) {
                                   return (
                                     <p className="text-center text-muted-foreground py-6 text-sm">
-                                      Nema zadataka sa ovim statusom za izabrani period
+                                      Nema zadataka za izabrani period
                                     </p>
                                   );
                                 }
@@ -1370,10 +1374,14 @@ export default function AdminDashboard() {
                                     const getStatusBadge = (status: string) => {
                                       if (status === 'completed') {
                                         return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
-                                      } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
+                                      } else if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') {
                                         return <Badge variant="secondary">U toku</Badge>;
+                                      } else if (status === 'returned_to_operator' || status === 'returned_to_sef') {
+                                        return <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-300">Vraćeno</Badge>;
                                       } else if (status === 'with_external') {
                                         return <Badge variant="outline">Eksterna firma</Badge>;
+                                      } else if (status === 'new') {
+                                        return <Badge variant="outline">Novo</Badge>;
                                       }
                                       return <Badge variant="secondary">{status}</Badge>;
                                     };
