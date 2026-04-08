@@ -325,14 +325,13 @@ export default function WorkerDashboard() {
     enabled: !!selectedTaskId,
   });
 
-  // Helper function to check if a date is today
-  const isToday = (date: Date | null | undefined): boolean => {
+  // Helper function to check if a date is within the last 48 hours
+  const isRecent = (date: Date | null | undefined): boolean => {
     if (!date) return false;
-    const today = new Date();
+    const now = new Date();
     const checkDate = new Date(date);
-    return checkDate.getDate() === today.getDate() &&
-           checkDate.getMonth() === today.getMonth() &&
-           checkDate.getFullYear() === today.getFullYear();
+    const diffMs = now.getTime() - checkDate.getTime();
+    return diffMs >= 0 && diffMs < 48 * 60 * 60 * 1000; // last 48 hours
   };
 
   // Filter tasks assigned to this worker and map to UI format
@@ -354,7 +353,7 @@ export default function WorkerDashboard() {
       status: task.status as TaskStatus,
       description: task.description || '',
       receivedAt: new Date(task.created_at),
-      completedAt: task.completed_at ? new Date(task.completed_at) : null,
+      completedAt: task.completed_at ? new Date(task.completed_at) : (task.completedAt || null),
       reporterName: task.created_by_name,
       reporterImages: task.images || [],
       worker_report: task.worker_report || '',
@@ -391,7 +390,7 @@ export default function WorkerDashboard() {
     return isActiveStatus && isDueToday(t);
   });
   
-  const completedTasks = allTasks.filter(t => t.status === 'completed' && isToday(t.completedAt));
+  const completedTasks = allTasks.filter(t => t.status === 'completed' && isRecent(t.completedAt));
   const returnedTasks = allTasks.filter(t => 
     t.status === 'returned_to_sef' || t.status === 'returned_to_operator'
   );
