@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import ConnectPgSimple from "connect-pg-simple";
 import cors from "cors";
+import pg from "pg";
 import { registerRoutes } from "./routes";
 import { registerChatRoutes } from "./replit_integrations/chat";
 import { registerImageRoutes } from "./replit_integrations/image";
@@ -40,12 +41,16 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.warn('WARNING: SESSION_SECRET should be at least 32 characters long');
 }
 
-// Session store setup
+// Session store setup — koristimo pool sa max:1 da ne prekoracimo Neon Session mode limit
+const sessionPool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 1,
+});
 const PgSession = ConnectPgSimple(session);
 app.use(
   session({
     store: new PgSession({
-      conString: process.env.DATABASE_URL,
+      pool: sessionPool,
       createTableIfMissing: true,
     }),
     secret: process.env.SESSION_SECRET || "default-dev-secret",
