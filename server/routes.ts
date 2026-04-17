@@ -361,34 +361,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Invalid username or password" });
       }
 
+      const jwtToken = generateToken({
+        userId: user.id,
+        username: user.username,
+        role: user.role,
+        fullName: user.full_name,
+      });
+
+      const { password_hash, ...userWithoutPassword } = user;
+
+      let responded = false;
+      const sendResponse = () => {
+        if (responded) return;
+        responded = true;
+        res.json({
+          user: userWithoutPassword,
+          token: jwtToken,
+        });
+      };
+
+      const sessionTimeout = setTimeout(() => {
+        console.warn("[LOGIN] Session save timeout (3s) - responding with JWT only");
+        sendResponse();
+      }, 3000);
+
       req.session.regenerate((err: any) => {
         if (err) {
           console.error("Session regeneration error:", err);
-          return res.status(500).json({ error: "Internal server error" });
+          clearTimeout(sessionTimeout);
+          return sendResponse();
         }
 
         req.session.userId = user.id;
         req.session.userRole = user.role;
 
         req.session.save((saveErr: any) => {
+          clearTimeout(sessionTimeout);
           if (saveErr) {
             console.error("Session save error:", saveErr);
-            return res.status(500).json({ error: "Internal server error" });
           }
-
-          const jwtToken = generateToken({
-            userId: user.id,
-            username: user.username,
-            role: user.role,
-            fullName: user.full_name,
-          });
-
-          const { password_hash, ...userWithoutPassword } = user;
-
-          res.json({
-            user: userWithoutPassword,
-            token: jwtToken,
-          });
+          sendResponse();
         });
       });
     } catch (error) {
