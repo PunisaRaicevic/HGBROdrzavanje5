@@ -108,14 +108,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       console.log('[AUTH] Attempting login for:', username);
       
+      const loginController = new AbortController();
+      const loginTimeoutId = setTimeout(() => loginController.abort(), 20000);
       const response = await fetch(getApiUrl('/api/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
-        credentials: 'include'
+        credentials: 'include',
+        signal: loginController.signal
       });
+      clearTimeout(loginTimeoutId);
 
       const data = await response.json();
 
