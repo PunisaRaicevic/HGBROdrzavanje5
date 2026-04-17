@@ -52,11 +52,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             headers['Authorization'] = `Bearer ${storedToken}`;
           }
           
-          // Verify session with server (JWT or session-based)
+          // Verify session with server (JWT or session-based) with 8s timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
           const response = await fetch(getApiUrl('/api/auth/me'), {
             credentials: 'include',  // For web session cookies
-            headers
+            headers,
+            signal: controller.signal
           });
+          clearTimeout(timeoutId);
           
           if (response.ok) {
             // Get fresh user data from server
