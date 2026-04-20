@@ -47,23 +47,41 @@ const sessionPool = new pg.Pool({
   max: 1,
 });
 const PgSession = ConnectPgSimple(session);
-app.use(
-  session({
-    store: new PgSession({
-      pool: sessionPool,
-      createTableIfMissing: true,
-    }),
-    secret: process.env.SESSION_SECRET || "default-dev-secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      httpOnly: true,
-      secure: false, // False je OBAVEZNO za Replit/Development/Hibridne app
-      sameSite: "lax",
-    },
-  })
-);
+const sessionMiddleware = session({
+  store: new PgSession({
+    pool: sessionPool,
+    createTableIfMissing: true,
+  }),
+  secret: process.env.SESSION_SECRET || "default-dev-secret",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+  },
+});
+
+// Skip session middleware for JWT-based requests (Authorization header) and for
+// requests without a session cookie. This prevents the Supabase session pool
+// from being hit on every request — when the pool is exhausted, every request
+// would otherwise hang for 15s. JWT auth works without session storage.
+app.use((req, res, next) => {
+  const hasAuthHeader = !!req.headers.authorization;
+  const hasSessionCookie = !!(req.headers.cookie && req.headers.cookie.includes("connect.sid"));
+  if (hasAuthHeader || !hasSessionCookie) {
+    (req as any).session = {
+      save: (cb?: any) => cb && cb(),
+      regenerate: (cb?: any) => cb && cb(),
+      destroy: (cb?: any) => cb && cb(),
+      touch: () => {},
+      reload: (cb?: any) => cb && cb(),
+    };
+    return next();
+  }
+  return sessionMiddleware(req, res, next);
+});
 
 // Extend session type
 declare module "express-session" {
