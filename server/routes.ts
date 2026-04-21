@@ -53,13 +53,14 @@ const updateUserSchema = z.object({
 });
 
 // Authentication middleware
-// In-memory throttle za last_seen update - update DB max jednom na 30 sekundi po korisniku
+// In-memory throttle za last_seen update - update DB max jednom na 5 minuta po korisniku
 const lastSeenThrottle = new Map<string, number>();
+const LAST_SEEN_THROTTLE_MS = 5 * 60 * 1000;
 
 function updateLastSeenThrottled(userId: string) {
   const now = Date.now();
   const lastUpdate = lastSeenThrottle.get(userId) || 0;
-  if (now - lastUpdate > 30000) {
+  if (now - lastUpdate > LAST_SEEN_THROTTLE_MS) {
     lastSeenThrottle.set(userId, now);
     storage.updateUser(userId, { last_seen: new Date().toISOString() } as any).catch(() => {});
   }
