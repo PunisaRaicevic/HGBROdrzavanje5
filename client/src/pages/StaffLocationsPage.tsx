@@ -126,7 +126,7 @@ export default function StaffLocationsPage() {
       if (!res.ok) throw new Error('Failed to fetch locations');
       return res.json();
     },
-    refetchInterval: 30000,
+    refetchInterval: 60000,
   });
 
   useEffect(() => {
