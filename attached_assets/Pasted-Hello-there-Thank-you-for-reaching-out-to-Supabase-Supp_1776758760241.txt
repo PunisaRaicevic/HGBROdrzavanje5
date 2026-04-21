@@ -1,0 +1,41 @@
+Hello there, 
+
+Thank you for reaching out to Supabase Support. 
+
+Your database was unresponsive due to resource contention. I have restarted your database and it is now accepting connections. Likewise, your project is active and all services are healthy at this time. Restarting the database/project will release the connections to the database, freeing up resources; however, the root cause will need to be addressed otherwise you will continue to run into issue. 
+
+This type of incident most commonly occurs when the database becomes unresponsive under sustained resource pressure, typically memory (RAM), disk I/O (EBS), CPU, or a combination of these. When that happens you may see slowdowns, timeouts, connection errors, or the instance becoming unhealthy. In the most severe scenarios, the OS may terminate processes due to out-of-memory conditions.
+
+From your database metrics we can see where your database was over utilizing memory and SWAP is consistently being used:
+
+
+Additionally, we can see an overcommitment of memory happening:
+
+
+Rising RAM with prolonged SWAP usage usually indicates sustained memory pressure. SWAP usage alone is not automatically a problem, but heavy or prolonged reliance often correlates with major slowdowns and increased risk of instability.
+
+High and sustained CPU usage can cause similar symptoms. When CPU is saturated, the database can fall behind on query execution and background work, which leads to increased latency, timeouts, and a buildup of queued work. This is often worsened by high query concurrency, inefficient queries, or missing indexes.
+
+Sometimes processes may request more memory than they immediately need. Overcommitment allows the OS to allocate memory optimistically so resources are not left idle. However, if the system comes under real memory pressure and multiple processes begin actively using that memory at the same time, the OS may be forced to evict a process to recover.
+
+Your instance can burst above its baseline performance for a short period using burst credits. When those credits are depleted, performance drops until credits recover. At the instance level, compute needs to continuously read and write to the EBS volume. 
+
+When disk I/O is throttled because burst credits are exhausted, the instance cannot interact with disk effectively, which can cascade into timeouts and unresponsiveness. More info can be found in the Compute and Disk guide.
+
+Use the guides below to identify the limiting resource and apply the relevant optimization steps:
+High CPU usage
+Exhausted RAM  
+Exhausted Disk I/O
+Query optimization
+
+Check the built-in advisors in the Dashboard for targeted improvements:
+Index advisor
+Performance advisor
+
+If you want to have a much more granular reporting metrics for your CPU/RAM and Disk IO, please look at this Supabase Grafana Installation Guide.
+
+With the Pro tier, Nano Compute are billed at the same price as Micro Compute. It is recommended to upgrade your Project from Nano Compute to Micro Compute when it's convenient for you.
+
+Thanks so much,
+Leigh Anne Applewhite
+Supabase Support
