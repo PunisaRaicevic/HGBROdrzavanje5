@@ -166,10 +166,12 @@ export default function AdminDashboard() {
   // Create new user mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: { username: string; email: string; full_name: string; password: string; role: string; job_title?: string; department?: string; phone?: string }) => {
+      const token = localStorage.getItem('authToken');
       const response = await fetch(getApiUrl('/api/users'), {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(userData),
         credentials: 'include'
