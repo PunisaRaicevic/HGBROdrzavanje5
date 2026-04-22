@@ -99,7 +99,7 @@ export default function AdminDashboard() {
   const [newUserRole, setNewUserRole] = useState('');
   const [newUserJobTitle, setNewUserJobTitle] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [tasksPerPage, setTasksPerPage] = useState<number>(10);
+  const [tasksPerPage, setTasksPerPage] = useState<number>(999999);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editTaskOpen, setEditTaskOpen] = useState(false);
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [historyPeriodFilter, setHistoryPeriodFilter] = useState<string>('7d'); // History period filter
   const [historyStatusFilter, setHistoryStatusFilter] = useState<string>('all'); // History status filter
-  const [historyPerPage, setHistoryPerPage] = useState<number>(10); // History items per page
+  const [historyPerPage, setHistoryPerPage] = useState<number>(999999); // History items per page
   const [taskViewTab, setTaskViewTab] = useState<string>('upcoming'); // Toggle between upcoming and history
   
   // Period states with date ranges
@@ -685,30 +685,6 @@ export default function AdminDashboard() {
                       <RefreshCw className={`h-4 w-4 ${tasksFetching ? 'animate-spin' : ''}`} />
                     </Button>
                   </div>
-                  <Select 
-                    value={taskViewTab === 'upcoming' 
-                      ? (tasksPerPage === 999999 ? 'all' : String(tasksPerPage))
-                      : (historyPerPage === 999999 ? 'all' : String(historyPerPage))
-                    } 
-                    onValueChange={(val) => {
-                      if (taskViewTab === 'upcoming') {
-                        setTasksPerPage(val === 'all' ? 999999 : parseInt(val));
-                      } else {
-                        setHistoryPerPage(val === 'all' ? 999999 : parseInt(val));
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-32" data-testid="select-tasks-per-page">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5</SelectItem>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="20">20</SelectItem>
-                      <SelectItem value="30">30</SelectItem>
-                      <SelectItem value="all">Sve</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 <TabsContent value="upcoming" className="mt-0 space-y-3">
