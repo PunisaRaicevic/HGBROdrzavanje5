@@ -1553,10 +1553,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }, {});
 
       // Prepare context for AI - ALL tasks with full date info for AI to filter by period from question
+      const fmtDateTime = (iso: string | null | undefined) => {
+        if (!iso) return null;
+        const d = new Date(iso);
+        const date = d.toLocaleDateString('sr-RS');
+        const time = d.toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' });
+        return `${date} ${time}`;
+      };
+
       const allTasksFormatted = allTasks.map((t: any) => {
-        const createdDate = new Date(t.created_at).toLocaleDateString('sr-RS');
-        const scheduledDate = t.scheduled_for ? new Date(t.scheduled_for).toLocaleDateString('sr-RS') : null;
-        const completedDate = t.completed_at ? new Date(t.completed_at).toLocaleDateString('sr-RS') : null;
+        const createdDate = fmtDateTime(t.created_at);
+        const scheduledDate = fmtDateTime(t.scheduled_for);
+        const completedDate = fmtDateTime(t.completed_at);
         const isRecurring = t.is_recurring || t.parent_task_id ? 'Periodican' : 'Jednokratan';
         return `- ${t.title} | Status: ${t.status} | Prioritet: ${t.priority || 'normal'} | Kreiran: ${createdDate} | Zakazan: ${scheduledDate || 'N/A'} | Zavrsen: ${completedDate || 'Nije'} | Tip: ${isRecurring} | Tehnicar: ${t.assigned_to_name || 'Nije dodeljen'} | Lokacija: ${t.location || 'N/A'}`;
       }).join('\n');
