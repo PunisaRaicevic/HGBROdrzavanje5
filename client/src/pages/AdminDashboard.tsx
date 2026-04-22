@@ -1491,11 +1491,11 @@ export default function AdminDashboard() {
                     const taskDate = t.scheduled_for 
                       ? new Date(t.scheduled_for) 
                       : new Date(t.created_at);
-                    // Konvertuj oba datuma na UTC midnight za poredjenje
-                    const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
-                    const startDateUTC = new Date(reportRange.start.getUTCFullYear(), reportRange.start.getUTCMonth(), reportRange.start.getUTCDate());
-                    const endDateUTC = new Date(reportRange.end.getUTCFullYear(), reportRange.end.getUTCMonth(), reportRange.end.getUTCDate());
-                    return taskDateUTC >= startDateUTC && taskDateUTC < endDateUTC;
+                    // Koristimo lokalno vrijeme jer PeriodPicker generise lokalne datume
+                    const taskLocalMidnight = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+                    const rangeStart = new Date(reportRange.start.getFullYear(), reportRange.start.getMonth(), reportRange.start.getDate());
+                    const rangeEnd = new Date(reportRange.end.getFullYear(), reportRange.end.getMonth(), reportRange.end.getDate());
+                    return taskLocalMidnight >= rangeStart && taskLocalMidnight < rangeEnd;
                   });
 
                   const completedReportTasks = periodTasks.filter(t => t.status === 'completed');
