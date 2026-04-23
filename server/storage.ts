@@ -313,15 +313,31 @@ export class SupabaseStorage implements IStorage {
 
   async getTaskHistoriesForTasks(taskIds: string[]): Promise<TaskHistory[]> {
     if (taskIds.length === 0) return [];
-    
-    const { data, error } = await supabase
-      .from('task_history')
-      .select('*')
-      .in('task_id', taskIds)
-      .order('timestamp', { ascending: true });
-    
-    if (error) throw error;
-    return (data || []) as TaskHistory[];
+
+    const CHUNK_SIZE = 50;
+    const PAGE_SIZE = 1000;
+    const allHistories: TaskHistory[] = [];
+
+    for (let i = 0; i < taskIds.length; i += CHUNK_SIZE) {
+      const chunk = taskIds.slice(i, i + CHUNK_SIZE);
+      let from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from('task_history')
+          .select('*')
+          .in('task_id', chunk)
+          .order('timestamp', { ascending: true })
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) throw error;
+        const rows = (data || []) as TaskHistory[];
+        allHistories.push(...rows);
+        if (rows.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+    }
+
+    return allHistories;
   }
 
   async createNotification(notificationData: Partial<InsertNotification>): Promise<Notification> {
