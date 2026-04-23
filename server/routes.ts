@@ -698,9 +698,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`[USER DEACTIVATE] User ${user.full_name} (${id}) deactivated by admin ${currentUserId}`);
 
+      const adminUser = await storage.getUserById(currentUserId);
+      storage.createAuditEntry({
+        user_id: currentUserId,
+        user_name: adminUser?.full_name || 'Nepoznat',
+        user_role: adminUser?.role || null,
+        action: 'user_deleted',
+        target_type: 'user',
+        target_id: id,
+        target_label: user.full_name,
+        snapshot: { id: user.id, username: user.username, email: user.email, full_name: user.full_name, role: user.role, department: user.department },
+        details: `Korisnik "${user.full_name}" (${user.username}, ${user.role}) deaktiviran`,
+        ip_address: (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || null,
+      });
+
       res.json({ success: true, message: "Korisnik je uspešno deaktiviran." });
     } catch (error) {
       console.error("Error deactivating user:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/audit-log", requireAdmin, async (req, res) => {
+    try {
+      const limit = Math.min(parseInt(req.query.limit as string) || 100, 500);
+      const offset = parseInt(req.query.offset as string) || 0;
+      const targetType = req.query.targetType as string | undefined;
+      const action = req.query.action as string | undefined;
+
+      const result = await storage.getAuditLog({ limit, offset, targetType, action });
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching audit log:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
@@ -1283,6 +1312,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       await storage.deleteTask(id);
+
+      storage.createAuditEntry({
+        user_id: sessionUser.id,
+        user_name: sessionUser.full_name,
+        user_role: sessionUser.role,
+        action: 'task_deleted',
+        target_type: 'task',
+        target_id: id,
+        target_label: task.title,
+        snapshot: {
+          id: task.id,
+          title: task.title,
+          location: task.location,
+          room_number: task.room_number,
+          status: task.status,
+          priority: task.priority,
+          created_by_name: task.created_by_name,
+          assigned_to_name: task.assigned_to_name,
+          created_at: task.created_at,
+          is_recurring: task.is_recurring,
+        },
+        details: `Zadatak "${task.title}" obrisan${isRecurringTemplate ? ` (periodični šablon, ${deletedChildCount} budućih instanci obrisano)` : task.parent_task_id ? ' (instanca periodičnog)' : ''}`,
+        ip_address: (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || null,
+      });
+
       res.json({ message: "Task deleted successfully", deletedChildTasks: deletedChildCount });
     } catch (error) {
       console.error("Error deleting task:", error);

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X, MapPin } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X, MapPin, Shield, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useLocation } from 'wouter';
 import {
   Dialog,
@@ -25,7 +25,7 @@ import EditTaskDialog from '@/components/EditTaskDialog';
 import AdminAIChat from '@/components/AdminAIChat';
 import { PeriodPicker } from '@/components/PeriodPicker';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
+import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getApiUrl } from '@/lib/apiUrl';
@@ -84,6 +84,164 @@ function formatLastSeen(lastSeen: string | null): { label: string; online: boole
   const dd = String(d.getDate()).padStart(2, '0');
   const mo = String(d.getMonth() + 1).padStart(2, '0');
   return { label: `Aktivan/na ${dd}.${mo}.`, online: false };
+}
+
+interface AuditEntry {
+  id: string;
+  timestamp: string;
+  user_id: string | null;
+  user_name: string;
+  user_role: string | null;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  target_label: string | null;
+  snapshot: any;
+  details: string | null;
+  ip_address: string | null;
+}
+
+function formatAuditDate(ts: string): string {
+  const d = new Date(ts);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const yy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${dd}.${mo}.${yy}. ${hh}:${mm}`;
+}
+
+const ACTION_LABELS: Record<string, string> = {
+  task_deleted: 'Brisanje zadatka',
+  user_deleted: 'Brisanje korisnika',
+  user_created: 'Kreiranje korisnika',
+  user_updated: 'Izmjena korisnika',
+};
+
+const TARGET_LABELS: Record<string, string> = {
+  task: 'Zadatak',
+  user: 'Korisnik',
+};
+
+function AuditLogPanel() {
+  const [entries, setEntries] = useState<AuditEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterAction, setFilterAction] = useState<string>('all');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const loadAudit = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ limit: '200' });
+      if (filterAction !== 'all') params.set('action', filterAction);
+      const res = await apiRequest('GET', `/api/audit-log?${params}`);
+      const data = await res.json();
+      setEntries(data.entries || []);
+    } catch (e) {
+      console.error('Failed to load audit log:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadAudit(); }, [filterAction]);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Shield className="w-5 h-5" />
+          Dnevnik aktivnosti (audit log)
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Trajna evidencija osjetljivih akcija. Zapisi ostaju i kada se zadatak/korisnik obriše.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-2 items-center">
+          <Select value={filterAction} onValueChange={setFilterAction}>
+            <SelectTrigger className="w-64" data-testid="select-audit-action">
+              <SelectValue placeholder="Filter po akciji" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Sve akcije</SelectItem>
+              <SelectItem value="task_deleted">Brisanje zadataka</SelectItem>
+              <SelectItem value="user_deleted">Brisanje korisnika</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={loadAudit} data-testid="button-refresh-audit">
+            <RefreshCw className="w-4 h-4 mr-1.5" />
+            Osvježi
+          </Button>
+          <span className="text-sm text-muted-foreground ml-auto" data-testid="text-audit-count">
+            {entries.length} zapisa
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-8 text-muted-foreground">Učitavanje...</div>
+        ) : entries.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Nema zapisa. Audit log se popunjava od trenutka uvođenja - ranija brisanja nisu evidentirana.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {entries.map((entry) => {
+              const isExpanded = expandedId === entry.id;
+              const isDelete = entry.action.endsWith('_deleted');
+              return (
+                <div
+                  key={entry.id}
+                  className="border rounded-lg p-3 hover-elevate"
+                  data-testid={`audit-entry-${entry.id}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`mt-1 p-1.5 rounded ${isDelete ? 'bg-destructive/10 text-destructive' : 'bg-muted'}`}>
+                      {isDelete ? <Trash2 className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-sm">
+                          {ACTION_LABELS[entry.action] || entry.action}
+                        </span>
+                        <Badge variant="outline" className="text-xs">
+                          {TARGET_LABELS[entry.target_type] || entry.target_type}
+                        </Badge>
+                      </div>
+                      <div className="text-sm mt-1">{entry.details || entry.target_label}</div>
+                      <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-3">
+                        <span>{formatAuditDate(entry.timestamp)}</span>
+                        <span>Korisnik: <strong>{entry.user_name}</strong>{entry.user_role ? ` (${entry.user_role})` : ''}</span>
+                        {entry.ip_address && <span>IP: {entry.ip_address}</span>}
+                      </div>
+                    </div>
+                    {entry.snapshot && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setExpandedId(isExpanded ? null : entry.id)}
+                        data-testid={`button-expand-audit-${entry.id}`}
+                      >
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </Button>
+                    )}
+                  </div>
+                  {isExpanded && entry.snapshot && (
+                    <div className="mt-3 pt-3 border-t">
+                      <div className="text-xs font-medium mb-2 text-muted-foreground">Snapshot u trenutku akcije:</div>
+                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap break-all">
+                        {JSON.stringify(entry.snapshot, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function AdminDashboard() {
@@ -445,7 +603,7 @@ export default function AdminDashboard() {
 
       {/* Main Admin Features */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="h-9 w-full grid grid-cols-4">
+        <TabsList className="h-9 w-full grid grid-cols-5">
           <TabsTrigger value="users" data-testid="tab-users" className="text-sm">
             <Users className="w-3.5 h-3.5 mr-1.5" />
             Korisnici
@@ -461,6 +619,10 @@ export default function AdminDashboard() {
           <TabsTrigger value="locations" data-testid="tab-locations" className="text-sm" onClick={() => navigate('/staff-locations')}>
             <MapPin className="w-3.5 h-3.5 mr-1.5" />
             Lokacije
+          </TabsTrigger>
+          <TabsTrigger value="audit" data-testid="tab-audit" className="text-sm">
+            <Shield className="w-3.5 h-3.5 mr-1.5" />
+            Audit
           </TabsTrigger>
         </TabsList>
 
@@ -1593,6 +1755,10 @@ export default function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="audit" className="space-y-4">
+          <AuditLogPanel />
         </TabsContent>
 
         </Tabs>

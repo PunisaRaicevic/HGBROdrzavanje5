@@ -102,6 +102,21 @@ export const task_history = pgTable("task_history", {
   assigned_to_name: text("assigned_to_name"),
 });
 
+export const audit_log = pgTable("audit_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  timestamp: timestamp("timestamp", { withTimezone: true }).notNull().defaultNow(),
+  user_id: varchar("user_id"),
+  user_name: text("user_name").notNull(),
+  user_role: text("user_role"),
+  action: text("action").notNull(),
+  target_type: text("target_type").notNull(),
+  target_id: varchar("target_id"),
+  target_label: text("target_label"),
+  snapshot: jsonb("snapshot"),
+  details: text("details"),
+  ip_address: varchar("ip_address"),
+});
+
 export const notifications = pgTable("notifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   user_id: varchar("user_id").notNull(),

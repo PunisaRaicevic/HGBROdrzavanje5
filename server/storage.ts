@@ -12,6 +12,34 @@ import {
   type InsertUserDeviceToken
 } from "@shared/schema";
 
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;
+  user_id: string | null;
+  user_name: string;
+  user_role: string | null;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  target_label: string | null;
+  snapshot: any;
+  details: string | null;
+  ip_address: string | null;
+}
+
+export interface CreateAuditEntry {
+  user_id?: string | null;
+  user_name: string;
+  user_role?: string | null;
+  action: string;
+  target_type: string;
+  target_id?: string | null;
+  target_label?: string | null;
+  snapshot?: any;
+  details?: string | null;
+  ip_address?: string | null;
+}
+
 export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -45,6 +73,9 @@ export interface IStorage {
   saveDeviceToken(token: Partial<InsertUserDeviceToken>): Promise<UserDeviceToken>;
   getDeviceTokensForUser(userId: string): Promise<UserDeviceToken[]>;
   deactivateDeviceToken(fcmToken: string): Promise<void>;
+
+  createAuditEntry(entry: CreateAuditEntry): Promise<void>;
+  getAuditLog(options?: { limit?: number; offset?: number; targetType?: string; userId?: string; action?: string }): Promise<{ entries: AuditLogEntry[]; total: number }>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -338,6 +369,50 @@ export class SupabaseStorage implements IStorage {
     }
 
     return allHistories;
+  }
+
+  async createAuditEntry(entry: CreateAuditEntry): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('audit_log')
+        .insert({
+          user_id: entry.user_id ?? null,
+          user_name: entry.user_name,
+          user_role: entry.user_role ?? null,
+          action: entry.action,
+          target_type: entry.target_type,
+          target_id: entry.target_id ?? null,
+          target_label: entry.target_label ?? null,
+          snapshot: entry.snapshot ?? null,
+          details: entry.details ?? null,
+          ip_address: entry.ip_address ?? null,
+        });
+      if (error) {
+        console.error('[AUDIT LOG] Failed to insert:', error.message);
+      }
+    } catch (e: any) {
+      console.error('[AUDIT LOG] Exception:', e?.message || e);
+    }
+  }
+
+  async getAuditLog(options: { limit?: number; offset?: number; targetType?: string; userId?: string; action?: string } = {}): Promise<{ entries: AuditLogEntry[]; total: number }> {
+    const limit = options.limit ?? 100;
+    const offset = options.offset ?? 0;
+
+    let query = supabase
+      .from('audit_log')
+      .select('*', { count: 'exact' })
+      .order('timestamp', { ascending: false });
+
+    if (options.targetType) query = query.eq('target_type', options.targetType);
+    if (options.userId) query = query.eq('user_id', options.userId);
+    if (options.action) query = query.eq('action', options.action);
+
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+    if (error) throw error;
+    return { entries: (data || []) as AuditLogEntry[], total: count || 0 };
   }
 
   async createNotification(notificationData: Partial<InsertNotification>): Promise<Notification> {
