@@ -122,7 +122,7 @@ export default function OperatorDashboard() {
   // Fetch all tasks from API
   const { data: tasksResponse, isLoading } = useQuery<{ tasks: any[] }>({
     queryKey: ['/api/tasks'],
-    refetchInterval: 10000, // Refetch every 10 seconds for real-time updates
+    refetchInterval: 25000, // Refetch every 25s (was 10s)
   });
 
   // Fetch full task details (including images) when a task is selected

@@ -46,7 +46,7 @@ export default function WorkerProfileDialog({
   const { data: tasksResponse } = useQuery<{ tasks: any[] }>({
     queryKey: ['/api/tasks'],
     enabled: !!worker,
-    refetchInterval: 10000,
+    refetchInterval: 30000,
   });
 
   if (!worker) return null;

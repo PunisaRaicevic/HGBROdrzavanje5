@@ -57,7 +57,7 @@ export default function TechnicianDashboard() {
   const { data: tasksData, isLoading: tasksLoading } = useQuery<{ tasks: any[] }>({
     queryKey: ['/api/tasks'],
     enabled: !!user?.id,
-    refetchInterval: 15000,
+    refetchInterval: 25000,
   });
 
   const allTasks = (tasksData?.tasks || []).filter(

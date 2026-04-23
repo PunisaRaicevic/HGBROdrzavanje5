@@ -55,7 +55,8 @@ export default function AppHeader() {
   const { data: tasks = [] } = useQuery({
     queryKey: ['/api/tasks'],
     enabled: user?.role === 'radnik',
-    refetchInterval: 5000, // Poll every 5 seconds for new tasks
+    refetchInterval: 20000, // Poll every 20s (was 5s) - hotel UX doesn't need sub-5s freshness
+    refetchOnWindowFocus: true, // Instant refresh when user returns to tab
   });
 
   // Load acknowledged task IDs from localStorage on mount and listen for updates

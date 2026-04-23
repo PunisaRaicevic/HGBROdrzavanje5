@@ -136,14 +136,14 @@ export default function AdminDashboard() {
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
     queryKey: ['/api/users'],
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 30000, // Refresh every 30s (was 10s)
     refetchOnWindowFocus: true
   });
 
   // Fetch tasks (auto-refresh every 5 seconds)
   const { data: tasksData, isLoading: tasksLoading, isFetching: tasksFetching, refetch: refetchTasks } = useQuery<{ tasks: Task[] }>({
     queryKey: ['/api/tasks'],
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: 20000, // Refresh every 20s (was 5s)
     refetchOnWindowFocus: true
   });
 
