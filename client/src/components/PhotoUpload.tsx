@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Camera as CapacitorCamera } from '@capacitor/camera';
 import { CameraResultType, CameraSource } from '@capacitor/camera';
 import { ImagePreviewModal } from './ImagePreviewModal';
+import { fileToCompressedDataUrl, compressImageDataUrl, dataUrlSizeKB } from '@/lib/imageCompressor';
 
 export type PhotoPreview = {
   id: string;
@@ -57,16 +58,17 @@ export function PhotoUpload({
         continue;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
+      try {
+        const dataUrl = await fileToCompressedDataUrl(file);
         const newPhoto: PhotoPreview = {
           id: `photo-${Date.now()}-${i}`,
           dataUrl,
         };
         onPhotosChange([...photos, newPhoto]);
-      };
-      reader.readAsDataURL(file);
+        console.log(`[PhotoUpload] Compressed: ${Math.round(file.size / 1024)}KB -> ${dataUrlSizeKB(dataUrl)}KB`);
+      } catch (err) {
+        console.error('[PhotoUpload] compress error:', err);
+      }
     }
 
     event.target.value = '';
@@ -75,16 +77,17 @@ export function PhotoUpload({
   const handleTakePhoto = async () => {
     try {
       const image = await CapacitorCamera.getPhoto({
-        quality: 90,
+        quality: 80,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Camera,
       });
 
       if (image.dataUrl) {
+        const compressed = await compressImageDataUrl(image.dataUrl);
         const newPhoto: PhotoPreview = {
           id: `photo-${Date.now()}`,
-          dataUrl: image.dataUrl,
+          dataUrl: compressed,
         };
         onPhotosChange([...photos, newPhoto]);
         

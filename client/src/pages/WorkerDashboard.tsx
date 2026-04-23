@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { fileToCompressedDataUrl, compressImageDataUrl } from '@/lib/imageCompressor';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -516,9 +517,10 @@ export default function WorkerDashboard() {
     try {
       const dataUrl = await capacitorCamera.takePhoto();
       if (dataUrl) {
+        const compressed = await compressImageDataUrl(dataUrl);
         const newPhoto: PhotoPreview = {
           id: `photo-${Date.now()}`,
-          dataUrl,
+          dataUrl: compressed,
         };
         setUploadedPhotos(prev => [...prev, newPhoto]);
       }
@@ -560,17 +562,16 @@ export default function WorkerDashboard() {
         continue;
       }
 
-      // Read file as data URL for preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
+      try {
+        const dataUrl = await fileToCompressedDataUrl(file);
         const newPhoto: PhotoPreview = {
           id: `photo-${Date.now()}-${i}`,
           dataUrl,
         };
         setUploadedPhotos(prev => [...prev, newPhoto]);
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.error('[WorkerDashboard] compress error:', err);
+      }
     }
 
     // Reset input value so same file can be selected again

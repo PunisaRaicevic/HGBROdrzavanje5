@@ -86,6 +86,13 @@ Preferred communication style: Simple, everyday language. NO EMOJI allowed.
 
 ## Recent Changes (Session 2026-04-23)
 
+### Client-Side Image Compression - COMPLETE
+- **Goal**: Reduce upload size and storage usage like Viber/WhatsApp do.
+- **Helper**: `client/src/lib/imageCompressor.ts` - `compressImageDataUrl(dataUrl, opts)`, `fileToCompressedDataUrl(file, opts)`, `dataUrlSizeKB(...)`. Defaults: max dimension 1600px (longest side), JPEG quality 0.8, white background fill (handles PNG transparency). Returns original if compressed is larger.
+- **Wired into**: `PhotoUpload.tsx` (file upload + Capacitor camera, native quality lowered 90→80), `WorkerDashboard.tsx` (worker photo upload), `TechnicianDashboard.tsx` (technician photo upload).
+- **Skipped**: signature canvas in `TaskDetailsDialog.tsx` and document uploads (PDFs/Word) - those don't need image compression.
+- **Result**: A typical 4MB phone photo (4032×3024) becomes ~250-400KB JPEG at 1600px wide. Original aspect ratio preserved. Compression happens entirely in the browser/WebView via `<canvas>` API - no server work.
+
 ### Image Migration to Supabase Storage - COMPLETE
 - **Problem**: `tasks` table was 337 MB because `images` and `worker_images` columns stored Base64-encoded images directly in DB rows. Slowed every query that returned task data.
 - **Solution**: Created Supabase Storage bucket `task-images` (public read, 10MB limit, image/* MIME types). Backend now uploads incoming Base64 images to storage and stores only the public URL string in DB columns.

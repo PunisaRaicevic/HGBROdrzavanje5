@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { fileToCompressedDataUrl, compressImageDataUrl } from '@/lib/imageCompressor';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -310,22 +311,22 @@ export default function TechnicianDashboard() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
+    for (const file of Array.from(files)) {
+      try {
+        const dataUrl = await fileToCompressedDataUrl(file);
         setUploadedPhotos(prev => [...prev, {
           id: `photo-${Date.now()}-${Math.random()}`,
           dataUrl,
           name: file.name,
         }]);
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (err) {
+        console.error('[TechnicianDashboard] compress error:', err);
+      }
+    }
 
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -341,23 +342,29 @@ export default function TechnicianDashboard() {
     const files = e.target.files;
     if (!files || !selectedTaskId) return;
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const dataUrl = event.target?.result as string;
-        try {
-          await sendMessageMutation.mutateAsync({
-            taskId: selectedTaskId!,
-            message: dataUrl,
-            document_name: file.name,
+    for (const file of Array.from(files)) {
+      try {
+        let dataUrl: string;
+        if (file.type.startsWith('image/')) {
+          dataUrl = await fileToCompressedDataUrl(file);
+        } else {
+          dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
           });
-          toast({ title: 'Uspjesno', description: `Dokument "${file.name}" uploadovan.` });
-        } catch (error) {
-          toast({ title: 'Greska', description: 'Upload nije uspio.', variant: 'destructive' });
         }
-      };
-      reader.readAsDataURL(file);
-    });
+        await sendMessageMutation.mutateAsync({
+          taskId: selectedTaskId!,
+          message: dataUrl,
+          document_name: file.name,
+        });
+        toast({ title: 'Uspjesno', description: `Dokument "${file.name}" uploadovan.` });
+      } catch (error) {
+        toast({ title: 'Greska', description: 'Upload nije uspio.', variant: 'destructive' });
+      }
+    }
 
     if (docInputRef.current) docInputRef.current.value = '';
   };

@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { fileToCompressedDataUrl } from '@/lib/imageCompressor';
 import {
   Dialog,
   DialogContent,
@@ -258,16 +259,22 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file || !task) return;
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        const dataUrl = ev.target?.result as string;
-        await sendMessageMutation.mutateAsync({
-          taskId: task.id,
-          message: dataUrl,
-          document_name: file.name,
+      let dataUrl: string;
+      if (file.type.startsWith('image/')) {
+        dataUrl = await fileToCompressedDataUrl(file);
+      } else {
+        dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (ev) => resolve(ev.target?.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
         });
-      };
-      reader.readAsDataURL(file);
+      }
+      await sendMessageMutation.mutateAsync({
+        taskId: task.id,
+        message: dataUrl,
+        document_name: file.name,
+      });
     };
     input.click();
   };
