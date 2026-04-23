@@ -719,21 +719,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/audit-log", requireAdmin, async (req, res) => {
-    try {
-      const limit = Math.min(parseInt(req.query.limit as string) || 100, 500);
-      const offset = parseInt(req.query.offset as string) || 0;
-      const targetType = req.query.targetType as string | undefined;
-      const action = req.query.action as string | undefined;
-
-      const result = await storage.getAuditLog({ limit, offset, targetType, action });
-      res.json(result);
-    } catch (error) {
-      console.error("Error fetching audit log:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
   function calculateAssignmentPath(history: any[]): string {
     if (!history || history.length === 0) return "";
 
