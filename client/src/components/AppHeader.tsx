@@ -55,7 +55,7 @@ export default function AppHeader() {
   const { data: tasks = [] } = useQuery({
     queryKey: ['/api/tasks'],
     enabled: user?.role === 'radnik',
-    refetchInterval: 20000, // Poll every 20s (was 5s) - hotel UX doesn't need sub-5s freshness
+    refetchInterval: 10000, // Poll every 10s
     refetchOnWindowFocus: true, // Instant refresh when user returns to tab
   });
 
