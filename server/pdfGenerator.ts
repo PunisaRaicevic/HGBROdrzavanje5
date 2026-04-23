@@ -1,5 +1,6 @@
 import PDFDocument from 'pdfkit';
 import { Task } from '@shared/schema';
+import { fetchImageAsBuffer } from './lib/imageStorage';
 
 interface ReportOptions {
   title: string;
@@ -7,30 +8,41 @@ interface ReportOptions {
   tasks: Task[];
 }
 
-function embedImages(doc: PDFKit.PDFDocument, images: string[]) {
-  const pageWidth = 515;
+async function resolveImageBuffers(images: string[]): Promise<(Buffer | null)[]> {
+  return Promise.all(
+    images.map(async (imageData) => {
+      try {
+        if (imageData.startsWith('data:')) {
+          const base64Part = imageData.split(',')[1];
+          if (!base64Part) return null;
+          return Buffer.from(base64Part, 'base64');
+        } else if (imageData.startsWith('http')) {
+          return await fetchImageAsBuffer(imageData);
+        } else {
+          return Buffer.from(imageData, 'base64');
+        }
+      } catch {
+        return null;
+      }
+    }),
+  );
+}
+
+function embedImages(doc: PDFKit.PDFDocument, buffers: (Buffer | null)[]) {
   const maxImgWidth = 240;
   const maxImgHeight = 200;
   const spacing = 10;
   let xPos = 40;
   let imagesInRow = 0;
 
-  for (let i = 0; i < images.length; i++) {
+  for (let i = 0; i < buffers.length; i++) {
     try {
-      const imageData = images[i];
-      let imgBuffer: Buffer;
-
-      if (imageData.startsWith('data:')) {
-        const base64Part = imageData.split(',')[1];
-        if (!base64Part) continue;
-        imgBuffer = Buffer.from(base64Part, 'base64');
-      } else if (imageData.startsWith('http')) {
-        doc.fontSize(8).fillColor('#666666').text(`Slika ${i + 1}: ${imageData}`, 40, doc.y);
+      const imgBuffer = buffers[i];
+      if (!imgBuffer) {
+        doc.fontSize(8).fillColor('#cc0000').text(`Slika ${i + 1}: greska pri ucitavanju`, 40, doc.y);
         doc.fillColor('#000000');
         doc.moveDown(0.2);
         continue;
-      } else {
-        imgBuffer = Buffer.from(imageData, 'base64');
       }
 
       if (imgBuffer.length < 100) continue;
@@ -152,6 +164,14 @@ export async function generateDailyReportPdf(options: ReportOptions): Promise<Bu
 }
 
 export async function generateTaskReportPdf(task: Task, history: any[]): Promise<Buffer> {
+  // Pre-fetch image buffers BEFORE entering the synchronous PDF generation
+  const reporterBuffers = task.images && task.images.length > 0
+    ? await resolveImageBuffers(task.images)
+    : null;
+  const workerBuffers = task.worker_images && task.worker_images.length > 0
+    ? await resolveImageBuffers(task.worker_images)
+    : null;
+
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ margin: 40, size: 'A4' });
@@ -282,16 +302,16 @@ export async function generateTaskReportPdf(task: Task, history: any[]): Promise
         }
       }
 
-      if (task.images && task.images.length > 0) {
+      if (reporterBuffers) {
         if (doc.y > 500) doc.addPage();
         sectionTitle('SLIKE REKLAMACIJE');
-        embedImages(doc, task.images);
+        embedImages(doc, reporterBuffers);
       }
 
-      if (task.worker_images && task.worker_images.length > 0) {
+      if (workerBuffers) {
         if (doc.y > 500) doc.addPage();
         sectionTitle('SLIKE SERVISERA');
-        embedImages(doc, task.worker_images);
+        embedImages(doc, workerBuffers);
       }
 
       doc.moveDown(1);

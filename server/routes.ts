@@ -8,6 +8,7 @@ import { z } from "zod";
 import { generateToken, verifyToken, extractTokenFromHeader } from "./auth";
 import { sendOneSignalToUser } from "./services/onesignal";
 import { generateDailyReportPdf, generateTasksCsv, generateTaskReportPdf } from "./pdfGenerator";
+import { uploadImagesArray } from "./lib/imageStorage";
 // --- NOVI IMPORTI ZA NOTIFIKACIJE ---
 import { sendPushNotification } from "./services/notificationService";
 
@@ -956,6 +957,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (soba) locationParts.push(soba);
       const location = locationParts.join(", ");
 
+      const uploadedImages = await uploadImagesArray(images, `reporter/${userId}`);
+
       const taskData: any = {
         title, description, location,
         room_number: soba || null,
@@ -964,7 +967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         created_by: userId,
         created_by_name: userName,
         created_by_department: userDepartment || null,
-        images: images || null,
+        images: uploadedImages || null,
       };
 
       if (assigned_to) {
@@ -1053,7 +1056,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Note: hotel, blok, soba are not separate columns in DB - only location exists
         if (room_number !== undefined) updateData.room_number = room_number;
         if (priority !== undefined) updateData.priority = priority;
-        if (images !== undefined) updateData.images = images;
+        if (images !== undefined) {
+          updateData.images = await uploadImagesArray(images, `reporter/${currentTask.created_by || 'unknown'}`);
+        }
         // Update location based on hotel+blok+soba from request body
         if (hotel !== undefined && blok !== undefined) {
           updateData.location = soba ? `${hotel}, ${blok}, Soba ${soba}` : `${hotel}, ${blok}`;
@@ -1086,7 +1091,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       if (assigned_to_name !== undefined) updateData.assigned_to_name = assigned_to_name || null;
       if (worker_report) updateData.worker_report = worker_report;
-      if (worker_images !== undefined) updateData.worker_images = worker_images.length > 0 ? worker_images : [];
+      if (worker_images !== undefined) {
+        const uploaded = await uploadImagesArray(worker_images, `worker/${sessionUser.id}`);
+        updateData.worker_images = uploaded && uploaded.length > 0 ? uploaded : [];
+      }
       if (external_company_name !== undefined) updateData.external_company_name = external_company_name || null;
       if (estimated_arrival_time !== undefined) updateData.estimated_arrival_time = estimated_arrival_time;
 

@@ -84,6 +84,20 @@ Preferred communication style: Simple, everyday language. NO EMOJI allowed.
 ### Image Generation (Planned - Routes Registered)
 - **POST `/api/generate-image`** - Generate image using Gemini 2.5 Flash Image model. Accepts `prompt` parameter.
 
+## Recent Changes (Session 2026-04-23)
+
+### Image Migration to Supabase Storage - COMPLETE
+- **Problem**: `tasks` table was 337 MB because `images` and `worker_images` columns stored Base64-encoded images directly in DB rows. Slowed every query that returned task data.
+- **Solution**: Created Supabase Storage bucket `task-images` (public read, 10MB limit, image/* MIME types). Backend now uploads incoming Base64 images to storage and stores only the public URL string in DB columns.
+- **Files**:
+  - `server/lib/imageStorage.ts` (NEW): `uploadIfBase64`, `uploadImagesArray`, `fetchImageAsBuffer`, `ensureBucket` helpers.
+  - `server/routes.ts`: POST `/api/tasks` and PATCH `/api/tasks/:id` now call `uploadImagesArray` before insert/update for both `images` (folder `reporter/{userId}`) and `worker_images` (folder `worker/{userId}`).
+  - `server/pdfGenerator.ts`: `embedImages` now takes `Buffer[]` (not strings); `resolveImageBuffers` async-fetches HTTP URLs via `fetchImageAsBuffer` so PDFs still embed images. Pre-fetches buffers BEFORE entering Promise executor (avoids async-promise-executor anti-pattern).
+  - `server/scripts/migrate-images-to-storage.ts` (NEW, kept for reference): one-shot script that walked all 412 tasks, uploaded each Base64 image to storage, replaced array contents with URLs.
+- **Migration result**: 112 images migrated to Supabase Storage URLs, 0 Base64 remaining. Frontend renders unchanged - `<img src={url}>` works identically for `data:` and `https:` URLs.
+- **Backward compatibility**: `uploadIfBase64` is idempotent - already-URL strings pass through unchanged. Mixed arrays handled correctly.
+- **Security note**: Bucket is `public: true`. URLs use unguessable UUIDs but are not access-controlled. If hotel complaint photos require stricter privacy, switch to private bucket + signed URLs (see `createSignedUrl`).
+
 ## Recent Changes (Session 2026-04-08)
 
 ### White Screen on Android Fix - COMPLETE
