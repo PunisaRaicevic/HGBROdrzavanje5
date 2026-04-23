@@ -169,29 +169,31 @@ export class SupabaseStorage implements IStorage {
     return (data || []) as User[];
   }
 
+  // Lista kolona bez slika - koristi se za sve list endpointe
+  // Slike (images, worker_images) se ucitavaju samo na getTaskById
+  private static readonly TASK_LIST_COLUMNS = `
+    id, title, description, location, room_number, priority, status,
+    created_by, created_by_name, created_by_department,
+    operator_id, operator_name, assigned_to, assigned_to_name, assigned_to_type,
+    sef_id, sef_name, external_company_id, external_company_name,
+    deadline_at, is_overdue, estimated_arrival_time, actual_arrival_time,
+    estimated_completion_time, actual_completion_time, time_spent_minutes,
+    created_at, updated_at, completed_at, worker_report,
+    is_recurring, recurrence_pattern, recurrence_start_date, parent_task_id,
+    next_occurrence, completed_by, completed_by_name,
+    receipt_confirmed_at, receipt_confirmed_by, receipt_confirmed_by_name,
+    scheduled_for, recurrence_week_days, recurrence_month_days,
+    recurrence_year_dates, execution_hour, execution_minute
+  `;
+
   async getTasks(): Promise<Task[]> {
-    // Select only essential columns, exclude large image data for list view
-    // Images are fetched separately when viewing individual task details
     const { data, error } = await supabase
       .from('tasks')
-      .select(`
-        id, title, description, location, room_number, priority, status,
-        created_by, created_by_name, created_by_department,
-        operator_id, operator_name, assigned_to, assigned_to_name, assigned_to_type,
-        sef_id, sef_name, external_company_id, external_company_name,
-        deadline_at, is_overdue, estimated_arrival_time, actual_arrival_time,
-        estimated_completion_time, actual_completion_time, time_spent_minutes,
-        created_at, updated_at, completed_at, worker_report,
-        is_recurring, recurrence_pattern, recurrence_start_date, parent_task_id,
-        next_occurrence, completed_by, completed_by_name,
-        receipt_confirmed_at, receipt_confirmed_by, receipt_confirmed_by_name,
-        scheduled_for, recurrence_week_days, recurrence_month_days,
-        recurrence_year_dates, execution_hour, execution_minute
-      `)
+      .select(SupabaseStorage.TASK_LIST_COLUMNS)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return (data || []) as Task[];
+    return (data || []) as unknown as Task[];
   }
 
   async getTaskById(id: string): Promise<Task | undefined> {
@@ -211,45 +213,45 @@ export class SupabaseStorage implements IStorage {
   async getTasksByUserId(userId: string): Promise<Task[]> {
     const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select(SupabaseStorage.TASK_LIST_COLUMNS)
       .eq('created_by', userId)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return (data || []) as Task[];
+    return (data || []) as unknown as Task[];
   }
 
   async getRecurringTasks(): Promise<Task[]> {
     const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select(SupabaseStorage.TASK_LIST_COLUMNS)
       .eq('is_recurring', true)
       .not('next_occurrence', 'is', null)
       .neq('recurrence_pattern', 'once');
     
     if (error) throw error;
-    return (data || []) as Task[];
+    return (data || []) as unknown as Task[];
   }
 
   async getChildTasksByParentId(parentId: string): Promise<Task[]> {
     const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select(SupabaseStorage.TASK_LIST_COLUMNS)
       .eq('parent_task_id', parentId);
     
     if (error) throw error;
-    return (data || []) as Task[];
+    return (data || []) as unknown as Task[];
   }
 
   async getTasksScheduledBetween(startDate: string, endDate: string): Promise<Task[]> {
     const { data, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select(SupabaseStorage.TASK_LIST_COLUMNS)
       .gte('scheduled_for', startDate)
       .lt('scheduled_for', endDate);
     
     if (error) throw error;
-    return (data || []) as Task[];
+    return (data || []) as unknown as Task[];
   }
 
   async createTask(taskData: Partial<InsertTask>): Promise<Task> {
