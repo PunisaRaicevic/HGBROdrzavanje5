@@ -41,10 +41,17 @@ if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   console.warn('WARNING: SESSION_SECRET should be at least 32 characters long');
 }
 
-// Session store setup — koristimo pool sa max:1 da ne prekoracimo Neon Session mode limit
+// Session store setup — Supabase Pro Session pooler dozvoljava puno više konekcija.
+// max:1 je bio relikt iz Neon doba i uzrokovao je ECHECKOUTTIMEOUT kad bi jedan
+// spori zahtjev (AI analiza, PDF) zauzeo jedinu konekciju.
 const sessionPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 1,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 10000,
+});
+sessionPool.on('error', (err) => {
+  console.error('[sessionPool] Idle client error:', err.message);
 });
 const PgSession = ConnectPgSimple(session);
 const sessionMiddleware = session({
