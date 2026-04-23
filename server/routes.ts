@@ -8,7 +8,7 @@ import { z } from "zod";
 import { generateToken, verifyToken, extractTokenFromHeader } from "./auth";
 import { sendOneSignalToUser } from "./services/onesignal";
 import { generateDailyReportPdf, generateTasksCsv, generateTaskReportPdf } from "./pdfGenerator";
-import { uploadImagesArray } from "./lib/imageStorage";
+import { uploadImagesArray, deleteImagesFromStorage } from "./lib/imageStorage";
 // --- NOVI IMPORTI ZA NOTIFIKACIJE ---
 import { sendPushNotification } from "./services/notificationService";
 
@@ -1305,6 +1305,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       await storage.deleteTask(id);
+
+      // Cleanup: remove task images from Supabase Storage (fire-and-forget)
+      const allImageUrls: string[] = [
+        ...(Array.isArray(task.images) ? task.images : []),
+        ...(Array.isArray(task.worker_images) ? task.worker_images : []),
+      ];
+      if (allImageUrls.length > 0) {
+        deleteImagesFromStorage(allImageUrls).catch((err) =>
+          console.error('[task-delete] image cleanup failed:', err),
+        );
+      }
 
       storage.createAuditEntry({
         user_id: sessionUser.id,

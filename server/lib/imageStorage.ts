@@ -91,6 +91,41 @@ export async function uploadImagesArray(
   return results;
 }
 
+/**
+ * Extract the storage path (e.g. "reporter/uuid.jpeg") from a public Supabase URL.
+ * Returns null if the URL doesn't belong to our bucket.
+ */
+export function extractStoragePath(url: string): string | null {
+  if (!url || typeof url !== 'string') return null;
+  const marker = `/storage/v1/object/public/${BUCKET}/`;
+  const idx = url.indexOf(marker);
+  if (idx === -1) return null;
+  return url.substring(idx + marker.length);
+}
+
+/**
+ * Delete a list of image URLs from Supabase Storage.
+ * Silently ignores non-storage URLs and base64 strings. Logs but does not throw.
+ */
+export async function deleteImagesFromStorage(
+  urls: (string | null | undefined)[],
+): Promise<void> {
+  const paths = urls
+    .map((u) => (u ? extractStoragePath(u) : null))
+    .filter((p): p is string => !!p);
+  if (paths.length === 0) return;
+  try {
+    const { error } = await supabase.storage.from(BUCKET).remove(paths);
+    if (error) {
+      console.error('[imageStorage] deleteImagesFromStorage error:', error);
+    } else {
+      console.log(`[imageStorage] Deleted ${paths.length} image(s) from storage`);
+    }
+  } catch (err) {
+    console.error('[imageStorage] deleteImagesFromStorage threw:', err);
+  }
+}
+
 export async function fetchImageAsBuffer(url: string): Promise<Buffer | null> {
   try {
     const res = await fetch(url);
