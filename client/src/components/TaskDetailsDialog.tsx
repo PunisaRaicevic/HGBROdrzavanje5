@@ -629,6 +629,111 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
               </div>
             )}
 
+            {/* Status zadatka — kome je dodijeljen, status, povraćaji, završetak */}
+            <div className="flex items-start gap-2">
+              <GitBranch className="w-5 h-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1 space-y-2">
+                <p className="text-sm font-medium">Status zadatka</p>
+
+                {/* Trenutni status badge */}
+                {task.status && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Trenutni status:</span>
+                    <Badge
+                      variant={
+                        task.status === 'completed' ? 'default' :
+                        task.status === 'returned_to_sef' ? 'destructive' :
+                        task.status === 'with_external' ? 'secondary' :
+                        'outline'
+                      }
+                      className={
+                        task.status === 'completed' ? 'bg-green-600' :
+                        task.status === 'returned_to_sef' ? '' :
+                        ''
+                      }
+                      data-testid="badge-task-status"
+                    >
+                      {task.status === 'with_sef' ? 'Kod šefa' :
+                       task.status === 'with_operator' ? 'Kod operatera' :
+                       task.status === 'with_external' ? 'Kod eksterne firme' :
+                       task.status === 'with_worker' || task.status === 'assigned_to_radnik' ? 'Kod radnika' :
+                       task.status === 'returned_to_sef' ? 'Vraćen šefu' :
+                       task.status === 'completed' ? 'Završen' :
+                       task.status === 'cancelled' ? 'Otkazan' :
+                       task.status === 'created' ? 'Kreiran' :
+                       task.status}
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Trenutno zaduzen */}
+                {(task.assigned_to_name || task.external_company_name || task.operator_name || task.sef_name) && (
+                  <div className="text-sm text-muted-foreground" data-testid="text-task-current-holder">
+                    <span className="text-xs">Trenutno zadužen: </span>
+                    <span className="font-medium text-foreground">
+                      {task.status === 'with_external' && task.external_company_name
+                        ? task.external_company_name
+                        : task.assigned_to_name || task.operator_name || task.sef_name || '—'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Šef / Operator chain */}
+                {task.sef_name && (
+                  <div className="text-xs text-muted-foreground">
+                    Šef: <span className="text-foreground">{task.sef_name}</span>
+                  </div>
+                )}
+                {task.operator_name && task.operator_name !== task.sef_name && (
+                  <div className="text-xs text-muted-foreground">
+                    Operater: <span className="text-foreground">{task.operator_name}</span>
+                  </div>
+                )}
+
+                {/* Razlozi vraćanja (ako postoje) */}
+                {historyResponse?.return_reasons && historyResponse.return_reasons.length > 0 && (
+                  <div className="pt-2 border-t border-border/50">
+                    <p className="text-xs font-medium text-destructive mb-1">
+                      Vraćen ({historyResponse.return_reasons.length}×)
+                    </p>
+                    <div className="space-y-1">
+                      {historyResponse.return_reasons.map((rr, idx) => (
+                        <div key={idx} className="text-xs" data-testid={`status-return-reason-${idx}`}>
+                          <span className="text-muted-foreground">{rr.user_name}: </span>
+                          <span className="text-foreground">{rr.reason}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Završeno */}
+                {task.status === 'completed' && (task.completed_by_name || task.completed_at) && (
+                  <div className="pt-2 border-t border-border/50">
+                    <div className="flex items-center gap-1 text-xs">
+                      <CheckCircle className="w-3 h-3 text-green-600" />
+                      <span className="text-muted-foreground">Završio: </span>
+                      <span className="font-medium text-foreground">{task.completed_by_name || '—'}</span>
+                      {task.completed_at && (
+                        <span className="text-muted-foreground">
+                          {' • '}
+                          {new Date(task.completed_at).toLocaleString('sr-Latn-RS', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                          })}
+                        </span>
+                      )}
+                    </div>
+                    {task.receipt_confirmed_by_name && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Potvrdio prijem: <span className="text-foreground">{task.receipt_confirmed_by_name}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Images */}
             {task.images && task.images.length > 0 && (
               <div className="flex items-start gap-2">
