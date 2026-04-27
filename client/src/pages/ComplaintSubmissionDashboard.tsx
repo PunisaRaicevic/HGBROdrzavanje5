@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { PhotoUpload, PhotoPreview } from '@/components/PhotoUpload';
+import { TaskDetailsDialog } from '@/components/TaskDetailsDialog';
 
 export default function ComplaintSubmissionDashboard() {
   const { t } = useTranslation();
@@ -28,6 +29,7 @@ export default function ComplaintSubmissionDashboard() {
   const [uploadedPhotos, setUploadedPhotos] = useState<PhotoPreview[]>([]);
   const [complaintsLimit, setComplaintsLimit] = useState<string>('10');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedComplaint, setSelectedComplaint] = useState<any | null>(null);
 
   // Fetch user's submitted complaints
   const { data: tasksResponse, isLoading } = useQuery<{ tasks: any[] }>({
