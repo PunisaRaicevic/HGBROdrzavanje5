@@ -1276,16 +1276,30 @@ export default function AdminDashboard() {
                           <p className="text-xl font-bold mt-0.5">{periodTasks.length}</p>
                           <p className="text-xs text-muted-foreground">Ukupno</p>
                         </div>
-                        <div className="flex-1 p-3 border rounded-md bg-muted/30" data-testid="stat-receipt-confirmed">
+                        <button 
+                          type="button"
+                          onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'receipt_confirmed' ? null : 'receipt_confirmed')}
+                          className={`flex-1 p-3 border rounded-md bg-muted/30 text-left cursor-pointer transition-all duration-200 hover:shadow-md ${
+                            selectedStatusFilter === 'receipt_confirmed' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                          }`}
+                          data-testid="stat-receipt-confirmed"
+                        >
                           <p className="text-xs text-muted-foreground">Potvrđen prijem</p>
                           <p className="text-xl font-bold text-blue-600 mt-0.5">{receiptConfirmedTasks.length}</p>
                           <p className="text-xs text-muted-foreground">Majstor primio</p>
-                        </div>
-                        <div className="flex-1 p-3 border rounded-md bg-muted/30" data-testid="stat-receipt-unconfirmed">
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'receipt_unconfirmed' ? null : 'receipt_unconfirmed')}
+                          className={`flex-1 p-3 border rounded-md bg-muted/30 text-left cursor-pointer transition-all duration-200 hover:shadow-md ${
+                            selectedStatusFilter === 'receipt_unconfirmed' ? 'ring-2 ring-red-500 bg-red-50' : ''
+                          }`}
+                          data-testid="stat-receipt-unconfirmed"
+                        >
                           <p className="text-xs text-muted-foreground">Nepotvrđen prijem</p>
                           <p className="text-xl font-bold text-red-600 mt-0.5">{receiptUnconfirmedTasks.length}</p>
                           <p className="text-xs text-muted-foreground">Majstor nije primio</p>
-                        </div>
+                        </button>
                         <div className="flex-1 p-3 border rounded-md bg-muted/30">
                           <p className="text-xs text-muted-foreground">Stopa realizacije</p>
                           <p className="text-xl font-bold text-green-600 mt-0.5">{completionRate}%</p>
@@ -1353,6 +1367,8 @@ export default function AdminDashboard() {
                               {selectedStatusFilter === 'in_progress' && 'Zadaci u toku'}
                               {selectedStatusFilter === 'pending' && 'Zadaci na čekanju'}
                               {selectedStatusFilter === 'external' && 'Zadaci - Eksterna firma'}
+                              {selectedStatusFilter === 'receipt_confirmed' && 'Zadaci - Majstor potvrdio prijem'}
+                              {selectedStatusFilter === 'receipt_unconfirmed' && 'Zadaci - Majstor nije potvrdio prijem'}
                             </h3>
                             <Button 
                               variant="outline" 
@@ -1376,6 +1392,10 @@ export default function AdminDashboard() {
                                   filteredTasks = pendingTasks;
                                 } else if (selectedStatusFilter === 'external') {
                                   filteredTasks = externalTasks;
+                                } else if (selectedStatusFilter === 'receipt_confirmed') {
+                                  filteredTasks = receiptConfirmedTasks;
+                                } else if (selectedStatusFilter === 'receipt_unconfirmed') {
+                                  filteredTasks = receiptUnconfirmedTasks;
                                 } else {
                                   // Bez filtera - prikaži sve zadatke iz perioda
                                   filteredTasks = periodTasks;
