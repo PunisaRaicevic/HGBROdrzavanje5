@@ -1226,7 +1226,9 @@ export default function AdminDashboard() {
                 (() => {
                   // Filter tasks - za zakazane zadatke koristi scheduled_for, za ostale created_at
                   // Koristi LOKALNE datume (ne UTC) da izbjegnemo timezone pomak za UTC+ zone
+                  // Iskljuci otkazane zadatke iz ukupne brojke (ne kvare stopu realizacije)
                   const periodTasks = tasks.filter(t => {
+                    if (t.status === 'cancelled') return false;
                     const rangeStartLocal = new Date(statsRange.start.getFullYear(), statsRange.start.getMonth(), statsRange.start.getDate());
                     const rangeEndLocal = new Date(statsRange.end.getFullYear(), statsRange.end.getMonth(), statsRange.end.getDate());
                     // Za zakazane zadatke (child tasks od recurring) koristi scheduled_for
@@ -1251,7 +1253,8 @@ export default function AdminDashboard() {
                   const pendingTasks = periodTasks.filter(t => 
                     t.status === 'new' || 
                     t.status === 'pending' || 
-                    t.status === 'assigned_to_operator'
+                    t.status === 'assigned_to_operator' ||
+                    t.status === 'with_sef'
                   );
                   const externalTasks = periodTasks.filter(t => t.status === 'with_external');
 
