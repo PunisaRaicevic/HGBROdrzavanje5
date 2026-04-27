@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { PhotoUpload, PhotoPreview } from '@/components/PhotoUpload';
-import { TaskDetailsDialog } from '@/components/TaskDetailsDialog';
+import TaskDetailsDialog from '@/components/TaskDetailsDialog';
 
 export default function ComplaintSubmissionDashboard() {
   const { t } = useTranslation();
