@@ -179,9 +179,9 @@ export default function ComplaintSubmissionDashboard() {
       case 'new':
         return <Badge variant="secondary" className="text-xs">{t('statusNew')}</Badge>;
       case 'with_operator':
+      case 'with_sef':
         return <Badge className="text-xs">{t('statusWithOperator')}</Badge>;
       case 'assigned_to_radnik':
-      case 'with_sef':
       case 'with_external':
         return <Badge className="text-xs">{t('statusInProgress')}</Badge>;
       case 'completed':
