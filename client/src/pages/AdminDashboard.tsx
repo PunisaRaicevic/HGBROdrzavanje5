@@ -1439,6 +1439,11 @@ export default function AdminDashboard() {
                                         {task.created_by_name && (
                                           <p className="text-xs text-muted-foreground mt-1">Prijavio: {task.created_by_name}</p>
                                         )}
+                                        {task.assigned_to_name && (
+                                          <p className="text-xs text-muted-foreground mt-1">
+                                            {task.status === 'completed' ? 'Izvršio' : 'Dodijeljeno'}: {task.assigned_to_name}
+                                          </p>
+                                        )}
                                       </div>
                                     );
                                   });
