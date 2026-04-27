@@ -448,7 +448,8 @@ export default function ComplaintSubmissionDashboard() {
                 {displayedComplaints.map((complaint: any) => (
                 <Card 
                   key={complaint.id} 
-                  className="p-4 hover-elevate"
+                  className="p-4 hover-elevate cursor-pointer"
+                  onClick={() => setSelectedComplaint(complaint)}
                   data-testid={`card-complaint-${complaint.id}`}
                 >
                   <div className="space-y-2">
@@ -484,6 +485,31 @@ export default function ComplaintSubmissionDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Detalji reklamacije - dijalog za pregled (bez brisanja/uredjivanja za recepciju) */}
+      <TaskDetailsDialog
+        open={selectedComplaint !== null}
+        onOpenChange={(open) => !open && setSelectedComplaint(null)}
+        task={selectedComplaint ? {
+          id: selectedComplaint.id,
+          title: selectedComplaint.title,
+          description: selectedComplaint.description,
+          location: selectedComplaint.location || '',
+          priority: (selectedComplaint.priority || 'normal') as 'urgent' | 'normal' | 'can_wait',
+          status: selectedComplaint.status,
+          time: selectedComplaint.created_at || new Date().toISOString(),
+          fromName: selectedComplaint.created_by_name || '',
+          from: selectedComplaint.created_by || '',
+          images: selectedComplaint.images,
+          worker_images: selectedComplaint.worker_images,
+          assigned_to_name: selectedComplaint.assigned_to_name,
+          parent_task_id: selectedComplaint.parent_task_id,
+          is_recurring: selectedComplaint.is_recurring,
+          recurrence_pattern: selectedComplaint.recurrence_pattern,
+          scheduled_for: selectedComplaint.scheduled_for,
+        } : null}
+        currentUserRole={user?.role}
+      />
     </div>
   );
 }
