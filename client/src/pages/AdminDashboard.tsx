@@ -1270,8 +1270,8 @@ export default function AdminDashboard() {
 
                   return (
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex-1 p-3 border rounded-md bg-muted/30">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="p-3 border rounded-md bg-muted/30">
                           <p className="text-xs text-muted-foreground">Izabrani period</p>
                           <p className="text-xl font-bold mt-0.5">{periodTasks.length}</p>
                           <p className="text-xs text-muted-foreground">Ukupno</p>
@@ -1279,7 +1279,7 @@ export default function AdminDashboard() {
                         <button 
                           type="button"
                           onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'receipt_confirmed' ? null : 'receipt_confirmed')}
-                          className={`flex-1 p-3 border rounded-md bg-muted/30 text-left cursor-pointer transition-all duration-200 hover:shadow-md ${
+                          className={`p-3 border rounded-md bg-muted/30 text-left cursor-pointer transition-all duration-200 hover:shadow-md ${
                             selectedStatusFilter === 'receipt_confirmed' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
                           }`}
                           data-testid="stat-receipt-confirmed"
@@ -1291,7 +1291,7 @@ export default function AdminDashboard() {
                         <button 
                           type="button"
                           onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'receipt_unconfirmed' ? null : 'receipt_unconfirmed')}
-                          className={`flex-1 p-3 border rounded-md bg-muted/30 text-left cursor-pointer transition-all duration-200 hover:shadow-md ${
+                          className={`p-3 border rounded-md bg-muted/30 text-left cursor-pointer transition-all duration-200 hover:shadow-md ${
                             selectedStatusFilter === 'receipt_unconfirmed' ? 'ring-2 ring-red-500 bg-red-50' : ''
                           }`}
                           data-testid="stat-receipt-unconfirmed"
@@ -1300,7 +1300,7 @@ export default function AdminDashboard() {
                           <p className="text-xl font-bold text-red-600 mt-0.5">{receiptUnconfirmedTasks.length}</p>
                           <p className="text-xs text-muted-foreground">Majstor nije primio</p>
                         </button>
-                        <div className="flex-1 p-3 border rounded-md bg-muted/30">
+                        <div className="p-3 border rounded-md bg-muted/30">
                           <p className="text-xs text-muted-foreground">Stopa realizacije</p>
                           <p className="text-xl font-bold text-green-600 mt-0.5">{completionRate}%</p>
                         </div>
