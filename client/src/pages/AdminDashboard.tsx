@@ -1258,6 +1258,11 @@ export default function AdminDashboard() {
                   );
                   const externalTasks = periodTasks.filter(t => t.status === 'with_external');
                   const receiptConfirmedTasks = periodTasks.filter(t => (t as any).receipt_confirmed_at);
+                  const receiptUnconfirmedTasks = periodTasks.filter(t => 
+                    !(t as any).receipt_confirmed_at && 
+                    t.status !== 'completed' && 
+                    t.status !== 'cancelled'
+                  );
 
                   const completionRate = periodTasks.length > 0 
                     ? Math.round((completedTasks.length / periodTasks.length) * 100) 
@@ -1275,6 +1280,11 @@ export default function AdminDashboard() {
                           <p className="text-xs text-muted-foreground">Potvrđen prijem</p>
                           <p className="text-xl font-bold text-blue-600 mt-0.5">{receiptConfirmedTasks.length}</p>
                           <p className="text-xs text-muted-foreground">Majstor primio</p>
+                        </div>
+                        <div className="flex-1 p-3 border rounded-md bg-muted/30" data-testid="stat-receipt-unconfirmed">
+                          <p className="text-xs text-muted-foreground">Nepotvrđen prijem</p>
+                          <p className="text-xl font-bold text-red-600 mt-0.5">{receiptUnconfirmedTasks.length}</p>
+                          <p className="text-xs text-muted-foreground">Majstor nije primio</p>
                         </div>
                         <div className="flex-1 p-3 border rounded-md bg-muted/30">
                           <p className="text-xs text-muted-foreground">Stopa realizacije</p>
