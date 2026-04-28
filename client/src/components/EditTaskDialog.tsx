@@ -50,6 +50,8 @@ const BLOK_OPTIONS = [
   "Praonica",
   "Tehnicka soba",
   "Bazen",
+  "Bazen Rondo 1",
+  "Bazen Rondo 2",
   "Parking",
   "Dvoriste",
 ];
