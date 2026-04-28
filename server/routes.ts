@@ -1624,7 +1624,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const scheduledDate = fmtDateTime(t.scheduled_for);
         const completedDate = fmtDateTime(t.completed_at);
         const isRecurring = t.is_recurring || t.parent_task_id ? 'Periodican' : 'Jednokratan';
-        return `- ${t.title} | Status: ${t.status} | Prioritet: ${t.priority || 'normal'} | Kreiran: ${createdDate} | Zakazan: ${scheduledDate || 'N/A'} | Zavrsen: ${completedDate || 'Nije'} | Tip: ${isRecurring} | Tehnicar: ${t.assigned_to_name || 'Nije dodeljen'} | Lokacija: ${t.location || 'N/A'}`;
+        const description = t.description ? String(t.description).replace(/\s+/g, ' ').trim().slice(0, 300) : 'Bez opisa';
+        const reporter = t.created_by_name || 'Nepoznat';
+        return `- ${t.title} | Opis: ${description} | Prijavio: ${reporter} | Status: ${t.status} | Prioritet: ${t.priority || 'normal'} | Kreiran: ${createdDate} | Zakazan: ${scheduledDate || 'N/A'} | Zavrsen: ${completedDate || 'Nije'} | Tip: ${isRecurring} | Tehnicar: ${t.assigned_to_name || 'Nije dodeljen'} | Lokacija: ${t.location || 'N/A'}`;
       }).join('\n');
 
       // Format ALL scheduled tasks (future)
