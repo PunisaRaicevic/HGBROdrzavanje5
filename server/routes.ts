@@ -1328,6 +1328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         snapshot: {
           id: task.id,
           title: task.title,
+          description: task.description,
           location: task.location,
           room_number: task.room_number,
           status: task.status,
