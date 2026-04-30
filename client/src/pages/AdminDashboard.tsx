@@ -1466,6 +1466,9 @@ export default function AdminDashboard() {
                                           </div>
                                         </div>
                                         <h4 className="font-medium text-sm">{task.title}</h4>
+                                        {task.description && (
+                                          <p className="text-xs text-foreground mt-1 whitespace-pre-wrap break-words">{task.description}</p>
+                                        )}
                                         {task.created_by_name && (
                                           <p className="text-xs text-muted-foreground mt-1">Prijavio: {task.created_by_name}</p>
                                         )}
