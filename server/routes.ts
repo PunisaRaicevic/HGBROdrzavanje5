@@ -1810,6 +1810,7 @@ ${scheduledTasksFormatted}`;
           role: u.role,
           department: u.department,
           last_active_at: u.last_active_at,
+          location_updated_at: u.location_updated_at,
         }));
 
       const offline = activeUsers
@@ -1820,6 +1821,7 @@ ${scheduledTasksFormatted}`;
           role: u.role,
           department: u.department,
           last_active_at: u.last_active_at,
+          location_updated_at: u.location_updated_at,
         }));
 
       res.json({ locations, onlineNoGps, offline });

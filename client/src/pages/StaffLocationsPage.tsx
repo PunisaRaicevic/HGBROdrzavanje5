@@ -50,6 +50,7 @@ interface StatusUser {
   role: string;
   department: string;
   last_active_at: string | null;
+  location_updated_at?: string | null;
 }
 
 interface LocationsData {
@@ -493,6 +494,71 @@ export default function StaffLocationsPage() {
                   </CardContent>
                 </Card>
               )}
+
+              {data && (() => {
+                const allUsers: { id: string; full_name: string; role: string; location_updated_at: string | null }[] = [
+                  ...data.locations.map((u) => ({
+                    id: u.id,
+                    full_name: u.full_name,
+                    role: u.role,
+                    location_updated_at: u.location_updated_at,
+                  })),
+                  ...data.onlineNoGps.map((u) => ({
+                    id: u.id,
+                    full_name: u.full_name,
+                    role: u.role,
+                    location_updated_at: u.location_updated_at ?? null,
+                  })),
+                  ...data.offline.map((u) => ({
+                    id: u.id,
+                    full_name: u.full_name,
+                    role: u.role,
+                    location_updated_at: u.location_updated_at ?? null,
+                  })),
+                ];
+                const sorted = allUsers.sort((a, b) => {
+                  const ta = a.location_updated_at ? new Date(a.location_updated_at).getTime() : 0;
+                  const tb = b.location_updated_at ? new Date(b.location_updated_at).getTime() : 0;
+                  return tb - ta;
+                });
+                return (
+                  <Card data-testid="card-last-gps">
+                    <CardHeader className="py-2 px-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Navigation className="h-4 w-4" />
+                        Posljednja aktivna lokacija ({sorted.length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-3 pb-3 pt-0">
+                      <div className="space-y-1">
+                        {sorted.map((u) => {
+                          const color = ROLE_COLORS[u.role] || '#64748b';
+                          return (
+                            <div
+                              key={u.id}
+                              className="flex items-center gap-2 px-2 py-1"
+                              data-testid={`user-last-gps-${u.id}`}
+                            >
+                              <div
+                                className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0"
+                                style={{ backgroundColor: color }}
+                              >
+                                {getInitials(u.full_name)}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs font-medium truncate">{u.full_name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {u.location_updated_at ? formatTimeAgo(u.location_updated_at) : 'Nikad'}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
 
               <Card data-testid="card-legend">
                 <CardHeader className="py-2 px-3">
