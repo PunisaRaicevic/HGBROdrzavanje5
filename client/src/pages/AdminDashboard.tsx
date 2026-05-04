@@ -895,16 +895,16 @@ export default function AdminDashboard() {
                               case 'completed':
                                 return task.status === 'completed';
                               case 'in_progress':
-                                return task.status === 'assigned_to_radnik' || 
-                                       task.status === 'with_operator' || 
-                                       task.status === 'in_progress' ||
-                                       task.status === 'returned_to_operator' ||
-                                       task.status === 'returned_to_sef';
-                              case 'pending':
-                                // Zadaci za koje majstori nisu potvrdili prijem
-                                return !(task as any).receipt_confirmed_at &&
+                                // Nezavrseni zadaci koje je majstor PRIHVATIO (potvrdio prijem)
+                                return !!(task as any).receipt_confirmed_at &&
                                        task.status !== 'completed' &&
                                        task.status !== 'cancelled';
+                              case 'pending':
+                                // Nezavrseni zadaci koje majstor JOS NIJE prihvatio
+                                return !(task as any).receipt_confirmed_at &&
+                                       task.status !== 'completed' &&
+                                       task.status !== 'cancelled' &&
+                                       task.status !== 'with_external';
                               case 'external':
                                 return task.status === 'with_external';
                               default:
@@ -1114,16 +1114,16 @@ export default function AdminDashboard() {
                               case 'completed':
                                 return task.status === 'completed';
                               case 'in_progress':
-                                return task.status === 'assigned_to_radnik' || 
-                                       task.status === 'with_operator' || 
-                                       task.status === 'in_progress' ||
-                                       task.status === 'returned_to_operator' ||
-                                       task.status === 'returned_to_sef';
-                              case 'pending':
-                                // Zadaci za koje majstori nisu potvrdili prijem
-                                return !(task as any).receipt_confirmed_at &&
+                                // Nezavrseni zadaci koje je majstor PRIHVATIO (potvrdio prijem)
+                                return !!(task as any).receipt_confirmed_at &&
                                        task.status !== 'completed' &&
                                        task.status !== 'cancelled';
+                              case 'pending':
+                                // Nezavrseni zadaci koje majstor JOS NIJE prihvatio
+                                return !(task as any).receipt_confirmed_at &&
+                                       task.status !== 'completed' &&
+                                       task.status !== 'cancelled' &&
+                                       task.status !== 'with_external';
                               case 'external':
                                 return task.status === 'with_external';
                               default:
