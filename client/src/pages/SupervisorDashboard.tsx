@@ -1064,7 +1064,33 @@ export default function SupervisorDashboard() {
                                           <p>Prijavio: {task.created_by_name}</p>
                                         )}
                                         {task.assigned_to_name && (
-                                          <p>Dodeljeno: {task.assigned_to_name}</p>
+                                          <div className="flex items-start gap-1.5 flex-wrap">
+                                            <span>{task.status === 'completed' ? 'Izvršio' : 'Dodeljeno'}:</span>
+                                            {(() => {
+                                              const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
+                                              const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
+                                              const showPending = task.status !== 'completed' && task.status !== 'cancelled';
+                                              return names.map((name: string, idx: number) => {
+                                                const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                                const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
+                                                return (
+                                                  <span key={idx} className="inline-flex items-center gap-1">
+                                                    <span>{name}</span>
+                                                    {isConfirmed ? (
+                                                      <CheckCircle className="w-4 h-4 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
+                                                        <title>{tooltipText}</title>
+                                                      </CheckCircle>
+                                                    ) : showPending ? (
+                                                      <Clock className="w-4 h-4 text-orange-500" data-testid={`status-receipt-pending-${task.id}-${idx}`}>
+                                                        <title>Nije potvrdio prijem</title>
+                                                      </Clock>
+                                                    ) : null}
+                                                    {idx < names.length - 1 && <span>,</span>}
+                                                  </span>
+                                                );
+                                              });
+                                            })()}
+                                          </div>
                                         )}
                                       </div>
                                     </div>
@@ -1258,7 +1284,33 @@ export default function SupervisorDashboard() {
                                           <p>Prijavio: {task.created_by_name}</p>
                                         )}
                                         {task.assigned_to_name && (
-                                          <p>Dodeljeno: {task.assigned_to_name}</p>
+                                          <div className="flex items-start gap-1.5 flex-wrap">
+                                            <span>{task.status === 'completed' ? 'Izvršio' : 'Dodeljeno'}:</span>
+                                            {(() => {
+                                              const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
+                                              const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
+                                              const showPending = task.status !== 'completed' && task.status !== 'cancelled';
+                                              return names.map((name: string, idx: number) => {
+                                                const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                                const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
+                                                return (
+                                                  <span key={idx} className="inline-flex items-center gap-1">
+                                                    <span>{name}</span>
+                                                    {isConfirmed ? (
+                                                      <CheckCircle className="w-4 h-4 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
+                                                        <title>{tooltipText}</title>
+                                                      </CheckCircle>
+                                                    ) : showPending ? (
+                                                      <Clock className="w-4 h-4 text-orange-500" data-testid={`status-receipt-pending-${task.id}-${idx}`}>
+                                                        <title>Nije potvrdio prijem</title>
+                                                      </Clock>
+                                                    ) : null}
+                                                    {idx < names.length - 1 && <span>,</span>}
+                                                  </span>
+                                                );
+                                              });
+                                            })()}
+                                          </div>
                                         )}
                                       </div>
                                     </div>
