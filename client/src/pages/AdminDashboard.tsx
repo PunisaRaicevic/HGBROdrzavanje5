@@ -235,18 +235,21 @@ export default function AdminDashboard() {
   const users = usersData?.users || [];
   const tasks = tasksData?.tasks || [];
 
-  // Get report data
+  // Get report data — uskladjeno sa dashboard "Statistika realizacije" filterom
   const getReportTasks = () => {
+    const rangeStartLocal = new Date(reportRange.start.getFullYear(), reportRange.start.getMonth(), reportRange.start.getDate());
+    const rangeEndLocal = new Date(reportRange.end.getFullYear(), reportRange.end.getMonth(), reportRange.end.getDate());
     return tasks.filter(t => {
-      // Za zakazane zadatke koristi scheduled_for, za obicne created_at
-      const taskDate = t.scheduled_for 
-        ? new Date(t.scheduled_for) 
-        : new Date(t.created_at);
-      // Konvertuj oba datuma na UTC midnight za poredjenje
-      const taskDateUTC = new Date(taskDate.getUTCFullYear(), taskDate.getUTCMonth(), taskDate.getUTCDate());
-      const startDateUTC = new Date(reportRange.start.getUTCFullYear(), reportRange.start.getUTCMonth(), reportRange.start.getUTCDate());
-      const endDateUTC = new Date(reportRange.end.getUTCFullYear(), reportRange.end.getUTCMonth(), reportRange.end.getUTCDate());
-      return taskDateUTC >= startDateUTC && taskDateUTC < endDateUTC;
+      if (t.status === 'cancelled') return false;
+      // Za instance periodicnih zadataka koristi scheduled_for, za sve ostale created_at
+      if (t.scheduled_for && t.parent_task_id) {
+        const scheduledDate = new Date(t.scheduled_for);
+        const scheduledLocal = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate());
+        return scheduledLocal >= rangeStartLocal && scheduledLocal < rangeEndLocal;
+      }
+      const taskDate = new Date(t.created_at);
+      const taskLocal = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+      return taskLocal >= rangeStartLocal && taskLocal < rangeEndLocal;
     });
   };
 
@@ -1509,18 +1512,8 @@ export default function AdminDashboard() {
                 <Skeleton className="h-20" />
               ) : (
                 (() => {
-                  const periodTasks = tasks.filter(t => {
-                    // Za zakazane zadatke koristi scheduled_for, za obicne created_at
-                    const taskDate = t.scheduled_for 
-                      ? new Date(t.scheduled_for) 
-                      : new Date(t.created_at);
-                    // Koristimo lokalno vrijeme jer PeriodPicker generise lokalne datume
-                    const taskLocalMidnight = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
-                    const rangeStart = new Date(reportRange.start.getFullYear(), reportRange.start.getMonth(), reportRange.start.getDate());
-                    const rangeEnd = new Date(reportRange.end.getFullYear(), reportRange.end.getMonth(), reportRange.end.getDate());
-                    return taskLocalMidnight >= rangeStart && taskLocalMidnight < rangeEnd;
-                  });
-
+                  // Koristimo istu logiku kao getReportTasks i dashboard "Statistika realizacije"
+                  const periodTasks = getReportTasks();
                   const completedReportTasks = periodTasks.filter(t => t.status === 'completed');
 
                   return (
