@@ -160,38 +160,6 @@ export default function TeamPerformanceDialog({
 
           </div>
 
-          {/* Priority Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Raspoređeno po Prioritetu</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-500" />
-                    <span className="text-sm">Hitno</span>
-                  </div>
-                  <Badge variant="destructive">{urgentTasks}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm">Normalno</span>
-                  </div>
-                  <Badge variant="default">{normalTasks}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm">Nisko</span>
-                  </div>
-                  <Badge variant="secondary">{lowTasks}</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Status Breakdown */}
           <Card>
             <CardHeader>
