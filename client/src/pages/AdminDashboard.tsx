@@ -314,9 +314,16 @@ export default function AdminDashboard() {
     }
 
     const statusLabels: { [key: string]: string } = {
+      'new': 'Novo',
       'pending': 'Na cekanju',
       'in_progress': 'U toku',
+      'assigned_to_operator': 'Dodijeljeno operateru',
+      'with_operator': 'Kod operatera',
+      'with_sef': 'Kod sefa',
       'assigned_to_radnik': 'Dodijeljeno radniku',
+      'with_external': 'Eksterna sluzba',
+      'returned_to_operator': 'Vraceno operateru',
+      'returned_to_sef': 'Vraceno sefu',
       'completed': 'Zavrseno',
       'cancelled': 'Otkazano'
     };
