@@ -160,6 +160,118 @@ export default function TeamPerformanceDialog({
 
           </div>
 
+          {/* Analiza po majstorima */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-base">Analiza po majstorima <span className="text-sm font-normal text-muted-foreground">(za izabrani period)</span></CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const assignedTasks = periodTasks.filter(t => t.status !== 'cancelled' && t.assigned_to_name);
+
+                type WorkerStats = { completed: number; returned: number; pending: number; total: number };
+                const byWorker: Record<string, WorkerStats> = {};
+
+                assignedTasks.forEach(task => {
+                  const names = (task.assigned_to_name || '').split(',').map((n: string) => n.trim()).filter(Boolean);
+                  const isReturned = task.status === 'returned_to_sef' || task.status === 'returned_to_operator';
+                  const isCompleted = task.status === 'completed';
+                  const confirmedName = (task.receipt_confirmed_by_name || '').trim().toLowerCase();
+
+                  names.forEach((name: string) => {
+                    if (!byWorker[name]) byWorker[name] = { completed: 0, returned: 0, pending: 0, total: 0 };
+                    if (isCompleted) {
+                      if (confirmedName && name.toLowerCase() === confirmedName) {
+                        byWorker[name].completed++;
+                        byWorker[name].total++;
+                      }
+                    } else if (isReturned) {
+                      byWorker[name].returned++;
+                      byWorker[name].total++;
+                    } else {
+                      byWorker[name].pending++;
+                      byWorker[name].total++;
+                    }
+                  });
+                });
+
+                const workers = Object.entries(byWorker)
+                  .filter(([, s]) => s.total > 0)
+                  .sort((a, b) => b[1].total - a[1].total);
+
+                const maxTotal = Math.max(...workers.map(([, s]) => s.total), 1);
+                const totalAll = workers.reduce((acc, [, s]) => ({
+                  completed: acc.completed + s.completed,
+                  returned: acc.returned + s.returned,
+                  pending: acc.pending + s.pending,
+                }), { completed: 0, returned: 0, pending: 0 });
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap items-center gap-4 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-block w-3 h-3 rounded bg-green-500" />
+                        <span>Zavrseno: <strong>{totalAll.completed}</strong></span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-block w-3 h-3 rounded bg-orange-500" />
+                        <span>Vraceno: <strong>{totalAll.returned}</strong></span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-block w-3 h-3 rounded bg-red-500" />
+                        <span>Nezavrseno: <strong>{totalAll.pending}</strong></span>
+                      </div>
+                    </div>
+
+                    {workers.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-6 text-xs">
+                        Nema dodijeljenih zadataka za izabrani period
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {workers.map(([name, s]) => {
+                          const widthPct = (s.total / maxTotal) * 100;
+                          const completedPct = s.total > 0 ? (s.completed / s.total) * 100 : 0;
+                          const returnedPct = s.total > 0 ? (s.returned / s.total) * 100 : 0;
+                          const pendingPct = s.total > 0 ? (s.pending / s.total) * 100 : 0;
+                          return (
+                            <div key={name} className="space-y-1" data-testid={`worker-stats-${name}`}>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-medium truncate">{name}</span>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                  {s.completed} / {s.returned} / {s.pending} <span className="text-foreground font-medium">({s.total})</span>
+                                </span>
+                              </div>
+                              <div className="bg-muted rounded h-5 overflow-hidden" style={{ width: `${widthPct}%`, minWidth: '60px' }}>
+                                <div className="flex h-full">
+                                  {s.completed > 0 && (
+                                    <div className="bg-green-500 flex items-center justify-center text-white text-xs font-medium" style={{ width: `${completedPct}%` }} title={`Zavrseno: ${s.completed}`}>
+                                      {completedPct >= 12 ? s.completed : ''}
+                                    </div>
+                                  )}
+                                  {s.returned > 0 && (
+                                    <div className="bg-orange-500 flex items-center justify-center text-white text-xs font-medium" style={{ width: `${returnedPct}%` }} title={`Vraceno: ${s.returned}`}>
+                                      {returnedPct >= 12 ? s.returned : ''}
+                                    </div>
+                                  )}
+                                  {s.pending > 0 && (
+                                    <div className="bg-red-500 flex items-center justify-center text-white text-xs font-medium" style={{ width: `${pendingPct}%` }} title={`Nezavrseno: ${s.pending}`}>
+                                      {pendingPct >= 12 ? s.pending : ''}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+
         </div>
       </DialogContent>
     </Dialog>
