@@ -160,36 +160,6 @@ export default function TeamPerformanceDialog({
 
           </div>
 
-          {/* Status Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Status Zadataka</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Novi (cekaju obradu)</span>
-                  <span className="font-medium text-orange-600">{newTasks}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">U Toku (u obradi)</span>
-                  <span className="font-medium text-blue-600">{inProgressTasks}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Vraceno</span>
-                  <span className="font-medium text-yellow-600">{returnedTasks}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Završeno</span>
-                  <span className="font-medium text-green-600">{completedTasks}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Otkazano</span>
-                  <span className="font-medium text-gray-500">{cancelledTasks}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </DialogContent>
     </Dialog>
