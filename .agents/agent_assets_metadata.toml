@@ -1,8 +1,31 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "zc0gZKs9gFEoP2z2qqYqb"
+uri = "file://attached_assets/pitch/hero-budva.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "UCfNrYCLhiXS4n-3_WGqT"
+uri = "file://attached_assets/pitch/problem.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "7AACsof4FdeRXQDe3Rxm9"
+uri = "file://attached_assets/pitch/solution.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "_VJGMRaCtcvsy85EU2prF"
+uri = "file://attached_assets/pitch/team.png"
+type = "image"
+title = "generated_image"
 
 [[outputs]]
 id = "w351cM5oWV7aXsdKRz0cw"
 uri = "file://attached_assets/Hotel-Reklamacije-Pitch.pdf"
 type = "pdf"
-title = "Pitch prezentacija — Sistem za upravljanje hotelskim reklamacijama"
+title = "Pitch prezentacija (sa slikama i infografikom)"
