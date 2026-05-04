@@ -588,7 +588,7 @@ export default function SupervisorDashboard() {
               data-testid="button-generate-report"
             >
               <FileText className="w-4 h-4 mr-2 text-primary" />
-              <span className="font-medium">Izveštaj</span>
+              <span className="font-medium">Izveštaj (period)</span>
             </Button>
           </div>
         </CardContent>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,67 +9,62 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle, Clock, AlertCircle, TrendingUp } from "lucide-react";
+import { PeriodPicker } from "@/components/PeriodPicker";
 
 interface TeamPerformanceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+type Granularity = 'day' | 'week' | 'month';
+
+function getInitialRange(): { start: Date; end: Date } {
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  return { start, end };
+}
+
 export default function TeamPerformanceDialog({
   open,
   onOpenChange
 }: TeamPerformanceDialogProps) {
+  const [range, setRange] = useState(getInitialRange());
+  const [granularity, setGranularity] = useState<Granularity>('day');
+
   const { data: tasksResponse } = useQuery<{ tasks: any[] }>({
     queryKey: ['/api/tasks'],
     enabled: open,
   });
 
-  // Get today's tasks
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  
-  const todaysTasks = (tasksResponse?.tasks || []).filter(task => {
-    // Isključi recurring templates - prikazujemo samo child taskove i jednokratne zadatke
-    if (task.is_recurring && !task.parent_task_id) {
-      return false;
-    }
-    
-    // Za zakazane zadatke koristi scheduled_for, za obicne created_at
-    const taskDate = task.scheduled_for 
+  const periodTasks = (tasksResponse?.tasks || []).filter(task => {
+    if (task.is_recurring && !task.parent_task_id) return false;
+    const ref = (task.scheduled_for && task.parent_task_id)
       ? new Date(task.scheduled_for)
       : new Date(task.created_at);
-    
-    return taskDate >= today && taskDate < tomorrow;
+    return ref >= range.start && ref < range.end;
   });
 
-  // Calculate statistics
-  const totalTasks = todaysTasks.length;
-  const completedTasks = todaysTasks.filter(t => t.status === 'completed').length;
-  // U toku: with_operator, assigned_to_radnik, with_external
-  const inProgressTasks = todaysTasks.filter(t => 
-    t.status === 'with_operator' || 
-    t.status === 'assigned_to_radnik' || 
+  const totalTasks = periodTasks.length;
+  const completedTasks = periodTasks.filter(t => t.status === 'completed').length;
+  const inProgressTasks = periodTasks.filter(t =>
+    t.status === 'with_operator' ||
+    t.status === 'assigned_to_radnik' ||
     t.status === 'with_external'
   ).length;
-  // Novo: new, with_sef
-  const newTasks = todaysTasks.filter(t => 
-    t.status === 'new' || 
+  const newTasks = periodTasks.filter(t =>
+    t.status === 'new' ||
     t.status === 'with_sef'
   ).length;
-  // Vraceno: returned_to_operator, returned_to_sef
-  const returnedTasks = todaysTasks.filter(t => 
-    t.status === 'returned_to_operator' || 
+  const returnedTasks = periodTasks.filter(t =>
+    t.status === 'returned_to_operator' ||
     t.status === 'returned_to_sef'
   ).length;
-  // Otkazano
-  const cancelledTasks = todaysTasks.filter(t => t.status === 'cancelled').length;
+  const cancelledTasks = periodTasks.filter(t => t.status === 'cancelled').length;
 
-  // Calculate average resolution time for completed tasks
-  const completedWithTime = todaysTasks.filter(t => t.status === 'completed');
+  const completedWithTime = periodTasks.filter(t => t.status === 'completed');
   let avgResolutionTime = 0;
-  
+
   if (completedWithTime.length > 0) {
     const totalTime = completedWithTime.reduce((sum, task) => {
       const created = new Date(task.created_at);
@@ -76,25 +72,31 @@ export default function TeamPerformanceDialog({
       const diffMs = updated.getTime() - created.getTime();
       return sum + diffMs;
     }, 0);
-    avgResolutionTime = Math.floor(totalTime / completedWithTime.length / (1000 * 60)); // Minutes
+    avgResolutionTime = Math.floor(totalTime / completedWithTime.length / (1000 * 60));
   }
 
-  // Priority breakdown
-  const urgentTasks = todaysTasks.filter(t => t.priority === 'urgent').length;
-  const normalTasks = todaysTasks.filter(t => t.priority === 'normal').length;
-  const lowTasks = todaysTasks.filter(t => t.priority === 'low').length;
+  const urgentTasks = periodTasks.filter(t => t.priority === 'urgent').length;
+  const normalTasks = periodTasks.filter(t => t.priority === 'normal').length;
+  const lowTasks = periodTasks.filter(t => t.priority === 'low').length;
 
-  // Completion rate
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto" data-testid="dialog-team-performance">
         <DialogHeader>
-          <DialogTitle>Team Performance - Danas</DialogTitle>
+          <DialogTitle>Statistika tima</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
+          <PeriodPicker
+            value={range}
+            onChange={setRange}
+            granularity={granularity}
+            onGranularityChange={setGranularity}
+            data-testid="period-picker-team-performance"
+          />
+
           {/* Overview Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card>
@@ -148,7 +150,7 @@ export default function TeamPerformanceDialog({
                   </Badge>
                 </div>
                 <div className="mt-2 w-full bg-muted rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-primary h-2 rounded-full transition-all"
                     style={{ width: `${completionRate}%` }}
                   />
@@ -167,14 +169,14 @@ export default function TeamPerformanceDialog({
                 <div className="flex items-end gap-2">
                   <p className="text-4xl font-bold" data-testid="avg-resolution">
                     {avgResolutionTime > 0 ? (
-                      avgResolutionTime >= 60 
+                      avgResolutionTime >= 60
                         ? `${Math.floor(avgResolutionTime / 60)}h ${avgResolutionTime % 60}m`
                         : `${avgResolutionTime}m`
                     ) : 'N/A'}
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  {completedTasks} završenih zadataka danas
+                  {completedTasks} završenih zadataka u periodu
                 </p>
               </CardContent>
             </Card>

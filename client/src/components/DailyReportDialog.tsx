@@ -21,30 +21,49 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { apiRequest } from '@/lib/queryClient';
+import { useState } from 'react';
+import { PeriodPicker } from '@/components/PeriodPicker';
 
 interface DailyReportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+type Granularity = 'day' | 'week' | 'month';
+
+function getInitialRange(): { start: Date; end: Date } {
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  return { start, end };
+}
+
 export default function DailyReportDialog({
   open,
   onOpenChange
 }: DailyReportDialogProps) {
+  const [range, setRange] = useState(getInitialRange());
+  const [granularity, setGranularity] = useState<Granularity>('day');
+
   const { data: tasksResponse } = useQuery<{ tasks: any[] }>({
     queryKey: ['/api/tasks'],
     enabled: open,
   });
 
-  // Get today's tasks
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
   const todaysTasks = (tasksResponse?.tasks || []).filter(task => {
-    const createdDate = new Date(task.created_at);
-    createdDate.setHours(0, 0, 0, 0);
-    return createdDate.getTime() === today.getTime();
+    if (task.is_recurring && !task.parent_task_id) return false;
+    const ref = (task.scheduled_for && task.parent_task_id)
+      ? new Date(task.scheduled_for)
+      : new Date(task.created_at);
+    return ref >= range.start && ref < range.end;
   });
+
+  const formatRangeLabel = () => {
+    const inclusiveEnd = new Date(range.end.getTime() - 1);
+    const sameDay = range.start.toDateString() === inclusiveEnd.toDateString();
+    const fmt = (d: Date) => d.toLocaleDateString('sr-RS');
+    return sameDay ? fmt(range.start) : `${fmt(range.start)} - ${fmt(inclusiveEnd)}`;
+  };
 
   // Format date and time
   const formatDateTime = (dateString: string) => {
@@ -94,12 +113,13 @@ export default function DailyReportDialog({
   // Export to CSV - using server-side generation
   const exportToCSV = async () => {
     try {
-      const dateStr = today.toISOString().split('T')[0];
-      const fileName = `dnevni_izvestaj_${dateStr}.csv`;
+      const startStr = range.start.toISOString();
+      const endStr = range.end.toISOString();
+      const fileName = `izvestaj_${range.start.toISOString().split('T')[0]}.csv`;
       const apiUrl = getApiBaseUrl();
       
       // Fetch CSV from server with auth
-      const response = await fetch(`${apiUrl}/api/reports/daily/csv?date=${dateStr}`, {
+      const response = await fetch(`${apiUrl}/api/reports/daily/csv?startDate=${encodeURIComponent(startStr)}&endDate=${encodeURIComponent(endStr)}`, {
         headers: getAuthHeaders(),
         credentials: 'include'
       });
@@ -137,12 +157,13 @@ export default function DailyReportDialog({
   // Generate and share/download PDF - using server-side generation
   const handlePrint = async () => {
     try {
-      const dateStr = today.toISOString().split('T')[0];
-      const fileName = `dnevni_izvestaj_${dateStr}.pdf`;
+      const startStr = range.start.toISOString();
+      const endStr = range.end.toISOString();
+      const fileName = `izvestaj_${range.start.toISOString().split('T')[0]}.pdf`;
       const apiUrl = getApiBaseUrl();
       
       // Fetch PDF from server with auth
-      const response = await fetch(`${apiUrl}/api/reports/daily/pdf?date=${dateStr}`, {
+      const response = await fetch(`${apiUrl}/api/reports/daily/pdf?startDate=${encodeURIComponent(startStr)}&endDate=${encodeURIComponent(endStr)}`, {
         headers: getAuthHeaders(),
         credentials: 'include'
       });
@@ -214,11 +235,18 @@ export default function DailyReportDialog({
                 Preuzmi CSV
               </Button>
             </div>
-            <DialogTitle>Dnevni Izveštaj - {today.toLocaleDateString('sr-RS')}</DialogTitle>
+            <DialogTitle>Izveštaj - {formatRangeLabel()}</DialogTitle>
           </div>
         </DialogHeader>
 
         <div className="space-y-4">
+          <PeriodPicker
+            value={range}
+            onChange={setRange}
+            granularity={granularity}
+            onGranularityChange={setGranularity}
+            data-testid="period-picker-report-dialog"
+          />
           {/* Summary */}
           <div className="flex items-center gap-4 text-sm text-muted-foreground print:text-black print:mb-4">
             <span>Ukupno reklamacija: <strong>{todaysTasks.length}</strong></span>
@@ -237,7 +265,7 @@ export default function DailyReportDialog({
             {todaysTasks.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>Nema reklamacija za danas</p>
+                <p>Nema reklamacija za izabrani period</p>
               </div>
             ) : (
               <Table>

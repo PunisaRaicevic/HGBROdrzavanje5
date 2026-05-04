@@ -776,26 +776,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Daily Report PDF - server-side generation
+  // Helper za parsiranje opsega datuma. Prihvata startDate/endDate (ekskluzivni end), ili fallback date (jedan dan).
+  function parseDateRange(req: any): { start: Date; end: Date; label: string } {
+    const startParam = req.query.startDate as string | undefined;
+    const endParam = req.query.endDate as string | undefined;
+    const dateParam = req.query.date as string | undefined;
+    if (startParam && endParam) {
+      const start = new Date(startParam);
+      const end = new Date(endParam);
+      const inclusiveEnd = new Date(end.getTime() - 1);
+      const sameDay = start.toDateString() === inclusiveEnd.toDateString();
+      const fmt = (d: Date) => d.toLocaleDateString('sr-RS');
+      const label = sameDay ? fmt(start) : `${fmt(start)} - ${fmt(inclusiveEnd)}`;
+      return { start, end, label };
+    }
+    const targetDate = dateParam ? new Date(dateParam) : new Date();
+    const start = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+    return { start, end, label: targetDate.toLocaleDateString('sr-RS') };
+  }
+
+  function filterTasksInRange(tasks: any[], start: Date, end: Date): any[] {
+    return tasks.filter(task => {
+      if (task.is_recurring && !task.parent_task_id) return false;
+      const ref = (task.scheduled_for && task.parent_task_id) ? new Date(task.scheduled_for) : new Date(task.created_at);
+      return ref >= start && ref < end;
+    });
+  }
+
   app.get("/api/reports/daily/pdf", requireAuth, async (req, res) => {
     try {
-      const dateParam = req.query.date as string;
-      const targetDate = dateParam ? new Date(dateParam) : new Date();
-      const dateStr = targetDate.toLocaleDateString('sr-RS');
-      
+      const { start, end, label } = parseDateRange(req);
       const allTasks = await storage.getTasks();
-      const todaysTasks = allTasks.filter(task => {
-        if (task.is_recurring && !task.parent_task_id) return false;
-        const taskDate = new Date(task.created_at);
-        return taskDate.toDateString() === targetDate.toDateString();
-      });
+      const periodTasks = filterTasksInRange(allTasks, start, end);
 
       const pdfBuffer = await generateDailyReportPdf({
-        title: `Dnevni Izvestaj - ${dateStr}`,
-        date: dateStr,
-        tasks: todaysTasks
+        title: `Izvestaj - ${label}`,
+        date: label,
+        tasks: periodTasks
       });
 
-      const fileName = `dnevni_izvestaj_${targetDate.toISOString().split('T')[0]}.pdf`;
+      const fileName = `izvestaj_${start.toISOString().split('T')[0]}_${new Date(end.getTime() - 1).toISOString().split('T')[0]}.pdf`;
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
       res.setHeader('Content-Length', pdfBuffer.length);
@@ -809,18 +830,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Daily Report CSV - server-side generation
   app.get("/api/reports/daily/csv", requireAuth, async (req, res) => {
     try {
-      const dateParam = req.query.date as string;
-      const targetDate = dateParam ? new Date(dateParam) : new Date();
-      
+      const { start, end } = parseDateRange(req);
       const allTasks = await storage.getTasks();
-      const todaysTasks = allTasks.filter(task => {
-        if (task.is_recurring && !task.parent_task_id) return false;
-        const taskDate = new Date(task.created_at);
-        return taskDate.toDateString() === targetDate.toDateString();
-      });
+      const periodTasks = filterTasksInRange(allTasks, start, end);
 
-      const csvContent = await generateTasksCsv(todaysTasks);
-      const fileName = `dnevni_izvestaj_${targetDate.toISOString().split('T')[0]}.csv`;
+      const csvContent = await generateTasksCsv(periodTasks);
+      const fileName = `izvestaj_${start.toISOString().split('T')[0]}_${new Date(end.getTime() - 1).toISOString().split('T')[0]}.csv`;
       
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
