@@ -1013,7 +1013,7 @@ export default function AdminDashboard() {
                                             const isConfirmed = showIndicator && confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
                                             return (
                                               <span key={idx} className="inline-flex items-center gap-1">
-                                                <span>{name}{idx < names.length - 1 ? ',' : ''}</span>
+                                                <span>{name}</span>
                                                 {showIndicator && (
                                                   isConfirmed ? (
                                                     <CheckCircle className="w-4 h-4 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
@@ -1025,6 +1025,7 @@ export default function AdminDashboard() {
                                                     </Clock>
                                                   )
                                                 )}
+                                                {idx < names.length - 1 && <span>,</span>}
                                               </span>
                                             );
                                           });
@@ -1234,7 +1235,7 @@ export default function AdminDashboard() {
                                             const isConfirmed = showIndicator && confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
                                             return (
                                               <span key={idx} className="inline-flex items-center gap-1">
-                                                <span>{name}{idx < names.length - 1 ? ',' : ''}</span>
+                                                <span>{name}</span>
                                                 {showIndicator && (
                                                   isConfirmed ? (
                                                     <CheckCircle className="w-4 h-4 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
@@ -1246,6 +1247,7 @@ export default function AdminDashboard() {
                                                     </Clock>
                                                   )
                                                 )}
+                                                {idx < names.length - 1 && <span>,</span>}
                                               </span>
                                             );
                                           });
@@ -1547,7 +1549,7 @@ export default function AdminDashboard() {
                                                 const isConfirmed = showIndicator && confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
                                                 return (
                                                   <span key={idx} className="inline-flex items-center gap-1">
-                                                    <span>{name}{idx < names.length - 1 ? ',' : ''}</span>
+                                                    <span>{name}</span>
                                                     {showIndicator && (
                                                       isConfirmed ? (
                                                         <CheckCircle className="w-3.5 h-3.5 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
@@ -1559,6 +1561,7 @@ export default function AdminDashboard() {
                                                         </Clock>
                                                       )
                                                     )}
+                                                    {idx < names.length - 1 && <span>,</span>}
                                                   </span>
                                                 );
                                               });
