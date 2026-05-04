@@ -1003,7 +1003,26 @@ export default function AdminDashboard() {
                                       <p>Prijavio: {task.created_by_name}</p>
                                     )}
                                     {task.assigned_to_name && (
-                                      <p>Dodeljeno: {task.assigned_to_name}</p>
+                                      <p className="flex items-center gap-1.5 flex-wrap">
+                                        <span>Dodeljeno: {task.assigned_to_name}</span>
+                                        {(task as any).receipt_confirmed_at ? (
+                                          <span
+                                            className="inline-flex items-center gap-1 text-green-600"
+                                            title="Majstor je potvrdio prijem"
+                                            data-testid={`status-receipt-confirmed-${task.id}`}
+                                          >
+                                            <CheckCircle className="w-4 h-4" />
+                                          </span>
+                                        ) : (
+                                          <span
+                                            className="inline-flex items-center gap-1 text-orange-500"
+                                            title="Majstor još nije potvrdio prijem"
+                                            data-testid={`status-receipt-pending-${task.id}`}
+                                          >
+                                            <Clock className="w-4 h-4" />
+                                          </span>
+                                        )}
+                                      </p>
                                     )}
                                   </div>
                                 </div>
@@ -1198,7 +1217,26 @@ export default function AdminDashboard() {
                                       <p>Prijavio: {task.created_by_name}</p>
                                     )}
                                     {task.assigned_to_name && (
-                                      <p>Dodeljeno: {task.assigned_to_name}</p>
+                                      <p className="flex items-center gap-1.5 flex-wrap">
+                                        <span>Dodeljeno: {task.assigned_to_name}</span>
+                                        {(task as any).receipt_confirmed_at ? (
+                                          <span
+                                            className="inline-flex items-center gap-1 text-green-600"
+                                            title="Majstor je potvrdio prijem"
+                                            data-testid={`status-receipt-confirmed-${task.id}`}
+                                          >
+                                            <CheckCircle className="w-4 h-4" />
+                                          </span>
+                                        ) : (
+                                          <span
+                                            className="inline-flex items-center gap-1 text-orange-500"
+                                            title="Majstor još nije potvrdio prijem"
+                                            data-testid={`status-receipt-pending-${task.id}`}
+                                          >
+                                            <Clock className="w-4 h-4" />
+                                          </span>
+                                        )}
+                                      </p>
                                     )}
                                   </div>
                                 </div>
@@ -1485,8 +1523,27 @@ export default function AdminDashboard() {
                                           <p className="text-xs text-muted-foreground mt-1">Prijavio: {task.created_by_name}</p>
                                         )}
                                         {task.assigned_to_name && (
-                                          <p className="text-xs text-muted-foreground mt-1">
-                                            {task.status === 'completed' ? 'Izvršio' : 'Dodijeljeno'}: {task.assigned_to_name}
+                                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 flex-wrap">
+                                            <span>{task.status === 'completed' ? 'Izvršio' : 'Dodijeljeno'}: {task.assigned_to_name}</span>
+                                            {task.status !== 'completed' && (
+                                              (task as any).receipt_confirmed_at ? (
+                                                <span
+                                                  className="inline-flex items-center text-green-600"
+                                                  title="Majstor je potvrdio prijem"
+                                                  data-testid={`status-receipt-confirmed-${task.id}`}
+                                                >
+                                                  <CheckCircle className="w-3.5 h-3.5" />
+                                                </span>
+                                              ) : (
+                                                <span
+                                                  className="inline-flex items-center text-orange-500"
+                                                  title="Majstor još nije potvrdio prijem"
+                                                  data-testid={`status-receipt-pending-${task.id}`}
+                                                >
+                                                  <Clock className="w-3.5 h-3.5" />
+                                                </span>
+                                              )
+                                            )}
                                           </p>
                                         )}
                                       </div>
