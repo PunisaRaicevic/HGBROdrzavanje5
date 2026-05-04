@@ -1005,22 +1005,24 @@ export default function AdminDashboard() {
                                     {task.assigned_to_name && (
                                       <p className="flex items-center gap-1.5 flex-wrap">
                                         <span>Dodeljeno: {task.assigned_to_name}</span>
-                                        {(task as any).receipt_confirmed_at ? (
-                                          <span
-                                            className="inline-flex items-center gap-1 text-green-600"
-                                            title="Majstor je potvrdio prijem"
-                                            data-testid={`status-receipt-confirmed-${task.id}`}
-                                          >
-                                            <CheckCircle className="w-4 h-4" />
-                                          </span>
-                                        ) : (
-                                          <span
-                                            className="inline-flex items-center gap-1 text-orange-500"
-                                            title="Majstor još nije potvrdio prijem"
-                                            data-testid={`status-receipt-pending-${task.id}`}
-                                          >
-                                            <Clock className="w-4 h-4" />
-                                          </span>
+                                        {task.status !== 'completed' && task.status !== 'cancelled' && (
+                                          (task as any).receipt_confirmed_at ? (
+                                            <span
+                                              className="inline-flex items-center gap-1 text-green-600"
+                                              title="Majstor je potvrdio prijem"
+                                              data-testid={`status-receipt-confirmed-${task.id}`}
+                                            >
+                                              <CheckCircle className="w-4 h-4" />
+                                            </span>
+                                          ) : (
+                                            <span
+                                              className="inline-flex items-center gap-1 text-orange-500"
+                                              title="Majstor još nije potvrdio prijem"
+                                              data-testid={`status-receipt-pending-${task.id}`}
+                                            >
+                                              <Clock className="w-4 h-4" />
+                                            </span>
+                                          )
                                         )}
                                       </p>
                                     )}
@@ -1219,22 +1221,24 @@ export default function AdminDashboard() {
                                     {task.assigned_to_name && (
                                       <p className="flex items-center gap-1.5 flex-wrap">
                                         <span>Dodeljeno: {task.assigned_to_name}</span>
-                                        {(task as any).receipt_confirmed_at ? (
-                                          <span
-                                            className="inline-flex items-center gap-1 text-green-600"
-                                            title="Majstor je potvrdio prijem"
-                                            data-testid={`status-receipt-confirmed-${task.id}`}
-                                          >
-                                            <CheckCircle className="w-4 h-4" />
-                                          </span>
-                                        ) : (
-                                          <span
-                                            className="inline-flex items-center gap-1 text-orange-500"
-                                            title="Majstor još nije potvrdio prijem"
-                                            data-testid={`status-receipt-pending-${task.id}`}
-                                          >
-                                            <Clock className="w-4 h-4" />
-                                          </span>
+                                        {task.status !== 'completed' && task.status !== 'cancelled' && (
+                                          (task as any).receipt_confirmed_at ? (
+                                            <span
+                                              className="inline-flex items-center gap-1 text-green-600"
+                                              title="Majstor je potvrdio prijem"
+                                              data-testid={`status-receipt-confirmed-${task.id}`}
+                                            >
+                                              <CheckCircle className="w-4 h-4" />
+                                            </span>
+                                          ) : (
+                                            <span
+                                              className="inline-flex items-center gap-1 text-orange-500"
+                                              title="Majstor još nije potvrdio prijem"
+                                              data-testid={`status-receipt-pending-${task.id}`}
+                                            >
+                                              <Clock className="w-4 h-4" />
+                                            </span>
+                                          )
                                         )}
                                       </p>
                                     )}
