@@ -1119,11 +1119,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      if (status !== undefined && status !== "assigned_to_radnik" && currentTask?.status === "assigned_to_radnik") {
-        updateData.receipt_confirmed_at = null;
-        updateData.receipt_confirmed_by = null;
-        updateData.receipt_confirmed_by_name = null;
-      }
+      // NAPOMENA: Ne brisemo receipt_confirmed_at kad majstor vrati zadatak (returned_to_sef/operator)
+      // jer je majstor vec prihvatio zadatak. Brise se samo kad se zadatak preraspodjeli drugom majstoru
+      // (logika iznad - kad se assigned_to promijeni).
 
       if (status === "completed" && currentTask?.status !== "completed") {
         updateData.completed_at = new Date();
