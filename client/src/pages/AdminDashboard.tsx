@@ -901,9 +901,10 @@ export default function AdminDashboard() {
                                        task.status === 'returned_to_operator' ||
                                        task.status === 'returned_to_sef';
                               case 'pending':
-                                return task.status === 'new' || 
-                                       task.status === 'pending' || 
-                                       task.status === 'assigned_to_operator';
+                                // Zadaci za koje majstori nisu potvrdili prijem
+                                return !(task as any).receipt_confirmed_at &&
+                                       task.status !== 'completed' &&
+                                       task.status !== 'cancelled';
                               case 'external':
                                 return task.status === 'with_external';
                               default:
@@ -1093,9 +1094,10 @@ export default function AdminDashboard() {
                                        task.status === 'returned_to_operator' ||
                                        task.status === 'returned_to_sef';
                               case 'pending':
-                                return task.status === 'new' || 
-                                       task.status === 'pending' || 
-                                       task.status === 'assigned_to_operator';
+                                // Zadaci za koje majstori nisu potvrdili prijem
+                                return !(task as any).receipt_confirmed_at &&
+                                       task.status !== 'completed' &&
+                                       task.status !== 'cancelled';
                               case 'external':
                                 return task.status === 'with_external';
                               default:
