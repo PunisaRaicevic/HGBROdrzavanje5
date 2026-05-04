@@ -158,28 +158,6 @@ export default function TeamPerformanceDialog({
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Prosečno Vreme Rešavanja
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-end gap-2">
-                  <p className="text-4xl font-bold" data-testid="avg-resolution">
-                    {avgResolutionTime > 0 ? (
-                      avgResolutionTime >= 60
-                        ? `${Math.floor(avgResolutionTime / 60)}h ${avgResolutionTime % 60}m`
-                        : `${avgResolutionTime}m`
-                    ) : 'N/A'}
-                  </p>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {completedTasks} završenih zadataka u periodu
-                </p>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Priority Breakdown */}
