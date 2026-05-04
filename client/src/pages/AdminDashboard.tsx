@@ -1718,6 +1718,138 @@ export default function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+          {/* Analiza po majstorima */}
+          <Card>
+            <CardHeader className="space-y-3 pb-4">
+              <CardTitle>Analiza po majstorima <span className="text-sm font-normal text-muted-foreground">(za izabrani period)</span></CardTitle>
+              <PeriodPicker
+                value={analysisRange}
+                onChange={setAnalysisRange}
+                granularity={analysisGranularity}
+                onGranularityChange={setAnalysisGranularity}
+                data-testid="period-picker-workers"
+              />
+            </CardHeader>
+            <CardContent>
+              {tasksLoading ? (
+                <Skeleton className="h-64" />
+              ) : (
+                (() => {
+                  const rangeStart = new Date(analysisRange.start.getFullYear(), analysisRange.start.getMonth(), analysisRange.start.getDate());
+                  const rangeEnd = new Date(analysisRange.end.getFullYear(), analysisRange.end.getMonth(), analysisRange.end.getDate());
+
+                  const periodTasks = tasks.filter(t => {
+                    if (t.status === 'cancelled') return false;
+                    if (!t.assigned_to_name) return false;
+                    const ref = (t.scheduled_for && t.parent_task_id) ? new Date(t.scheduled_for) : new Date(t.created_at);
+                    const refLocal = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+                    return refLocal >= rangeStart && refLocal < rangeEnd;
+                  });
+
+                  type WorkerStats = { completed: number; returned: number; pending: number; total: number };
+                  const byWorker: Record<string, WorkerStats> = {};
+
+                  periodTasks.forEach(task => {
+                    const names = (task.assigned_to_name || '').split(',').map(n => n.trim()).filter(Boolean);
+                    const isReturned = task.status === 'returned_to_sef' || task.status === 'returned_to_operator';
+                    const isCompleted = task.status === 'completed';
+                    const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim().toLowerCase();
+
+                    names.forEach(name => {
+                      if (!byWorker[name]) byWorker[name] = { completed: 0, returned: 0, pending: 0, total: 0 };
+                      // Za zavrsene zadatke - upisi samo onome ko je potvrdio prijem (obavio posao)
+                      if (isCompleted) {
+                        if (confirmedName && name.toLowerCase() === confirmedName) {
+                          byWorker[name].completed++;
+                          byWorker[name].total++;
+                        }
+                      } else if (isReturned) {
+                        byWorker[name].returned++;
+                        byWorker[name].total++;
+                      } else {
+                        byWorker[name].pending++;
+                        byWorker[name].total++;
+                      }
+                    });
+                  });
+
+                  const workers = Object.entries(byWorker)
+                    .filter(([, s]) => s.total > 0)
+                    .sort((a, b) => b[1].total - a[1].total);
+
+                  const maxTotal = Math.max(...workers.map(([, s]) => s.total), 1);
+                  const totalAll = workers.reduce((acc, [, s]) => ({
+                    completed: acc.completed + s.completed,
+                    returned: acc.returned + s.returned,
+                    pending: acc.pending + s.pending,
+                  }), { completed: 0, returned: 0, pending: 0 });
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap items-center gap-4 text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block w-3 h-3 rounded bg-green-500" />
+                          <span>Zavrseno: <strong>{totalAll.completed}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block w-3 h-3 rounded bg-orange-500" />
+                          <span>Vraceno: <strong>{totalAll.returned}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block w-3 h-3 rounded bg-red-500" />
+                          <span>Nezavrseno: <strong>{totalAll.pending}</strong></span>
+                        </div>
+                      </div>
+
+                      {workers.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-6 text-xs">
+                          Nema dodijeljenih zadataka za izabrani period
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {workers.map(([name, s]) => {
+                            const widthPct = (s.total / maxTotal) * 100;
+                            const completedPct = s.total > 0 ? (s.completed / s.total) * 100 : 0;
+                            const returnedPct = s.total > 0 ? (s.returned / s.total) * 100 : 0;
+                            const pendingPct = s.total > 0 ? (s.pending / s.total) * 100 : 0;
+                            return (
+                              <div key={name} className="space-y-1" data-testid={`worker-stats-${name}`}>
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-xs font-medium truncate">{name}</span>
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    {s.completed} / {s.returned} / {s.pending} <span className="text-foreground font-medium">({s.total})</span>
+                                  </span>
+                                </div>
+                                <div className="bg-muted rounded h-5 overflow-hidden" style={{ width: `${widthPct}%`, minWidth: '60px' }}>
+                                  <div className="flex h-full">
+                                    {s.completed > 0 && (
+                                      <div className="bg-green-500 flex items-center justify-center text-white text-xs font-medium" style={{ width: `${completedPct}%` }} title={`Zavrseno: ${s.completed}`}>
+                                        {completedPct >= 12 ? s.completed : ''}
+                                      </div>
+                                    )}
+                                    {s.returned > 0 && (
+                                      <div className="bg-orange-500 flex items-center justify-center text-white text-xs font-medium" style={{ width: `${returnedPct}%` }} title={`Vraceno: ${s.returned}`}>
+                                        {returnedPct >= 12 ? s.returned : ''}
+                                      </div>
+                                    )}
+                                    {s.pending > 0 && (
+                                      <div className="bg-red-500 flex items-center justify-center text-white text-xs font-medium" style={{ width: `${pendingPct}%` }} title={`Nezavrseno: ${s.pending}`}>
+                                        {pendingPct >= 12 ? s.pending : ''}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         </Tabs>
