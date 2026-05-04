@@ -412,30 +412,30 @@ export default function AdminDashboard() {
   const totalTasks = tasks.length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-medium">{t('dashboard')}</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl sm:text-3xl font-medium">{t('dashboard')}</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             {user?.fullName} - {user?.role}
           </p>
         </div>
         <Button 
           onClick={() => setAiChatOpen(true)}
-          className="gap-3 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white text-base"
+          className="gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 text-white text-sm sm:text-base w-full sm:w-auto"
           data-testid="button-ai-chat"
         >
-          <Brain className="w-6 h-6" />
+          <Brain className="w-5 h-5 sm:w-6 sm:h-6" />
           AI Analiza
         </Button>
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {usersLoading || tasksLoading ? (
           <>
-            <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
+            <Skeleton className="h-24 sm:h-32" />
+            <Skeleton className="h-24 sm:h-32" />
           </>
         ) : (
           <>
@@ -456,21 +456,21 @@ export default function AdminDashboard() {
       {/* Main Admin Features */}
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList className="h-9 w-full grid grid-cols-4">
-          <TabsTrigger value="users" data-testid="tab-users" className="text-sm">
-            <Users className="w-3.5 h-3.5 mr-1.5" />
-            Korisnici
+          <TabsTrigger value="users" data-testid="tab-users" className="text-xs sm:text-sm px-1 sm:px-3">
+            <Users className="w-3.5 h-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Korisnici</span>
           </TabsTrigger>
-          <TabsTrigger value="tasks" data-testid="tab-tasks" className="text-sm">
-            <ClipboardList className="w-3.5 h-3.5 mr-1.5" />
-            Zadaci
+          <TabsTrigger value="tasks" data-testid="tab-tasks" className="text-xs sm:text-sm px-1 sm:px-3">
+            <ClipboardList className="w-3.5 h-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Zadaci</span>
           </TabsTrigger>
-          <TabsTrigger value="stats" data-testid="tab-stats" className="text-sm">
-            <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
-            Statistike
+          <TabsTrigger value="stats" data-testid="tab-stats" className="text-xs sm:text-sm px-1 sm:px-3">
+            <BarChart3 className="w-3.5 h-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Statistike</span>
           </TabsTrigger>
-          <TabsTrigger value="locations" data-testid="tab-locations" className="text-sm" onClick={() => navigate('/staff-locations')}>
-            <MapPin className="w-3.5 h-3.5 mr-1.5" />
-            Lokacije
+          <TabsTrigger value="locations" data-testid="tab-locations" className="text-xs sm:text-sm px-1 sm:px-3" onClick={() => navigate('/staff-locations')}>
+            <MapPin className="w-3.5 h-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Lokacije</span>
           </TabsTrigger>
         </TabsList>
 
@@ -656,8 +656,8 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="tasks" className="space-y-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-medium">Upravljanje zadacima</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+            <h2 className="text-lg sm:text-xl font-medium">Upravljanje zadacima</h2>
             <CreateTaskDialog />
           </div>
 
@@ -717,12 +717,12 @@ export default function AdminDashboard() {
                         {period.label}
                       </Button>
                     ))}
-                    <div className="ml-2 border-l pl-2">
+                    <div className="sm:ml-2 sm:border-l sm:pl-2">
                       <Select 
                         value={tasksTypeFilter} 
                         onValueChange={setTasksTypeFilter}
                       >
-                        <SelectTrigger className="w-36" data-testid="select-type-filter">
+                        <SelectTrigger className="w-32 sm:w-36 h-8 sm:h-9 text-xs sm:text-sm" data-testid="select-type-filter">
                           <SelectValue placeholder="Tip" />
                         </SelectTrigger>
                         <SelectContent>
@@ -732,12 +732,12 @@ export default function AdminDashboard() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="ml-2 border-l pl-2">
+                    <div className="sm:ml-2 sm:border-l sm:pl-2">
                       <Select 
                         value={tasksStatusFilter} 
                         onValueChange={setTasksStatusFilter}
                       >
-                        <SelectTrigger className="w-36" data-testid="select-status-filter">
+                        <SelectTrigger className="w-32 sm:w-36 h-8 sm:h-9 text-xs sm:text-sm" data-testid="select-status-filter">
                           <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -772,12 +772,12 @@ export default function AdminDashboard() {
                         {period.label}
                       </Button>
                     ))}
-                    <div className="ml-2 border-l pl-2">
+                    <div className="sm:ml-2 sm:border-l sm:pl-2">
                       <Select 
                         value={historyStatusFilter} 
                         onValueChange={setHistoryStatusFilter}
                       >
-                        <SelectTrigger className="w-36" data-testid="select-history-status-filter">
+                        <SelectTrigger className="w-32 sm:w-36 h-8 sm:h-9 text-xs sm:text-sm" data-testid="select-history-status-filter">
                           <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -962,13 +962,13 @@ export default function AdminDashboard() {
                           return (
                             <div 
                               key={task.id} 
-                              className="p-4 border rounded-md hover-elevate cursor-pointer"
+                              className="p-3 sm:p-4 border rounded-md hover-elevate cursor-pointer"
                               data-testid={`task-item-${task.id}`}
                               onClick={() => setSelectedTask(task)}
                             >
                               <div className="space-y-2">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="text-sm text-muted-foreground whitespace-nowrap">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="text-xs sm:text-sm text-muted-foreground">
                                     {task.scheduled_for ? (
                                       <span>Zakazano: {formatDate(task.scheduled_for)}</span>
                                     ) : (
