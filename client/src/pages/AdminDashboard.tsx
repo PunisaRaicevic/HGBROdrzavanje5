@@ -1008,23 +1008,22 @@ export default function AdminDashboard() {
                                         {(() => {
                                           const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                           const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
-                                          const showIndicator = task.status !== 'completed' && task.status !== 'cancelled';
+                                          const showPending = task.status !== 'completed' && task.status !== 'cancelled';
                                           return names.map((name: string, idx: number) => {
-                                            const isConfirmed = showIndicator && confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                            const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                            const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
                                             return (
                                               <span key={idx} className="inline-flex items-center gap-1">
                                                 <span>{name}</span>
-                                                {showIndicator && (
-                                                  isConfirmed ? (
-                                                    <CheckCircle className="w-4 h-4 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
-                                                      <title>Potvrdio prijem</title>
-                                                    </CheckCircle>
-                                                  ) : (
-                                                    <Clock className="w-4 h-4 text-orange-500" data-testid={`status-receipt-pending-${task.id}-${idx}`}>
-                                                      <title>Nije potvrdio prijem</title>
-                                                    </Clock>
-                                                  )
-                                                )}
+                                                {isConfirmed ? (
+                                                  <CheckCircle className="w-4 h-4 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
+                                                    <title>{tooltipText}</title>
+                                                  </CheckCircle>
+                                                ) : showPending ? (
+                                                  <Clock className="w-4 h-4 text-orange-500" data-testid={`status-receipt-pending-${task.id}-${idx}`}>
+                                                    <title>Nije potvrdio prijem</title>
+                                                  </Clock>
+                                                ) : null}
                                                 {idx < names.length - 1 && <span>,</span>}
                                               </span>
                                             );
@@ -1230,23 +1229,22 @@ export default function AdminDashboard() {
                                         {(() => {
                                           const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                           const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
-                                          const showIndicator = task.status !== 'completed' && task.status !== 'cancelled';
+                                          const showPending = task.status !== 'completed' && task.status !== 'cancelled';
                                           return names.map((name: string, idx: number) => {
-                                            const isConfirmed = showIndicator && confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                            const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                            const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
                                             return (
                                               <span key={idx} className="inline-flex items-center gap-1">
                                                 <span>{name}</span>
-                                                {showIndicator && (
-                                                  isConfirmed ? (
-                                                    <CheckCircle className="w-4 h-4 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
-                                                      <title>Potvrdio prijem</title>
-                                                    </CheckCircle>
-                                                  ) : (
-                                                    <Clock className="w-4 h-4 text-orange-500" data-testid={`status-receipt-pending-${task.id}-${idx}`}>
-                                                      <title>Nije potvrdio prijem</title>
-                                                    </Clock>
-                                                  )
-                                                )}
+                                                {isConfirmed ? (
+                                                  <CheckCircle className="w-4 h-4 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
+                                                    <title>{tooltipText}</title>
+                                                  </CheckCircle>
+                                                ) : showPending ? (
+                                                  <Clock className="w-4 h-4 text-orange-500" data-testid={`status-receipt-pending-${task.id}-${idx}`}>
+                                                    <title>Nije potvrdio prijem</title>
+                                                  </Clock>
+                                                ) : null}
                                                 {idx < names.length - 1 && <span>,</span>}
                                               </span>
                                             );
@@ -1544,23 +1542,22 @@ export default function AdminDashboard() {
                                             {(() => {
                                               const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                               const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
-                                              const showIndicator = task.status !== 'completed' && task.status !== 'cancelled';
+                                              const showPending = task.status !== 'completed' && task.status !== 'cancelled';
                                               return names.map((name: string, idx: number) => {
-                                                const isConfirmed = showIndicator && confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                                const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                                const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
                                                 return (
                                                   <span key={idx} className="inline-flex items-center gap-1">
                                                     <span>{name}</span>
-                                                    {showIndicator && (
-                                                      isConfirmed ? (
-                                                        <CheckCircle className="w-3.5 h-3.5 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
-                                                          <title>Potvrdio prijem</title>
-                                                        </CheckCircle>
-                                                      ) : (
-                                                        <Clock className="w-3.5 h-3.5 text-orange-500" data-testid={`status-receipt-pending-${task.id}-${idx}`}>
-                                                          <title>Nije potvrdio prijem</title>
-                                                        </Clock>
-                                                      )
-                                                    )}
+                                                    {isConfirmed ? (
+                                                      <CheckCircle className="w-3.5 h-3.5 text-green-600" data-testid={`status-receipt-confirmed-${task.id}-${idx}`}>
+                                                        <title>{tooltipText}</title>
+                                                      </CheckCircle>
+                                                    ) : showPending ? (
+                                                      <Clock className="w-3.5 h-3.5 text-orange-500" data-testid={`status-receipt-pending-${task.id}-${idx}`}>
+                                                        <title>Nije potvrdio prijem</title>
+                                                      </Clock>
+                                                    ) : null}
                                                     {idx < names.length - 1 && <span>,</span>}
                                                   </span>
                                                 );
