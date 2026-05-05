@@ -1142,6 +1142,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData.completed_at = new Date();
         updateData.completed_by = sessionUser.id;
         updateData.completed_by_name = sessionUser.full_name;
+
+        // Auto-potvrdi prijem ako majstor zavrsava zadatak, a prijem jos nije potvrdjen
+        // (npr. race condition kad se klikne "Potvrdi prijem" pa odmah "Zavrsi")
+        const willHaveReceipt = updateData.receipt_confirmed_at !== undefined
+          ? updateData.receipt_confirmed_at !== null
+          : !!currentTask?.receipt_confirmed_at;
+        if (!willHaveReceipt) {
+          const assignedIds = currentTask?.assigned_to ? currentTask.assigned_to.split(",").map((id: string) => id.trim()) : [];
+          const isAssigned = assignedIds.includes(sessionUser.id) || currentTask?.external_company_id === sessionUser.id;
+          if (isAssigned) {
+            updateData.receipt_confirmed_at = new Date();
+            updateData.receipt_confirmed_by = sessionUser.id;
+            updateData.receipt_confirmed_by_name = sessionUser.full_name;
+          }
+        }
       }
 
       if (status !== "completed" && currentTask?.status === "completed") {
