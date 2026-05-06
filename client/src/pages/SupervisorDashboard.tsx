@@ -36,6 +36,8 @@ import CreateRecurringTaskDialog from '@/components/CreateRecurringTaskDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
 import EditTaskDialog from '@/components/EditTaskDialog';
 import { PhotoUpload, PhotoPreview } from '@/components/PhotoUpload';
+import { PeriodPicker } from '@/components/PeriodPicker';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Helper function to calculate elapsed time
 const getElapsedTime = (createdAt: Date): string => {
@@ -81,6 +83,15 @@ export default function SupervisorDashboard() {
   const [historyStatusFilter, setHistoryStatusFilter] = useState('all');
   const [tasksPerPage, setTasksPerPage] = useState(20);
   const [historyPerPage, setHistoryPerPage] = useState(20);
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
+  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month'>('day');
+  const [statsRange, setStatsRange] = useState(() => {
+    const n = new Date();
+    return {
+      start: new Date(n.getFullYear(), n.getMonth(), n.getDate()),
+      end: new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1),
+    };
+  });
   
   // Sound notification state
   const [audioEnabled, setAudioEnabled] = useState(() => {
@@ -598,12 +609,15 @@ export default function SupervisorDashboard() {
         {/* Tasks Tabs */}
         <div className="lg:col-span-2">
           <Tabs defaultValue="my-tasks" className="space-y-4">
-            <TabsList className="w-full grid grid-cols-2">
+            <TabsList className="w-full grid grid-cols-3">
               <TabsTrigger value="my-tasks" data-testid="tab-my-tasks">
                 Moji zadaci
               </TabsTrigger>
               <TabsTrigger value="all-tasks" data-testid="tab-all-tasks">
                 Zadaci
+              </TabsTrigger>
+              <TabsTrigger value="overview" data-testid="tab-overview">
+                Pregled
               </TabsTrigger>
             </TabsList>
 
@@ -1335,6 +1349,267 @@ export default function SupervisorDashboard() {
                         )}
                       </div>
                     </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Pregled Tab - Statistika realizacije zadataka */}
+            <TabsContent value="overview" className="space-y-4">
+              <Card>
+                <CardHeader className="space-y-3 pb-4">
+                  <CardTitle>Statistika realizacije zadataka</CardTitle>
+                  <PeriodPicker
+                    value={statsRange}
+                    onChange={setStatsRange}
+                    granularity={statsGranularity}
+                    onGranularityChange={setStatsGranularity}
+                    data-testid="period-picker-supervisor-stats"
+                  />
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? (
+                    <div className="space-y-3">
+                      <Skeleton className="h-20" />
+                      <Skeleton className="h-20" />
+                    </div>
+                  ) : (
+                    (() => {
+                      const tasks = tasksResponse?.tasks || [];
+                      const periodTasks = tasks.filter((t: any) => {
+                        if (t.status === 'cancelled') return false;
+                        const rangeStartLocal = new Date(statsRange.start.getFullYear(), statsRange.start.getMonth(), statsRange.start.getDate());
+                        const rangeEndLocal = new Date(statsRange.end.getFullYear(), statsRange.end.getMonth(), statsRange.end.getDate());
+                        if (t.scheduled_for && t.parent_task_id) {
+                          const sd = new Date(t.scheduled_for);
+                          const sl = new Date(sd.getFullYear(), sd.getMonth(), sd.getDate());
+                          return sl >= rangeStartLocal && sl < rangeEndLocal;
+                        }
+                        const td = new Date(t.created_at);
+                        const tl = new Date(td.getFullYear(), td.getMonth(), td.getDate());
+                        return tl >= rangeStartLocal && tl < rangeEndLocal;
+                      });
+                      const completedTasks = periodTasks.filter((t: any) => t.status === 'completed');
+                      const inProgressTasks = periodTasks.filter((t: any) =>
+                        t.status === 'assigned_to_radnik' ||
+                        t.status === 'with_operator' ||
+                        t.status === 'in_progress' ||
+                        t.status === 'returned_to_operator' ||
+                        t.status === 'returned_to_sef'
+                      );
+                      const pendingTasks = periodTasks.filter((t: any) =>
+                        t.status === 'new' ||
+                        t.status === 'pending' ||
+                        t.status === 'assigned_to_operator' ||
+                        t.status === 'with_sef'
+                      );
+                      const externalTasks = periodTasks.filter((t: any) => t.status === 'with_external');
+                      const receiptConfirmedTasks = periodTasks.filter((t: any) => t.receipt_confirmed_at);
+                      const receiptUnconfirmedTasks = periodTasks.filter((t: any) =>
+                        !t.receipt_confirmed_at && t.status !== 'completed' && t.status !== 'cancelled'
+                      );
+                      const completionRate = periodTasks.length > 0
+                        ? Math.round((completedTasks.length / periodTasks.length) * 100)
+                        : 0;
+
+                      return (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="p-3 border rounded-md bg-muted/30">
+                              <p className="text-xs text-muted-foreground">Izabrani period</p>
+                              <p className="text-xl font-bold mt-0.5">{periodTasks.length}</p>
+                              <p className="text-xs text-muted-foreground">Ukupno</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'receipt_confirmed' ? null : 'receipt_confirmed')}
+                              className={`p-3 border rounded-md bg-muted/30 text-left cursor-pointer transition-all duration-200 hover:shadow-md ${selectedStatusFilter === 'receipt_confirmed' ? 'ring-2 ring-blue-500 bg-blue-50' : ''}`}
+                              data-testid="sup-stat-receipt-confirmed"
+                            >
+                              <p className="text-xs text-muted-foreground">Potvrđen prijem</p>
+                              <p className="text-xl font-bold text-blue-600 mt-0.5">{receiptConfirmedTasks.length}</p>
+                              <p className="text-xs text-muted-foreground">Majstor primio</p>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'receipt_unconfirmed' ? null : 'receipt_unconfirmed')}
+                              className={`p-3 border rounded-md bg-muted/30 text-left cursor-pointer transition-all duration-200 hover:shadow-md ${selectedStatusFilter === 'receipt_unconfirmed' ? 'ring-2 ring-red-500 bg-red-50' : ''}`}
+                              data-testid="sup-stat-receipt-unconfirmed"
+                            >
+                              <p className="text-xs text-muted-foreground">Nepotvrđen prijem</p>
+                              <p className="text-xl font-bold text-red-600 mt-0.5">{receiptUnconfirmedTasks.length}</p>
+                              <p className="text-xs text-muted-foreground">Majstor nije primio</p>
+                            </button>
+                            <div className="p-3 border rounded-md bg-muted/30">
+                              <p className="text-xs text-muted-foreground">Stopa realizacije</p>
+                              <p className="text-xl font-bold text-green-600 mt-0.5">{completionRate}%</p>
+                            </div>
+                          </div>
+
+                          <div className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              <button
+                                onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'completed' ? null : 'completed')}
+                                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${selectedStatusFilter === 'completed' ? 'bg-green-50 border-green-500 shadow-md scale-105' : 'border-green-300 hover:border-green-500 hover:shadow-md hover:scale-102'}`}
+                                data-testid="sup-filter-button-completed"
+                              >
+                                <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">Završeno</p>
+                                <p className="text-3xl font-bold text-green-600 mt-2">{completedTasks.length}</p>
+                              </button>
+                              <button
+                                onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'in_progress' ? null : 'in_progress')}
+                                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${selectedStatusFilter === 'in_progress' ? 'bg-blue-50 border-blue-500 shadow-md scale-105' : 'border-blue-300 hover:border-blue-500 hover:shadow-md hover:scale-102'}`}
+                                data-testid="sup-filter-button-in-progress"
+                              >
+                                <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">U toku</p>
+                                <p className="text-3xl font-bold text-blue-600 mt-2">{inProgressTasks.length}</p>
+                              </button>
+                              <button
+                                onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'pending' ? null : 'pending')}
+                                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${selectedStatusFilter === 'pending' ? 'bg-yellow-50 border-yellow-500 shadow-md scale-105' : 'border-yellow-300 hover:border-yellow-500 hover:shadow-md hover:scale-102'}`}
+                                data-testid="sup-filter-button-pending"
+                              >
+                                <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">Na čekanju</p>
+                                <p className="text-3xl font-bold text-yellow-600 mt-2">{pendingTasks.length}</p>
+                              </button>
+                              <button
+                                onClick={() => setSelectedStatusFilter(selectedStatusFilter === 'external' ? null : 'external')}
+                                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${selectedStatusFilter === 'external' ? 'bg-purple-50 border-purple-500 shadow-md scale-105' : 'border-purple-300 hover:border-purple-500 hover:shadow-md hover:scale-102'}`}
+                                data-testid="sup-filter-button-external"
+                              >
+                                <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Eksterna</p>
+                                <p className="text-3xl font-bold text-purple-600 mt-2">{externalTasks.length}</p>
+                              </button>
+                            </div>
+                          </div>
+
+                          {selectedStatusFilter && (
+                            <div className="mt-6 pt-6 border-t">
+                              <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-semibold">
+                                  {selectedStatusFilter === 'completed' && 'Završeni zadaci'}
+                                  {selectedStatusFilter === 'in_progress' && 'Zadaci u toku'}
+                                  {selectedStatusFilter === 'pending' && 'Zadaci na čekanju'}
+                                  {selectedStatusFilter === 'external' && 'Zadaci - Eksterna firma'}
+                                  {selectedStatusFilter === 'receipt_confirmed' && 'Zadaci - Majstor potvrdio prijem'}
+                                  {selectedStatusFilter === 'receipt_unconfirmed' && 'Zadaci - Majstor nije potvrdio prijem'}
+                                </h3>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedStatusFilter(null)}
+                                  data-testid="sup-button-clear-filter"
+                                >
+                                  Obriši filter
+                                </Button>
+                              </div>
+                              <ScrollArea className="h-[400px] border rounded-md pr-4">
+                                <div className="space-y-3 p-4">
+                                  {(() => {
+                                    let filteredTasks: any[] = [];
+                                    if (selectedStatusFilter === 'completed') filteredTasks = completedTasks;
+                                    else if (selectedStatusFilter === 'in_progress') filteredTasks = inProgressTasks;
+                                    else if (selectedStatusFilter === 'pending') filteredTasks = pendingTasks;
+                                    else if (selectedStatusFilter === 'external') filteredTasks = externalTasks;
+                                    else if (selectedStatusFilter === 'receipt_confirmed') filteredTasks = receiptConfirmedTasks;
+                                    else if (selectedStatusFilter === 'receipt_unconfirmed') filteredTasks = receiptUnconfirmedTasks;
+
+                                    if (filteredTasks.length === 0) {
+                                      return (
+                                        <p className="text-center text-muted-foreground py-6 text-sm">
+                                          Nema zadataka za izabrani period
+                                        </p>
+                                      );
+                                    }
+
+                                    const fmt = (s: string) => new Date(s).toLocaleDateString('sr-RS', {
+                                      day: '2-digit', month: '2-digit', year: 'numeric',
+                                      hour: '2-digit', minute: '2-digit'
+                                    });
+                                    const statusBadge = (status: string) => {
+                                      if (status === 'completed') return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                                      if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') return <Badge variant="secondary">U toku</Badge>;
+                                      if (status === 'returned_to_operator' || status === 'returned_to_sef') return <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-300">Vraćeno</Badge>;
+                                      if (status === 'with_external') return <Badge variant="outline">Eksterna firma</Badge>;
+                                      if (status === 'new') return <Badge variant="outline">Novo</Badge>;
+                                      return <Badge variant="secondary">{status}</Badge>;
+                                    };
+
+                                    return filteredTasks
+                                      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                      .map((task: any) => (
+                                        <div
+                                          key={task.id}
+                                          className="p-3 border rounded-md hover-elevate cursor-pointer"
+                                          data-testid={`sup-filtered-task-item-${task.id}`}
+                                          onClick={() => handleViewTaskDetails(task)}
+                                        >
+                                          <div className="flex items-start justify-between gap-2 mb-2">
+                                            <span className="text-xs text-muted-foreground">{fmt(task.created_at)}</span>
+                                            <div className="flex flex-col gap-1 items-end">
+                                              {statusBadge(task.status)}
+                                              {(task.parent_task_id || task.is_recurring) ? (
+                                                <Badge
+                                                  variant="outline"
+                                                  className={`text-xs ${task.recurrence_pattern === 'cancelled'
+                                                    ? 'bg-red-50 border-red-200 text-red-700'
+                                                    : 'bg-purple-50 border-purple-200 text-purple-700'}`}
+                                                >
+                                                  Periodicni{task.recurrence_pattern === 'cancelled' && ' (Ukinut)'}
+                                                </Badge>
+                                              ) : (
+                                                <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200 text-gray-600">
+                                                  Jednokratan
+                                                </Badge>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <h4 className="font-medium text-sm">{task.title}</h4>
+                                          {task.description && (
+                                            <p className="text-xs text-foreground mt-1 whitespace-pre-wrap break-words">{task.description}</p>
+                                          )}
+                                          {task.created_by_name && (
+                                            <p className="text-xs text-muted-foreground mt-1">Prijavio: {task.created_by_name}</p>
+                                          )}
+                                          {task.assigned_to_name && (
+                                            <div className="text-xs text-muted-foreground mt-1 flex items-start gap-1.5 flex-wrap">
+                                              <span>{task.status === 'completed' ? 'Izvršio' : 'Dodijeljeno'}:</span>
+                                              {(() => {
+                                                const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
+                                                const confirmedName = (task.receipt_confirmed_by_name || '').trim();
+                                                const showPending = task.status !== 'completed' && task.status !== 'cancelled';
+                                                return names.map((name: string, idx: number) => {
+                                                  const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                                  const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
+                                                  return (
+                                                    <span key={idx} className="inline-flex items-center gap-1">
+                                                      <span>{name}</span>
+                                                      {isConfirmed ? (
+                                                        <CheckCircle className="w-3.5 h-3.5 text-green-600">
+                                                          <title>{tooltipText}</title>
+                                                        </CheckCircle>
+                                                      ) : showPending ? (
+                                                        <Clock className="w-3.5 h-3.5 text-orange-500">
+                                                          <title>Nije potvrdio prijem</title>
+                                                        </Clock>
+                                                      ) : null}
+                                                      {idx < names.length - 1 && <span>,</span>}
+                                                    </span>
+                                                  );
+                                                });
+                                              })()}
+                                            </div>
+                                          )}
+                                        </div>
+                                      ));
+                                  })()}
+                                </div>
+                              </ScrollArea>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()
                   )}
                 </CardContent>
               </Card>
