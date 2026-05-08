@@ -217,14 +217,29 @@ export class SupabaseStorage implements IStorage {
     recurrence_year_dates, execution_hour, execution_minute
   `;
 
+  private async fetchAllTaskPages(
+    queryBuilder: (from: number, to: number) => Promise<{ data: any[] | null; error: any }>
+  ): Promise<any[]> {
+    const PAGE = 1000;
+    const all: any[] = [];
+    let from = 0;
+    while (true) {
+      const { data, error } = await queryBuilder(from, from + PAGE - 1);
+      if (error) throw error;
+      const rows = data || [];
+      all.push(...rows);
+      if (rows.length < PAGE) break;
+      from += PAGE;
+    }
+    return all;
+  }
+
   async getTasks(): Promise<Task[]> {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select(SupabaseStorage.TASK_LIST_COLUMNS)
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    return (data || []) as unknown as Task[];
+    const cols = SupabaseStorage.TASK_LIST_COLUMNS;
+    const rows = await this.fetchAllTaskPages((from, to) =>
+      supabase.from('tasks').select(cols).order('created_at', { ascending: false }).range(from, to)
+    );
+    return rows as unknown as Task[];
   }
 
   async getTaskById(id: string): Promise<Task | undefined> {
