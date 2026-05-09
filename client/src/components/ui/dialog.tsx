@@ -39,19 +39,21 @@ const DialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed z-50 grid w-full max-w-lg gap-4 border bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        // Mobile: bottom sheet
-        "inset-x-0 bottom-0 mx-auto rounded-t-2xl p-6 pb-8 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+        // Mobile: bottom sheet (capped height so X button is always visible)
+        "inset-x-0 bottom-0 mx-auto max-h-[92vh] overflow-y-auto rounded-t-2xl p-6 pb-8 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
         // Desktop (sm+): centered dialog
-        "sm:inset-auto sm:left-[50%] sm:top-[50%] sm:bottom-auto sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg sm:pb-6 sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=closed]:slide-out-to-top-[48%] sm:data-[state=open]:slide-in-from-left-1/2 sm:data-[state=open]:slide-in-from-top-[48%] sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
+        "sm:inset-auto sm:left-[50%] sm:top-[50%] sm:bottom-auto sm:max-h-[85vh] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg sm:pb-6 sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=closed]:slide-out-to-top-[48%] sm:data-[state=open]:slide-in-from-left-1/2 sm:data-[state=open]:slide-in-from-top-[48%] sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95",
         className
       )}
       {...props}
     >
+      <div className="pointer-events-none sticky top-0 z-50 h-0 -mr-3 -mt-3 flex justify-end">
+        <DialogPrimitive.Close className="pointer-events-auto rounded-full bg-muted hover:bg-muted/80 ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none w-10 h-10 flex items-center justify-center text-foreground shadow-md border border-border">
+          <X className="h-5 w-5" strokeWidth={2.5} />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </div>
       {children}
-      <DialogPrimitive.Close className="absolute right-3 top-3 z-50 rounded-full bg-muted hover:bg-muted/80 ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none w-10 h-10 flex items-center justify-center text-foreground shadow-sm border border-border">
-        <X className="h-5 w-5" strokeWidth={2.5} />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
 ))
