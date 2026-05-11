@@ -45,6 +45,8 @@ interface Task {
   reporterImages?: string[];
   worker_report?: string;
   receipt_confirmed_at?: string;
+  receipt_confirmed_by?: string;
+  receipt_confirmed_by_name?: string;
   parent_task_id?: string | null;
   scheduled_for?: string | null;
 }
@@ -359,6 +361,8 @@ export default function WorkerDashboard() {
       reporterImages: task.images || [],
       worker_report: task.worker_report || '',
       receipt_confirmed_at: task.receipt_confirmed_at,
+      receipt_confirmed_by: task.receipt_confirmed_by,
+      receipt_confirmed_by_name: task.receipt_confirmed_by_name,
       parent_task_id: task.parent_task_id,
       scheduled_for: task.scheduled_for
     }));
@@ -468,9 +472,17 @@ export default function WorkerDashboard() {
     setIsConfirmingReceipt(true);
     
     // OPTIMISTIC UPDATE - Update UI immediately (don't change status, only update receipt fields)
+    const existingIds = (selectedTask.receipt_confirmed_by || '').split(',').map(s => s.trim()).filter(Boolean);
+    const existingNames = (selectedTask.receipt_confirmed_by_name || '').split(',').map(s => s.trim()).filter(Boolean);
+    if (!existingIds.includes(user.id)) {
+      existingIds.push(user.id);
+      existingNames.push(user.fullName);
+    }
     const optimisticUpdate = optimisticUpdateTask(selectedTask.id, {
       worker_report: 'Prijem reklamacije potvrđen / Receipt confirmed',
-      receipt_confirmed_at: new Date().toISOString(),
+      receipt_confirmed_at: selectedTask.receipt_confirmed_at || new Date().toISOString(),
+      receipt_confirmed_by: existingIds.join(','),
+      receipt_confirmed_by_name: existingNames.join(', '),
     });
     
     try {
@@ -975,34 +987,39 @@ export default function WorkerDashboard() {
                   </div>
                 </div>
 
-                {/* Action Buttons for Assigned Tasks */}
+                {/* Confirm Receipt Button — uvek dostupno dok ovaj korisnik nije potvrdio prijem
+                    (uključujući i kad je task vec zavrsen od strane drugog majstora) */}
+                {selectedTask.status !== 'cancelled' && !actionType && (() => {
+                  const confirmedIds = (selectedTask.receipt_confirmed_by || '').split(',').map(s => s.trim()).filter(Boolean);
+                  const userAlreadyConfirmed = !!user?.id && confirmedIds.includes(user.id);
+                  const isReceiptConfirmed = userAlreadyConfirmed || isConfirmingReceipt;
+                  return (
+                    <div className="pt-4 border-t">
+                      <Button
+                        className={`w-full min-h-14 touch-manipulation ${isReceiptConfirmed ? 'bg-gray-400 hover:bg-gray-400 text-gray-700 border-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white border-green-700'}`}
+                        onClick={(e) => {
+                          console.log('[BUTTON] Confirm Receipt clicked');
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleConfirmReceipt();
+                        }}
+                        onTouchStart={() => console.log('[BUTTON] Confirm Receipt touched')}
+                        disabled={isReceiptConfirmed}
+                        data-testid={`button-confirm-receipt-${selectedTask.id}`}
+                        type="button"
+                      >
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        <span className="text-lg">
+                          {isReceiptConfirmed ? '✓ ' + t('confirmReceipt') : t('confirmReceipt')}
+                        </span>
+                      </Button>
+                    </div>
+                  );
+                })()}
+
+                {/* Action Buttons for Assigned Tasks (Završi / Vrati) */}
                 {(selectedTask.status === 'assigned_to_radnik' || selectedTask.status === 'with_sef') && !actionType && (
                   <div className="space-y-3 pt-4 border-t">
-                    {/* Confirm Receipt Button */}
-                    {(() => {
-                      const isReceiptConfirmed = selectedTask.worker_report?.includes('Prijem reklamacije potvrđen') || isConfirmingReceipt || !!selectedTask.receipt_confirmed_at;
-                      return (
-                        <Button 
-                          className={`w-full min-h-14 touch-manipulation ${isReceiptConfirmed ? 'bg-gray-400 hover:bg-gray-400 text-gray-700 border-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white border-green-700'}`}
-                          onClick={(e) => {
-                            console.log('[BUTTON] Confirm Receipt clicked');
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleConfirmReceipt();
-                          }}
-                          onTouchStart={() => console.log('[BUTTON] Confirm Receipt touched')}
-                          disabled={isReceiptConfirmed}
-                          data-testid={`button-confirm-receipt-${selectedTask.id}`}
-                          type="button"
-                        >
-                          <CheckCircle className="w-5 h-5 mr-2" />
-                          <span className="text-lg">
-                            {isReceiptConfirmed ? '✓ ' + t('confirmReceipt') : t('confirmReceipt')}
-                          </span>
-                        </Button>
-                      );
-                    })()}
-                    
                     {/* Task Completion and Return Buttons */}
                     <div className="flex flex-col gap-3">
                       <Button 

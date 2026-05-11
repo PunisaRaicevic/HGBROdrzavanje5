@@ -1080,7 +1080,7 @@ export default function SupervisorDashboard() {
                                             {(() => {
                                               const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                               const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-                                              const showPending = task.status !== 'completed' && task.status !== 'cancelled';
+                                              const showPending = task.status !== 'cancelled';
                                               return names.map((name: string, idx: number) => {
                                                 const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                 const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
@@ -1299,7 +1299,7 @@ export default function SupervisorDashboard() {
                                             {(() => {
                                               const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                               const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-                                              const showPending = task.status !== 'completed' && task.status !== 'cancelled';
+                                              const showPending = task.status !== 'cancelled';
                                               return names.map((name: string, idx: number) => {
                                                 const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                 const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
@@ -1573,7 +1573,7 @@ export default function SupervisorDashboard() {
                                               {(() => {
                                                 const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                                 const confirmedSet = new Set((task.receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-                                                const showPending = task.status !== 'completed' && task.status !== 'cancelled';
+                                                const showPending = task.status !== 'cancelled';
                                                 return names.map((name: string, idx: number) => {
                                                   const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                   const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';

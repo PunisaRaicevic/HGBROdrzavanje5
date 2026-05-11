@@ -15,6 +15,8 @@ export interface Task {
   reporterImages?: string[];
   worker_report?: string;
   receipt_confirmed_at?: string;
+  receipt_confirmed_by?: string;
+  receipt_confirmed_by_name?: string;
   needsHydration?: boolean;
 }
 
