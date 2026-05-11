@@ -47,6 +47,9 @@ interface Task {
   receipt_confirmed_at?: string;
   receipt_confirmed_by?: string;
   receipt_confirmed_by_name?: string;
+  completed_by?: string;
+  completed_by_name?: string;
+  assigned_to?: string;
   parent_task_id?: string | null;
   scheduled_for?: string | null;
 }
@@ -363,6 +366,9 @@ export default function WorkerDashboard() {
       receipt_confirmed_at: task.receipt_confirmed_at,
       receipt_confirmed_by: task.receipt_confirmed_by,
       receipt_confirmed_by_name: task.receipt_confirmed_by_name,
+      completed_by: task.completed_by,
+      completed_by_name: task.completed_by_name,
+      assigned_to: task.assigned_to,
       parent_task_id: task.parent_task_id,
       scheduled_for: task.scheduled_for
     }));
@@ -1017,6 +1023,8 @@ export default function WorkerDashboard() {
                   );
                 })()}
 
+                {/* Provjera: da li je trenutni korisnik dodijeljen na zadatak i jos nije zavrsio svoj dio */}
+                {(() => null)()}
                 {/* Action Buttons for Assigned Tasks (Završi / Vrati) */}
                 {(selectedTask.status === 'assigned_to_radnik' || selectedTask.status === 'with_sef') && !actionType && (
                   <div className="space-y-3 pt-4 border-t">
@@ -1075,7 +1083,7 @@ export default function WorkerDashboard() {
                 )}
 
                 {/* Work Report Section for Assigned Tasks after action selected */}
-                {(selectedTask.status === 'assigned_to_radnik' || selectedTask.status === 'with_sef') && actionType && (
+                {(selectedTask.status === 'assigned_to_radnik' || selectedTask.status === 'with_sef' || selectedTask.status === 'completed') && actionType && (
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="font-medium text-base">
                       {actionType === 'completed' 
@@ -1204,8 +1212,41 @@ export default function WorkerDashboard() {
                 )}
 
 
-                {/* View Details for Completed Tasks */}
-                {selectedTask.status === 'completed' && (
+                {/* View Details for Completed Tasks — i dodatno dugme "Završi moj dio" za majstore
+                    koji su jos dodijeljeni a jos nisu upisani u completed_by */}
+                {selectedTask.status === 'completed' && !actionType && (() => {
+                  const assignedIds = (selectedTask.assigned_to || '').split(',').map(s => s.trim()).filter(Boolean);
+                  const completedIds = (selectedTask.completed_by || '').split(',').map(s => s.trim()).filter(Boolean);
+                  const userIsAssigned = !!user?.id && assignedIds.includes(user.id);
+                  const userAlreadyCompleted = !!user?.id && completedIds.includes(user.id);
+                  const canStillComplete = userIsAssigned && !userAlreadyCompleted;
+                  return (
+                    <div className="pt-4 border-t space-y-3">
+                      <div className="flex items-center gap-2 text-green-600">
+                        <CheckCircle className="w-5 h-5" />
+                        <span className="font-medium text-base">{t('taskCompleted')}</span>
+                      </div>
+                      {canStillComplete && (
+                        <Button
+                          className="w-full min-h-14 touch-manipulation bg-green-600 hover:bg-green-700 text-white"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleTaskCompleted();
+                          }}
+                          data-testid={`button-complete-my-part-${selectedTask.id}`}
+                          type="button"
+                        >
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          <span className="text-lg">Završi moj dio zadatka</span>
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Original close-only block for fully-completed view */}
+                {selectedTask.status === 'completed' && !actionType && false && (
                   <div className="pt-4 border-t">
                     <div className="flex items-center gap-2 text-green-600 mb-4">
                       <CheckCircle className="w-5 h-5" />

@@ -1105,7 +1105,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData.assigned_to = assigned_to ? assigned_to.replace(/\s/g, "") : null;
       }
       if (assigned_to_name !== undefined) updateData.assigned_to_name = assigned_to_name || null;
-      if (worker_report) updateData.worker_report = worker_report;
+      // worker_report: za completed status biće obrađen u bloku ispod (append sa imenom).
+      // Za sve ostale slučajeve — direktan upis.
+      if (worker_report && status !== "completed") updateData.worker_report = worker_report;
       if (worker_images !== undefined) {
         const uploaded = await uploadImagesArray(worker_images, `worker/${sessionUser.id}`);
         updateData.worker_images = uploaded && uploaded.length > 0 ? uploaded : [];
@@ -1144,14 +1146,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // jer je majstor vec prihvatio zadatak. Brise se samo kad se zadatak preraspodjeli drugom majstoru
       // (logika iznad - kad se assigned_to promijeni).
 
-      if (status === "completed" && currentTask?.status !== "completed") {
-        updateData.completed_at = new Date();
-        updateData.completed_by = sessionUser.id;
-        updateData.completed_by_name = sessionUser.full_name;
+      if (status === "completed") {
+        const isFirstCompletion = currentTask?.status !== "completed";
+
+        // completed_by/_name: append sessionUser (dedupe). Za prvu kompletaciju lista pocinje od sessionUser.
+        const existingCompletedIds = (currentTask?.completed_by || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+        const existingCompletedNames = (currentTask?.completed_by_name || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+        if (!existingCompletedIds.includes(sessionUser.id)) {
+          existingCompletedIds.push(sessionUser.id);
+          existingCompletedNames.push(sessionUser.full_name);
+          updateData.completed_by = existingCompletedIds.join(",");
+          updateData.completed_by_name = existingCompletedNames.join(", ");
+        }
+
+        // completed_at: postavi samo prvi put; sljedeci completer ne pomera taj timestamp.
+        if (isFirstCompletion) {
+          updateData.completed_at = new Date();
+        }
+
+        // worker_report: appenduj umjesto da prepisujemo, sa prefiksom imena i timestampom,
+        // tako da svaki majstor sacuva svoj dio izvjestaja.
+        if (worker_report) {
+          const stamp = new Date().toLocaleString("sr-Latn-RS", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+          const newEntry = `${sessionUser.full_name} (${stamp}): ${worker_report}`;
+          const existingReport = (currentTask?.worker_report || "").trim();
+          updateData.worker_report = existingReport ? `${existingReport}\n---\n${newEntry}` : newEntry;
+        }
 
         // Auto-potvrdi prijem SAMO za majstora koji je kliknuo Završeno (ako vec nije potvrdio).
-        // Ne diramo ostale dodijeljene majstore — kod složenih zadataka svaki radi svoj dio
-        // i nije tačno tvrditi da su svi "primili" zadatak samo zato što je jedan završio.
+        // Ne diramo ostale dodijeljene majstore — kod složenih zadataka svaki radi svoj dio.
         const assignedIds = currentTask?.assigned_to ? currentTask.assigned_to.split(",").map((id: string) => id.trim()) : [];
         const isAssigned = assignedIds.includes(sessionUser.id) || currentTask?.external_company_id === sessionUser.id;
         if (isAssigned) {

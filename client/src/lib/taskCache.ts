@@ -17,6 +17,9 @@ export interface Task {
   receipt_confirmed_at?: string;
   receipt_confirmed_by?: string;
   receipt_confirmed_by_name?: string;
+  completed_by?: string;
+  completed_by_name?: string;
+  assigned_to?: string;
   needsHydration?: boolean;
 }
 
