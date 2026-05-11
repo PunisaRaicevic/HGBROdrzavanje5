@@ -1007,10 +1007,10 @@ export default function AdminDashboard() {
                                         <span>Dodeljeno:</span>
                                         {(() => {
                                           const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
-                                          const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
+                                          const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
                                           const showPending = task.status !== 'completed' && task.status !== 'cancelled';
                                           return names.map((name: string, idx: number) => {
-                                            const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                            const isConfirmed = confirmedSet.has(name.toLowerCase());
                                             const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
                                             return (
                                               <span key={idx} className="inline-flex items-center gap-1">
@@ -1228,10 +1228,10 @@ export default function AdminDashboard() {
                                         <span>Dodeljeno:</span>
                                         {(() => {
                                           const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
-                                          const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
+                                          const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
                                           const showPending = task.status !== 'completed' && task.status !== 'cancelled';
                                           return names.map((name: string, idx: number) => {
-                                            const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                            const isConfirmed = confirmedSet.has(name.toLowerCase());
                                             const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
                                             return (
                                               <span key={idx} className="inline-flex items-center gap-1">
@@ -1541,10 +1541,10 @@ export default function AdminDashboard() {
                                             <span>{task.status === 'completed' ? 'Izvršio' : 'Dodijeljeno'}:</span>
                                             {(() => {
                                               const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
-                                              const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
+                                              const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
                                               const showPending = task.status !== 'completed' && task.status !== 'cancelled';
                                               return names.map((name: string, idx: number) => {
-                                                const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                                const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                 const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
                                                 return (
                                                   <span key={idx} className="inline-flex items-center gap-1">
@@ -1753,13 +1753,13 @@ export default function AdminDashboard() {
                     const names = (task.assigned_to_name || '').split(',').map(n => n.trim()).filter(Boolean);
                     const isReturned = task.status === 'returned_to_sef' || task.status === 'returned_to_operator';
                     const isCompleted = task.status === 'completed';
-                    const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim().toLowerCase();
+                    const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
 
                     names.forEach(name => {
                       if (!byWorker[name]) byWorker[name] = { completed: 0, returned: 0, pending: 0, total: 0 };
                       // Za zavrsene zadatke - upisi samo onome ko je potvrdio prijem (obavio posao)
                       if (isCompleted) {
-                        if (confirmedName && name.toLowerCase() === confirmedName) {
+                        if (confirmedSet.has(name.toLowerCase())) {
                           byWorker[name].completed++;
                           byWorker[name].total++;
                         }

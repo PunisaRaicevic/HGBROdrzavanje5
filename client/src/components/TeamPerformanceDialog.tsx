@@ -176,12 +176,12 @@ export default function TeamPerformanceDialog({
                   const names = (task.assigned_to_name || '').split(',').map((n: string) => n.trim()).filter(Boolean);
                   const isReturned = task.status === 'returned_to_sef' || task.status === 'returned_to_operator';
                   const isCompleted = task.status === 'completed';
-                  const confirmedName = (task.receipt_confirmed_by_name || '').trim().toLowerCase();
+                  const confirmedSet = new Set((task.receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
 
                   names.forEach((name: string) => {
                     if (!byWorker[name]) byWorker[name] = { completed: 0, returned: 0, pending: 0, total: 0 };
                     if (isCompleted) {
-                      if (confirmedName && name.toLowerCase() === confirmedName) {
+                      if (confirmedSet.has(name.toLowerCase())) {
                         byWorker[name].completed++;
                         byWorker[name].total++;
                       }

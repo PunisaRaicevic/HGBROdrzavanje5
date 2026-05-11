@@ -1079,10 +1079,10 @@ export default function SupervisorDashboard() {
                                             <span>{task.status === 'completed' ? 'Izvršio' : 'Dodeljeno'}:</span>
                                             {(() => {
                                               const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
-                                              const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
+                                              const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
                                               const showPending = task.status !== 'completed' && task.status !== 'cancelled';
                                               return names.map((name: string, idx: number) => {
-                                                const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                                const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                 const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
                                                 return (
                                                   <span key={idx} className="inline-flex items-center gap-1">
@@ -1298,10 +1298,10 @@ export default function SupervisorDashboard() {
                                             <span>{task.status === 'completed' ? 'Izvršio' : 'Dodeljeno'}:</span>
                                             {(() => {
                                               const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
-                                              const confirmedName = ((task as any).receipt_confirmed_by_name || '').trim();
+                                              const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
                                               const showPending = task.status !== 'completed' && task.status !== 'cancelled';
                                               return names.map((name: string, idx: number) => {
-                                                const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                                const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                 const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
                                                 return (
                                                   <span key={idx} className="inline-flex items-center gap-1">
@@ -1572,10 +1572,10 @@ export default function SupervisorDashboard() {
                                               <span>{task.status === 'completed' ? 'Izvršio' : 'Dodijeljeno'}:</span>
                                               {(() => {
                                                 const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
-                                                const confirmedName = (task.receipt_confirmed_by_name || '').trim();
+                                                const confirmedSet = new Set((task.receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
                                                 const showPending = task.status !== 'completed' && task.status !== 'cancelled';
                                                 return names.map((name: string, idx: number) => {
-                                                  const isConfirmed = !!confirmedName && name.toLowerCase() === confirmedName.toLowerCase();
+                                                  const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                   const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
                                                   return (
                                                     <span key={idx} className="inline-flex items-center gap-1">

@@ -1119,9 +1119,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!isAssigned) {
           return res.status(403).json({ error: "Only assigned worker can confirm receipt" });
         }
-        updateData.receipt_confirmed_at = new Date(receipt_confirmed_at);
-        updateData.receipt_confirmed_by = sessionUser.id;
-        updateData.receipt_confirmed_by_name = sessionUser.full_name;
+        const existingIds = (currentTask?.receipt_confirmed_by || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+        const existingNames = (currentTask?.receipt_confirmed_by_name || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+        if (!existingIds.includes(sessionUser.id)) {
+          existingIds.push(sessionUser.id);
+          existingNames.push(sessionUser.full_name);
+        }
+        updateData.receipt_confirmed_at = currentTask?.receipt_confirmed_at || new Date(receipt_confirmed_at);
+        updateData.receipt_confirmed_by = existingIds.join(",");
+        updateData.receipt_confirmed_by_name = existingNames.join(", ");
       }
 
       if (assigned_to !== undefined) {
@@ -1143,18 +1149,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData.completed_by = sessionUser.id;
         updateData.completed_by_name = sessionUser.full_name;
 
-        // Auto-potvrdi prijem ako majstor zavrsava zadatak, a prijem jos nije potvrdjen
-        // (npr. race condition kad se klikne "Potvrdi prijem" pa odmah "Zavrsi")
-        const willHaveReceipt = updateData.receipt_confirmed_at !== undefined
-          ? updateData.receipt_confirmed_at !== null
-          : !!currentTask?.receipt_confirmed_at;
-        if (!willHaveReceipt) {
-          const assignedIds = currentTask?.assigned_to ? currentTask.assigned_to.split(",").map((id: string) => id.trim()) : [];
-          const isAssigned = assignedIds.includes(sessionUser.id) || currentTask?.external_company_id === sessionUser.id;
-          if (isAssigned) {
-            updateData.receipt_confirmed_at = new Date();
-            updateData.receipt_confirmed_by = sessionUser.id;
-            updateData.receipt_confirmed_by_name = sessionUser.full_name;
+        // Auto-potvrdi prijem ako majstor zavrsava zadatak, a njegov prijem jos nije potvrdjen
+        // (npr. race condition; ili kad jedan od vise majstora zavrsi bez eksplicitnog "Potvrdi prijem")
+        const assignedIds = currentTask?.assigned_to ? currentTask.assigned_to.split(",").map((id: string) => id.trim()) : [];
+        const isAssigned = assignedIds.includes(sessionUser.id) || currentTask?.external_company_id === sessionUser.id;
+        if (isAssigned) {
+          const existingIds = (
+            updateData.receipt_confirmed_by !== undefined
+              ? updateData.receipt_confirmed_by || ""
+              : currentTask?.receipt_confirmed_by || ""
+          ).split(",").map((s: string) => s.trim()).filter(Boolean);
+          const existingNames = (
+            updateData.receipt_confirmed_by_name !== undefined
+              ? updateData.receipt_confirmed_by_name || ""
+              : currentTask?.receipt_confirmed_by_name || ""
+          ).split(",").map((s: string) => s.trim()).filter(Boolean);
+          if (!existingIds.includes(sessionUser.id)) {
+            existingIds.push(sessionUser.id);
+            existingNames.push(sessionUser.full_name);
+            updateData.receipt_confirmed_at = updateData.receipt_confirmed_at || currentTask?.receipt_confirmed_at || new Date();
+            updateData.receipt_confirmed_by = existingIds.join(",");
+            updateData.receipt_confirmed_by_name = existingNames.join(", ");
           }
         }
       }
