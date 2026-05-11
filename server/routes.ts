@@ -1149,49 +1149,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData.completed_by = sessionUser.id;
         updateData.completed_by_name = sessionUser.full_name;
 
-        // Auto-potvrdi prijem za SVE dodijeljene majstore kad zadatak prelazi u "completed".
-        // Logika: ako je posao završen, znači da su svi koji su dodijeljeni efektivno učestvovali —
-        // svi treba da imaju zeleni "primljeno" status, ne samo onaj koji je kliknuo Završeno.
-        const assignedIds = currentTask?.assigned_to ? currentTask.assigned_to.split(",").map((id: string) => id.trim()).filter(Boolean) : [];
-        const assignedNames = currentTask?.assigned_to_name ? currentTask.assigned_to_name.split(",").map((n: string) => n.trim()).filter(Boolean) : [];
-
-        const existingIds = (
-          updateData.receipt_confirmed_by !== undefined
-            ? updateData.receipt_confirmed_by || ""
-            : currentTask?.receipt_confirmed_by || ""
-        ).split(",").map((s: string) => s.trim()).filter(Boolean);
-        const existingNames = (
-          updateData.receipt_confirmed_by_name !== undefined
-            ? updateData.receipt_confirmed_by_name || ""
-            : currentTask?.receipt_confirmed_by_name || ""
-        ).split(",").map((s: string) => s.trim()).filter(Boolean);
-
-        let added = false;
-        // Dodaj sve dodijeljene majstore (ID + ime po istom indeksu)
-        assignedIds.forEach((id: string, idx: number) => {
-          if (!existingIds.includes(id)) {
-            existingIds.push(id);
-            existingNames.push(assignedNames[idx] || id);
-            added = true;
+        // Auto-potvrdi prijem SAMO za majstora koji je kliknuo Završeno (ako vec nije potvrdio).
+        // Ne diramo ostale dodijeljene majstore — kod složenih zadataka svaki radi svoj dio
+        // i nije tačno tvrditi da su svi "primili" zadatak samo zato što je jedan završio.
+        const assignedIds = currentTask?.assigned_to ? currentTask.assigned_to.split(",").map((id: string) => id.trim()) : [];
+        const isAssigned = assignedIds.includes(sessionUser.id) || currentTask?.external_company_id === sessionUser.id;
+        if (isAssigned) {
+          const existingIds = (
+            updateData.receipt_confirmed_by !== undefined
+              ? updateData.receipt_confirmed_by || ""
+              : currentTask?.receipt_confirmed_by || ""
+          ).split(",").map((s: string) => s.trim()).filter(Boolean);
+          const existingNames = (
+            updateData.receipt_confirmed_by_name !== undefined
+              ? updateData.receipt_confirmed_by_name || ""
+              : currentTask?.receipt_confirmed_by_name || ""
+          ).split(",").map((s: string) => s.trim()).filter(Boolean);
+          if (!existingIds.includes(sessionUser.id)) {
+            existingIds.push(sessionUser.id);
+            existingNames.push(sessionUser.full_name);
+            updateData.receipt_confirmed_at = updateData.receipt_confirmed_at || currentTask?.receipt_confirmed_at || new Date();
+            updateData.receipt_confirmed_by = existingIds.join(",");
+            updateData.receipt_confirmed_by_name = existingNames.join(", ");
           }
-        });
-        // Eksterna firma (ako je primjenjivo)
-        if (currentTask?.external_company_id && !existingIds.includes(currentTask.external_company_id)) {
-          existingIds.push(currentTask.external_company_id);
-          existingNames.push(currentTask.external_company_name || sessionUser.full_name);
-          added = true;
-        }
-        // Sigurnosni fallback: dodaj sessionUser ako iz nekog razloga nije u listi
-        if (!existingIds.includes(sessionUser.id)) {
-          existingIds.push(sessionUser.id);
-          existingNames.push(sessionUser.full_name);
-          added = true;
-        }
-
-        if (added) {
-          updateData.receipt_confirmed_at = updateData.receipt_confirmed_at || currentTask?.receipt_confirmed_at || new Date();
-          updateData.receipt_confirmed_by = existingIds.join(",");
-          updateData.receipt_confirmed_by_name = existingNames.join(", ");
         }
       }
 
