@@ -81,8 +81,6 @@ export default function SupervisorDashboard() {
   const [tasksStatusFilter, setTasksStatusFilter] = useState('all');
   const [historyPeriodFilter, setHistoryPeriodFilter] = useState('7d');
   const [historyStatusFilter, setHistoryStatusFilter] = useState('all');
-  const [tasksPerPage, setTasksPerPage] = useState(20);
-  const [historyPerPage, setHistoryPerPage] = useState(20);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month'>('day');
   const [statsRange, setStatsRange] = useState(() => {
@@ -1010,7 +1008,6 @@ export default function SupervisorDashboard() {
                                 const dateB = b.scheduled_for ? new Date(b.scheduled_for) : new Date(b.created_at);
                                 return dateA.getTime() - dateB.getTime();
                               })
-                              .slice(0, tasksPerPage)
                               .map((task) => {
                               const getStatusBadge = (status: string) => {
                                 if (status === 'completed') {
@@ -1228,7 +1225,6 @@ export default function SupervisorDashboard() {
                                 const dateB = b.completed_at ? new Date(b.completed_at) : new Date(b.created_at);
                                 return dateB.getTime() - dateA.getTime();
                               })
-                              .slice(0, historyPerPage)
                               .map((task) => {
                               const getStatusBadge = (status: string) => {
                                 if (status === 'completed') {
