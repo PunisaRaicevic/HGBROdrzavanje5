@@ -1136,9 +1136,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const normalizedCurrentAssignment = currentTask?.assigned_to?.replace(/\s/g, "") || null;
         const normalizedNewAssignment = assigned_to ? assigned_to.replace(/\s/g, "") : null;
         if (normalizedCurrentAssignment !== normalizedNewAssignment) {
-          updateData.receipt_confirmed_at = null;
-          updateData.receipt_confirmed_by = null;
-          updateData.receipt_confirmed_by_name = null;
+          // Filtriraj postojece potvrde prijema — zadrzi samo one cije IDjeve i dalje
+          // imamo u novoj dodjeli. Tako kad sef doda jos jednog majstora, prethodne
+          // potvrde ostaju, a samo se ukloni potvrda za majstora koji vise nije na zadatku.
+          const newAssignedIds = new Set(
+            (normalizedNewAssignment || "").split(",").map((s) => s.trim()).filter(Boolean)
+          );
+          const prevConfirmedIds = (currentTask?.receipt_confirmed_by || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+          const prevConfirmedNames = (currentTask?.receipt_confirmed_by_name || "").split(",").map((s: string) => s.trim()).filter(Boolean);
+          const keptIds: string[] = [];
+          const keptNames: string[] = [];
+          prevConfirmedIds.forEach((id: string, idx: number) => {
+            if (newAssignedIds.has(id)) {
+              keptIds.push(id);
+              if (prevConfirmedNames[idx]) keptNames.push(prevConfirmedNames[idx]);
+            }
+          });
+          if (keptIds.length === 0) {
+            updateData.receipt_confirmed_at = null;
+            updateData.receipt_confirmed_by = null;
+            updateData.receipt_confirmed_by_name = null;
+          } else {
+            updateData.receipt_confirmed_at = currentTask?.receipt_confirmed_at || null;
+            updateData.receipt_confirmed_by = keptIds.join(",");
+            updateData.receipt_confirmed_by_name = keptNames.join(", ");
+          }
         }
       }
 
