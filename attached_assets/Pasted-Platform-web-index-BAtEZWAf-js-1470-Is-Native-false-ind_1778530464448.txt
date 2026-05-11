@@ -1,0 +1,75 @@
+Platform: web
+index-BAtEZWAf.js:1470 Is Native: false
+index-BAtEZWAf.js:1470 App Prefix: [APP WEB]
+index-BAtEZWAf.js:1470 Capacitor Available: true
+index-BAtEZWAf.js:1470 ═══════════════════════════════════════════
+index-BAtEZWAf.js:1470 [APP WEB] Remote logger aktiviran
+index-BAtEZWAf.js:1470 [APP WEB] ✅ Capacitor je dostupan
+index-BAtEZWAf.js:1470 [APP WEB] 🚀 Pokretanje aplikacije...
+index-BAtEZWAf.js:1470 [APP WEB] 📱 Platform: web
+index-BAtEZWAf.js:1470 [APP WEB] 📱 Is Native: false
+index-BAtEZWAf.js:1470 [APP WEB] 🌐 Web verzija - push notifikacije isključene
+index-BAtEZWAf.js:1470 [APP WEB] ✅ Renderujem React aplikaciju...
+index-BAtEZWAf.js:1470 [Router] Current user: NOT LOGGED IN ID: UNDEFINED
+index-BAtEZWAf.js:1470 📱 [useFCM:10:10:28 PM] Hook called with userId: UNDEFINED
+index-BAtEZWAf.js:1470 📱 [useFCM:10:10:28 PM] Window location: https://hgbrtehnickasluzba.replit.app/
+index-BAtEZWAf.js:1470 ⚠️ [useFCM:10:10:28 PM] Skipping FCM setup - no userId provided
+console.<computed> @ index-BAtEZWAf.js:1470
+(index):1 <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes">
+index-BAtEZWAf.js:1470 [Router] Current user: Administrator ID: 496e0c36...
+index-BAtEZWAf.js:1470 [QUERY] Fetching: /api/users
+index-BAtEZWAf.js:1470 [QUERY] Headers: Object
+index-BAtEZWAf.js:1470 [QUERY] Fetching: /api/tasks
+index-BAtEZWAf.js:1470 [QUERY] Headers: Object
+index-BAtEZWAf.js:1470 📱 [useFCM:10:10:29 PM] Hook called with userId: 496e0c36...
+index-BAtEZWAf.js:1470 📱 [useFCM:10:10:29 PM] Window location: https://hgbrtehnickasluzba.replit.app/
+index-BAtEZWAf.js:1470 ✅ [useFCM:10:10:29 PM] userId is valid - proceeding with FCM setup
+index-BAtEZWAf.js:1470 📝 [useFCM:10:10:29 PM] Postavljam timeout od 500ms za setupFCM...
+index-BAtEZWAf.js:1470 [QUERY] Response status: 200
+index-BAtEZWAf.js:1470 📝 [useFCM] Pozivam setupFCM...
+index-BAtEZWAf.js:1470 🚀 [FCM:10:10:29 PM] Platform DETECTED: web, Is Native: false
+index-BAtEZWAf.js:1470 🚀 [FCM:10:10:29 PM] Capacitor.isNativePlatform() = false
+index-BAtEZWAf.js:1470 ✅ [FCM:10:10:29 PM] JWT token dostupan
+index-BAtEZWAf.js:1470 🌐 [FCM:10:10:29 PM] Web verzija detektovana - Web Firebase Messaging će biti iniciјalizovan iz App.tsx
+index-BAtEZWAf.js:1470 [Web FCM] Priprema Firebase Messaging za browser...
+index-BAtEZWAf.js:1470 [Web FCM] JWT token dostupan
+index-BAtEZWAf.js:1470 [QUERY] Success, data length: N/A
+index-BAtEZWAf.js:1470 [Web FCM] Greska pri inicijalizaciji: Object
+console.<computed> @ index-BAtEZWAf.js:1470
+index-BAtEZWAf.js:1470 [QUERY] Response status: 200
+index-BAtEZWAf.js:1470 [QUERY] Success, data length: 1154
+2index-BAtEZWAf.js:1470 [GEO] Position unavailable: User denied Geolocation
+console.<computed> @ index-BAtEZWAf.js:1470
+navigator.geolocation.getCurrentPosition.enableHighAccuracy @ index-BAtEZWAf.js:602
+(index):1 Geolocation permission has been blocked as the user has ignored the permission prompt several times. This can be reset in Page Info which can be accessed by clicking the tune icon next to the URL. See https://www.chromestatus.com/feature/6443143280984064 for more information.
+index-BAtEZWAf.js:1470 [GEO] Position unavailable: User denied Geolocation
+console.<computed> @ index-BAtEZWAf.js:1470
+navigator.geolocation.getCurrentPosition.enableHighAccuracy @ index-BAtEZWAf.js:602
+index-BAtEZWAf.js:1470 [QUERY] Fetching: /api/tasks
+index-BAtEZWAf.js:1470 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.n55wTCxUkRIz8j8jUeEEh1FAsIp0CK5DYtBaR4tT1C0'}
+index-BAtEZWAf.js:1470 [QUERY] Fetching: /api/users
+index-BAtEZWAf.js:1470 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.n55wTCxUkRIz8j8jUeEEh1FAsIp0CK5DYtBaR4tT1C0'}
+index-BAtEZWAf.js:1470 [QUERY] Response status: 200
+index-BAtEZWAf.js:1470 [QUERY] Success, data length: N/A
+index-BAtEZWAf.js:1470 [QUERY] Response status: 200
+index-BAtEZWAf.js:1470 [QUERY] Success, data length: 1154
+index-BAtEZWAf.js:1470 [QUERY] Fetching: /api/tasks
+index-BAtEZWAf.js:1470 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.n55wTCxUkRIz8j8jUeEEh1FAsIp0CK5DYtBaR4tT1C0'}
+index-BAtEZWAf.js:1470 [QUERY] Fetching: /api/users
+index-BAtEZWAf.js:1470 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.n55wTCxUkRIz8j8jUeEEh1FAsIp0CK5DYtBaR4tT1C0'}
+index-BAtEZWAf.js:1470 [QUERY] Response status: 200
+index-BAtEZWAf.js:1470 [QUERY] Success, data length: N/A
+index-BAtEZWAf.js:1470 [QUERY] Response status: 200
+index-BAtEZWAf.js:1470 [QUERY] Success, data length: 1154
+(index):1 Geolocation permission has been blocked as the user has ignored the permission prompt several times. This can be reset in Page Info which can be accessed by clicking the tune icon next to the URL. See https://www.chromestatus.com/feature/6443143280984064 for more information.
+index-BAtEZWAf.js:1470 [GEO] Position unavailable: User denied Geolocation
+console.<computed> @ index-BAtEZWAf.js:1470
+navigator.geolocation.getCurrentPosition.enableHighAccuracy @ index-BAtEZWAf.js:602
+index-BAtEZWAf.js:1470 [QUERY] Fetching: /api/tasks
+index-BAtEZWAf.js:1470 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.n55wTCxUkRIz8j8jUeEEh1FAsIp0CK5DYtBaR4tT1C0'}
+index-BAtEZWAf.js:1470 [QUERY] Fetching: /api/users
+index-BAtEZWAf.js:1470 [QUERY] Headers: {Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2…udCJ9.n55wTCxUkRIz8j8jUeEEh1FAsIp0CK5DYtBaR4tT1C0'}
+index-BAtEZWAf.js:1470 [QUERY] Response status: 200
+index-BAtEZWAf.js:1470 [QUERY] Success, data length: N/A
+index-BAtEZWAf.js:1470 [QUERY] Response status: 200
+index-BAtEZWAf.js:1470 [QUERY] Success, data length: 115
