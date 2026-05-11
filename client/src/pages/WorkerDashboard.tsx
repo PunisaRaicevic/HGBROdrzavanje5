@@ -62,6 +62,10 @@ export default function WorkerDashboard() {
   const socketRef = useRef<Socket | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsConfirmingReceipt(false);
+  }, [selectedTaskId]);
   const [workerReport, setWorkerReport] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<PhotoPreview[]>([]);
@@ -512,6 +516,10 @@ export default function WorkerDashboard() {
         title: t('success'),
         description: t('taskUpdated'),
       });
+      // Resetuj lokalni flag — od sad UI gating se oslanja na receipt_confirmed_by iz tasks state-a
+      // (koji optimistic update vec sadrzi). Bez ovoga, flag je ostajao true i blokirao bi
+      // dugme za sljedeci task ako korisnik samo otvori drugi task umjesto da zatvori dijalog.
+      setIsConfirmingReceipt(false);
     } catch (error) {
       // ROLLBACK on error
       console.error('[CONFIRM RECEIPT] Exception:', error);
