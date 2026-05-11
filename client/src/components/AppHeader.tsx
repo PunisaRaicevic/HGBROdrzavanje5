@@ -173,9 +173,9 @@ export default function AppHeader() {
   }, []);
 
   return (
-    <header className="flex items-center justify-between px-4 py-4 border-b bg-background sticky top-0 z-50">
+    <header className="flex items-center justify-between px-4 py-4 border-b border-sky-700 bg-sky-600 text-white sticky top-0 z-50">
       <div className="flex items-center gap-3">
-        <h1 className="text-xl font-semibold">{t('hotelManagement')}</h1>
+        <h1 className="text-xl font-semibold text-white">{t('hotelManagement')}</h1>
       </div>
 
       <div className="flex items-center gap-2">
@@ -183,7 +183,7 @@ export default function AppHeader() {
           variant="ghost" 
           onClick={handleLanguageToggle}
           data-testid="button-language-toggle"
-          className="gap-2 min-h-11"
+          className="gap-2 min-h-11 text-white hover:bg-sky-700 hover:text-white"
         >
           <Globe className="h-5 w-5" />
           <span className="text-base font-medium">{i18n.language.toUpperCase()}</span>
@@ -207,9 +207,9 @@ export default function AppHeader() {
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="gap-2" data-testid="button-user-menu">
+              <Button variant="ghost" className="gap-2 text-white hover:bg-sky-700 hover:text-white" data-testid="button-user-menu">
                 <Avatar className="h-9 w-9">
-                  <AvatarFallback className="text-base">{getInitials(user.fullName)}</AvatarFallback>
+                  <AvatarFallback className="text-base text-foreground">{getInitials(user.fullName)}</AvatarFallback>
                 </Avatar>
                 <span className="hidden sm:inline-block text-base">{user.fullName}</span>
               </Button>
