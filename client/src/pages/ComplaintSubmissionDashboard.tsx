@@ -290,10 +290,6 @@ export default function ComplaintSubmissionDashboard() {
                   <SelectItem value="Hotel Palas">Hotel Palas</SelectItem>
                   <SelectItem value="Hotel Castellastva">Hotel Castellastva</SelectItem>
                   <SelectItem value="Hotel Palas Lux">Hotel Palas Lux</SelectItem>
-                  <SelectItem value="Upravna zgrada">Upravna zgrada</SelectItem>
-                  <SelectItem value="Pansion SP">Pansion SP</SelectItem>
-                  <SelectItem value="Plaža Aleksandar">Plaža Aleksandar</SelectItem>
-                  <SelectItem value="Bazeni">Bazeni</SelectItem>
                   <SelectItem value="Ostalo">Ostalo</SelectItem>
                 </SelectContent>
               </Select>
@@ -333,6 +329,10 @@ export default function ComplaintSubmissionDashboard() {
                   <SelectItem value="Vila Cempresa M-blok">Vila Cempresa M-blok</SelectItem>
                   <SelectItem value="Vila Tilija N-blok">Vila Tilija N-blok</SelectItem>
                   <SelectItem value="Vila Pinea O-blok">Vila Pinea O-blok</SelectItem>
+                  <SelectItem value="Upravna zgrada">Upravna zgrada</SelectItem>
+                  <SelectItem value="Pansion SP">Pansion SP</SelectItem>
+                  <SelectItem value="Plaža Aleksandar">Plaža Aleksandar</SelectItem>
+                  <SelectItem value="Bazeni">Bazeni</SelectItem>
                   <SelectItem value="Ostalo">Ostalo</SelectItem>
                 </SelectContent>
               </Select>

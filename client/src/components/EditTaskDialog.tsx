@@ -27,10 +27,6 @@ const HOTEL_OPTIONS = [
   "Hotel Palas",
   "Hotel Castellastva",
   "Hotel Palas Lux",
-  "Upravna zgrada",
-  "Pansion SP",
-  "Plaža Aleksandar",
-  "Bazeni",
 ];
 
 const BLOK_OPTIONS = [
@@ -58,6 +54,10 @@ const BLOK_OPTIONS = [
   "Bazen Rondo 2",
   "Parking",
   "Dvoriste",
+  "Upravna zgrada",
+  "Pansion SP",
+  "Plaža Aleksandar",
+  "Bazeni",
 ];
 
 const weekDays = [
