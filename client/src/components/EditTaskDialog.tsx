@@ -27,6 +27,10 @@ const HOTEL_OPTIONS = [
   "Hotel Palas",
   "Hotel Castellastva",
   "Hotel Palas Lux",
+  "Upravna zgrada",
+  "Pansion SP",
+  "Plaža Aleksandar",
+  "Bazeni",
 ];
 
 const BLOK_OPTIONS = [

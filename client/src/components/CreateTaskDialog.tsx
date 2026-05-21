@@ -404,6 +404,10 @@ export default function CreateTaskDialog({ trigger }: CreateTaskDialogProps) {
                     <SelectItem value="Hotel Palas">Hotel Palas</SelectItem>
                     <SelectItem value="Hotel Castellastva">Hotel Castellastva</SelectItem>
                     <SelectItem value="Hotel Palas Lux">Hotel Palas Lux</SelectItem>
+                    <SelectItem value="Upravna zgrada">Upravna zgrada</SelectItem>
+                    <SelectItem value="Pansion SP">Pansion SP</SelectItem>
+                    <SelectItem value="Plaža Aleksandar">Plaža Aleksandar</SelectItem>
+                    <SelectItem value="Bazeni">Bazeni</SelectItem>
                     <SelectItem value="Ostalo">Ostalo</SelectItem>
                   </SelectContent>
                 </Select>
