@@ -936,7 +936,13 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                     variant="outline"
                     size="sm"
                     className="w-full justify-between bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-                    onClick={() => setShowRecurringHistory(!showRecurringHistory)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('[ISTORIJA] click, current=', showRecurringHistory, 'past=', pastOccurrences.length);
+                      setShowRecurringHistory((prev) => !prev);
+                    }}
+                    type="button"
                     data-testid="button-toggle-recurring-history"
                   >
                     <span className="text-sm font-medium">
