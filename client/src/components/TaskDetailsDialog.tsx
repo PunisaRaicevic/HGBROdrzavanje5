@@ -938,9 +938,14 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                     className="w-full justify-between bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                     onClick={(e) => {
                       e.preventDefault();
-                      e.stopPropagation();
-                      console.log('[ISTORIJA] click, current=', showRecurringHistory, 'past=', pastOccurrences.length);
-                      setShowRecurringHistory((prev) => !prev);
+                      const next = !showRecurringHistory;
+                      setShowRecurringHistory(next);
+                      if (next) {
+                        const btn = e.currentTarget;
+                        setTimeout(() => {
+                          btn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 50);
+                      }
                     }}
                     type="button"
                     data-testid="button-toggle-recurring-history"
