@@ -25,10 +25,13 @@ import EditTaskDialog from '@/components/EditTaskDialog';
 import AdminAIChat from '@/components/AdminAIChat';
 import { PeriodPicker } from '@/components/PeriodPicker';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/lib/queryClient';
+import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getApiUrl } from '@/lib/apiUrl';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 interface User {
   id: string;
@@ -86,6 +89,120 @@ function formatLastSeen(lastSeen: string | null): { label: string; online: boole
   return { label: `Aktivan/na ${dd}.${mo}.`, online: false };
 }
 
+type WorkerStats = { completed: number; returned: number; pending: number; total: number };
+
+function computeWorkerAnalysis(tasks: Task[], rangeStart: Date, rangeEnd: Date) {
+  const periodTasks = tasks.filter(t => {
+    if (t.status === 'cancelled') return false;
+    if (!t.assigned_to_name) return false;
+    const ref = (t.scheduled_for && t.parent_task_id) ? new Date(t.scheduled_for) : new Date(t.created_at);
+    const refLocal = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+    return refLocal >= rangeStart && refLocal < rangeEnd;
+  });
+
+  const byWorker: Record<string, WorkerStats> = {};
+
+  periodTasks.forEach(task => {
+    const names = (task.assigned_to_name || '').split(',').map(n => n.trim()).filter(Boolean);
+    const isReturned = task.status === 'returned_to_sef' || task.status === 'returned_to_operator';
+    const isCompleted = task.status === 'completed';
+    const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
+
+    names.forEach(name => {
+      if (!byWorker[name]) byWorker[name] = { completed: 0, returned: 0, pending: 0, total: 0 };
+      if (isCompleted) {
+        if (confirmedSet.has(name.toLowerCase())) {
+          byWorker[name].completed++;
+          byWorker[name].total++;
+        }
+      } else if (isReturned) {
+        byWorker[name].returned++;
+        byWorker[name].total++;
+      } else {
+        byWorker[name].pending++;
+        byWorker[name].total++;
+      }
+    });
+  });
+
+  const workers = Object.entries(byWorker)
+    .filter(([, s]) => s.total > 0)
+    .sort((a, b) => b[1].total - a[1].total);
+
+  const maxTotal = Math.max(...workers.map(([, s]) => s.total), 1);
+  const totalAll = workers.reduce((acc, [, s]) => ({
+    completed: acc.completed + s.completed,
+    returned: acc.returned + s.returned,
+    pending: acc.pending + s.pending,
+  }), { completed: 0, returned: 0, pending: 0 });
+
+  return { workers, maxTotal, totalAll };
+}
+
+function periodLabelFor(rangeStart: Date, rangeEnd: Date): string {
+  const fmt = (d: Date) => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+  const endInclusive = new Date(rangeEnd.getTime() - 24 * 60 * 60 * 1000);
+  return fmt(rangeStart) === fmt(endInclusive)
+    ? fmt(rangeStart)
+    : `${fmt(rangeStart)} - ${fmt(endInclusive)}`;
+}
+
+async function downloadWorkerAnalysisPdf(
+  workers: [string, WorkerStats][],
+  totalAll: { completed: number; returned: number; pending: number },
+  rangeStart: Date,
+  rangeEnd: Date,
+): Promise<void> {
+  const payload = {
+    periodLabel: periodLabelFor(rangeStart, rangeEnd),
+    totals: totalAll,
+    workers: workers.map(([name, s]) => ({
+      name,
+      completed: s.completed,
+      returned: s.returned,
+      pending: s.pending,
+      total: s.total,
+    })),
+  };
+
+  const response = await apiRequest('POST', '/api/admin/worker-analysis-pdf', payload);
+  if (!response.ok) throw new Error('Failed to generate worker analysis PDF');
+
+  const pdfBlob = await response.blob();
+  const fileName = `analiza_majstori_${new Date().toISOString().slice(0, 10)}.pdf`;
+
+  if (Capacitor.isNativePlatform()) {
+    const base64Data: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(pdfBlob);
+    });
+    const result = await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Documents,
+      recursive: true,
+    });
+    await Share.share({
+      title: 'Analiza po majstorima',
+      url: result.uri,
+      dialogTitle: 'Sacuvaj ili podijeli PDF',
+    });
+  } else {
+    const url = window.URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    const disposition = response.headers.get('Content-Disposition');
+    const filenameMatch = disposition?.match(/filename="(.+)"/);
+    a.download = filenameMatch ? filenameMatch[1] : fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+}
+
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -99,6 +216,7 @@ export default function AdminDashboard() {
   const [newUserRole, setNewUserRole] = useState('');
   const [newUserJobTitle, setNewUserJobTitle] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [isDownloadingAnalysis, setIsDownloadingAnalysis] = useState(false);
   const [tasksPerPage, setTasksPerPage] = useState<number>(999999);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [editTaskOpen, setEditTaskOpen] = useState(false);
@@ -1728,7 +1846,38 @@ export default function AdminDashboard() {
           {/* Analiza po majstorima */}
           <Card>
             <CardHeader className="space-y-3 pb-4">
-              <CardTitle>Analiza po majstorima <span className="text-sm font-normal text-muted-foreground">(za izabrani period)</span></CardTitle>
+              <div className="flex items-start justify-between gap-2">
+                <CardTitle>Analiza po majstorima <span className="text-sm font-normal text-muted-foreground">(za izabrani period)</span></CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-shrink-0"
+                  data-testid="button-print-worker-analysis"
+                  disabled={isDownloadingAnalysis}
+                  onClick={async () => {
+                    const rangeStart = new Date(analysisRange.start.getFullYear(), analysisRange.start.getMonth(), analysisRange.start.getDate());
+                    const rangeEnd = new Date(analysisRange.end.getFullYear(), analysisRange.end.getMonth(), analysisRange.end.getDate());
+                    const { workers, totalAll } = computeWorkerAnalysis(tasks, rangeStart, rangeEnd);
+                    setIsDownloadingAnalysis(true);
+                    try {
+                      toast({ title: 'Priprema...', description: 'Generisanje PDF izvjestaja u toku.' });
+                      await downloadWorkerAnalysisPdf(workers, totalAll, rangeStart, rangeEnd);
+                    } catch (error) {
+                      console.error('Error downloading worker analysis:', error);
+                      toast({
+                        title: 'Greska',
+                        description: 'Nije moguce generisati PDF.',
+                        variant: 'destructive',
+                      });
+                    } finally {
+                      setIsDownloadingAnalysis(false);
+                    }
+                  }}
+                >
+                  <Printer className="w-4 h-4 mr-2" />
+                  {isDownloadingAnalysis ? 'Priprema...' : 'Stampaj PDF'}
+                </Button>
+              </div>
               <PeriodPicker
                 value={analysisRange}
                 onChange={setAnalysisRange}
@@ -1745,51 +1894,7 @@ export default function AdminDashboard() {
                   const rangeStart = new Date(analysisRange.start.getFullYear(), analysisRange.start.getMonth(), analysisRange.start.getDate());
                   const rangeEnd = new Date(analysisRange.end.getFullYear(), analysisRange.end.getMonth(), analysisRange.end.getDate());
 
-                  const periodTasks = tasks.filter(t => {
-                    if (t.status === 'cancelled') return false;
-                    if (!t.assigned_to_name) return false;
-                    const ref = (t.scheduled_for && t.parent_task_id) ? new Date(t.scheduled_for) : new Date(t.created_at);
-                    const refLocal = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
-                    return refLocal >= rangeStart && refLocal < rangeEnd;
-                  });
-
-                  type WorkerStats = { completed: number; returned: number; pending: number; total: number };
-                  const byWorker: Record<string, WorkerStats> = {};
-
-                  periodTasks.forEach(task => {
-                    const names = (task.assigned_to_name || '').split(',').map(n => n.trim()).filter(Boolean);
-                    const isReturned = task.status === 'returned_to_sef' || task.status === 'returned_to_operator';
-                    const isCompleted = task.status === 'completed';
-                    const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-
-                    names.forEach(name => {
-                      if (!byWorker[name]) byWorker[name] = { completed: 0, returned: 0, pending: 0, total: 0 };
-                      // Za zavrsene zadatke - upisi samo onome ko je potvrdio prijem (obavio posao)
-                      if (isCompleted) {
-                        if (confirmedSet.has(name.toLowerCase())) {
-                          byWorker[name].completed++;
-                          byWorker[name].total++;
-                        }
-                      } else if (isReturned) {
-                        byWorker[name].returned++;
-                        byWorker[name].total++;
-                      } else {
-                        byWorker[name].pending++;
-                        byWorker[name].total++;
-                      }
-                    });
-                  });
-
-                  const workers = Object.entries(byWorker)
-                    .filter(([, s]) => s.total > 0)
-                    .sort((a, b) => b[1].total - a[1].total);
-
-                  const maxTotal = Math.max(...workers.map(([, s]) => s.total), 1);
-                  const totalAll = workers.reduce((acc, [, s]) => ({
-                    completed: acc.completed + s.completed,
-                    returned: acc.returned + s.returned,
-                    pending: acc.pending + s.pending,
-                  }), { completed: 0, returned: 0, pending: 0 });
+                  const { workers, maxTotal, totalAll } = computeWorkerAnalysis(tasks, rangeStart, rangeEnd);
 
                   return (
                     <div className="space-y-4">

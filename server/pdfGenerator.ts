@@ -326,6 +326,127 @@ export async function generateTaskReportPdf(task: Task, history: any[]): Promise
   });
 }
 
+export interface WorkerAnalysisRow {
+  name: string;
+  completed: number;
+  returned: number;
+  pending: number;
+  total: number;
+}
+
+export interface WorkerAnalysisOptions {
+  periodLabel: string;
+  workers: WorkerAnalysisRow[];
+  totals: { completed: number; returned: number; pending: number };
+}
+
+export async function generateWorkerAnalysisPdf(options: WorkerAnalysisOptions): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ margin: 40, size: 'A4' });
+      const chunks: Buffer[] = [];
+
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      const now = new Date();
+      const generatedAt = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+      doc.fontSize(16).font('Helvetica-Bold').fillColor('#000000').text('ANALIZA PO MAJSTORIMA', { align: 'center' });
+      doc.moveDown(0.3);
+      doc.fontSize(10).font('Helvetica').text(`Period: ${options.periodLabel}`, { align: 'center' });
+      doc.fontSize(9).text(`Generisan: ${generatedAt}`, { align: 'center' });
+      doc.moveDown(0.5);
+      doc.moveTo(40, doc.y).lineTo(555, doc.y).stroke('#cccccc');
+      doc.moveDown(0.6);
+
+      // Summary line
+      doc.fontSize(10).font('Helvetica-Bold').fillColor('#16a34a').text(`Zavrseno: ${options.totals.completed}`, { continued: true });
+      doc.fillColor('#000000').text('    ', { continued: true });
+      doc.fillColor('#ea580c').text(`Vraceno: ${options.totals.returned}`, { continued: true });
+      doc.fillColor('#000000').text('    ', { continued: true });
+      doc.fillColor('#dc2626').text(`Nezavrseno: ${options.totals.pending}`);
+      doc.fillColor('#000000');
+      doc.moveDown(0.6);
+
+      // Table layout
+      const startX = 40;
+      const colWidths = { idx: 30, name: 235, completed: 70, returned: 70, pending: 70 };
+      const colX = {
+        idx: startX,
+        name: startX + colWidths.idx,
+        completed: startX + colWidths.idx + colWidths.name,
+        returned: startX + colWidths.idx + colWidths.name + colWidths.completed,
+        pending: startX + colWidths.idx + colWidths.name + colWidths.completed + colWidths.returned,
+      };
+      const tableRight = colX.pending + colWidths.pending;
+
+      const drawHeader = () => {
+        const y = doc.y;
+        doc.rect(startX, y, tableRight - startX, 20).fill('#f1f5f9');
+        doc.fillColor('#333333').fontSize(9).font('Helvetica-Bold');
+        doc.text('#', colX.idx + 4, y + 6, { width: colWidths.idx - 8 });
+        doc.text('Majstor', colX.name + 4, y + 6, { width: colWidths.name - 8 });
+        doc.text('Zavrseno', colX.completed, y + 6, { width: colWidths.completed, align: 'center' });
+        doc.text('Vraceno', colX.returned, y + 6, { width: colWidths.returned, align: 'center' });
+        doc.text('Nezavrseno', colX.pending, y + 6, { width: colWidths.pending, align: 'center' });
+        doc.fillColor('#000000').font('Helvetica');
+        doc.y = y + 20;
+      };
+
+      drawHeader();
+
+      options.workers.forEach((w, i) => {
+        if (doc.y > 760) {
+          doc.addPage();
+          drawHeader();
+        }
+        const y = doc.y;
+        const rowHeight = 18;
+        if (i % 2 === 1) {
+          doc.rect(startX, y, tableRight - startX, rowHeight).fill('#fafafa');
+        }
+        doc.fillColor('#000000').fontSize(9).font('Helvetica');
+        doc.text(String(i + 1), colX.idx + 4, y + 5, { width: colWidths.idx - 8 });
+        doc.text(w.name, colX.name + 4, y + 5, { width: colWidths.name - 8, ellipsis: true });
+        doc.fillColor('#16a34a').font('Helvetica-Bold').text(String(w.completed), colX.completed, y + 5, { width: colWidths.completed, align: 'center' });
+        doc.fillColor('#ea580c').text(String(w.returned), colX.returned, y + 5, { width: colWidths.returned, align: 'center' });
+        doc.fillColor('#dc2626').text(String(w.pending), colX.pending, y + 5, { width: colWidths.pending, align: 'center' });
+        doc.fillColor('#000000').font('Helvetica');
+        doc.y = y + rowHeight;
+      });
+
+      if (options.workers.length === 0) {
+        doc.moveDown(0.5);
+        doc.fontSize(10).fillColor('#888888').text('Nema dodijeljenih zadataka za izabrani period', { align: 'center' });
+        doc.fillColor('#000000');
+      }
+
+      // Totals row
+      if (doc.y > 760) doc.addPage();
+      const ty = doc.y;
+      doc.rect(startX, ty, tableRight - startX, 20).fill('#f8fafc');
+      doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold');
+      doc.text('UKUPNO', colX.name + 4, ty + 6, { width: colWidths.name - 8 });
+      doc.text(String(options.totals.completed), colX.completed, ty + 6, { width: colWidths.completed, align: 'center' });
+      doc.text(String(options.totals.returned), colX.returned, ty + 6, { width: colWidths.returned, align: 'center' });
+      doc.text(String(options.totals.pending), colX.pending, ty + 6, { width: colWidths.pending, align: 'center' });
+      doc.font('Helvetica');
+      doc.y = ty + 20;
+
+      doc.moveDown(1);
+      doc.moveTo(40, doc.y).lineTo(555, doc.y).stroke('#cccccc');
+      doc.moveDown(0.5);
+      doc.fontSize(8).fillColor('#999999').text('Hotel Budvanska Rivijera - Sistem za upravljanje zadacima', { align: 'center' });
+
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 export async function generateTasksCsv(tasks: Task[]): Promise<string> {
   const headers = ['Prijavljeno', 'Prijavio', 'Lokacija', 'Opis', 'Prioritet', 'Dodeljen', 'Status'];
   const rows = tasks.map(task => {

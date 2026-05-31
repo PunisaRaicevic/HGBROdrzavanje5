@@ -7,7 +7,7 @@ import { initializeSocket, notifyWorkers, notifyTaskUpdate } from "./socket";
 import { z } from "zod";
 import { generateToken, verifyToken, extractTokenFromHeader } from "./auth";
 import { sendOneSignalToUser } from "./services/onesignal";
-import { generateDailyReportPdf, generateTasksCsv, generateTaskReportPdf } from "./pdfGenerator";
+import { generateDailyReportPdf, generateTasksCsv, generateTaskReportPdf, generateWorkerAnalysisPdf } from "./pdfGenerator";
 import { uploadImagesArray, deleteImagesFromStorage } from "./lib/imageStorage";
 // --- NOVI IMPORTI ZA NOTIFIKACIJE ---
 import { sendPushNotification } from "./services/notificationService";
@@ -927,6 +927,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.send(pdfBuffer);
     } catch (error) {
       console.error("Error generating task report:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/worker-analysis-pdf", requireAuth, async (req, res) => {
+    try {
+      const sessionUser = await storage.getUserById(req.session.userId);
+      if (!sessionUser) return res.status(401).json({ error: "Invalid session" });
+
+      if (sessionUser.role !== 'admin' && sessionUser.role !== 'sef') {
+        return res.status(403).json({ error: "Only admins and supervisors can generate reports" });
+      }
+
+      const { periodLabel, workers } = req.body || {};
+      if (typeof periodLabel !== 'string' || !Array.isArray(workers)) {
+        return res.status(400).json({ error: "Invalid request body" });
+      }
+
+      const safeCount = (v: any) => {
+        const n = Number(v);
+        if (!Number.isFinite(n) || n < 0) return 0;
+        return Math.min(Math.floor(n), 1_000_000);
+      };
+
+      const sanitizedWorkers = workers.slice(0, 1000).map((w: any) => {
+        const completed = safeCount(w?.completed);
+        const returned = safeCount(w?.returned);
+        const pending = safeCount(w?.pending);
+        return {
+          name: String(w?.name ?? '').slice(0, 120),
+          completed,
+          returned,
+          pending,
+          total: completed + returned + pending,
+        };
+      });
+
+      // Derive totals server-side so the report is always internally consistent.
+      const sanitizedTotals = sanitizedWorkers.reduce(
+        (acc, w) => ({
+          completed: acc.completed + w.completed,
+          returned: acc.returned + w.returned,
+          pending: acc.pending + w.pending,
+        }),
+        { completed: 0, returned: 0, pending: 0 },
+      );
+
+      const pdfBuffer = await generateWorkerAnalysisPdf({
+        periodLabel: periodLabel.slice(0, 100),
+        workers: sanitizedWorkers,
+        totals: sanitizedTotals,
+      });
+
+      const filename = `analiza_majstori_${new Date().toISOString().slice(0, 10)}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating worker analysis report:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });
