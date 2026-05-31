@@ -681,7 +681,7 @@ export default function SupervisorDashboard() {
                       ) : (
                         tasksFromOperator
                           .sort((a, b) => {
-                            // Sort by execution date (earliest first)
+                            // Sort by execution date (newest first)
                             const getExecutionDate = (task: any) => {
                               if (task.is_recurring && !task.parent_task_id && task.next_occurrence) {
                                 return new Date(task.next_occurrence);
@@ -691,7 +691,7 @@ export default function SupervisorDashboard() {
                               }
                               return new Date(task.created_at);
                             };
-                            return getExecutionDate(a).getTime() - getExecutionDate(b).getTime();
+                            return getExecutionDate(b).getTime() - getExecutionDate(a).getTime();
                           })
                           .map((task) => (
                     <Card key={task.id} className="p-4">
