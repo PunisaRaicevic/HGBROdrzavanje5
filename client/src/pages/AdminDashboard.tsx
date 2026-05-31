@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X, MapPin } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X, MapPin, Search } from 'lucide-react';
 import { useLocation } from 'wouter';
 import {
   Dialog,
@@ -59,6 +59,7 @@ interface Task {
   created_by_name?: string;
   assigned_to_name?: string;
   location?: string;
+  room_number?: string | null;
   completed_at?: string | null;
   images?: string[];
   worker_images?: string[];
@@ -92,6 +93,39 @@ function formatLastSeen(lastSeen: string | null): { label: string; online: boole
 }
 
 type WorkerStats = { completed: number; returned: number; pending: number; total: number };
+
+const HOTEL_OPTIONS = [
+  'Hotel Slovenska plaža',
+  'Hotel Aleksandar',
+  'Hotel Mogren',
+  'Hotel Palas',
+  'Hotel Castellastva',
+  'Hotel Palas Lux',
+];
+
+const BLOK_OPTIONS = [
+  'Vila Mirta A-blok',
+  'Vila Magnolija B-blok',
+  'Vila Palmi C-blok',
+  'Vila Kana D-blok',
+  'Vila Kamelija E-blok',
+  'Vila Oleandra F-blok',
+  'Vila Limuna G-blok',
+  'Vila Maslina H-blok',
+  'Vila Ruzmarin I-blok',
+  'Vila Hortensije K-blok',
+  'Vila Lavanda L-blok',
+  'Vila Cempresa M-blok',
+  'Vila Tilija N-blok',
+  'Vila Pinea O-blok',
+  'Upravna zgrada',
+  'Pansion SP',
+  'Plaža Aleksandar',
+  'Bazeni',
+];
+
+const stripDiacriticsG = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const normName = (s: string) => stripDiacriticsG(s).toLowerCase().replace(/\s+/g, ' ').trim();
 
 function computeWorkerAnalysis(tasks: Task[], rangeStart: Date, rangeEnd: Date) {
   const periodTasks = tasks.filter(t => {
@@ -269,6 +303,17 @@ export default function AdminDashboard() {
     start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
     end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
   });
+
+  // Search tab state (default to current month)
+  const [searchGranularity, setSearchGranularity] = useState<'day' | 'week' | 'month'>('month');
+  const [searchRange, setSearchRange] = useState({
+    start: new Date(now.getFullYear(), now.getMonth(), 1),
+    end: new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  });
+  const [searchHotel, setSearchHotel] = useState<string>('all');
+  const [searchBlok, setSearchBlok] = useState<string>('all');
+  const [searchSoba, setSearchSoba] = useState<string>('');
+  const [searchWorker, setSearchWorker] = useState<string>('all');
 
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -672,7 +717,7 @@ export default function AdminDashboard() {
 
       {/* Main Admin Features */}
       <Tabs defaultValue="users" className="space-y-4">
-        <TabsList className="h-9 w-full grid grid-cols-4">
+        <TabsList className="h-9 w-full grid grid-cols-5">
           <TabsTrigger value="users" data-testid="tab-users" className="text-xs sm:text-sm px-1 sm:px-3">
             <Users className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Korisnici</span>
@@ -680,6 +725,10 @@ export default function AdminDashboard() {
           <TabsTrigger value="tasks" data-testid="tab-tasks" className="text-xs sm:text-sm px-1 sm:px-3">
             <ClipboardList className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Zadaci</span>
+          </TabsTrigger>
+          <TabsTrigger value="pretraga" data-testid="tab-pretraga" className="text-xs sm:text-sm px-1 sm:px-3">
+            <Search className="w-3.5 h-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Pretraga</span>
           </TabsTrigger>
           <TabsTrigger value="stats" data-testid="tab-stats" className="text-xs sm:text-sm px-1 sm:px-3">
             <BarChart3 className="w-3.5 h-3.5 sm:mr-1.5" />
@@ -1486,6 +1535,220 @@ export default function AdminDashboard() {
                     )}
                   </div>
                 </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="pretraga" className="space-y-4">
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-base">Pretraga zadataka</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => {
+                    setSearchHotel('all');
+                    setSearchBlok('all');
+                    setSearchSoba('');
+                    setSearchWorker('all');
+                  }}
+                  data-testid="button-clear-search"
+                >
+                  <X className="w-3.5 h-3.5 mr-1" />
+                  Ocisti filtere
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-xs mb-1.5 block">Vremenski period</Label>
+                <PeriodPicker
+                  value={searchRange}
+                  onChange={setSearchRange}
+                  granularity={searchGranularity}
+                  onGranularityChange={setSearchGranularity}
+                  data-testid="period-picker-search"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div>
+                  <Label className="text-xs mb-1.5 block">Hotel</Label>
+                  <Select value={searchHotel} onValueChange={setSearchHotel}>
+                    <SelectTrigger className="h-9" data-testid="select-search-hotel">
+                      <SelectValue placeholder="Svi hoteli" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Svi hoteli</SelectItem>
+                      {HOTEL_OPTIONS.map((h) => (
+                        <SelectItem key={h} value={h}>{h}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs mb-1.5 block">Blok / prostorija</Label>
+                  <Select value={searchBlok} onValueChange={setSearchBlok}>
+                    <SelectTrigger className="h-9" data-testid="select-search-blok">
+                      <SelectValue placeholder="Sve prostorije" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Sve prostorije</SelectItem>
+                      {BLOK_OPTIONS.map((b) => (
+                        <SelectItem key={b} value={b}>{b}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs mb-1.5 block">Soba</Label>
+                  <Input
+                    value={searchSoba}
+                    onChange={(e) => setSearchSoba(e.target.value)}
+                    placeholder="npr. 305"
+                    className="h-9"
+                    data-testid="input-search-soba"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs mb-1.5 block">Majstor</Label>
+                  {(() => {
+                    const workerMap: Record<string, string> = {};
+                    (tasksData?.tasks || []).forEach((t) => {
+                      (t.assigned_to_name || '')
+                        .split(',')
+                        .map((n) => n.trim())
+                        .filter(Boolean)
+                        .forEach((n) => {
+                          const k = normName(n);
+                          if (!k) return;
+                          const hasD = stripDiacriticsG(n) !== n;
+                          const curHasD = workerMap[k] ? stripDiacriticsG(workerMap[k]) !== workerMap[k] : false;
+                          if (!workerMap[k] || (hasD && !curHasD)) workerMap[k] = n;
+                        });
+                    });
+                    const workerOpts = Object.entries(workerMap).sort((a, b) =>
+                      a[1].localeCompare(b[1], 'sr')
+                    );
+                    return (
+                      <Select value={searchWorker} onValueChange={setSearchWorker}>
+                        <SelectTrigger className="h-9" data-testid="select-search-worker">
+                          <SelectValue placeholder="Svi majstori" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Svi majstori</SelectItem>
+                          {workerOpts.map(([k, name]) => (
+                            <SelectItem key={k} value={k}>{name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    );
+                  })()}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              {tasksLoading ? (
+                <Skeleton className="h-64 w-full" />
+              ) : (
+                (() => {
+                  const rs = new Date(
+                    searchRange.start.getFullYear(),
+                    searchRange.start.getMonth(),
+                    searchRange.start.getDate()
+                  );
+                  const re = new Date(
+                    searchRange.end.getFullYear(),
+                    searchRange.end.getMonth(),
+                    searchRange.end.getDate()
+                  );
+                  const norm = (s: string) => normName(s);
+                  const refDate = (t: Task) =>
+                    (t.scheduled_for && t.parent_task_id) ? new Date(t.scheduled_for) : new Date(t.created_at);
+                  const isScheduled = (t: Task) => Boolean(t.scheduled_for && t.parent_task_id);
+                  const results = (tasksData?.tasks || [])
+                    .filter((t) => {
+                      const ref = refDate(t);
+                      const refLocal = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+                      if (!(refLocal >= rs && refLocal < re)) return false;
+                      const loc = norm(t.location || '');
+                      if (searchHotel !== 'all' && !loc.includes(norm(searchHotel))) return false;
+                      if (searchBlok !== 'all' && !loc.includes(norm(searchBlok))) return false;
+                      if (searchSoba.trim() && !norm(String(t.room_number || '')).includes(norm(searchSoba))) return false;
+                      if (searchWorker !== 'all') {
+                        const keys = (t.assigned_to_name || '')
+                          .split(',')
+                          .map((n) => norm(n))
+                          .filter(Boolean);
+                        if (!keys.includes(searchWorker)) return false;
+                      }
+                      return true;
+                    })
+                    .sort((a, b) => refDate(b).getTime() - refDate(a).getTime());
+
+                  const formatDate = (dateStr: string) =>
+                    new Date(dateStr).toLocaleDateString('sr-RS', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    });
+                  const statusBadge = (status: string) => {
+                    if (status === 'completed') return <Badge variant="default" className="bg-green-600">Zavrseno</Badge>;
+                    if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') return <Badge variant="secondary">U toku</Badge>;
+                    if (status === 'returned_to_operator' || status === 'returned_to_sef') return <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-300">Vraceno</Badge>;
+                    if (status === 'with_external') return <Badge variant="outline">Eksterna firma</Badge>;
+                    if (status === 'with_sef') return <Badge variant="secondary">Sa sefom</Badge>;
+                    if (status === 'new') return <Badge variant="outline">Novo</Badge>;
+                    if (status === 'cancelled') return <Badge variant="outline" className="bg-red-50 border-red-200 text-red-700">Otkazano</Badge>;
+                    return <Badge variant="secondary">{status}</Badge>;
+                  };
+
+                  return (
+                    <div className="space-y-3">
+                      <div className="text-sm text-muted-foreground" data-testid="text-search-count">
+                        Pronadjeno zadataka: <strong className="text-foreground">{results.length}</strong>
+                      </div>
+                      {results.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8 text-sm">
+                          Nema rezultata za izabrane filtere
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          {results.map((task) => (
+                            <div
+                              key={task.id}
+                              className="p-3 border rounded-md hover-elevate cursor-pointer"
+                              data-testid={`search-result-${task.id}`}
+                              onClick={() => setSelectedTask(task)}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="text-xs text-muted-foreground">
+                                  {isScheduled(task)
+                                    ? `Zakazano: ${formatDate(task.scheduled_for!)}`
+                                    : formatDate(task.created_at)}
+                                </div>
+                                {statusBadge(task.status)}
+                              </div>
+                              <h3 className="font-medium text-sm mt-1">{task.title}</h3>
+                              <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                                {task.location && <p>Lokacija: {task.location}</p>}
+                                {task.room_number && <p>Soba: {task.room_number}</p>}
+                                {task.assigned_to_name && <p>Dodijeljeno: {task.assigned_to_name}</p>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()
               )}
             </CardContent>
           </Card>
