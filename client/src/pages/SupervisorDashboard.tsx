@@ -230,10 +230,10 @@ export default function SupervisorDashboard() {
     }) => {
       return apiRequest('PATCH', `/api/tasks/${taskId}`, {
         status: 'with_external',
-        external_company_id: companyId,
+        external_company_id: null,
         external_company_name: companyName,
-        assigned_to: null,
-        assigned_to_name: null,
+        assigned_to: companyId,
+        assigned_to_name: companyId ? companyName : null,
       });
     },
     onSuccess: () => {

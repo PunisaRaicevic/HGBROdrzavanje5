@@ -1314,7 +1314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // POSTOJEĆA LOGIKA ZA NOTIFIKACIJE KOD DODELJIVANJA (Ostaje jer radi)
-      if (assigned_to && (status === "assigned_to_radnik" || status === "with_sef")) {
+      if (assigned_to && (status === "assigned_to_radnik" || status === "with_sef" || status === "with_external")) {
         notifyWorkers(assigned_to, task);
         const workerIds = assigned_to.split(",").map((id: string) => id.trim());
 
