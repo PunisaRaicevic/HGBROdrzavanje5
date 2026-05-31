@@ -604,12 +604,19 @@ export default function AdminDashboard() {
                 <p className="text-muted-foreground text-center py-4">Nema korisnika</p>
               ) : (
                 <div className="space-y-2">
-                  {users.map((u) => {
+                  {[...users]
+                    .sort((a, b) => {
+                      const aIsThird = a.role === 'serviser' ? 0 : 1;
+                      const bIsThird = b.role === 'serviser' ? 0 : 1;
+                      return aIsThird - bIsThird;
+                    })
+                    .map((u) => {
                     const { label: lastSeenLabel, online } = formatLastSeen(u.last_seen ?? null);
+                    const isThirdParty = u.role === 'serviser';
                     return (
                     <div 
                       key={u.id} 
-                      className="flex items-center justify-between p-3 border rounded-md"
+                      className={`flex items-center justify-between p-3 border rounded-md ${isThirdParty ? 'bg-slate-100 border-slate-300' : ''}`}
                       data-testid={`user-item-${u.id}`}
                     >
                       <div className="flex items-start gap-3 min-w-0">
