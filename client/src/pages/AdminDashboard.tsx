@@ -739,7 +739,7 @@ export default function AdminDashboard() {
             <ClipboardList className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Zadaci</span>
           </TabsTrigger>
-          <TabsTrigger value="pretraga" data-testid="tab-pretraga" className="text-xs sm:text-sm px-1 sm:px-3">
+          <TabsTrigger value="pretraga" data-testid="tab-pretraga" className="text-xs sm:text-sm px-1 sm:px-3 text-red-600 data-[state=active]:bg-red-50 data-[state=active]:text-red-700">
             <Search className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Pretraga</span>
           </TabsTrigger>
