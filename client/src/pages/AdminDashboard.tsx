@@ -94,6 +94,26 @@ function formatLastSeen(lastSeen: string | null): { label: string; online: boole
 
 type WorkerStats = { completed: number; returned: number; pending: number; total: number };
 
+// Jedinstveni izvor istine za "referentni datum" zadatka:
+// instance periodicnih zadataka (child tasks) koriste scheduled_for, svi ostali created_at.
+// Koristi se za filtriranje po periodu, sortiranje i prikaz u Pretrazi, Statistici i analizi radnika.
+function getTaskReferenceDate(task: Pick<Task, 'scheduled_for' | 'parent_task_id' | 'created_at'>): Date {
+  return (task.scheduled_for && task.parent_task_id)
+    ? new Date(task.scheduled_for)
+    : new Date(task.created_at);
+}
+
+// Referentni datum sveden na lokalnu ponoc (bez vremena) - za filtriranje po danu bez timezone pomaka.
+function getTaskReferenceDateLocal(task: Pick<Task, 'scheduled_for' | 'parent_task_id' | 'created_at'>): Date {
+  const d = getTaskReferenceDate(task);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+// Da li zadatak koristi scheduled_for kao referentni datum (instanca periodicnog zadatka).
+function isScheduledTask(task: Pick<Task, 'scheduled_for' | 'parent_task_id'>): boolean {
+  return Boolean(task.scheduled_for && task.parent_task_id);
+}
+
 const HOTEL_OPTIONS = [
   'Hotel Slovenska plaža',
   'Hotel Aleksandar',
@@ -131,8 +151,7 @@ function computeWorkerAnalysis(tasks: Task[], rangeStart: Date, rangeEnd: Date) 
   const periodTasks = tasks.filter(t => {
     if (t.status === 'cancelled') return false;
     if (!t.assigned_to_name) return false;
-    const ref = (t.scheduled_for && t.parent_task_id) ? new Date(t.scheduled_for) : new Date(t.created_at);
-    const refLocal = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+    const refLocal = getTaskReferenceDateLocal(t);
     return refLocal >= rangeStart && refLocal < rangeEnd;
   });
 
@@ -504,14 +523,8 @@ export default function AdminDashboard() {
     return tasks.filter(t => {
       if (t.status === 'cancelled') return false;
       // Za instance periodicnih zadataka koristi scheduled_for, za sve ostale created_at
-      if (t.scheduled_for && t.parent_task_id) {
-        const scheduledDate = new Date(t.scheduled_for);
-        const scheduledLocal = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate());
-        return scheduledLocal >= rangeStartLocal && scheduledLocal < rangeEndLocal;
-      }
-      const taskDate = new Date(t.created_at);
-      const taskLocal = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
-      return taskLocal >= rangeStartLocal && taskLocal < rangeEndLocal;
+      const refLocal = getTaskReferenceDateLocal(t);
+      return refLocal >= rangeStartLocal && refLocal < rangeEndLocal;
     });
   };
 
@@ -1333,12 +1346,8 @@ export default function AdminDashboard() {
                             if (task.status === 'completed' && task.completed_at) {
                               return new Date(task.completed_at);
                             }
-                            // Za child taskove periodičnih zadataka - koristi scheduled_for (datum perioda)
-                            if (task.scheduled_for && task.parent_task_id) {
-                              return new Date(task.scheduled_for);
-                            }
-                            // Za sve ostale (jednokratne) - koristi created_at
-                            return new Date(task.created_at);
+                            // Za sve ostale - zajednicki referentni datum (scheduled_for za periodicne, inace created_at)
+                            return getTaskReferenceDate(task);
                           };
                           
                           // Odredi početni datum na osnovu izabranog perioda
@@ -1668,9 +1677,8 @@ export default function AdminDashboard() {
                     searchRange.end.getDate()
                   );
                   const norm = (s: string) => normName(s);
-                  const refDate = (t: Task) =>
-                    (t.scheduled_for && t.parent_task_id) ? new Date(t.scheduled_for) : new Date(t.created_at);
-                  const isScheduled = (t: Task) => Boolean(t.scheduled_for && t.parent_task_id);
+                  const refDate = (t: Task) => getTaskReferenceDate(t);
+                  const isScheduled = (t: Task) => isScheduledTask(t);
                   const results = (tasksData?.tasks || [])
                     .filter((t) => {
                       const ref = refDate(t);
@@ -1782,16 +1790,9 @@ export default function AdminDashboard() {
                     if (t.status === 'cancelled') return false;
                     const rangeStartLocal = new Date(statsRange.start.getFullYear(), statsRange.start.getMonth(), statsRange.start.getDate());
                     const rangeEndLocal = new Date(statsRange.end.getFullYear(), statsRange.end.getMonth(), statsRange.end.getDate());
-                    // Za zakazane zadatke (child tasks od recurring) koristi scheduled_for
-                    if (t.scheduled_for && t.parent_task_id) {
-                      const scheduledDate = new Date(t.scheduled_for);
-                      const scheduledLocal = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate());
-                      return scheduledLocal >= rangeStartLocal && scheduledLocal < rangeEndLocal;
-                    }
-                    // Za obicne zadatke koristi created_at (u lokalnom vremenu)
-                    const taskDate = new Date(t.created_at);
-                    const taskLocal = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
-                    return taskLocal >= rangeStartLocal && taskLocal < rangeEndLocal;
+                    // Zajednicki referentni datum: scheduled_for za zakazane (child) zadatke, inace created_at
+                    const refLocal = getTaskReferenceDateLocal(t);
+                    return refLocal >= rangeStartLocal && refLocal < rangeEndLocal;
                   });
                   const completedTasks = periodTasks.filter(t => t.status === 'completed');
                   const inProgressTasks = periodTasks.filter(t => 
