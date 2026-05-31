@@ -102,33 +102,46 @@ function computeWorkerAnalysis(tasks: Task[], rangeStart: Date, rangeEnd: Date) 
     return refLocal >= rangeStart && refLocal < rangeEnd;
   });
 
-  const byWorker: Record<string, WorkerStats> = {};
+  const stripDiacritics = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const normKey = (s: string) => stripDiacritics(s).toLowerCase().replace(/\s+/g, ' ').trim();
+  const pickDisplay = (current: string, candidate: string) => {
+    const curHas = stripDiacritics(current) !== current;
+    const candHas = stripDiacritics(candidate) !== candidate;
+    return candHas && !curHas ? candidate : current;
+  };
+
+  const byWorker: Record<string, { stats: WorkerStats; display: string }> = {};
 
   periodTasks.forEach(task => {
     const names = (task.assigned_to_name || '').split(',').map(n => n.trim()).filter(Boolean);
     const isReturned = task.status === 'returned_to_sef' || task.status === 'returned_to_operator';
     const isCompleted = task.status === 'completed';
-    const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
+    const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => normKey(s)).filter(Boolean));
 
     names.forEach(name => {
-      if (!byWorker[name]) byWorker[name] = { completed: 0, returned: 0, pending: 0, total: 0 };
+      const key = normKey(name);
+      if (!key) return;
+      if (!byWorker[key]) byWorker[key] = { stats: { completed: 0, returned: 0, pending: 0, total: 0 }, display: name };
+      byWorker[key].display = pickDisplay(byWorker[key].display, name);
+      const s = byWorker[key].stats;
       if (isCompleted) {
-        if (confirmedSet.has(name.toLowerCase())) {
-          byWorker[name].completed++;
-          byWorker[name].total++;
+        if (confirmedSet.has(key)) {
+          s.completed++;
+          s.total++;
         }
       } else if (isReturned) {
-        byWorker[name].returned++;
-        byWorker[name].total++;
+        s.returned++;
+        s.total++;
       } else {
-        byWorker[name].pending++;
-        byWorker[name].total++;
+        s.pending++;
+        s.total++;
       }
     });
   });
 
-  const workers = Object.entries(byWorker)
-    .filter(([, s]) => s.total > 0)
+  const workers = Object.values(byWorker)
+    .filter(w => w.stats.total > 0)
+    .map(w => [w.display, w.stats] as [string, WorkerStats])
     .sort((a, b) => b[1].total - a[1].total);
 
   const maxTotal = Math.max(...workers.map(([, s]) => s.total), 1);
