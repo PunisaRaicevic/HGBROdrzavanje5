@@ -1,0 +1,1 @@
+- [pdfkit Serbian Latin fonts](pdfkit-serbian-latin-fonts.md) — server PDFs must embed DejaVuSans TTF; Helvetica WinAnsi mangles c c z s dj.

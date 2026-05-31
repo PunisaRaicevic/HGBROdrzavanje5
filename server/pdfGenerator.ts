@@ -1,6 +1,52 @@
 import PDFDocument from 'pdfkit';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { Task } from '@shared/schema';
 import { fetchImageAsBuffer } from './lib/imageStorage';
+
+// Serbian Latin (c, c, z, s, dj) needs a Unicode TTF font. pdfkit's built-in
+// Helvetica uses WinAnsi encoding which lacks these glyphs, so we embed DejaVuSans.
+// Resolve the font directory independent of CWD: try the module-relative location
+// first (works regardless of where the process is started), then fall back to a
+// CWD-relative path for the bundled production build.
+const FONT_DIR_CANDIDATES = [
+  path.join(path.dirname(fileURLToPath(import.meta.url)), 'assets', 'fonts'),
+  path.join(process.cwd(), 'server', 'assets', 'fonts'),
+  path.join(process.cwd(), 'assets', 'fonts'),
+];
+
+function resolveFontFile(filename: string): string | null {
+  for (const dir of FONT_DIR_CANDIDATES) {
+    const candidate = path.join(dir, filename);
+    if (fs.existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+/**
+ * Registers the bundled Unicode fonts on the document and returns the font
+ * names to use. Falls back to Helvetica if the font files are missing so PDF
+ * generation never crashes (diacritics would regress, hence the warning).
+ */
+function registerUnicodeFonts(doc: PDFKit.PDFDocument): { regular: string; bold: string } {
+  try {
+    const regular = resolveFontFile('DejaVuSans.ttf');
+    const bold = resolveFontFile('DejaVuSans-Bold.ttf');
+    if (regular && bold) {
+      doc.registerFont('DejaVu', regular);
+      doc.registerFont('DejaVu-Bold', bold);
+      return { regular: 'DejaVu', bold: 'DejaVu-Bold' };
+    }
+    console.warn(
+      `Unicode fonts not found in [${FONT_DIR_CANDIDATES.join(', ')}]; ` +
+      'falling back to Helvetica. Serbian Latin diacritics (c, c, z, s, dj) will not render correctly.'
+    );
+  } catch (err) {
+    console.error('Failed to register Unicode fonts, falling back to Helvetica:', err);
+  }
+  return { regular: 'Helvetica', bold: 'Helvetica-Bold' };
+}
 
 interface ReportOptions {
   title: string;
@@ -350,23 +396,25 @@ export async function generateWorkerAnalysisPdf(options: WorkerAnalysisOptions):
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
+      const { regular: FONT, bold: FONT_B } = registerUnicodeFonts(doc);
+
       const now = new Date();
       const generatedAt = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
-      doc.fontSize(16).font('Helvetica-Bold').fillColor('#000000').text('ANALIZA PO MAJSTORIMA', { align: 'center' });
+      doc.fontSize(16).font(FONT_B).fillColor('#000000').text('ANALIZA PO MAJSTORIMA', { align: 'center' });
       doc.moveDown(0.3);
-      doc.fontSize(10).font('Helvetica').text(`Period: ${options.periodLabel}`, { align: 'center' });
+      doc.fontSize(10).font(FONT).text(`Period: ${options.periodLabel}`, { align: 'center' });
       doc.fontSize(9).text(`Generisan: ${generatedAt}`, { align: 'center' });
       doc.moveDown(0.5);
       doc.moveTo(40, doc.y).lineTo(555, doc.y).stroke('#cccccc');
       doc.moveDown(0.6);
 
       // Summary line
-      doc.fontSize(10).font('Helvetica-Bold').fillColor('#16a34a').text(`Zavrseno: ${options.totals.completed}`, { continued: true });
+      doc.fontSize(10).font(FONT_B).fillColor('#16a34a').text(`Završeno: ${options.totals.completed}`, { continued: true });
       doc.fillColor('#000000').text('    ', { continued: true });
-      doc.fillColor('#ea580c').text(`Vraceno: ${options.totals.returned}`, { continued: true });
+      doc.fillColor('#ea580c').text(`Vraćeno: ${options.totals.returned}`, { continued: true });
       doc.fillColor('#000000').text('    ', { continued: true });
-      doc.fillColor('#dc2626').text(`Nezavrseno: ${options.totals.pending}`);
+      doc.fillColor('#dc2626').text(`Nezavršeno: ${options.totals.pending}`);
       doc.fillColor('#000000');
       doc.moveDown(0.6);
 
@@ -385,13 +433,13 @@ export async function generateWorkerAnalysisPdf(options: WorkerAnalysisOptions):
       const drawHeader = () => {
         const y = doc.y;
         doc.rect(startX, y, tableRight - startX, 20).fill('#f1f5f9');
-        doc.fillColor('#333333').fontSize(9).font('Helvetica-Bold');
+        doc.fillColor('#333333').fontSize(9).font(FONT_B);
         doc.text('#', colX.idx + 4, y + 6, { width: colWidths.idx - 8 });
         doc.text('Majstor', colX.name + 4, y + 6, { width: colWidths.name - 8 });
-        doc.text('Zavrseno', colX.completed, y + 6, { width: colWidths.completed, align: 'center' });
-        doc.text('Vraceno', colX.returned, y + 6, { width: colWidths.returned, align: 'center' });
-        doc.text('Nezavrseno', colX.pending, y + 6, { width: colWidths.pending, align: 'center' });
-        doc.fillColor('#000000').font('Helvetica');
+        doc.text('Završeno', colX.completed, y + 6, { width: colWidths.completed, align: 'center' });
+        doc.text('Vraćeno', colX.returned, y + 6, { width: colWidths.returned, align: 'center' });
+        doc.text('Nezavršeno', colX.pending, y + 6, { width: colWidths.pending, align: 'center' });
+        doc.fillColor('#000000').font(FONT);
         doc.y = y + 20;
       };
 
@@ -407,13 +455,13 @@ export async function generateWorkerAnalysisPdf(options: WorkerAnalysisOptions):
         if (i % 2 === 1) {
           doc.rect(startX, y, tableRight - startX, rowHeight).fill('#fafafa');
         }
-        doc.fillColor('#000000').fontSize(9).font('Helvetica');
+        doc.fillColor('#000000').fontSize(9).font(FONT);
         doc.text(String(i + 1), colX.idx + 4, y + 5, { width: colWidths.idx - 8 });
         doc.text(w.name, colX.name + 4, y + 5, { width: colWidths.name - 8, ellipsis: true });
-        doc.fillColor('#16a34a').font('Helvetica-Bold').text(String(w.completed), colX.completed, y + 5, { width: colWidths.completed, align: 'center' });
+        doc.fillColor('#16a34a').font(FONT_B).text(String(w.completed), colX.completed, y + 5, { width: colWidths.completed, align: 'center' });
         doc.fillColor('#ea580c').text(String(w.returned), colX.returned, y + 5, { width: colWidths.returned, align: 'center' });
         doc.fillColor('#dc2626').text(String(w.pending), colX.pending, y + 5, { width: colWidths.pending, align: 'center' });
-        doc.fillColor('#000000').font('Helvetica');
+        doc.fillColor('#000000').font(FONT);
         doc.y = y + rowHeight;
       });
 
@@ -427,12 +475,12 @@ export async function generateWorkerAnalysisPdf(options: WorkerAnalysisOptions):
       if (doc.y > 760) doc.addPage();
       const ty = doc.y;
       doc.rect(startX, ty, tableRight - startX, 20).fill('#f8fafc');
-      doc.fillColor('#000000').fontSize(9).font('Helvetica-Bold');
+      doc.fillColor('#000000').fontSize(9).font(FONT_B);
       doc.text('UKUPNO', colX.name + 4, ty + 6, { width: colWidths.name - 8 });
       doc.text(String(options.totals.completed), colX.completed, ty + 6, { width: colWidths.completed, align: 'center' });
       doc.text(String(options.totals.returned), colX.returned, ty + 6, { width: colWidths.returned, align: 'center' });
       doc.text(String(options.totals.pending), colX.pending, ty + 6, { width: colWidths.pending, align: 'center' });
-      doc.font('Helvetica');
+      doc.font(FONT);
       doc.y = ty + 20;
 
       doc.moveDown(1);
