@@ -98,10 +98,11 @@ interface TaskDetailsDialogProps {
   } | null;
   currentUserRole?: string;
   onAssignToWorker?: (taskId: string, taskTitle: string) => void;
+  onAssignToExternal?: (taskId: string, taskTitle: string) => void;
   onEdit?: (taskId: string) => void;
 }
 
-export default function TaskDetailsDialog({ open, onOpenChange, task, currentUserRole, onAssignToWorker, onEdit }: TaskDetailsDialogProps) {
+export default function TaskDetailsDialog({ open, onOpenChange, task, currentUserRole, onAssignToWorker, onAssignToExternal, onEdit }: TaskDetailsDialogProps) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRecurringHistory, setShowRecurringHistory] = useState(false);
@@ -1081,12 +1082,19 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => sendToExternalMutation.mutate(task.id)}
-                  disabled={sendToExternalMutation.isPending}
+                  onClick={() => {
+                    if (onAssignToExternal) {
+                      onAssignToExternal(task.id, task.title);
+                      onOpenChange(false);
+                    } else {
+                      sendToExternalMutation.mutate(task.id);
+                    }
+                  }}
+                  disabled={!onAssignToExternal && sendToExternalMutation.isPending}
                   data-testid="button-notify-external"
                 >
                   <Send className="w-4 h-4 mr-2" />
-                  Obavijesti eksternu firmu
+                  Dodijeli eksternoj firmi
                 </Button>
               </div>
             )}

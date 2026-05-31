@@ -1097,7 +1097,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const {
         status, assigned_to, assigned_to_name, worker_report,
-        worker_images, external_company_name, receipt_confirmed_at,
+        worker_images, external_company_name, external_company_id, receipt_confirmed_at,
         title, description, hotel, blok, soba, room_number, priority, images,
         is_recurring, recurrence_pattern, recurrence_week_days, recurrence_month_days,
         recurrence_year_dates, execution_hour, execution_minute,
@@ -1173,6 +1173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData.worker_images = uploaded && uploaded.length > 0 ? uploaded : [];
       }
       if (external_company_name !== undefined) updateData.external_company_name = external_company_name || null;
+      if (external_company_id !== undefined) updateData.external_company_id = external_company_id || null;
       if (estimated_arrival_time !== undefined) updateData.estimated_arrival_time = estimated_arrival_time;
 
       if (receipt_confirmed_at) {
@@ -1648,6 +1649,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ technicians });
     } catch (error) {
       console.error("Error fetching technicians:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get external companies (serviser / treca_lica users that can receive tasks)
+  app.get("/api/external-companies", requireAuth, async (req, res) => {
+    try {
+      const serviseri = await storage.getUsersByRole('serviser');
+      const trecaLica = await storage.getUsersByRole('treca_lica');
+      const companies = [...serviseri, ...trecaLica]
+        .sort((a, b) => (a.full_name || '').localeCompare(b.full_name || '', 'sr'))
+        .map((u) => ({
+          id: u.id,
+          full_name: u.full_name,
+          email: u.email,
+          role: u.role,
+          department: u.department,
+          phone: u.phone,
+          is_active: u.is_active,
+        }));
+      res.json({ companies });
+    } catch (error) {
+      console.error("Error fetching external companies:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

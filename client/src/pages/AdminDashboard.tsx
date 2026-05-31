@@ -21,6 +21,8 @@ import StatCard from '@/components/StatCard';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import EditUserDialog from '@/components/EditUserDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
+import SelectTechnicianDialog from '@/components/SelectTechnicianDialog';
+import SelectExternalCompanyDialog from '@/components/SelectExternalCompanyDialog';
 import EditTaskDialog from '@/components/EditTaskDialog';
 import AdminAIChat from '@/components/AdminAIChat';
 import { PeriodPicker } from '@/components/PeriodPicker';
@@ -219,6 +221,10 @@ export default function AdminDashboard() {
   const [isDownloadingAnalysis, setIsDownloadingAnalysis] = useState(false);
   const [tasksPerPage, setTasksPerPage] = useState<number>(999999);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectTechnicianOpen, setSelectTechnicianOpen] = useState(false);
+  const [currentTaskForTechnician, setCurrentTaskForTechnician] = useState<{ id: string; title: string } | null>(null);
+  const [selectExternalOpen, setSelectExternalOpen] = useState(false);
+  const [currentTaskForExternal, setCurrentTaskForExternal] = useState<{ id: string; title: string } | null>(null);
   const [editTaskOpen, setEditTaskOpen] = useState(false);
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
@@ -325,6 +331,86 @@ export default function AdminDashboard() {
       });
     }
   });
+
+  // Mutation for assigning a returned/with-sef task to a worker
+  const assignWorkerMutation = useMutation({
+    mutationFn: async ({ taskId, assigned_to, assigned_to_name }: {
+      taskId: string;
+      assigned_to: string;
+      assigned_to_name: string;
+    }) => {
+      return apiRequest('PATCH', `/api/tasks/${taskId}`, {
+        status: 'assigned_to_radnik',
+        assigned_to,
+        assigned_to_name,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      toast({ title: 'Uspeh', description: 'Zadatak je dodijeljen radniku.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Greška', description: 'Nije moguće dodijeliti zadatak.', variant: 'destructive' });
+      console.error('Error assigning task:', error);
+    }
+  });
+
+  // Mutation for assigning a task to a specific external company (or free-text "other")
+  const assignExternalMutation = useMutation({
+    mutationFn: async ({ taskId, companyId, companyName }: {
+      taskId: string;
+      companyId: string | null;
+      companyName: string;
+    }) => {
+      return apiRequest('PATCH', `/api/tasks/${taskId}`, {
+        status: 'with_external',
+        external_company_id: companyId,
+        external_company_name: companyName,
+        assigned_to: null,
+        assigned_to_name: null,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      toast({ title: 'Uspeh', description: 'Zadatak je poslat eksternoj firmi.' });
+    },
+    onError: (error) => {
+      toast({ title: 'Greška', description: 'Nije moguće poslati zadatak eksternoj firmi.', variant: 'destructive' });
+      console.error('Error sending to external:', error);
+    }
+  });
+
+  const handleAssignToWorker = (taskId: string, taskTitle: string) => {
+    setCurrentTaskForTechnician({ id: taskId, title: taskTitle });
+    setSelectTechnicianOpen(true);
+  };
+
+  const handleTechnicianSelect = (technicianIds: string[], technicianNames: string[]) => {
+    if (!currentTaskForTechnician) return;
+    assignWorkerMutation.mutate({
+      taskId: currentTaskForTechnician.id,
+      assigned_to: technicianIds.join(','),
+      assigned_to_name: technicianNames.join(', '),
+    });
+    setSelectTechnicianOpen(false);
+    setCurrentTaskForTechnician(null);
+  };
+
+  const handleAssignToExternal = (taskId: string, taskTitle: string) => {
+    setCurrentTaskForExternal({ id: taskId, title: taskTitle });
+    setSelectExternalOpen(true);
+  };
+
+  const handleExternalSelect = (companyId: string | null, companyName: string) => {
+    if (!currentTaskForExternal) return;
+    assignExternalMutation.mutate({
+      taskId: currentTaskForExternal.id,
+      companyId,
+      companyName,
+    });
+    setSelectExternalOpen(false);
+    setCurrentTaskForExternal(null);
+  };
 
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1996,10 +2082,24 @@ export default function AdminDashboard() {
           scheduled_for: selectedTask.scheduled_for
         } : null}
         currentUserRole={user?.role}
+        onAssignToWorker={handleAssignToWorker}
+        onAssignToExternal={handleAssignToExternal}
         onEdit={(taskId) => {
           setEditTaskId(taskId);
           setEditTaskOpen(true);
         }}
+      />
+      <SelectTechnicianDialog
+        open={selectTechnicianOpen}
+        onOpenChange={setSelectTechnicianOpen}
+        onSelectTechnician={handleTechnicianSelect}
+        taskTitle={currentTaskForTechnician?.title || ''}
+      />
+      <SelectExternalCompanyDialog
+        open={selectExternalOpen}
+        onOpenChange={setSelectExternalOpen}
+        onSelectCompany={handleExternalSelect}
+        taskTitle={currentTaskForExternal?.title || ''}
       />
       <EditTaskDialog
         open={editTaskOpen}

@@ -29,6 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import StatCard from '@/components/StatCard';
 import SelectTechnicianDialog from '@/components/SelectTechnicianDialog';
+import SelectExternalCompanyDialog from '@/components/SelectExternalCompanyDialog';
 import WorkerProfileDialog from '@/components/WorkerProfileDialog';
 import TeamPerformanceDialog from '@/components/TeamPerformanceDialog';
 import DailyReportDialog from '@/components/DailyReportDialog';
@@ -59,6 +60,8 @@ export default function SupervisorDashboard() {
   
   const [selectTechnicianOpen, setSelectTechnicianOpen] = useState(false);
   const [currentTaskForTechnician, setCurrentTaskForTechnician] = useState<{ id: string; title: string } | null>(null);
+  const [selectExternalOpen, setSelectExternalOpen] = useState(false);
+  const [currentTaskForExternal, setCurrentTaskForExternal] = useState<{ id: string; title: string } | null>(null);
   const [workerProfileOpen, setWorkerProfileOpen] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState<any | null>(null);
   const [teamPerformanceOpen, setTeamPerformanceOpen] = useState(false);
@@ -218,11 +221,19 @@ export default function SupervisorDashboard() {
     }
   });
 
-  // Mutation for sending task to external company
-  const sendToExternalMutation = useMutation({
-    mutationFn: async (taskId: string) => {
-      return apiRequest('PATCH', `/api/tasks/${taskId}`, { 
-        status: 'with_external'
+  // Mutation for assigning task to a specific external company (or free-text "other")
+  const assignExternalMutation = useMutation({
+    mutationFn: async ({ taskId, companyId, companyName }: {
+      taskId: string;
+      companyId: string | null;
+      companyName: string;
+    }) => {
+      return apiRequest('PATCH', `/api/tasks/${taskId}`, {
+        status: 'with_external',
+        external_company_id: companyId,
+        external_company_name: companyName,
+        assigned_to: null,
+        assigned_to_name: null,
       });
     },
     onSuccess: () => {
@@ -393,6 +404,26 @@ export default function SupervisorDashboard() {
     setCurrentTaskForTechnician(null);
   };
 
+  // Handle opening external company selection dialog
+  const handleAssignToExternal = (taskId: string, taskTitle: string) => {
+    setCurrentTaskForExternal({ id: taskId, title: taskTitle });
+    setSelectExternalOpen(true);
+  };
+
+  // Handle external company selection and assignment
+  const handleExternalSelect = (companyId: string | null, companyName: string) => {
+    if (!currentTaskForExternal) return;
+
+    assignExternalMutation.mutate({
+      taskId: currentTaskForExternal.id,
+      companyId,
+      companyName,
+    });
+
+    setSelectExternalOpen(false);
+    setCurrentTaskForExternal(null);
+  };
+
   // Handle opening worker profile
   const handleViewWorkerProfile = (worker: any) => {
     setSelectedWorker(worker);
@@ -449,6 +480,12 @@ export default function SupervisorDashboard() {
         onSelectTechnician={handleTechnicianSelect}
         taskTitle={currentTaskForTechnician?.title || ''}
       />
+      <SelectExternalCompanyDialog
+        open={selectExternalOpen}
+        onOpenChange={setSelectExternalOpen}
+        onSelectCompany={handleExternalSelect}
+        taskTitle={currentTaskForExternal?.title || ''}
+      />
       <WorkerProfileDialog
         open={workerProfileOpen}
         onOpenChange={setWorkerProfileOpen}
@@ -488,6 +525,7 @@ export default function SupervisorDashboard() {
         } : null}
         currentUserRole={user?.role}
         onAssignToWorker={handleAssignToWorker}
+        onAssignToExternal={handleAssignToExternal}
         onEdit={(taskId) => {
           setEditTaskId(taskId);
           setEditTaskOpen(true);
@@ -714,9 +752,9 @@ export default function SupervisorDashboard() {
                                 className="w-full"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  sendToExternalMutation.mutate(task.id);
+                                  handleAssignToExternal(task.id, task.title);
                                 }}
-                                disabled={sendToExternalMutation.isPending}
+                                disabled={assignExternalMutation.isPending}
                                 data-testid={`button-send-to-external-${task.id}`}
                               >
                                 <Send className="w-3 h-3 mr-2" />
