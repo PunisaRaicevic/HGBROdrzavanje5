@@ -1746,7 +1746,8 @@ export default function AdminDashboard() {
                               </div>
                               <h3 className="font-medium text-sm mt-1">{task.title}</h3>
                               <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                                {task.location && <p>Lokacija: {task.location}</p>}
+                                {task.description && <p className="whitespace-pre-wrap break-words">{task.description}</p>}
+                                {task.created_by_name && <p>Prijavio: {task.created_by_name}</p>}
                                 {task.room_number && <p>Soba: {task.room_number}</p>}
                                 {task.assigned_to_name && <p>Dodijeljeno: {task.assigned_to_name}</p>}
                               </div>
