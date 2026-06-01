@@ -1626,8 +1626,10 @@ export default function AdminDashboard() {
                   {(() => {
                     const workerMap: Record<string, string> = {};
                     (tasksData?.tasks || []).forEach((t) => {
-                      (t.assigned_to_name || '')
-                        .split(',')
+                      [
+                        ...(t.assigned_to_name || '').split(','),
+                        ...(((t as any).external_company_name as string) || '').split(','),
+                      ]
                         .map((n) => n.trim())
                         .filter(Boolean)
                         .forEach((n) => {
@@ -1689,8 +1691,10 @@ export default function AdminDashboard() {
                       if (searchBlok !== 'all' && !loc.includes(norm(searchBlok))) return false;
                       if (searchSoba.trim() && !norm(String(t.room_number || '')).includes(norm(searchSoba))) return false;
                       if (searchWorker !== 'all') {
-                        const keys = (t.assigned_to_name || '')
-                          .split(',')
+                        const keys = [
+                          ...(t.assigned_to_name || '').split(','),
+                          ...(((t as any).external_company_name as string) || '').split(','),
+                        ]
                           .map((n) => norm(n))
                           .filter(Boolean);
                         if (!keys.includes(searchWorker)) return false;
