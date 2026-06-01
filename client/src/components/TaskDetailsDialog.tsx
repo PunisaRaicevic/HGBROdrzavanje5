@@ -89,6 +89,12 @@ interface TaskDetailsDialogProps {
     images?: string[];
     worker_images?: string[];
     assigned_to_name?: string;
+    external_company_name?: string | null;
+    operator_name?: string | null;
+    sef_name?: string | null;
+    completed_by_name?: string | null;
+    completed_at?: string | null;
+    receipt_confirmed_by_name?: string | null;
     is_recurring?: boolean;
     recurrence_pattern?: string | null;
     worker_report?: string;
@@ -551,13 +557,15 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
             </div>
 
             {/* Assigned To */}
-            {task.assigned_to_name && (
+            {(task.assigned_to_name || (task.status === 'with_external' && task.external_company_name)) && (
               <div className="flex items-start gap-2">
                 <User className="w-5 h-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">Dodeljeno</p>
                   <p className="text-sm text-muted-foreground" data-testid="text-task-details-assigned">
-                    {task.assigned_to_name}
+                    {task.status === 'with_external' && task.external_company_name
+                      ? task.external_company_name
+                      : task.assigned_to_name}
                   </p>
                 </div>
               </div>

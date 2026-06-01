@@ -769,11 +769,18 @@ export default function OperatorDashboard() {
       <TaskDetailsDialog
         open={taskDetailsOpen}
         onOpenChange={setTaskDetailsOpen}
-        task={selectedTask && taskDetailResponse?.task ? {
+        task={selectedTask ? {
           ...selectedTask,
-          images: parseTaskImages(taskDetailResponse.task.images),
-          worker_images: parseTaskImages(taskDetailResponse.task.worker_images),
-        } : selectedTask}
+          assigned_to_name: selectedTask.assignedToName,
+          external_company_name: (taskDetailResponse?.task as any)?.external_company_name,
+          operator_name: (taskDetailResponse?.task as any)?.operator_name,
+          sef_name: (taskDetailResponse?.task as any)?.sef_name,
+          completed_by_name: (taskDetailResponse?.task as any)?.completed_by_name,
+          completed_at: (taskDetailResponse?.task as any)?.completed_at ?? selectedTask.completedAt,
+          receipt_confirmed_by_name: selectedTask.receipt_confirmed_by_name ?? (taskDetailResponse?.task as any)?.receipt_confirmed_by_name,
+          images: taskDetailResponse?.task ? parseTaskImages(taskDetailResponse.task.images) : selectedTask.images,
+          worker_images: taskDetailResponse?.task ? parseTaskImages(taskDetailResponse.task.worker_images) : selectedTask.worker_images,
+        } : null}
       />
 
       {/* Technician Selection Dialog */}
