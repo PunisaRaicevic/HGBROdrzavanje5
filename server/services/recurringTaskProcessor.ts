@@ -69,9 +69,14 @@ export async function ensureChildTasksExist(templateTask: any): Promise<number> 
       execution_minute: templateTask.execution_minute,
     };
     
-    // Get already scheduled dates to avoid duplicates
+    // Get already scheduled dates to avoid duplicates.
+    // IMPORTANT: use ALL existing children (including completed/cancelled),
+    // not just active ones. If we only looked at active children, an
+    // occurrence that was already created and then completed would no longer
+    // block regeneration, so the cron would recreate the same date on every
+    // run (producing duplicate tasks for the same scheduled day).
     const existingDates = new Set(
-      activeChildren
+      existingChildren
         .filter((c: any) => c.scheduled_for)
         .map((c: any) => new Date(c.scheduled_for).toISOString().split('T')[0])
     );
