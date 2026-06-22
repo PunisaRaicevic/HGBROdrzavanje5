@@ -81,15 +81,19 @@ export async function ensureChildTasksExist(templateTask: any): Promise<number> 
         .map((c: any) => new Date(c.scheduled_for).toISOString().split('T')[0])
     );
     
-    // Calculate scheduled dates using detailed recurrence
-    // Use max(now, recurrence_start_date) as base - NOT next_occurrence which may be polluted
+    // Calculate scheduled dates using detailed recurrence.
+    // IMPORTANT: anchor to the ORIGINAL recurrence_start_date (not now), so the
+    // generated series always lands on the same canonical cadence regardless of
+    // when the cron runs. calculateScheduledDates rolls the anchor forward to
+    // future dates internally. Anchoring to "now" caused the weekly series to
+    // drift off its original day-of-week and produced near-duplicate tasks that
+    // the date-based dedup below could not catch.
     const now = new Date();
     const recurrenceStart = templateTask.recurrence_start_date 
       ? new Date(templateTask.recurrence_start_date) 
       : now;
-    const startDate = new Date(Math.max(now.getTime(), recurrenceStart.getTime()));
     const scheduledDates = calculateScheduledDates(
-      startDate,
+      recurrenceStart,
       templateTask.recurrence_pattern as RecurrencePattern,
       details,
       TASKS_TO_MAINTAIN + existingCount + 10 // Get extra to account for filtering
@@ -142,10 +146,10 @@ export async function ensureChildTasksExist(templateTask: any): Promise<number> 
       console.log(`[RECURRING] Created child task ${newTask.id} scheduled for ${scheduledDate.toISOString()}`);
     }
     
-    // Update template's next_occurrence to the first upcoming occurrence relative to now
-    // This ensures UI shows the correct next scheduled date
+    // Update template's next_occurrence to the first upcoming occurrence.
+    // Anchor to recurrenceStart (not now) so the value stays on the canonical cadence.
     const upcomingDates = calculateScheduledDates(
-      new Date(),
+      recurrenceStart,
       templateTask.recurrence_pattern as RecurrencePattern,
       details,
       1

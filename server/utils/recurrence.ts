@@ -70,6 +70,39 @@ function setExecutionTime(date: Date, hour?: number | null, minute?: number | nu
 }
 
 /**
+ * Roll an anchor date forward by whole recurrence intervals until it is
+ * strictly after `now`, preserving the original phase (day-of-week / time)
+ * of the anchor. Used for simple interval patterns so that top-up generation
+ * always lands on the same canonical series regardless of when the cron runs.
+ * Without this, generation anchored to "now" drifts off the original cadence
+ * and can create near-duplicate tasks one day apart.
+ */
+function rollAnchorForward(
+  startDate: Date,
+  pattern: RecurrencePattern,
+  details: DetailedRecurrence,
+  now: Date
+): Date {
+  let currentDate = setExecutionTime(new Date(startDate), details.execution_hour, details.execution_minute);
+  let guard = 0;
+  while (currentDate <= now && guard < 100000) {
+    const nextDate = setExecutionTime(
+      calculateNextOccurrenceSimple(currentDate, pattern),
+      details.execution_hour,
+      details.execution_minute
+    );
+    // Non-advancing patterns (e.g. "once" or malformed) return the same date.
+    // Break instead of spinning to the guard limit.
+    if (nextDate.getTime() <= currentDate.getTime()) {
+      break;
+    }
+    currentDate = nextDate;
+    guard++;
+  }
+  return currentDate;
+}
+
+/**
  * Calculate ALL scheduled dates for a recurring task using detailed recurrence info
  * @param startDate - The start date for recurrence
  * @param pattern - The recurrence pattern (e.g., "3_years", "2_weeks")
@@ -89,14 +122,17 @@ export function calculateScheduledDates(
   const customPattern = parseCustomPattern(pattern);
   
   if (!customPattern) {
-    let currentDate = new Date(baseDate);
+    let currentDate = rollAnchorForward(startDate, pattern, details, now);
     for (let i = 0; i < maxDates; i++) {
       if (i > 0) {
-        currentDate = calculateNextOccurrenceSimple(currentDate, pattern);
+        currentDate = setExecutionTime(
+          calculateNextOccurrenceSimple(currentDate, pattern),
+          details.execution_hour,
+          details.execution_minute
+        );
       }
-      const scheduledDate = setExecutionTime(currentDate, details.execution_hour, details.execution_minute);
-      if (scheduledDate > now) {
-        dates.push(scheduledDate);
+      if (currentDate > now) {
+        dates.push(new Date(currentDate));
       }
     }
     return dates;
@@ -167,14 +203,17 @@ export function calculateScheduledDates(
     return dates.slice(0, maxDates);
   }
   
-  let currentDate = new Date(baseDate);
+  let currentDate = rollAnchorForward(startDate, pattern, details, now);
   for (let i = 0; i < maxDates; i++) {
     if (i > 0) {
-      currentDate = calculateNextOccurrenceSimple(currentDate, pattern);
+      currentDate = setExecutionTime(
+        calculateNextOccurrenceSimple(currentDate, pattern),
+        details.execution_hour,
+        details.execution_minute
+      );
     }
-    const scheduledDate = setExecutionTime(currentDate, details.execution_hour, details.execution_minute);
-    if (scheduledDate > now) {
-      dates.push(scheduledDate);
+    if (currentDate > now) {
+      dates.push(new Date(currentDate));
     }
   }
   return dates;
