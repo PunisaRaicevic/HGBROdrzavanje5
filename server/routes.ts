@@ -47,9 +47,9 @@ const updateUserSchema = z.object({
       "recepcioner",
       "menadzer",
     ]).optional(),
-  job_title: z.string().optional(),
-  department: z.string().optional(),
-  phone: z.string().optional(),
+  job_title: z.string().nullable().optional(),
+  department: z.string().nullable().optional(),
+  phone: z.string().nullable().optional(),
   is_active: z.boolean().optional(),
 });
 

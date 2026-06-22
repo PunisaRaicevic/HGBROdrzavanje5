@@ -1,2 +1,3 @@
 - [pdfkit Serbian Latin fonts](pdfkit-serbian-latin-fonts.md) — server PDFs must embed DejaVuSans TTF; Helvetica WinAnsi mangles c c z s dj.
 - [/api/tasks history scope](tasks-list-endpoint-history.md) — list endpoint must fetch task_history only for returned tasks; bulk-load made it ~13s and caused slow forwarding.
+- [Zod optional() rejects null](zod-optional-vs-null.md) — user-update route: nullable DB cols need .nullable().optional(); empty dialog fields send null → 400 that silently blocks password change.
