@@ -1907,12 +1907,21 @@ ${scheduledTasksFormatted}`;
       const response = await genAI.models.generateContent({
         model: 'gemini-2.5-flash',
         contents,
-        config: { maxOutputTokens: 8192 }
+        // Gemini 2.5 Flash je "thinking" model: tokeni za razmišljanje se oduzimaju
+        // od maxOutputTokens. Ako razmišljanje potroši budžet, odgovor se preseče
+        // na pola (nepotpun odgovor). Isključujemo razmišljanje da ceo budžet ide
+        // na sam odgovor, i podižemo limit za duže tabele/spiskove.
+        config: { maxOutputTokens: 16384, thinkingConfig: { thinkingBudget: 0 } }
       });
 
+      // Spoji SVE tekstualne delove odgovora (može ih biti više), ne samo prvi.
       const candidate = response.candidates?.[0];
-      const textPart = candidate?.content?.parts?.find((part: any) => 'text' in part);
-      const analysis = (textPart as any)?.text || 'Nije moguće generisati analizu';
+      const analysis =
+        (candidate?.content?.parts ?? [])
+          .filter((part: any) => typeof part?.text === 'string')
+          .map((part: any) => part.text)
+          .join('')
+          .trim() || 'Nije moguće generisati analizu';
 
       res.json({ analysis });
     } catch (error) {
