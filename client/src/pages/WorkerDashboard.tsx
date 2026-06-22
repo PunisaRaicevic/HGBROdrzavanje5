@@ -325,7 +325,7 @@ export default function WorkerDashboard() {
 
   // Fetch all tasks from API (keeping as fallback + initial load)
   const { data: tasksResponse } = useQuery<{ tasks: any[] }>({
-    queryKey: ['/api/tasks'],
+    queryKey: ['/api/tasks', '?windowDays=30'],
     refetchInterval: 30000, // Reduced to 30 seconds - Socket.IO handles real-time updates
   });
 

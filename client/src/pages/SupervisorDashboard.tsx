@@ -165,7 +165,7 @@ export default function SupervisorDashboard() {
 
   // Fetch all tasks from API
   const { data: tasksResponse, isLoading } = useQuery<{ tasks: any[] }>({
-    queryKey: ['/api/tasks'],
+    queryKey: ['/api/tasks', '?windowDays=30'],
     refetchInterval: 25000, // Refetch every 25s (was 10s)
   });
 

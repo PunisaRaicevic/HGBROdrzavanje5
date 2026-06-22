@@ -848,7 +848,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/tasks", requireAuth, async (req, res) => {
     try {
-      const tasks = await storage.getTasks();
+      // Opcioni prozor (?windowDays=60): brzo učitavanje samo skorijih + svih
+      // aktivnih/zakazanih zadataka. Bez parametra vraća punu arhivu (Pretraga/Statistike).
+      const windowDaysRaw = req.query.windowDays;
+      const windowDays =
+        typeof windowDaysRaw === "string" && /^\d+$/.test(windowDaysRaw)
+          ? parseInt(windowDaysRaw, 10)
+          : undefined;
+      const tasks = await storage.getTasks(windowDays ? { windowDays } : undefined);
       // assignment_path se prikazuje samo za vraćene zadatke (šefov "Vratio" badge),
       // pa istoriju dohvatamo SAMO za njih. Time izbjegavamo učitavanje svih ~16k
       // redova istorije (desetine sekvencijalnih upita) pri svakom osvježavanju liste,

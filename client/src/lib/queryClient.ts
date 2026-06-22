@@ -54,7 +54,14 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const url = getApiUrl(queryKey.join("/") as string);
+    // Segment koji počinje sa "?" je query string i dodaje se bez "/"
+    // (npr. ['/api/tasks', '?windowDays=60'] -> '/api/tasks?windowDays=60').
+    const path = (queryKey as unknown[]).reduce<string>((acc, seg, i) => {
+      const s = String(seg);
+      if (s.startsWith("?")) return acc + s;
+      return acc + (i === 0 ? s : "/" + s);
+    }, "");
+    const url = getApiUrl(path);
     const headers = getAuthHeaders();
     
     console.log('[QUERY] Fetching:', url);

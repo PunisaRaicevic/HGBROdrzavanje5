@@ -55,7 +55,7 @@ export default function TechnicianDashboard() {
   const [chatMessage, setChatMessage] = useState('');
 
   const { data: tasksData, isLoading: tasksLoading } = useQuery<{ tasks: any[] }>({
-    queryKey: ['/api/tasks'],
+    queryKey: ['/api/tasks', '?windowDays=30'],
     enabled: !!user?.id,
     refetchInterval: 25000,
   });

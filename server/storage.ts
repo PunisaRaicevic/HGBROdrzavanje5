@@ -51,7 +51,7 @@ export interface IStorage {
   getTechnicians(): Promise<User[]>;
   getUsersByRole(role: string): Promise<User[]>;
   
-  getTasks(): Promise<Task[]>;
+  getTasks(opts?: { windowDays?: number }): Promise<Task[]>;
   getTaskById(id: string): Promise<Task | undefined>;
   getTasksByUserId(userId: string): Promise<Task[]>;
   getRecurringTasks(): Promise<Task[]>;
@@ -234,11 +234,24 @@ export class SupabaseStorage implements IStorage {
     return all;
   }
 
-  async getTasks(): Promise<Task[]> {
+  async getTasks(opts?: { windowDays?: number }): Promise<Task[]> {
     const cols = SupabaseStorage.TASK_LIST_COLUMNS;
-    const rows = await this.fetchAllTaskPages((from, to) =>
-      supabase.from('tasks').select(cols).order('created_at', { ascending: false }).range(from, to)
-    );
+    const windowDays = opts?.windowDays;
+    const rows = await this.fetchAllTaskPages(async (from, to) => {
+      let q = supabase.from('tasks').select(cols);
+      if (windowDays && windowDays > 0) {
+        // Brzo učitavanje: vrati samo zadatke iz zadatog prozora PLUS sve što je
+        // i dalje aktivno/zakazano u budućnosti, da nijedan zadatak "u toku" ne
+        // nestane samo zato što je star. Stari ZAVRŠENI/otkazani zadaci se izostave
+        // (puna arhiva se učitava na zahtjev za Pretragu/Statistike).
+        const cutoff = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
+        q = q.or(
+          `created_at.gte.${cutoff},scheduled_for.gte.${cutoff},status.not.in.(completed,cancelled),is_recurring.eq.true`
+        );
+      }
+      const { data, error } = await q.order('created_at', { ascending: false }).range(from, to);
+      return { data, error };
+    });
     return rows as unknown as Task[];
   }
 

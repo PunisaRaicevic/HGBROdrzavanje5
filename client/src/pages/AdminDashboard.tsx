@@ -302,6 +302,7 @@ export default function AdminDashboard() {
   const [historyStatusFilter, setHistoryStatusFilter] = useState<string>('all'); // History status filter
   const [historyPerPage, setHistoryPerPage] = useState<number>(999999); // History items per page
   const [taskViewTab, setTaskViewTab] = useState<string>('upcoming'); // Toggle between upcoming and history
+  const [activeTab, setActiveTab] = useState<string>('users'); // Glavni tab (Korisnici/Zadaci/Pretraga/Statistike)
   
   // Period states with date ranges
   const now = new Date();
@@ -341,11 +342,25 @@ export default function AdminDashboard() {
     refetchOnWindowFocus: true
   });
 
-  // Fetch tasks (auto-refresh every 5 seconds)
+  // Brzo učitavanje: samo skorijih 30 dana + svi aktivni/zakazani zadaci.
   const { data: tasksData, isLoading: tasksLoading, isFetching: tasksFetching, refetch: refetchTasks } = useQuery<{ tasks: Task[] }>({
-    queryKey: ['/api/tasks'],
+    queryKey: ['/api/tasks', '?windowDays=30'],
     refetchInterval: 20000, // Refresh every 20s (was 5s)
     refetchOnWindowFocus: true
+  });
+
+  // Puna arhiva (svi zadaci) - učitava se samo kada zatreba: Pretraga, Statistike,
+  // ili Istorija sa filterom 3/6 mjeseci. Tako Zadaci tab ostaje brz.
+  const needFullArchive =
+    activeTab === 'pretraga' ||
+    activeTab === 'stats' ||
+    (activeTab === 'tasks' &&
+      taskViewTab === 'history' &&
+      (historyPeriodFilter === '3m' || historyPeriodFilter === '6m'));
+  const { data: fullTasksData, isFetching: fullTasksFetching } = useQuery<{ tasks: Task[] }>({
+    queryKey: ['/api/tasks'],
+    enabled: needFullArchive,
+    refetchOnWindowFocus: true,
   });
 
   // Fetch full task details (including images) when a task is selected
@@ -514,7 +529,11 @@ export default function AdminDashboard() {
   };
 
   const users = usersData?.users || [];
-  const tasks = tasksData?.tasks || [];
+  // Kada je potrebna puna arhiva (Pretraga/Statistike/Istorija 3-6 mj) koristi je;
+  // inače koristi brzi prozor od 30 dana.
+  const tasks = needFullArchive ? (fullTasksData?.tasks || []) : (tasksData?.tasks || []);
+  // Skeleton dok se učitava puna arhiva (Pretraga/Statistike/Istorija 3-6 mj).
+  const archiveLoading = needFullArchive ? !fullTasksData : tasksLoading;
 
   // Get report data — uskladjeno sa dashboard "Statistika realizacije" filterom
   const getReportTasks = () => {
@@ -729,7 +748,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Admin Features */}
-      <Tabs defaultValue="users" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="h-9 w-full grid grid-cols-5">
           <TabsTrigger value="users" data-testid="tab-users" className="text-xs sm:text-sm px-1 sm:px-3">
             <Users className="w-3.5 h-3.5 sm:mr-1.5" />
@@ -1080,7 +1099,7 @@ export default function AdminDashboard() {
               </Tabs>
             </CardHeader>
             <CardContent>
-              {tasksLoading ? (
+              {archiveLoading ? (
                 <div className="space-y-3">
                   <Skeleton className="h-20" />
                   <Skeleton className="h-20" />
@@ -1625,7 +1644,7 @@ export default function AdminDashboard() {
                   <Label className="text-xs mb-1.5 block">Majstor</Label>
                   {(() => {
                     const workerMap: Record<string, string> = {};
-                    (tasksData?.tasks || []).forEach((t) => {
+                    tasks.forEach((t) => {
                       [
                         ...(t.assigned_to_name || '').split(','),
                         ...(((t as any).external_company_name as string) || '').split(','),
@@ -1664,7 +1683,7 @@ export default function AdminDashboard() {
 
           <Card>
             <CardContent className="pt-6">
-              {tasksLoading ? (
+              {archiveLoading ? (
                 <Skeleton className="h-64 w-full" />
               ) : (
                 (() => {
@@ -1681,7 +1700,7 @@ export default function AdminDashboard() {
                   const norm = (s: string) => normName(s);
                   const refDate = (t: Task) => getTaskReferenceDate(t);
                   const isScheduled = (t: Task) => isScheduledTask(t);
-                  const results = (tasksData?.tasks || [])
+                  const results = tasks
                     .filter((t) => {
                       const ref = refDate(t);
                       const refLocal = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
@@ -1781,7 +1800,7 @@ export default function AdminDashboard() {
               />
             </CardHeader>
             <CardContent>
-              {tasksLoading ? (
+              {archiveLoading ? (
                 <div className="space-y-3">
                   <Skeleton className="h-20" />
                   <Skeleton className="h-20" />
@@ -2086,7 +2105,7 @@ export default function AdminDashboard() {
               />
             </CardHeader>
             <CardContent className="pt-3">
-              {tasksLoading ? (
+              {archiveLoading ? (
                 <Skeleton className="h-20" />
               ) : (
                 (() => {
@@ -2136,7 +2155,7 @@ export default function AdminDashboard() {
               />
             </CardHeader>
             <CardContent>
-              {tasksLoading ? (
+              {archiveLoading ? (
                 <Skeleton className="h-64" />
               ) : (
                 (() => {
@@ -2255,7 +2274,7 @@ export default function AdminDashboard() {
               />
             </CardHeader>
             <CardContent>
-              {tasksLoading ? (
+              {archiveLoading ? (
                 <Skeleton className="h-64" />
               ) : (
                 (() => {
