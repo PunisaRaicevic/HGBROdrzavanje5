@@ -1,4 +1,5 @@
 - [pdfkit Serbian Latin fonts](pdfkit-serbian-latin-fonts.md) — server PDFs must embed DejaVuSans TTF; Helvetica WinAnsi mangles c c z s dj.
 - [/api/tasks history scope](tasks-list-endpoint-history.md) — list endpoint must fetch task_history only for returned tasks; bulk-load made it ~13s and caused slow forwarding.
+- [Gemini 2.5 Flash truncation](gemini-thinking-truncation.md) — thinking tokens eat maxOutputTokens; set thinkingBudget:0 + join all text parts so answers aren't cut off.
 - [Recurring task anchor](recurring-task-anchor.md) — recurring child generation must anchor to recurrence_start_date, not "now", or near-duplicate tasks slip past the date-only dedup.
 - [Zod optional() rejects null](zod-optional-vs-null.md) — user-update route: nullable DB cols need .nullable().optional(); empty dialog fields send null → 400 that silently blocks password change.
