@@ -849,8 +849,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/tasks", requireAuth, async (req, res) => {
     try {
       const tasks = await storage.getTasks();
-      const taskIds = tasks.map((task) => task.id);
-      const allHistories = await storage.getTaskHistoriesForTasks(taskIds);
+      // assignment_path se prikazuje samo za vraćene zadatke (šefov "Vratio" badge),
+      // pa istoriju dohvatamo SAMO za njih. Time izbjegavamo učitavanje svih ~16k
+      // redova istorije (desetine sekvencijalnih upita) pri svakom osvježavanju liste,
+      // što je bio glavni uzrok sporog prosljeđivanja zadataka.
+      const taskIds = tasks
+        .filter((task) => task.status === "returned_to_sef" || task.status === "returned_to_operator")
+        .map((task) => task.id);
+      const allHistories = taskIds.length > 0
+        ? await storage.getTaskHistoriesForTasks(taskIds)
+        : [];
 
       const historiesByTaskId = new Map<string, any[]>();
       for (const history of allHistories) {

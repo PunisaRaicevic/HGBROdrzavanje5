@@ -1,1 +1,2 @@
 - [pdfkit Serbian Latin fonts](pdfkit-serbian-latin-fonts.md) — server PDFs must embed DejaVuSans TTF; Helvetica WinAnsi mangles c c z s dj.
+- [/api/tasks history scope](tasks-list-endpoint-history.md) — list endpoint must fetch task_history only for returned tasks; bulk-load made it ~13s and caused slow forwarding.
