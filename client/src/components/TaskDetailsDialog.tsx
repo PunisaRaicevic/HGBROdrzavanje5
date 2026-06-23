@@ -1150,12 +1150,12 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
             )}
             
             {/* Right side: Report, Edit and Delete actions */}
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2">
               {canReject && (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800"
+                  className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800"
                   onClick={() => setShowRejectDialog(true)}
                   data-testid="button-reject-task"
                 >
@@ -1167,6 +1167,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                 <Button
                   variant="outline"
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={handleDownloadReport}
                   disabled={isDownloadingReport}
                   data-testid="button-generate-report"
@@ -1179,6 +1180,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                 <Button
                   variant="outline"
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() => {
                     onEdit(task.id);
                     onOpenChange(false);
@@ -1193,6 +1195,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                 <Button
                   variant="destructive"
                   size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() => setShowDeleteDialog(true)}
                   data-testid="button-delete-task"
                 >
