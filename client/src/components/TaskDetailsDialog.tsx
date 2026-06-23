@@ -1081,6 +1081,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                   <Button
                     variant="default"
                     size="sm"
+                    className={canReassignWorker ? 'bg-red-600 hover:bg-red-700 text-white' : undefined}
                     onClick={() => {
                       onAssignToWorker(task.id, task.title);
                       onOpenChange(false);
