@@ -196,6 +196,7 @@ const resources = {
       statusCompleted: 'Completed',
       statusCancelled: 'Cancelled',
       statusReturned: 'Returned',
+      statusRejected: 'Rejected',
       
       // Time
       daysAgo: 'd ago',
@@ -421,6 +422,7 @@ const resources = {
       statusCompleted: 'Završen',
       statusCancelled: 'Otkazan',
       statusReturned: 'Vraćen',
+      statusRejected: 'Odbijen',
       
       // Time
       daysAgo: 'd pre',

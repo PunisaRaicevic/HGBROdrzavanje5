@@ -1162,6 +1162,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (execution_minute !== undefined) updateData.execution_minute = execution_minute;
       }
 
+      // Za odbijanje zadatka (vraćanje pošiljaocu) razlog je obavezan.
+      if (status === "rejected" && (!worker_report || !worker_report.trim())) {
+        return res.status(400).json({ error: "Razlog odbijanja je obavezan." });
+      }
+
       // Prevent overwriting "completed" status with non-completed status (except by admin/sef)
       // This prevents stale cached data from resetting completed tasks
       if (status !== undefined) {
@@ -1311,6 +1316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (status === "completed") actionMessage = `Completed: ${worker_report}`;
         else if (status === "returned_to_sef") actionMessage = `Returned to Supervisor: ${worker_report}`;
         else if (status === "returned_to_operator") actionMessage = `Returned to Operator: ${worker_report}`;
+        else if (status === "rejected") actionMessage = `Rejected (returned to reporter): ${worker_report}`;
       } else if (assigned_to !== undefined) {
         actionMessage = assigned_to ? `Assigned to ${assigned_to_name || "technician(s)"}` : "Cleared technician assignment";
       }
@@ -1348,6 +1354,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       notifyTaskUpdate(task);
+
+      // Kada sef/admin odbije zadatak (pogresno prijavljen) i vrati ga posiljaocu,
+      // obavijesti posiljaoca (created_by) sa razlogom.
+      if (status === "rejected" && currentTask?.status !== "rejected" && task.created_by) {
+        const reason = worker_report || "Bez navedenog razloga";
+        const title = `Zadatak odbijen #${task.id.slice(0, 8)}`;
+        const body = `${sessionUser.full_name} je vratio vas zadatak: ${task.location || task.title}. ${reason}`;
+        (async () => {
+          try {
+            const { sendPushToAllUserDevices } = await import("./services/firebase");
+            await sendPushToAllUserDevices(
+              task.created_by,
+              title,
+              body,
+              task.id,
+              task.priority as "urgent" | "normal" | "can_wait"
+            );
+          } catch (err) {
+            console.error(`Push greska (reject) za ${task.created_by}:`, err);
+          }
+        })();
+        sendOneSignalToUser(
+          task.created_by,
+          title,
+          body,
+          task.id,
+          task.priority as "urgent" | "normal" | "can_wait"
+        ).catch((err) => console.error(`OneSignal greska (reject) za ${task.created_by}:`, err));
+      }
 
       // Push notifications to admin/sef when serviser performs key actions
       if (sessionUser.role === 'serviser' || sessionUser.role === 'treca_lica') {

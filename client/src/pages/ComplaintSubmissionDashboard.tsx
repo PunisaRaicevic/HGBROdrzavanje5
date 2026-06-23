@@ -193,6 +193,8 @@ export default function ComplaintSubmissionDashboard() {
       case 'returned_to_operator':
       case 'returned_to_sef':
         return <Badge variant="outline" className="text-xs">{t('statusReturned')}</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive" className="text-xs">{t('statusRejected')}</Badge>;
       default:
         return <Badge variant="outline" className="text-xs">{status}</Badge>;
     }
@@ -236,6 +238,8 @@ export default function ComplaintSubmissionDashboard() {
         return `✓ ${t('done')}`;
       case 'cancelled':
         return t('statusCancelled');
+      case 'rejected':
+        return t('statusRejected');
       case 'new':
         return t('awaitingReview');
       case 'with_operator':
@@ -506,6 +510,7 @@ export default function ComplaintSubmissionDashboard() {
           from: selectedComplaint.created_by || '',
           images: selectedComplaint.images,
           worker_images: selectedComplaint.worker_images,
+          worker_report: (selectedComplaint as any).worker_report,
           assigned_to_name: selectedComplaint.assigned_to_name,
           external_company_name: (selectedComplaint as any).external_company_name,
           operator_name: (selectedComplaint as any).operator_name,

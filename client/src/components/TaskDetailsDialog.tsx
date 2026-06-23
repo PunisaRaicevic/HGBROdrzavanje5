@@ -116,6 +116,8 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   const [deleteType, setDeleteType] = useState<'this' | 'all'>('this');
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -204,6 +206,25 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
       });
       console.error('Error sending to external:', error);
     }
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: async ({ taskId, reason }: { taskId: string; reason: string }) => {
+      return apiRequest('PATCH', `/api/tasks/${taskId}`, {
+        status: 'rejected',
+        worker_report: `Zadatak odbijen i vraćen pošiljaocu. Razlog: ${reason}`,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      toast({ title: 'Zadatak odbijen', description: 'Zadatak je vraćen pošiljaocu sa objašnjenjem.' });
+      setShowRejectDialog(false);
+      setRejectReason('');
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast({ title: 'Greška', description: 'Nije moguće odbiti zadatak.', variant: 'destructive' });
+    },
   });
 
   // Fetch task history only when dialog is open and task exists
@@ -464,6 +485,8 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
       return <Badge variant="outline">Eksterna firma</Badge>;
     } else if (status === 'with_sef' || status === 'returned_to_sef') {
       return <Badge variant="destructive">Kod šefa</Badge>;
+    } else if (status === 'rejected') {
+      return <Badge variant="destructive">Odbijen</Badge>;
     }
     return <Badge variant="secondary">{status}</Badge>;
   };
@@ -475,6 +498,8 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   // operater dodijeli zadatak radniku koji nije u smjeni, pa ga treba prebaciti drugom).
   const isAdminOrSef = currentUserRole === 'sef' || currentUserRole === 'admin';
   const canReassignWorker = isAdminOrSef && (task?.status === 'assigned_to_radnik' || task?.status === 'with_worker');
+  // Admin i šef mogu odbiti pogrešno prijavljen zadatak i vratiti ga pošiljaocu sa objašnjenjem.
+  const canReject = isAdminOrSef && !!task && !['completed', 'cancelled', 'rejected'].includes(task.status);
   
   if (!task) return null;
 
@@ -656,6 +681,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                       variant={
                         task.status === 'completed' ? 'default' :
                         task.status === 'returned_to_sef' ? 'destructive' :
+                        task.status === 'rejected' ? 'destructive' :
                         task.status === 'with_external' ? 'secondary' :
                         'outline'
                       }
@@ -671,11 +697,20 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                        task.status === 'with_external' ? 'Kod eksterne firme' :
                        task.status === 'with_worker' || task.status === 'assigned_to_radnik' ? 'Kod radnika' :
                        task.status === 'returned_to_sef' ? 'Vraćen šefu' :
+                       task.status === 'rejected' ? 'Odbijen' :
                        task.status === 'completed' ? 'Završen' :
                        task.status === 'cancelled' ? 'Otkazan' :
                        task.status === 'created' ? 'Kreiran' :
                        task.status}
                     </Badge>
+                  </div>
+                )}
+
+                {/* Razlog odbijanja — vidljiv pošiljaocu i svima */}
+                {task.status === 'rejected' && task.worker_report && (
+                  <div className="rounded-md border border-red-200 bg-red-50 p-2" data-testid="text-reject-reason">
+                    <p className="text-xs font-medium text-red-700 mb-1">Razlog odbijanja</p>
+                    <p className="text-sm text-red-900 whitespace-pre-wrap">{task.worker_report}</p>
                   </div>
                 )}
 
@@ -1116,6 +1151,18 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
             
             {/* Right side: Report, Edit and Delete actions */}
             <div className="flex gap-2">
+              {canReject && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-red-300 text-red-700 hover:bg-red-50 hover:text-red-800"
+                  onClick={() => setShowRejectDialog(true)}
+                  data-testid="button-reject-task"
+                >
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  Vrati pošiljaocu
+                </Button>
+              )}
               {canGenerateReport && (
                 <Button
                   variant="outline"
@@ -1218,6 +1265,47 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
             <AlertDialogCancel>Otkazi</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {deleteType === 'all' ? 'Obrisi sve' : 'Obrisi'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showRejectDialog} onOpenChange={(open) => {
+        setShowRejectDialog(open);
+        if (!open) setRejectReason('');
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Vrati zadatak pošiljaocu</AlertDialogTitle>
+            <AlertDialogDescription>
+              Zadatak je pogrešno prijavljen. Napišite objašnjenje zašto ga vraćate. Pošiljalac će dobiti obavještenje, a status zadatka postaje ODBIJEN.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <Textarea
+              placeholder="Npr. Ovaj zadatak je za domaćinstvo, a ne za tehničku službu..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={4}
+              data-testid="input-reject-reason"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-reject">Otkaži</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (!task || !rejectReason.trim()) {
+                  toast({ title: 'Greška', description: 'Morate unijeti razlog vraćanja.', variant: 'destructive' });
+                  return;
+                }
+                rejectMutation.mutate({ taskId: task.id, reason: rejectReason.trim() });
+              }}
+              disabled={rejectMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-reject"
+            >
+              {rejectMutation.isPending ? 'Slanje...' : 'Vrati i odbij'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

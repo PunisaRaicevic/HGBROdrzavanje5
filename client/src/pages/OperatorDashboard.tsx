@@ -27,7 +27,7 @@ type Task = {
   sentTo?: 'supervisor' | 'technician';
   sentAt?: string;
   assignedToName?: string;
-  status: 'new' | 'with_operator' | 'assigned_to_radnik' | 'with_sef' | 'with_external' | 'returned_to_operator' | 'returned_to_sef' | 'completed' | 'cancelled' | 'in_progress';
+  status: 'new' | 'with_operator' | 'assigned_to_radnik' | 'with_sef' | 'with_external' | 'returned_to_operator' | 'returned_to_sef' | 'rejected' | 'completed' | 'cancelled' | 'in_progress';
   completedAt?: string;
   receipt_confirmed_at?: string;
   receipt_confirmed_by?: string;

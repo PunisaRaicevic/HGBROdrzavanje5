@@ -618,6 +618,7 @@ export default function AdminDashboard() {
       'with_external': 'Eksterna sluzba',
       'returned_to_operator': 'Vraceno operateru',
       'returned_to_sef': 'Vraceno sefu',
+      'rejected': 'Odbijeno',
       'completed': 'Zavrseno',
       'cancelled': 'Otkazano'
     };
@@ -1734,6 +1735,7 @@ export default function AdminDashboard() {
                     if (status === 'completed') return <Badge variant="default" className="bg-green-600">Zavrseno</Badge>;
                     if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') return <Badge variant="secondary">U toku</Badge>;
                     if (status === 'returned_to_operator' || status === 'returned_to_sef') return <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-300">Vraceno</Badge>;
+                    if (status === 'rejected') return <Badge variant="destructive">Odbijeno</Badge>;
                     if (status === 'with_external') return <Badge variant="outline">Eksterna firma</Badge>;
                     if (status === 'with_sef') return <Badge variant="secondary">Sa sefom</Badge>;
                     if (status === 'new') return <Badge variant="outline">Novo</Badge>;
@@ -2376,6 +2378,7 @@ export default function AdminDashboard() {
           from: selectedTask.created_by || '',
           images: selectedTaskDetail?.task?.images ?? selectedTask.images,
           worker_images: selectedTaskDetail?.task?.worker_images ?? selectedTask.worker_images,
+          worker_report: selectedTaskDetail?.task?.worker_report ?? (selectedTask as any).worker_report,
           assigned_to_name: selectedTask.assigned_to_name,
           external_company_name: (selectedTask as any).external_company_name,
           operator_name: (selectedTask as any).operator_name,
