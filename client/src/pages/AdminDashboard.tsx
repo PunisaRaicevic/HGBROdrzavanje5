@@ -609,7 +609,7 @@ export default function AdminDashboard() {
 
     const statusLabels: { [key: string]: string } = {
       'new': 'Novo',
-      'pending': 'Na cekanju',
+      'pending': 'Nepotvrđen prijem',
       'in_progress': 'U toku',
       'assigned_to_operator': 'Dodijeljeno operateru',
       'with_operator': 'Kod operatera',
@@ -1050,7 +1050,7 @@ export default function AdminDashboard() {
                           <SelectItem value="all">Svi statusi</SelectItem>
                           <SelectItem value="completed">Završeno</SelectItem>
                           <SelectItem value="in_progress">U toku</SelectItem>
-                          <SelectItem value="pending">Na čekanju</SelectItem>
+                          <SelectItem value="pending">Nepotvrđen prijem</SelectItem>
                           <SelectItem value="external">Eksterna</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1090,7 +1090,7 @@ export default function AdminDashboard() {
                           <SelectItem value="all">Svi statusi</SelectItem>
                           <SelectItem value="completed">Završeno</SelectItem>
                           <SelectItem value="in_progress">U toku</SelectItem>
-                          <SelectItem value="pending">Na čekanju</SelectItem>
+                          <SelectItem value="pending">Nepotvrđen prijem</SelectItem>
                           <SelectItem value="external">Eksterna</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1919,7 +1919,7 @@ export default function AdminDashboard() {
                             }`}
                             data-testid="filter-button-pending"
                           >
-                            <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">Na čekanju</p>
+                            <p className="text-xs font-semibold text-yellow-700 uppercase tracking-wide">Nepotvrđen prijem</p>
                             <p className="text-3xl font-bold text-yellow-600 mt-2">{pendingTasks.length}</p>
                           </button>
                           <button 
