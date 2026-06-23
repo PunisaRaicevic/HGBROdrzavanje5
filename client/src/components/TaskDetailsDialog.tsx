@@ -471,6 +471,10 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   // Admin and sef can delete and edit any task
   const canDelete = currentUserRole === 'sef' || currentUserRole === 'admin';
   const canEdit = currentUserRole === 'sef' || currentUserRole === 'admin';
+  // Admin i šef mogu promijeniti radnika kome je zadatak dodijeljen (npr. kad
+  // operater dodijeli zadatak radniku koji nije u smjeni, pa ga treba prebaciti drugom).
+  const isAdminOrSef = currentUserRole === 'sef' || currentUserRole === 'admin';
+  const canReassignWorker = isAdminOrSef && (task?.status === 'assigned_to_radnik' || task?.status === 'with_worker');
   
   if (!task) return null;
 
@@ -1068,10 +1072,10 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
         </ScrollArea>
 
         {/* Action Buttons */}
-        {(canDelete || canEdit || (task.status === 'with_sef' || task.status === 'returned_to_sef')) && (
+        {(canDelete || canEdit || (task.status === 'with_sef' || task.status === 'returned_to_sef') || canReassignWorker) && (
           <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
             {/* Left side: Assignment actions */}
-            {(task.status === 'with_sef' || task.status === 'returned_to_sef') && (
+            {((task.status === 'with_sef' || task.status === 'returned_to_sef') || canReassignWorker) && (
               <div className="flex gap-2 flex-1 flex-wrap">
                 {onAssignToWorker && (
                   <Button
@@ -1084,26 +1088,28 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                     data-testid="button-assign-worker"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    Dodijeli radniku
+                    {canReassignWorker ? 'Promijeni radnika' : 'Dodijeli radniku'}
                   </Button>
                 )}
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    if (onAssignToExternal) {
-                      onAssignToExternal(task.id, task.title);
-                      onOpenChange(false);
-                    } else {
-                      sendToExternalMutation.mutate(task.id);
-                    }
-                  }}
-                  disabled={!onAssignToExternal && sendToExternalMutation.isPending}
-                  data-testid="button-notify-external"
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  Dodijeli eksternoj firmi
-                </Button>
+                {(task.status === 'with_sef' || task.status === 'returned_to_sef') && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      if (onAssignToExternal) {
+                        onAssignToExternal(task.id, task.title);
+                        onOpenChange(false);
+                      } else {
+                        sendToExternalMutation.mutate(task.id);
+                      }
+                    }}
+                    disabled={!onAssignToExternal && sendToExternalMutation.isPending}
+                    data-testid="button-notify-external"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Dodijeli eksternoj firmi
+                  </Button>
+                )}
               </div>
             )}
             
