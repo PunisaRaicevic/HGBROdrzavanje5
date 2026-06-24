@@ -122,6 +122,14 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   const { toast } = useToast();
   const { user } = useAuth();
 
+  useEffect(() => {
+    if (!open) {
+      setShowRejectDialog(false);
+      setShowDeleteDialog(false);
+      setRejectReason('');
+    }
+  }, [open]);
+
   const canGenerateReport = currentUserRole === 'sef' || currentUserRole === 'admin';
   const canChat = currentUserRole === 'sef' || currentUserRole === 'admin';
 
@@ -504,6 +512,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   if (!task) return null;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl" data-testid="dialog-task-details">
         <DialogHeader>
@@ -1207,6 +1216,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
           </DialogFooter>
         )}
       </DialogContent>
+      </Dialog>
 
       <ImagePreviewModal 
         imageUrl={previewImage} 
@@ -1313,6 +1323,6 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Dialog>
+    </>
   );
 }
