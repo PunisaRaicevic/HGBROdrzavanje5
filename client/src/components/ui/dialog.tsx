@@ -47,7 +47,7 @@ const DialogContent = React.forwardRef<
       )}
       {...props}
     >
-      <div className="pointer-events-none sticky top-0 z-50 h-0 -mr-3 -mt-3 flex justify-end">
+      <div className="pointer-events-none sticky top-0 z-50 h-0 flex justify-end">
         <DialogPrimitive.Close className="pointer-events-auto rounded-full bg-muted hover:bg-muted/80 ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none w-10 h-10 flex items-center justify-center text-foreground shadow-md border border-border">
           <X className="h-5 w-5" strokeWidth={2.5} />
           <span className="sr-only">Close</span>
