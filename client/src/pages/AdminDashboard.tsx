@@ -334,6 +334,7 @@ export default function AdminDashboard() {
   const [searchBlok, setSearchBlok] = useState<string>('all');
   const [searchSoba, setSearchSoba] = useState<string>('');
   const [searchWorker, setSearchWorker] = useState<string>('all');
+  const [searchReporter, setSearchReporter] = useState<string>('all');
 
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -1583,6 +1584,7 @@ export default function AdminDashboard() {
                     setSearchBlok('all');
                     setSearchSoba('');
                     setSearchWorker('all');
+                    setSearchReporter('all');
                   }}
                   data-testid="button-clear-search"
                 >
@@ -1602,7 +1604,7 @@ export default function AdminDashboard() {
                   data-testid="period-picker-search"
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div>
                   <Label className="text-xs mb-1.5 block">Hotel</Label>
                   <Select value={searchHotel} onValueChange={setSearchHotel}>
@@ -1678,6 +1680,37 @@ export default function AdminDashboard() {
                     );
                   })()}
                 </div>
+                <div>
+                  <Label className="text-xs mb-1.5 block">Prijavio</Label>
+                  {(() => {
+                    const reporterMap: Record<string, string> = {};
+                    tasks.forEach((t) => {
+                      const n = (t.created_by_name || '').trim();
+                      if (!n) return;
+                      const k = normName(n);
+                      if (!k) return;
+                      const hasD = stripDiacriticsG(n) !== n;
+                      const curHasD = reporterMap[k] ? stripDiacriticsG(reporterMap[k]) !== reporterMap[k] : false;
+                      if (!reporterMap[k] || (hasD && !curHasD)) reporterMap[k] = n;
+                    });
+                    const reporterOpts = Object.entries(reporterMap).sort((a, b) =>
+                      a[1].localeCompare(b[1], 'sr')
+                    );
+                    return (
+                      <Select value={searchReporter} onValueChange={setSearchReporter}>
+                        <SelectTrigger className="h-9" data-testid="select-search-reporter">
+                          <SelectValue placeholder="Svi prijavioci" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Svi prijavioci</SelectItem>
+                          {reporterOpts.map(([k, name]) => (
+                            <SelectItem key={k} value={k}>{name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    );
+                  })()}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -1719,6 +1752,7 @@ export default function AdminDashboard() {
                           .filter(Boolean);
                         if (!keys.includes(searchWorker)) return false;
                       }
+                      if (searchReporter !== 'all' && norm(t.created_by_name || '') !== searchReporter) return false;
                       return true;
                     })
                     .sort((a, b) => refDate(b).getTime() - refDate(a).getTime());
