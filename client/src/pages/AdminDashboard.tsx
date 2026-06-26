@@ -271,6 +271,69 @@ async function downloadWorkerAnalysisPdf(
   }
 }
 
+function buildTasksCsv(rows: Task[]): string {
+  const headers = ['Datum', 'Naslov', 'Opis', 'Status', 'Prioritet', 'Lokacija', 'Soba', 'Prijavio', 'Dodijeljeno'];
+  const fmt = (dateStr?: string | null) =>
+    dateStr
+      ? new Date(dateStr).toLocaleString('sr-RS', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : '';
+  const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lines = rows.map((t) =>
+    [
+      fmt(isScheduledTask(t) ? t.scheduled_for : t.created_at),
+      t.title || '',
+      t.description || '',
+      t.status,
+      t.priority || 'normal',
+      t.location || '',
+      t.room_number || '',
+      t.created_by_name || '',
+      t.assigned_to_name || (t as any).external_company_name || '',
+    ]
+      .map(esc)
+      .join(',')
+  );
+  return ['\ufeff' + headers.map(esc).join(','), ...lines].join('\n');
+}
+
+async function downloadCsvFile(csv: string, fileName: string) {
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  if (Capacitor.isNativePlatform()) {
+    const base64Data: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    const result = await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Documents,
+      recursive: true,
+    });
+    await Share.share({
+      title: 'Izvjestaj pretrage',
+      url: result.uri,
+      dialogTitle: 'Sacuvaj ili podijeli CSV',
+    });
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+}
+
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -1779,8 +1842,31 @@ export default function AdminDashboard() {
 
                   return (
                     <div className="space-y-3">
-                      <div className="text-sm text-muted-foreground" data-testid="text-search-count">
-                        Pronadjeno zadataka: <strong className="text-foreground">{results.length}</strong>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-sm text-muted-foreground" data-testid="text-search-count">
+                          Pronadjeno zadataka: <strong className="text-foreground">{results.length}</strong>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs"
+                          disabled={results.length === 0}
+                          onClick={async () => {
+                            try {
+                              const csv = buildTasksCsv(results);
+                              const stamp = `${rs.toISOString().split('T')[0]}_${re.toISOString().split('T')[0]}`;
+                              await downloadCsvFile(csv, `pretraga_${stamp}.csv`);
+                              toast({ title: 'Uspeh', description: 'CSV izvjestaj je izvezen.' });
+                            } catch (err) {
+                              console.error('CSV export error:', err);
+                              toast({ title: 'Greska', description: 'Nije moguce izvesti CSV.', variant: 'destructive' });
+                            }
+                          }}
+                          data-testid="button-export-search-csv"
+                        >
+                          <Download className="w-3.5 h-3.5 mr-1" />
+                          Izvezi CSV
+                        </Button>
                       </div>
                       {results.length === 0 ? (
                         <p className="text-center text-muted-foreground py-8 text-sm">
