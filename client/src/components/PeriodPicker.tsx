@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Calendar as CalendarIcon, ChevronDown } from "lucide-react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addDays, addMonths, startOfDay } from "date-fns";
-import { sr } from "date-fns/locale";
+import { srLatn } from "date-fns/locale";
+import type { DateRange } from "react-day-picker";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type PeriodGranularity = 'day' | 'week' | 'month';
+type PeriodGranularity = 'day' | 'week' | 'month' | 'range';
 
 interface PeriodRange {
   start: Date;
@@ -19,6 +20,7 @@ interface PeriodPickerProps {
   onChange: (range: PeriodRange) => void;
   granularity?: PeriodGranularity;
   onGranularityChange?: (granularity: PeriodGranularity) => void;
+  allowRange?: boolean;
   className?: string;
   "data-testid"?: string;
 }
@@ -28,6 +30,7 @@ export function PeriodPicker({
   onChange,
   granularity = 'day',
   onGranularityChange,
+  allowRange = false,
   className,
   "data-testid": testId
 }: PeriodPickerProps) {
@@ -35,34 +38,48 @@ export function PeriodPicker({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     value ? value.start : new Date()
   );
+  const [rangeValue, setRangeValue] = useState<DateRange | undefined>(
+    value ? { from: value.start, to: addDays(startOfDay(value.end), -1) } : undefined
+  );
 
   // Sync selectedDate with controlled value
   useEffect(() => {
     if (value) {
       setSelectedDate(value.start);
+      setRangeValue({ from: value.start, to: addDays(startOfDay(value.end), -1) });
     }
   }, [value]);
 
   const calculateRange = (date: Date, gran: PeriodGranularity): PeriodRange => {
     switch (gran) {
-      case 'day':
+      case 'day': {
         const dayStart = startOfDay(date);
         return {
           start: dayStart,
           end: startOfDay(addDays(dayStart, 1))
         };
-      case 'week':
+      }
+      case 'week': {
         const weekStart = startOfWeek(date, { weekStartsOn: 1 });
-        return { 
-          start: weekStart, 
+        return {
+          start: weekStart,
           end: startOfDay(addDays(weekStart, 7))
         };
-      case 'month':
+      }
+      case 'month': {
         const monthStart = startOfMonth(date);
         return {
           start: monthStart,
           end: startOfMonth(addMonths(monthStart, 1))
         };
+      }
+      case 'range': {
+        const dayStart = startOfDay(date);
+        return {
+          start: dayStart,
+          end: startOfDay(addDays(dayStart, 1))
+        };
+      }
     }
   };
 
@@ -75,11 +92,29 @@ export function PeriodPicker({
     }
   };
 
+  const handleRangeSelect = (range: DateRange | undefined) => {
+    setRangeValue(range);
+    if (range?.from && range?.to) {
+      onChange({
+        start: startOfDay(range.from),
+        end: startOfDay(addDays(range.to, 1))
+      });
+      setIsOpen(false);
+    }
+  };
+
   const formatLabel = () => {
+    const locale = srLatn;
+
+    if (granularity === 'range') {
+      if (rangeValue?.from && rangeValue?.to) {
+        return `${format(rangeValue.from, "d. MMM", { locale })} - ${format(rangeValue.to, "d. MMM yyyy", { locale })}`;
+      }
+      return "Izaberi raspon datuma";
+    }
+
     if (!selectedDate) return "Izaberi period";
-    
-    const locale = sr;
-    
+
     switch (granularity) {
       case 'day':
         return format(selectedDate, "d. MMM yyyy", { locale });
@@ -95,7 +130,7 @@ export function PeriodPicker({
 
   const handleGranularityChange = (newGran: PeriodGranularity) => {
     onGranularityChange?.(newGran);
-    if (selectedDate) {
+    if (newGran !== 'range' && selectedDate) {
       const range = calculateRange(selectedDate, newGran);
       onChange(range);
     }
@@ -133,7 +168,8 @@ export function PeriodPicker({
           variant="ghost"
           size="sm"
           className={cn(
-            "h-8 px-2.5 rounded-none text-xs",
+            "h-8 px-2.5 text-xs",
+            allowRange ? "rounded-none border-r" : "rounded-none",
             granularity === 'month' && "bg-muted"
           )}
           onClick={() => handleGranularityChange('month')}
@@ -141,6 +177,20 @@ export function PeriodPicker({
         >
           Mjesec
         </Button>
+        {allowRange && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "h-8 px-2.5 rounded-none text-xs",
+              granularity === 'range' && "bg-muted"
+            )}
+            onClick={() => handleGranularityChange('range')}
+            data-testid={`${testId}-mode-range`}
+          >
+            Raspon
+          </Button>
+        )}
       </div>
 
       {/* Calendar Popover */}
@@ -161,13 +211,24 @@ export function PeriodPicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={handleDateSelect}
-            initialFocus
-            locale={sr}
-          />
+          {granularity === 'range' ? (
+            <Calendar
+              mode="range"
+              selected={rangeValue}
+              onSelect={handleRangeSelect}
+              numberOfMonths={2}
+              initialFocus
+              locale={srLatn}
+            />
+          ) : (
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDateSelect}
+              initialFocus
+              locale={srLatn}
+            />
+          )}
         </PopoverContent>
       </Popover>
     </div>

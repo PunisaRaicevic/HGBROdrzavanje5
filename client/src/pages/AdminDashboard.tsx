@@ -370,26 +370,26 @@ export default function AdminDashboard() {
   
   // Period states with date ranges
   const now = new Date();
-  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month'>('day');
+  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month' | 'range'>('day');
   const [statsRange, setStatsRange] = useState({
     start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
     end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
   });
   
-  const [analysisGranularity, setAnalysisGranularity] = useState<'day' | 'week' | 'month'>('day');
+  const [analysisGranularity, setAnalysisGranularity] = useState<'day' | 'week' | 'month' | 'range'>('day');
   const [analysisRange, setAnalysisRange] = useState({
     start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
     end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
   });
   
-  const [reportGranularity, setReportGranularity] = useState<'day' | 'week' | 'month'>('day');
+  const [reportGranularity, setReportGranularity] = useState<'day' | 'week' | 'month' | 'range'>('day');
   const [reportRange, setReportRange] = useState({
     start: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
     end: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
   });
 
   // Search tab state (default to current month)
-  const [searchGranularity, setSearchGranularity] = useState<'day' | 'week' | 'month'>('month');
+  const [searchGranularity, setSearchGranularity] = useState<'day' | 'week' | 'month' | 'range'>('month');
   const [searchRange, setSearchRange] = useState({
     start: new Date(now.getFullYear(), now.getMonth(), 1),
     end: new Date(now.getFullYear(), now.getMonth() + 1, 1)
@@ -1668,6 +1668,7 @@ export default function AdminDashboard() {
                     onChange={setSearchRange}
                     granularity={searchGranularity}
                     onGranularityChange={setSearchGranularity}
+                    allowRange
                     data-testid="period-picker-search"
                   />
                 </div>
