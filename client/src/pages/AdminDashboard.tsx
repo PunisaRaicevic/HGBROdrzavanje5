@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -398,6 +399,7 @@ export default function AdminDashboard() {
   const [searchSoba, setSearchSoba] = useState<string>('');
   const [searchWorker, setSearchWorker] = useState<string>('all');
   const [searchReporter, setSearchReporter] = useState<string>('all');
+  const [searchAllTime, setSearchAllTime] = useState<boolean>(false);
 
   // Fetch users (auto-refresh every 10 seconds)
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
@@ -1648,6 +1650,7 @@ export default function AdminDashboard() {
                     setSearchSoba('');
                     setSearchWorker('all');
                     setSearchReporter('all');
+                    setSearchAllTime(false);
                   }}
                   data-testid="button-clear-search"
                 >
@@ -1659,13 +1662,23 @@ export default function AdminDashboard() {
             <CardContent className="space-y-4">
               <div>
                 <Label className="text-xs mb-1.5 block">Vremenski period</Label>
-                <PeriodPicker
-                  value={searchRange}
-                  onChange={setSearchRange}
-                  granularity={searchGranularity}
-                  onGranularityChange={setSearchGranularity}
-                  data-testid="period-picker-search"
-                />
+                <div className={searchAllTime ? 'opacity-50 pointer-events-none' : undefined}>
+                  <PeriodPicker
+                    value={searchRange}
+                    onChange={setSearchRange}
+                    granularity={searchGranularity}
+                    onGranularityChange={setSearchGranularity}
+                    data-testid="period-picker-search"
+                  />
+                </div>
+                <label className="mt-2 flex items-center gap-2 cursor-pointer w-fit" data-testid="label-search-all-time">
+                  <Checkbox
+                    checked={searchAllTime}
+                    onCheckedChange={(v) => setSearchAllTime(v === true)}
+                    data-testid="checkbox-search-all-time"
+                  />
+                  <span className="text-xs">Pretrazi cijelu bazu (zanemari period)</span>
+                </label>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div>
@@ -1799,9 +1812,11 @@ export default function AdminDashboard() {
                   const isScheduled = (t: Task) => isScheduledTask(t);
                   const results = tasks
                     .filter((t) => {
-                      const ref = refDate(t);
-                      const refLocal = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
-                      if (!(refLocal >= rs && refLocal < re)) return false;
+                      if (!searchAllTime) {
+                        const ref = refDate(t);
+                        const refLocal = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+                        if (!(refLocal >= rs && refLocal < re)) return false;
+                      }
                       const loc = norm(t.location || '');
                       if (searchHotel !== 'all' && !loc.includes(norm(searchHotel))) return false;
                       if (searchBlok !== 'all' && !loc.includes(norm(searchBlok))) return false;
@@ -1854,7 +1869,9 @@ export default function AdminDashboard() {
                           onClick={async () => {
                             try {
                               const csv = buildTasksCsv(results);
-                              const stamp = `${rs.toISOString().split('T')[0]}_${re.toISOString().split('T')[0]}`;
+                              const stamp = searchAllTime
+                                ? 'cijela_baza'
+                                : `${rs.toISOString().split('T')[0]}_${re.toISOString().split('T')[0]}`;
                               await downloadCsvFile(csv, `pretraga_${stamp}.csv`);
                               toast({ title: 'Uspeh', description: 'CSV izvjestaj je izvezen.' });
                             } catch (err) {
