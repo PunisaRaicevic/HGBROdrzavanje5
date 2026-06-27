@@ -38,6 +38,38 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("firebase")) return "vendor-firebase";
+          if (id.includes("@ionic") || id.includes("ionicons"))
+            return "vendor-ionic";
+          if (id.includes("@capacitor")) return "vendor-capacitor";
+          if (id.includes("recharts") || id.includes("d3-"))
+            return "vendor-charts";
+          if (id.includes("framer-motion")) return "vendor-motion";
+          if (id.includes("@radix-ui")) return "vendor-radix";
+          if (id.includes("@tanstack")) return "vendor-query";
+          if (id.includes("jspdf")) return "vendor-jspdf";
+          if (id.includes("lucide-react")) return "vendor-icons";
+          if (id.includes("i18next")) return "vendor-i18n";
+          if (id.includes("date-fns")) return "vendor-date";
+          if (id.includes("@google") || id.includes("@googlemaps"))
+            return "vendor-google";
+          if (
+            id.includes("/react/") ||
+            id.includes("/react-dom/") ||
+            id.includes("/scheduler/") ||
+            id.includes("/wouter/") ||
+            id.includes("react-hook-form")
+          )
+            return "vendor-react";
+          return "vendor";
+        },
+      },
+    },
   },
   server: {
     fs: {
