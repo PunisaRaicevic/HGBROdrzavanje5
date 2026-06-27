@@ -41,32 +41,13 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
+        // Keep ALL third-party code in a single vendor chunk. Splitting
+        // node_modules across multiple chunks broke module init order
+        // (circular deps -> blank screen). One vendor chunk preserves the
+        // original (working) init order while still keeping every emitted
+        // file under 1 MB (vendor ~0.85 MB, app ~0.42 MB).
         manualChunks(id) {
-          if (!id.includes("node_modules")) return;
-          if (id.includes("firebase")) return "vendor-firebase";
-          if (id.includes("@ionic") || id.includes("ionicons"))
-            return "vendor-ionic";
-          if (id.includes("@capacitor")) return "vendor-capacitor";
-          if (id.includes("recharts") || id.includes("d3-"))
-            return "vendor-charts";
-          if (id.includes("framer-motion")) return "vendor-motion";
-          if (id.includes("@radix-ui")) return "vendor-radix";
-          if (id.includes("@tanstack")) return "vendor-query";
-          if (id.includes("jspdf")) return "vendor-jspdf";
-          if (id.includes("lucide-react")) return "vendor-icons";
-          if (id.includes("i18next")) return "vendor-i18n";
-          if (id.includes("date-fns")) return "vendor-date";
-          if (id.includes("@google") || id.includes("@googlemaps"))
-            return "vendor-google";
-          if (
-            id.includes("/react/") ||
-            id.includes("/react-dom/") ||
-            id.includes("/scheduler/") ||
-            id.includes("/wouter/") ||
-            id.includes("react-hook-form")
-          )
-            return "vendor-react";
-          return "vendor";
+          if (id.includes("node_modules")) return "vendor";
         },
       },
     },
