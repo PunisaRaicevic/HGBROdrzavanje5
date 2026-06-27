@@ -40,9 +40,20 @@ manualChunks(id) { if (id.includes("node_modules")) return "vendor"; }
   exceeds 1 MB.
 - Verify the build graph is acyclic: `vendor-*.js` must NOT import any
   `index-*.js`; `index-*.js` may import `vendor-*.js`. (rg the built files.)
-- A fresh-browser screenshot of the LIVE url (screenshot type=external_url) is
-  the reliable way to catch this — local prod server on a non-workflow port is
-  not reachable by the headless screenshotter.
+- Do NOT trust external_url screenshots of the LIVE site to confirm a
+  white-screen fix: a cold headless browser fetching the ~1.3MB bundle over the
+  internet often paints blank before React mounts -> FALSE-NEGATIVE white
+  screen even when the app is fine. It mislead a whole debugging session.
+- AUTHORITATIVE check instead: this app's main.tsx installs a remote logger
+  that POSTs every console.log to /api/debug/log. So fresh web boots show up in
+  deployment logs as `[APP WEB] ... Renderujem React aplikaciju` followed by
+  `[Router] Current user`. Grep deployment logs for those to confirm real loads
+  render. (fetch_deployment_logs with message filter.)
+- To see the REAL prod-build console locally: temporarily point the workflow at
+  `npm start` (configureWorkflow command="npm start", port 5000), then
+  app_preview returns its browser logs; restore command="npm run dev" after.
+  Killing the dev process to free 5000 fails — the supervisor respawns it
+  (EADDRINUSE).
 - Mobile changes ship via Appflow Live Update + GitHub push (NOT Replit deploy),
   so the user must push to GitHub for the rebuilt chunks to reach devices.
 - If `vendor` ever exceeds 1 MB, split off only a KNOWN-LEAF library (nothing
