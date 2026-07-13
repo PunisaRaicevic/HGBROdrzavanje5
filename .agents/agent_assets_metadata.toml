@@ -1,8 +1,3 @@
 uploads = []
 generated = []
-
-[[outputs]]
-id = "w351cM5oWV7aXsdKRz0cw"
-uri = "file://attached_assets/Hotel-Reklamacije-Pitch.pdf"
-type = "pdf"
-title = "Pitch prezentacija (sa slikama i infografikom)"
+outputs = []
