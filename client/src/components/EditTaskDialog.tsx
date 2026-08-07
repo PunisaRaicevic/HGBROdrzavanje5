@@ -13,6 +13,7 @@ import { Save, X, Repeat } from 'lucide-react';
 import { PhotoUpload, PhotoPreview } from './PhotoUpload';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { validateSobaInput } from '@shared/rooms';
 
 interface EditTaskDialogProps {
   open: boolean;
@@ -378,6 +379,16 @@ export default function EditTaskDialog({ open, onOpenChange, taskId }: EditTaskD
       return;
     }
 
+    const sobaError = validateSobaInput(soba, finalHotel);
+    if (sobaError) {
+      toast({
+        title: "Greška",
+        description: sobaError,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const title = soba 
       ? `${finalHotel}, ${finalBlok}, Soba ${soba}`
       : `${finalHotel}, ${finalBlok}`;
@@ -506,6 +517,12 @@ export default function EditTaskDialog({ open, onOpenChange, taskId }: EditTaskD
                 onChange={(e) => setSoba(e.target.value)}
                 data-testid="input-edit-soba"
               />
+              {(() => {
+                const err = validateSobaInput(soba, hotel === 'Ostalo' ? customHotel : hotel);
+                return err ? (
+                  <p className="text-sm text-destructive" data-testid="text-edit-soba-error">{err}</p>
+                ) : null;
+              })()}
             </div>
 
             <div className="space-y-2">

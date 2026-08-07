@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PhotoUpload, PhotoPreview } from './PhotoUpload';
 import { cn } from '@/lib/utils';
+import { validateSobaInput } from '@shared/rooms';
 
 interface CreateTaskDialogProps {
   trigger?: React.ReactNode;
@@ -107,6 +108,16 @@ export default function CreateTaskDialog({ trigger }: CreateTaskDialogProps) {
       toast({
         title: "Greska",
         description: "Popunite Hotel/Zgrada, Blok/Prostorija i opis",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const sobaError = validateSobaInput(soba, finalHotel);
+    if (sobaError) {
+      toast({
+        title: "Greska",
+        description: sobaError,
         variant: "destructive",
       });
       return;
@@ -475,6 +486,12 @@ export default function CreateTaskDialog({ trigger }: CreateTaskDialogProps) {
                     data-testid="input-soba"
                     className="bg-muted"
                   />
+                  {(() => {
+                    const err = validateSobaInput(soba, hotel === 'Ostalo' ? customHotel : hotel);
+                    return err ? (
+                      <p className="text-sm text-destructive" data-testid="text-soba-error">{err}</p>
+                    ) : null;
+                  })()}
                 </div>
               </div>
 

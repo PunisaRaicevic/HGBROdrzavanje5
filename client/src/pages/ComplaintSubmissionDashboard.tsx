@@ -14,6 +14,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { PhotoUpload, PhotoPreview } from '@/components/PhotoUpload';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
+import { validateSobaInput } from '@shared/rooms';
 
 export default function ComplaintSubmissionDashboard() {
   const { t } = useTranslation();
@@ -113,6 +114,16 @@ export default function ComplaintSubmissionDashboard() {
         toast({
           title: "Error",
           description: "User not authenticated",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const sobaError = validateSobaInput(soba, finalHotel);
+      if (sobaError) {
+        toast({
+          title: "Greška",
+          description: sobaError,
           variant: "destructive",
         });
         return;
@@ -362,6 +373,12 @@ export default function ComplaintSubmissionDashboard() {
                 data-testid="input-soba"
                 className="text-base"
               />
+              {(() => {
+                const err = validateSobaInput(soba, hotel === 'Ostalo' ? customHotel : hotel);
+                return err ? (
+                  <p className="text-sm text-destructive" data-testid="text-soba-error">{err}</p>
+                ) : null;
+              })()}
             </div>
 
             <div className="space-y-2">
