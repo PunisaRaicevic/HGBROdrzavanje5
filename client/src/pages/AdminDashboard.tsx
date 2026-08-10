@@ -781,8 +781,11 @@ export default function AdminDashboard() {
 
   // ALERT: aktivni zadaci prijavljeni za sobe koje su van funkcije
   const activeOooRooms = oooData?.rooms || [];
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
   const oooAlertTasks = tasks.filter(t => {
     if (!t.room_number || t.status === 'completed') return false;
+    if (!t.created_at || new Date(t.created_at) < todayStart) return false;
     const roomNum = String(t.room_number).replace(/\s+/g, '');
     return activeOooRooms.some(r =>
       r.room_number === roomNum && (t.location || '').startsWith(r.hotel)
