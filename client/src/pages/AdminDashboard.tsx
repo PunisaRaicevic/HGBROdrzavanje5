@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X, MapPin, Search } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X, MapPin, Search, BedDouble } from 'lucide-react';
 import { useLocation } from 'wouter';
 import {
   Dialog,
@@ -26,6 +26,7 @@ import SelectTechnicianDialog from '@/components/SelectTechnicianDialog';
 import SelectExternalCompanyDialog from '@/components/SelectExternalCompanyDialog';
 import EditTaskDialog from '@/components/EditTaskDialog';
 import AdminAIChat from '@/components/AdminAIChat';
+import OutOfOrderRoomsTab from '@/components/OutOfOrderRoomsTab';
 import { PeriodPicker } from '@/components/PeriodPicker';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
@@ -816,7 +817,7 @@ export default function AdminDashboard() {
 
       {/* Main Admin Features */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="h-9 w-full grid grid-cols-5">
+        <TabsList className="h-9 w-full grid grid-cols-6">
           <TabsTrigger value="users" data-testid="tab-users" className="text-xs sm:text-sm px-1 sm:px-3">
             <Users className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Korisnici</span>
@@ -837,7 +838,15 @@ export default function AdminDashboard() {
             <MapPin className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Lokacije</span>
           </TabsTrigger>
+          <TabsTrigger value="ooo-rooms" data-testid="tab-ooo-rooms" className="text-xs sm:text-sm px-1 sm:px-3">
+            <BedDouble className="w-3.5 h-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Sobe van funkcije</span>
+          </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="ooo-rooms" className="space-y-4">
+          <OutOfOrderRoomsTab />
+        </TabsContent>
 
         <TabsContent value="users" className="space-y-4">
           <Card>

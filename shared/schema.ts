@@ -129,6 +129,22 @@ export const notifications = pgTable("notifications", {
   read_at: timestamp("read_at", { withTimezone: true }),
 });
 
+export const out_of_order_rooms = pgTable("out_of_order_rooms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  hotel: text("hotel").notNull(),
+  room_number: text("room_number").notNull(),
+  reason: text("reason").notNull(),
+  status: text("status").notNull().default("active"), // 'active' | 'resolved'
+  created_by: varchar("created_by"),
+  created_by_name: text("created_by_name"),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  resolved_by: varchar("resolved_by"),
+  resolved_by_name: text("resolved_by_name"),
+  resolved_at: timestamp("resolved_at", { withTimezone: true }),
+});
+
+export type OutOfOrderRoom = typeof out_of_order_rooms.$inferSelect;
+
 export const usersRelations = relations(users, ({ many }) => ({
   createdTasks: many(tasks, { relationName: "created_by" }),
   notifications: many(notifications),

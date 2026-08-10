@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Send, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle, Clock, BedDouble } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
@@ -45,6 +45,17 @@ export default function ComplaintSubmissionDashboard() {
     },
     enabled: !!user?.id,
   });
+
+  // Sobe van funkcije (za izabrani hotel) — vidi ih recepcija i ostalo osoblje
+  const { data: oooResponse } = useQuery<{ rooms: { id: string; hotel: string; room_number: string; reason: string; created_at: string }[] }>({
+    queryKey: ['/api/out-of-order-rooms'],
+    refetchInterval: 60000,
+  });
+  const selectedHotelName = hotel === 'Ostalo' ? customHotel : hotel;
+  const oooRoomsForHotel = (oooResponse?.rooms || []).filter(r => r.hotel === selectedHotelName);
+  const sobaOutOfOrder = soba.trim()
+    ? oooRoomsForHotel.find(r => r.room_number === soba.trim().replace(/\s+/g, ''))
+    : undefined;
 
   const myComplaints = tasksResponse?.tasks || [];
   
@@ -379,6 +390,12 @@ export default function ComplaintSubmissionDashboard() {
                   <p className="text-sm text-destructive" data-testid="text-soba-error">{err}</p>
                 ) : null;
               })()}
+              {sobaOutOfOrder && (
+                <p className="text-sm text-orange-600 font-medium flex items-center gap-1" data-testid="text-soba-ooo-warning">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  Soba {sobaOutOfOrder.room_number} je van funkcije: {sobaOutOfOrder.reason}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -428,6 +445,26 @@ export default function ComplaintSubmissionDashboard() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Sobe van funkcije za izabrani hotel */}
+        {selectedHotelName && oooRoomsForHotel.length > 0 && (
+          <Card className="border-orange-300">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-700">
+                <BedDouble className="w-5 h-5" />
+                Sobe van funkcije — {selectedHotelName} ({oooRoomsForHotel.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {oooRoomsForHotel.map(room => (
+                <div key={room.id} className="flex items-start gap-2 text-sm" data-testid={`ooo-list-${room.id}`}>
+                  <Badge variant="destructive" className="shrink-0">Soba {room.room_number}</Badge>
+                  <span>{room.reason}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* My Submitted Complaints */}
         <Card>

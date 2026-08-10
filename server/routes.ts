@@ -9,6 +9,8 @@ import { generateToken, verifyToken, extractTokenFromHeader } from "./auth";
 import { sendOneSignalToUser } from "./services/onesignal";
 import { generateDailyReportPdf, generateTasksCsv, generateTaskReportPdf, generateWorkerAnalysisPdf } from "./pdfGenerator";
 import { uploadImagesArray, deleteImagesFromStorage } from "./lib/imageStorage";
+import { supabase } from "./lib/supabase";
+import { validateSobaInput } from "@shared/rooms";
 // --- NOVI IMPORTI ZA NOTIFIKACIJE ---
 import { sendPushNotification } from "./services/notificationService";
 
@@ -579,6 +581,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ ok: true });
     } catch (error) {
       res.json({ ok: false });
+    }
+  });
+
+  // ===== SOBE VAN FUNKCIJE (out of order rooms) =====
+
+  // List rooms out of order (any authenticated user; reception filters by hotel)
+  app.get("/api/out-of-order-rooms", requireAuth, async (req, res) => {
+    try {
+      const { hotel, status } = req.query as { hotel?: string; status?: string };
+      let query = supabase
+        .from('out_of_order_rooms')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      query = status === 'all'
+        ? query
+        : query.eq('status', status || 'active');
+
+      if (hotel) {
+        query = query.eq('hotel', hotel);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      res.json({ rooms: data || [] });
+    } catch (error) {
+      console.error("Error fetching out-of-order rooms:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin: mark a room out of order
+  app.post("/api/out-of-order-rooms", requireAdmin, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        hotel: z.string().min(1, "Hotel je obavezan"),
+        room_number: z.string().min(1, "Broj sobe je obavezan"),
+        reason: z.string().min(1, "Razlog je obavezan"),
+      });
+      const parsed = schema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: parsed.error.errors[0]?.message || "Neispravni podaci" });
+      }
+      const { hotel, reason } = parsed.data;
+
+      // Only known hotels are allowed (admin UI uses the same fixed list)
+      const ALLOWED_HOTELS = [
+        'Hotel Slovenska plaža',
+        'Hotel Aleksandar',
+        'Hotel Mogren',
+        'Hotel Palas',
+        'Hotel Castellastva',
+        'Hotel Palas Lux',
+      ];
+      if (!ALLOWED_HOTELS.includes(hotel)) {
+        return res.status(400).json({ error: "Nepoznat hotel" });
+      }
+
+      // Canonical room number: strip ALL whitespace ("10 01" -> "1001"), digits only
+      const room_number = parsed.data.room_number.replace(/\s+/g, '');
+      if (!/^\d+$/.test(room_number)) {
+        return res.status(400).json({ error: "Broj sobe mora biti broj (npr. 1001)" });
+      }
+
+      // Validate room exists in the hotel's room list (when the hotel has one)
+      const sobaError = validateSobaInput(room_number, hotel);
+      if (sobaError) {
+        return res.status(400).json({ error: sobaError });
+      }
+
+      // Prevent duplicate active entries
+      const { data: existing, error: existErr } = await supabase
+        .from('out_of_order_rooms')
+        .select('id')
+        .eq('hotel', hotel)
+        .eq('room_number', room_number)
+        .eq('status', 'active')
+        .limit(1);
+      if (existErr) throw existErr;
+      if (existing && existing.length > 0) {
+        return res.status(409).json({ error: `Soba ${room_number} je već označena kao van funkcije za ${hotel}` });
+      }
+
+      const { data, error } = await supabase
+        .from('out_of_order_rooms')
+        .insert({
+          hotel,
+          room_number,
+          reason: reason.trim(),
+          status: 'active',
+          created_by: req.session.userId,
+          created_by_name: req.session.fullName || req.session.username || null,
+        })
+        .select()
+        .single();
+      if (error) {
+        // Unique index violation (concurrent duplicate) -> 409
+        if ((error as any).code === '23505') {
+          return res.status(409).json({ error: `Soba ${room_number} je već označena kao van funkcije za ${hotel}` });
+        }
+        throw error;
+      }
+      res.status(201).json({ room: data });
+    } catch (error) {
+      console.error("Error creating out-of-order room:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin: return a room to service
+  app.patch("/api/out-of-order-rooms/:id/resolve", requireAdmin, async (req: any, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('out_of_order_rooms')
+        .update({
+          status: 'resolved',
+          resolved_by: req.session.userId,
+          resolved_by_name: req.session.fullName || req.session.username || null,
+          resolved_at: new Date().toISOString(),
+        })
+        .eq('id', req.params.id)
+        .eq('status', 'active')
+        .select()
+        .single();
+      if (error || !data) {
+        return res.status(404).json({ error: "Zapis nije pronađen ili je već riješen" });
+      }
+      res.json({ room: data });
+    } catch (error) {
+      console.error("Error resolving out-of-order room:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
