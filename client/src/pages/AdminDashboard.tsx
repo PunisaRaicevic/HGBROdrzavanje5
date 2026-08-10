@@ -838,17 +838,32 @@ export default function AdminDashboard() {
             <AlertTriangle className="w-5 h-5 shrink-0" />
             UPOZORENJE: Prijavljeni zadaci za sobe VAN FUNKCIJE — provjerite da sobe nisu izdate!
           </div>
-          <div className="space-y-1">
+          <div className="space-y-2">
             {Object.entries(
-              oooAlertTasks.reduce<Record<string, { location: string; count: number }>>((acc, t) => {
+              oooAlertTasks.reduce<Record<string, { location: string; tasks: Task[] }>>((acc, t) => {
                 const key = `${t.room_number}|${(t.location || '').split(',')[0]}`;
-                if (!acc[key]) acc[key] = { location: t.location || '', count: 0 };
-                acc[key].count++;
+                if (!acc[key]) acc[key] = { location: t.location || '', tasks: [] };
+                acc[key].tasks.push(t);
                 return acc;
               }, {})
             ).map(([key, info]) => (
               <div key={key} className="text-sm text-red-700 dark:text-red-300">
-                • Soba {key.split('|')[0]} — {info.location}{info.count > 1 ? ` (${info.count} zadatka)` : ''}
+                <div className="font-medium">
+                  • Soba {key.split('|')[0]} — {info.location}{info.tasks.length > 1 ? ` (${info.tasks.length} zadatka)` : ''}
+                </div>
+                <div className="ml-4 mt-1 space-y-1">
+                  {info.tasks.map(t => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setSelectedTask(t)}
+                      className="block text-left underline underline-offset-2 hover:text-red-900 dark:hover:text-red-200"
+                      data-testid={`button-ooo-task-${t.id}`}
+                    >
+                      {t.title}{t.description ? ` — ${t.description.slice(0, 60)}${t.description.length > 60 ? '…' : ''}` : ''}
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
