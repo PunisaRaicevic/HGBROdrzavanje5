@@ -839,9 +839,16 @@ export default function AdminDashboard() {
             UPOZORENJE: Prijavljeni zadaci za sobe VAN FUNKCIJE — provjerite da sobe nisu izdate!
           </div>
           <div className="space-y-1">
-            {oooAlertTasks.map(t => (
-              <div key={t.id} className="text-sm text-red-700 dark:text-red-300">
-                • Soba {t.room_number} — {t.location} ({t.title})
+            {Object.entries(
+              oooAlertTasks.reduce<Record<string, { location: string; count: number }>>((acc, t) => {
+                const key = `${t.room_number}|${(t.location || '').split(',')[0]}`;
+                if (!acc[key]) acc[key] = { location: t.location || '', count: 0 };
+                acc[key].count++;
+                return acc;
+              }, {})
+            ).map(([key, info]) => (
+              <div key={key} className="text-sm text-red-700 dark:text-red-300">
+                • Soba {key.split('|')[0]} — {info.location}{info.count > 1 ? ` (${info.count} zadatka)` : ''}
               </div>
             ))}
           </div>
