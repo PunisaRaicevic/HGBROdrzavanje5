@@ -10,7 +10,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { validateSobaInput } from '@shared/rooms';
-import { BedDouble, CheckCircle, Loader2, History } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { BedDouble, CheckCircle, Loader2, History, Pencil } from 'lucide-react';
 
 export interface OutOfOrderRoom {
   id: string;
@@ -47,6 +48,8 @@ export default function OutOfOrderRoomsTab() {
   const [reason, setReason] = useState('');
   const [filterHotel, setFilterHotel] = useState<string>('all');
   const [showHistory, setShowHistory] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<OutOfOrderRoom | null>(null);
+  const [editReason, setEditReason] = useState('');
 
   const { data, isLoading } = useQuery<{ rooms: OutOfOrderRoom[] }>({
     queryKey: ['/api/out-of-order-rooms', '?status=all'],
@@ -85,6 +88,21 @@ export default function OutOfOrderRoomsTab() {
     },
     onSuccess: (_data, _id) => {
       toast({ title: 'Sačuvano', description: 'Soba je vraćena u funkciju' });
+      queryClient.invalidateQueries({ queryKey: ['/api/out-of-order-rooms'] });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+    },
+  });
+
+  const editMutation = useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+      const response = await apiRequest('PATCH', `/api/out-of-order-rooms/${id}`, { reason });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: 'Sačuvano', description: 'Razlog je izmijenjen' });
+      setEditingRoom(null);
       queryClient.invalidateQueries({ queryKey: ['/api/out-of-order-rooms'] });
     },
     onError: (error: Error) => {
@@ -198,6 +216,16 @@ export default function OutOfOrderRoomsTab() {
                     {room.created_by_name ? `${room.created_by_name} · ` : ''}{formatDate(room.created_at)}
                   </p>
                 </div>
+                <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => { setEditingRoom(room); setEditReason(room.reason); }}
+                  data-testid={`button-ooo-edit-${room.id}`}
+                >
+                  <Pencil className="w-4 h-4 mr-1" />
+                  Izmijeni
+                </Button>
                 <Button
                   size="sm"
                   variant="outline"
@@ -212,6 +240,7 @@ export default function OutOfOrderRoomsTab() {
                   )}
                   Vrati u funkciju
                 </Button>
+                </div>
               </div>
             ))
           )}
@@ -243,6 +272,45 @@ export default function OutOfOrderRoomsTab() {
           </Card>
         )}
       </div>
+
+      <Dialog open={editingRoom !== null} onOpenChange={(open) => !open && setEditingRoom(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Izmijeni razlog — Soba {editingRoom?.room_number} ({editingRoom?.hotel})
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="ooo-edit-reason">Razlog (tehnički ili drugi problem) *</Label>
+            <Textarea
+              id="ooo-edit-reason"
+              value={editReason}
+              onChange={(e) => setEditReason(e.target.value)}
+              rows={3}
+              data-testid="input-ooo-edit-reason"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingRoom(null)} data-testid="button-ooo-edit-cancel">
+              Otkaži
+            </Button>
+            <Button
+              onClick={() => {
+                if (!editReason.trim()) {
+                  toast({ title: 'Greška', description: 'Razlog ne može biti prazan', variant: 'destructive' });
+                  return;
+                }
+                if (editingRoom) editMutation.mutate({ id: editingRoom.id, reason: editReason.trim() });
+              }}
+              disabled={editMutation.isPending}
+              data-testid="button-ooo-edit-save"
+            >
+              {editMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Sačuvaj
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

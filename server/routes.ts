@@ -699,6 +699,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin: return a room to service
+  app.patch("/api/out-of-order-rooms/:id", requireAdmin, async (req: any, res) => {
+    try {
+      const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
+      if (!reason) {
+        return res.status(400).json({ error: "Razlog je obavezan" });
+      }
+      const { data, error } = await supabase
+        .from('out_of_order_rooms')
+        .update({ reason })
+        .eq('id', req.params.id)
+        .eq('status', 'active')
+        .select()
+        .single();
+      if (error || !data) {
+        return res.status(404).json({ error: "Zapis nije pronađen ili je već riješen" });
+      }
+      res.json({ room: data });
+    } catch (error) {
+      console.error("Error updating out-of-order room:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.patch("/api/out-of-order-rooms/:id/resolve", requireAdmin, async (req: any, res) => {
     try {
       const { data, error } = await supabase
