@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, Camera, Send, ClipboardList, Clock, XCircle, X, RotateCcw, ImagePlus } from 'lucide-react';
+import { CheckCircle, Camera, Send, ClipboardList, Clock, XCircle, X, RotateCcw, ImagePlus, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { io, Socket } from 'socket.io-client';
 import type { TaskStatus, Priority } from '@shared/types';
@@ -71,6 +71,9 @@ export default function WorkerDashboard() {
   const [uploadedPhotos, setUploadedPhotos] = useState<PhotoPreview[]>([]);
   const [actionType, setActionType] = useState<'completed' | 'return' | 'return_to_operator' | null>(null);
   const [isConfirmingReceipt, setIsConfirmingReceipt] = useState(false);
+  // Zadaci ciji je prijem potvrdjen u OVOJ sesiji — dugme ostaje "✓" cak i ako
+  // pozadinsko osvjezavanje liste nakratko vrati stare podatke sa servera.
+  const [confirmedReceiptIds, setConfirmedReceiptIds] = useState<Set<string>>(new Set());
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [browserNotificationsEnabled, setBrowserNotificationsEnabled] = useState(false);
   
@@ -478,6 +481,8 @@ export default function WorkerDashboard() {
 
   const handleConfirmReceipt = async () => {
     if (!selectedTask || !user) return;
+    // Zastita od duplih klikova: ignorisi ako je potvrda vec u toku ili vec obavljena
+    if (isConfirmingReceipt || confirmedReceiptIds.has(selectedTask.id)) return;
     
     setIsConfirmingReceipt(true);
     
@@ -516,9 +521,14 @@ export default function WorkerDashboard() {
         title: t('success'),
         description: t('taskUpdated'),
       });
-      // Resetuj lokalni flag — od sad UI gating se oslanja na receipt_confirmed_by iz tasks state-a
-      // (koji optimistic update vec sadrzi). Bez ovoga, flag je ostajao true i blokirao bi
-      // dugme za sljedeci task ako korisnik samo otvori drugi task umjesto da zatvori dijalog.
+      // Trajno (za ovu sesiju) zapamti da je prijem potvrdjen — dugme ostaje "✓ Potvrdjeno"
+      // i ako refetch liste nakratko donese stale podatke bez receipt_confirmed_by.
+      setConfirmedReceiptIds(prev => {
+        const next = new Set(prev);
+        next.add(selectedTask.id);
+        return next;
+      });
+      // Resetuj lokalni flag — od sad UI gating se oslanja na confirmedReceiptIds + receipt_confirmed_by.
       setIsConfirmingReceipt(false);
     } catch (error) {
       // ROLLBACK on error
@@ -1005,7 +1015,7 @@ export default function WorkerDashboard() {
                     (uključujući i kad je task vec zavrsen od strane drugog majstora) */}
                 {selectedTask.status !== 'cancelled' && !actionType && (() => {
                   const confirmedIds = (selectedTask.receipt_confirmed_by || '').split(',').map(s => s.trim()).filter(Boolean);
-                  const userAlreadyConfirmed = !!user?.id && confirmedIds.includes(user.id);
+                  const userAlreadyConfirmed = (!!user?.id && confirmedIds.includes(user.id)) || confirmedReceiptIds.has(selectedTask.id);
                   const isReceiptConfirmed = userAlreadyConfirmed || isConfirmingReceipt;
                   return (
                     <div className="pt-4 border-t">
@@ -1022,9 +1032,17 @@ export default function WorkerDashboard() {
                         data-testid={`button-confirm-receipt-${selectedTask.id}`}
                         type="button"
                       >
-                        <CheckCircle className="w-5 h-5 mr-2" />
+                        {isConfirmingReceipt ? (
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        ) : (
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                        )}
                         <span className="text-lg">
-                          {isReceiptConfirmed ? '✓ ' + t('confirmReceipt') : t('confirmReceipt')}
+                          {isConfirmingReceipt
+                            ? t('submitting')
+                            : userAlreadyConfirmed
+                              ? '✓ ' + t('confirmReceipt')
+                              : t('confirmReceipt')}
                         </span>
                       </Button>
                     </div>
@@ -1205,7 +1223,11 @@ export default function WorkerDashboard() {
                       data-testid={`button-submit-report-${selectedTask.id}`}
                       type="button"
                     >
-                      <Send className="w-5 h-5 mr-2" />
+                      {updateTaskMutation.isPending ? (
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      ) : (
+                        <Send className="w-5 h-5 mr-2" />
+                      )}
                       <span className="text-lg">
                         {updateTaskMutation.isPending 
                           ? t('submitting') 
