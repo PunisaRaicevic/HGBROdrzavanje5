@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X, MapPin, Search, BedDouble } from 'lucide-react';
+import { UserPlus, ClipboardList, CheckCircle, Clock, Users, Edit, BarChart3, Printer, Download, Calendar, History, RefreshCw, Brain, X, MapPin, Search, BedDouble, AlertTriangle } from 'lucide-react';
 import { useLocation } from 'wouter';
 import {
   Dialog,
@@ -403,6 +403,12 @@ export default function AdminDashboard() {
   const [searchAllTime, setSearchAllTime] = useState<boolean>(false);
 
   // Fetch users (auto-refresh every 10 seconds)
+  // Aktivne sobe van funkcije (za alert o zadacima za takve sobe)
+  const { data: oooData } = useQuery<{ rooms: { id: string; hotel: string; room_number: string; reason: string }[] }>({
+    queryKey: ['/api/out-of-order-rooms'],
+    refetchInterval: 60000,
+  });
+
   const { data: usersData, isLoading: usersLoading } = useQuery<{ users: User[] }>({
     queryKey: ['/api/users'],
     refetchInterval: 30000, // Refresh every 30s (was 10s)
@@ -773,6 +779,16 @@ export default function AdminDashboard() {
   const totalUsers = users.length;
   const totalTasks = tasks.length;
 
+  // ALERT: aktivni zadaci prijavljeni za sobe koje su van funkcije
+  const activeOooRooms = oooData?.rooms || [];
+  const oooAlertTasks = tasks.filter(t => {
+    if (!t.room_number || t.status === 'completed') return false;
+    const roomNum = String(t.room_number).replace(/\s+/g, '');
+    return activeOooRooms.some(r =>
+      r.room_number === roomNum && (t.location || '').startsWith(r.hotel)
+    );
+  });
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -814,6 +830,23 @@ export default function AdminDashboard() {
           </>
         )}
       </div>
+
+      {/* ALERT: zadaci za sobe van funkcije */}
+      {oooAlertTasks.length > 0 && (
+        <div className="border-2 border-red-500 bg-red-50 dark:bg-red-950/30 rounded-lg p-4 space-y-2" data-testid="alert-ooo-tasks">
+          <div className="flex items-center gap-2 font-semibold text-red-700 dark:text-red-400">
+            <AlertTriangle className="w-5 h-5 shrink-0" />
+            UPOZORENJE: Prijavljeni zadaci za sobe VAN FUNKCIJE — provjerite da sobe nisu izdate!
+          </div>
+          <div className="space-y-1">
+            {oooAlertTasks.map(t => (
+              <div key={t.id} className="text-sm text-red-700 dark:text-red-300">
+                • Soba {t.room_number} — {t.location} ({t.title})
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Main Admin Features */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

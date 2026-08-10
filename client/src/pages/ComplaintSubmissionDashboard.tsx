@@ -46,10 +46,12 @@ export default function ComplaintSubmissionDashboard() {
     enabled: !!user?.id,
   });
 
-  // Sobe van funkcije (za izabrani hotel) — vidi ih recepcija i ostalo osoblje
+  // Sobe van funkcije (za izabrani hotel) — spisak vide SAMO recepcioneri
+  const isRecepcioner = user?.role === 'recepcioner';
   const { data: oooResponse } = useQuery<{ rooms: { id: string; hotel: string; room_number: string; reason: string; created_at: string }[] }>({
     queryKey: ['/api/out-of-order-rooms'],
     refetchInterval: 60000,
+    enabled: isRecepcioner,
   });
   const selectedHotelName = hotel === 'Ostalo' ? customHotel : hotel;
   const oooRoomsForHotel = (oooResponse?.rooms || []).filter(r => r.hotel === selectedHotelName);

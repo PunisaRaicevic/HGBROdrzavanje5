@@ -586,9 +586,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ===== SOBE VAN FUNKCIJE (out of order rooms) =====
 
-  // List rooms out of order (any authenticated user; reception filters by hotel)
-  app.get("/api/out-of-order-rooms", requireAuth, async (req, res) => {
+  // List rooms out of order — samo admin i recepcioneri
+  app.get("/api/out-of-order-rooms", requireAuth, async (req: any, res) => {
     try {
+      let role = req.session.userRole;
+      if (!role && req.session.userId) {
+        const u = await storage.getUserById(req.session.userId);
+        role = u?.role;
+      }
+      if (role !== 'admin' && role !== 'recepcioner') {
+        return res.status(403).json({ error: "Nemate pristup" });
+      }
       const { hotel, status } = req.query as { hotel?: string; status?: string };
       let query = supabase
         .from('out_of_order_rooms')
@@ -1229,6 +1237,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (childError) {
           console.error('[RECURRING] Error creating child tasks:', childError);
         }
+      }
+
+      // ALERT ZA ADMINA: ako je prijavljen zadatak za sobu koja je van funkcije,
+      // obavijesti sve admine (sprječavanje nelegalnog izdavanja sobe).
+      if (soba) {
+        (async () => {
+          try {
+            const normalizedSoba = String(soba).replace(/\s+/g, '');
+            const { data: oooMatch, error: oooErr } = await supabase
+              .from('out_of_order_rooms')
+              .select('id, hotel, room_number, reason')
+              .eq('status', 'active')
+              .eq('hotel', hotel)
+              .eq('room_number', normalizedSoba)
+              .limit(1);
+            if (oooErr || !oooMatch || oooMatch.length === 0) return;
+
+            const match = oooMatch[0];
+            console.log(`🚨 [OOO ALERT] Task ${task.id} created for out-of-order room ${match.room_number} (${match.hotel})`);
+            const admins = (await storage.getUsers()).filter(u => u.role === 'admin' && u.is_active);
+            const alertTitle = `⚠️ Zadatak za sobu VAN FUNKCIJE!`;
+            const alertMessage = `Prijavljen je zadatak za sobu ${match.room_number} (${match.hotel}) koja je van funkcije (${match.reason}). Provjerite da soba nije izdata!`;
+            for (const admin of admins) {
+              storage.createNotification({
+                user_id: admin.id,
+                task_id: task.id,
+                title: alertTitle,
+                message: alertMessage,
+                type: 'ooo_room_alert',
+              }).catch(e => console.error('[OOO ALERT] Notification error:', e));
+              sendOneSignalToUser(admin.id, alertTitle, alertMessage, task.id, 'urgent')
+                .catch(e => console.error('[OOO ALERT] OneSignal error:', e));
+            }
+          } catch (e) {
+            console.error('[OOO ALERT] Error checking out-of-order rooms:', e);
+          }
+        })();
       }
 
       res.json({ task });
