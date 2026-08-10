@@ -203,10 +203,10 @@ export default function OutOfOrderRoomsTab() {
             visibleActive.map(room => (
               <div
                 key={room.id}
-                className="flex items-start justify-between gap-3 border rounded-lg p-3"
+                className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 border rounded-lg p-3"
                 data-testid={`ooo-room-${room.id}`}
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="destructive">Soba {room.room_number}</Badge>
                     <span className="text-sm font-medium">{room.hotel}</span>
@@ -216,7 +216,7 @@ export default function OutOfOrderRoomsTab() {
                     {room.created_by_name ? `${room.created_by_name} · ` : ''}{formatDate(room.created_at)}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap justify-start sm:justify-end">
                 <Button
                   size="sm"
                   variant="outline"
