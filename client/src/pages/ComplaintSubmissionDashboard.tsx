@@ -292,6 +292,44 @@ export default function ComplaintSubmissionDashboard() {
         </div>
       </div>
 
+      {/* Sobe van funkcije — uvijek vidljivo recepcionerima na prvoj strani */}
+      {isRecepcioner && (
+        <Card className="border-orange-300">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-orange-700">
+              <BedDouble className="w-5 h-5" />
+              Sobe van funkcije ({(oooResponse?.rooms || []).length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {(oooResponse?.rooms || []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">Trenutno nema soba van funkcije.</p>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(
+                  (oooResponse?.rooms || []).reduce<Record<string, typeof oooResponse.rooms>>((acc, r) => {
+                    (acc[r.hotel] = acc[r.hotel] || []).push(r);
+                    return acc;
+                  }, {})
+                ).map(([hotelName, rooms]) => (
+                  <div key={hotelName}>
+                    <p className="text-sm font-semibold mb-1">{hotelName}</p>
+                    <div className="space-y-1">
+                      {rooms.map(room => (
+                        <div key={room.id} className="flex items-start gap-2 text-sm" data-testid={`ooo-main-${room.id}`}>
+                          <Badge variant="destructive" className="shrink-0">Soba {room.room_number}</Badge>
+                          <span>{room.reason}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Submit New Complaint Form */}
         <Card>
@@ -447,26 +485,6 @@ export default function ComplaintSubmissionDashboard() {
             </Button>
           </CardContent>
         </Card>
-
-        {/* Sobe van funkcije za izabrani hotel */}
-        {selectedHotelName && oooRoomsForHotel.length > 0 && (
-          <Card className="border-orange-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-orange-700">
-                <BedDouble className="w-5 h-5" />
-                Sobe van funkcije — {selectedHotelName} ({oooRoomsForHotel.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {oooRoomsForHotel.map(room => (
-                <div key={room.id} className="flex items-start gap-2 text-sm" data-testid={`ooo-list-${room.id}`}>
-                  <Badge variant="destructive" className="shrink-0">Soba {room.room_number}</Badge>
-                  <span>{room.reason}</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
 
         {/* My Submitted Complaints */}
         <Card>
