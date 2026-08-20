@@ -1010,6 +1010,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/tasks/assigned-to-me", requireAuth, async (req: any, res) => {
+    try {
+      const tasks = await storage.getTasksAssignedToUserId(req.session.userId);
+      res.json({ tasks });
+    } catch (error) {
+      console.error("Error fetching assigned task history:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.get("/api/tasks", requireAuth, async (req, res) => {
     try {
       // Opcioni prozor (?windowDays=60): brzo učitavanje samo skorijih + svih
