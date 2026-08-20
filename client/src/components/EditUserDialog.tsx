@@ -21,6 +21,7 @@ import { Save, X, Trash2, Eye, EyeOff } from 'lucide-react';
 
 interface User {
   id: string;
+  username?: string | null;
   email: string;
   full_name: string;
   role: string;
@@ -199,6 +200,17 @@ export default function EditUserDialog({ user, open, onOpenChange }: EditUserDia
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                 data-testid="input-edit-user-name"
                 required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-user-username">Korisničko ime</Label>
+              <Input
+                id="edit-user-username"
+                value={user?.username || '—'}
+                readOnly
+                className="bg-muted"
+                data-testid="input-edit-user-username"
               />
             </div>
 
