@@ -15,6 +15,7 @@ import { useLocation } from 'wouter';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -59,6 +60,7 @@ interface Task {
   created_at: string;
   created_by?: string;
   created_by_name?: string;
+  assigned_to?: string | null;
   assigned_to_name?: string;
   location?: string;
   room_number?: string | null;
@@ -92,6 +94,25 @@ function formatLastSeen(lastSeen: string | null): { label: string; online: boole
   const dd = String(d.getDate()).padStart(2, '0');
   const mo = String(d.getMonth() + 1).padStart(2, '0');
   return { label: `Aktivan/na ${dd}.${mo}.`, online: false };
+}
+
+function getTaskStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    new: 'Novo',
+    pending: 'Nepotvrđen prijem',
+    in_progress: 'U toku',
+    assigned_to_operator: 'Dodijeljeno operateru',
+    with_operator: 'Kod operatera',
+    with_sef: 'Kod šefa',
+    assigned_to_radnik: 'Dodijeljeno radniku',
+    with_external: 'Treća lica',
+    returned_to_operator: 'Vraćeno operateru',
+    returned_to_sef: 'Vraćeno šefu',
+    rejected: 'Odbijeno',
+    completed: 'Završeno',
+    cancelled: 'Otkazano',
+  };
+  return labels[status] || status;
 }
 
 type WorkerStats = { completed: number; returned: number; pending: number; total: number };
@@ -349,6 +370,7 @@ export default function AdminDashboard() {
   const [newUserRole, setNewUserRole] = useState('');
   const [newUserJobTitle, setNewUserJobTitle] = useState('');
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [tasksUser, setTasksUser] = useState<User | null>(null);
   const [isDownloadingAnalysis, setIsDownloadingAnalysis] = useState(false);
   const [tasksPerPage, setTasksPerPage] = useState<number>(999999);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -425,6 +447,7 @@ export default function AdminDashboard() {
   // Puna arhiva (svi zadaci) - učitava se samo kada zatreba: Pretraga, Statistike,
   // ili Istorija sa filterom 3/6 mjeseci. Tako Zadaci tab ostaje brz.
   const needFullArchive =
+    tasksUser !== null ||
     activeTab === 'pretraga' ||
     activeTab === 'stats' ||
     (activeTab === 'tasks' &&
@@ -792,6 +815,13 @@ export default function AdminDashboard() {
     );
   });
 
+  const selectedUserTasks = tasksUser
+    ? tasks.filter(task => {
+        const assignedUserIds = (task.assigned_to || '').split(',').map(id => id.trim());
+        return task.created_by === tasksUser.id || assignedUserIds.includes(tasksUser.id);
+      }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    : [];
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1048,7 +1078,13 @@ export default function AdminDashboard() {
                     return (
                     <div 
                       key={u.id} 
-                      className={`flex items-center justify-between p-3 border rounded-md ${isThirdParty ? 'bg-slate-100 border-slate-300' : ''}`}
+                      className={`flex items-center justify-between p-3 border rounded-md cursor-pointer transition-colors hover:bg-muted/60 ${isThirdParty ? 'bg-slate-100 border-slate-300' : ''}`}
+                      onClick={() => setTasksUser(u)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') setTasksUser(u);
+                      }}
+                      role="button"
+                      tabIndex={0}
                       data-testid={`user-item-${u.id}`}
                     >
                       <div className="flex items-start gap-3 min-w-0">
@@ -1078,7 +1114,10 @@ export default function AdminDashboard() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => setEditingUser(u)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setEditingUser(u);
+                        }}
                         data-testid={`button-edit-user-${u.id}`}
                         className="flex-shrink-0 ml-2"
                       >
@@ -2566,6 +2605,50 @@ export default function AdminDashboard() {
         open={editingUser !== null}
         onOpenChange={(open) => !open && setEditingUser(null)}
       />
+
+      <Dialog open={tasksUser !== null} onOpenChange={(open) => !open && setTasksUser(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Zadaci korisnika: {tasksUser?.full_name}</DialogTitle>
+            <DialogDescription>
+              Prikazani su svi zadaci koje je korisnik prijavio ili koji su mu dodijeljeni.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="overflow-y-auto space-y-2 pr-1">
+            {fullTasksFetching && !fullTasksData ? (
+              <p className="text-sm text-muted-foreground py-4">Učitavanje zadataka...</p>
+            ) : selectedUserTasks.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4">Korisnik nema prijavljenih ni dodijeljenih zadataka.</p>
+            ) : (
+              selectedUserTasks.map(task => (
+                <button
+                  key={task.id}
+                  type="button"
+                  onClick={() => {
+                    setTasksUser(null);
+                    setSelectedTask(task);
+                  }}
+                  className="w-full text-left border rounded-md p-3 hover:bg-muted/60 transition-colors"
+                  data-testid={`button-user-task-${task.id}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium">{task.title}</p>
+                      {task.location && <p className="text-sm text-muted-foreground mt-1">{task.location}</p>}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(task.created_at).toLocaleString('sr-Latn-ME')}
+                      </p>
+                    </div>
+                    <Badge variant={task.status === 'completed' ? 'default' : 'secondary'} className="shrink-0">
+                      {getTaskStatusLabel(task.status)}
+                    </Badge>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Task Details Dialog */}
       <TaskDetailsDialog
