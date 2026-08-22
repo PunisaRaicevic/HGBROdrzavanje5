@@ -403,20 +403,6 @@ export default function ComplaintSubmissionDashboard() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="priority" className="text-base">{t('priority')}</Label>
-              <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger data-testid="select-priority" className="text-base">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="urgent">{t('urgent')}</SelectItem>
-                  <SelectItem value="normal">{t('normal')}</SelectItem>
-                  <SelectItem value="low">{t('can_wait')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="description" className="text-base">{t('descriptionRequired')}</Label>
               <Textarea
                 id="description"
