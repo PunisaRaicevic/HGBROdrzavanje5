@@ -1056,6 +1056,8 @@ export default function SupervisorDashboard() {
                               const getStatusBadge = (status: string) => {
                                 if (status === 'completed') {
                                   return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                                } else if (status === 'not_executed') {
+                                  return <Badge variant="destructive">Nije bilo uslova da se zadatak izvrši</Badge>;
                                 } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
                                   return <Badge variant="secondary">U toku</Badge>;
                                 } else if (status === 'with_external') {
@@ -1124,7 +1126,7 @@ export default function SupervisorDashboard() {
                                             {(() => {
                                               const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                               const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-                                              const showPending = task.status !== 'cancelled';
+                                              const showPending = task.status !== 'cancelled' && task.status !== 'not_executed';
                                               return names.map((name: string, idx: number) => {
                                                 const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                 const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
@@ -1273,6 +1275,8 @@ export default function SupervisorDashboard() {
                               const getStatusBadge = (status: string) => {
                                 if (status === 'completed') {
                                   return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                                } else if (status === 'not_executed') {
+                                  return <Badge variant="destructive">Nije bilo uslova da se zadatak izvrši</Badge>;
                                 } else if (status === 'assigned_to_radnik' || status === 'with_operator') {
                                   return <Badge variant="secondary">U toku</Badge>;
                                 } else if (status === 'with_external') {
@@ -1343,7 +1347,7 @@ export default function SupervisorDashboard() {
                                             {(() => {
                                               const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                               const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-                                              const showPending = task.status !== 'cancelled';
+                                              const showPending = task.status !== 'cancelled' && task.status !== 'not_executed';
                                               return names.map((name: string, idx: number) => {
                                                 const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                 const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
@@ -1446,7 +1450,7 @@ export default function SupervisorDashboard() {
                       const externalTasks = periodTasks.filter((t: any) => t.status === 'with_external');
                       const receiptConfirmedTasks = periodTasks.filter((t: any) => t.receipt_confirmed_at);
                       const receiptUnconfirmedTasks = periodTasks.filter((t: any) =>
-                        !t.receipt_confirmed_at && t.status !== 'completed' && t.status !== 'cancelled'
+                        !t.receipt_confirmed_at && t.status !== 'completed' && t.status !== 'cancelled' && t.status !== 'not_executed'
                       );
                       const completionRate = periodTasks.length > 0
                         ? Math.round((completedTasks.length / periodTasks.length) * 100)
@@ -1617,7 +1621,7 @@ export default function SupervisorDashboard() {
                                               {(() => {
                                                 const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                                 const confirmedSet = new Set((task.receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-                                                const showPending = task.status !== 'cancelled';
+                                                const showPending = task.status !== 'cancelled' && task.status !== 'not_executed';
                                                 return names.map((name: string, idx: number) => {
                                                   const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                   const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';

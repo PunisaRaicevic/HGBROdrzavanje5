@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { useTranslation } from 'react-i18next';
 
-type TaskStatus = 'new' | 'with_operator' | 'assigned_to_radnik' | 'with_sef' | 'with_external' | 'returned_to_operator' | 'returned_to_sef' | 'completed' | 'cancelled';
+type TaskStatus = 'new' | 'with_operator' | 'assigned_to_radnik' | 'with_sef' | 'with_external' | 'returned_to_operator' | 'returned_to_sef' | 'not_executed' | 'completed' | 'cancelled';
 
 interface StatusBadgeProps {
   status: TaskStatus;
@@ -18,6 +18,7 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
     with_external: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
     returned_to_operator: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
     returned_to_sef: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
+    not_executed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
     completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300',
   };

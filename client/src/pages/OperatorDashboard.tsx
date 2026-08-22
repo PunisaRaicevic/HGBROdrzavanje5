@@ -7,11 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ClipboardList, Send, Plus, Clock, AlertCircle, MapPin, CheckCircle, PlayCircle, XCircle, Repeat } from 'lucide-react';
+import { ClipboardList, Send, Plus, Clock, AlertCircle, MapPin, CheckCircle, PlayCircle, XCircle, Repeat, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CreateTaskDialog from '@/components/CreateTaskDialog';
 import SelectTechnicianDialog from '@/components/SelectTechnicianDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 type Task = {
   id: string;
@@ -27,8 +37,9 @@ type Task = {
   sentTo?: 'supervisor' | 'technician';
   sentAt?: string;
   assignedToName?: string;
-  status: 'new' | 'with_operator' | 'assigned_to_radnik' | 'with_sef' | 'with_external' | 'returned_to_operator' | 'returned_to_sef' | 'rejected' | 'completed' | 'cancelled' | 'in_progress';
+  status: 'new' | 'with_operator' | 'assigned_to_radnik' | 'with_sef' | 'with_external' | 'returned_to_operator' | 'returned_to_sef' | 'not_executed' | 'rejected' | 'completed' | 'cancelled' | 'in_progress';
   completedAt?: string;
+  worker_report?: string;
   receipt_confirmed_at?: string;
   receipt_confirmed_by?: string;
   receipt_confirmed_by_name?: string;
@@ -95,6 +106,8 @@ export default function OperatorDashboard() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
+  const [returnToReporterTask, setReturnToReporterTask] = useState<Task | null>(null);
+  const [returnToReporterReason, setReturnToReporterReason] = useState('');
   const [audioEnabled, setAudioEnabled] = useState(() => {
     const saved = localStorage.getItem('soundNotificationsEnabled');
     return saved === 'true';
@@ -159,6 +172,31 @@ export default function OperatorDashboard() {
     }
   });
 
+  const returnToReporterMutation = useMutation({
+    mutationFn: async ({ taskId, reason }: { taskId: string; reason: string }) => {
+      return apiRequest('PATCH', `/api/tasks/${taskId}`, {
+        status: 'not_executed',
+        worker_report: reason.trim(),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/tasks'] });
+      toast({
+        title: t('returnedToReporterSuccess'),
+        description: t('returnedToReporterSuccessDescription'),
+      });
+      setReturnToReporterTask(null);
+      setReturnToReporterReason('');
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Greška',
+        description: error.message || 'Nije moguće vratiti zadatak prijavitelju.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Helper function to parse task images (handles string arrays or JSON strings)
   const parseTaskImages = (images: any): string[] => {
     if (!images) return [];
@@ -192,6 +230,7 @@ export default function OperatorDashboard() {
     sentAt: task.assigned_at || task.updated_at || undefined,
     assignedToName: task.assigned_to_name || undefined,
     completedAt: task.status === 'completed' ? task.updated_at : undefined,
+    worker_report: task.worker_report || undefined,
     receipt_confirmed_at: task.receipt_confirmed_at || undefined,
     receipt_confirmed_by: task.receipt_confirmed_by || undefined,
     receipt_confirmed_by_name: task.receipt_confirmed_by_name || undefined,
@@ -256,7 +295,9 @@ export default function OperatorDashboard() {
       
       if (todayOrPastTasks.length > 0) {
         // Show only today's or past tasks (most recent one that's not completed)
-        const relevant = todayOrPastTasks.filter(t => t.status !== 'completed');
+        const relevant = todayOrPastTasks.filter(t =>
+          !['completed', 'cancelled', 'not_executed'].includes(t.status)
+        );
         if (relevant.length > 0) {
           filteredChildTasks.push(relevant[relevant.length - 1]); // Most recent
         } else {
@@ -355,14 +396,14 @@ export default function OperatorDashboard() {
     switch (viewMode) {
       case 'new':
         // Include tasks that need operator action: new, with_operator, returned_to_operator
-        return allTasks.filter(task => 
+        return allTasks.filter(task =>
           task.status === 'new' || 
           task.status === 'with_operator' || 
           task.status === 'returned_to_operator'
         );
       case 'forwarded':
         // Prosleđeni ali nepotvrđeni: šefu ili majstoru BEZ potvrde prijema
-        return allTasks.filter(task => 
+        return allTasks.filter(task =>
           task.status === 'with_sef' || 
           (task.status === 'assigned_to_radnik' && !task.receipt_confirmed_at)
         );
@@ -376,9 +417,11 @@ export default function OperatorDashboard() {
       case 'completed':
         return allTasks.filter(task => task.status === 'completed'); // Završeni
       case 'overdue':
-        return allTasks.filter(task => task.status === 'cancelled'); // Neizvršeni/otkazani
+        return allTasks.filter(task =>
+          task.status === 'cancelled' || task.status === 'not_executed'
+        ); // Neizvršeni/otkazani
       default:
-        return allTasks.filter(task => 
+        return allTasks.filter(task =>
           task.status === 'new' || 
           task.status === 'with_operator' || 
           task.status === 'returned_to_operator'
@@ -399,7 +442,9 @@ export default function OperatorDashboard() {
     (task.status === 'assigned_to_radnik' && task.receipt_confirmed_at)
   ).length;
   const completedCount = allTasks.filter(task => task.status === 'completed').length;
-  const overdueCount = allTasks.filter(task => task.status === 'cancelled').length;
+  const overdueCount = allTasks.filter(task =>
+    task.status === 'cancelled' || task.status === 'not_executed'
+  ).length;
 
   const handleSendToSupervisor = (taskId: string, taskTitle: string) => {
     setProcessingTaskId(taskId);
@@ -463,6 +508,19 @@ export default function OperatorDashboard() {
         }
       }
     );
+  };
+
+  const openReturnToReporterDialog = (task: Task) => {
+    setReturnToReporterTask(task);
+    setReturnToReporterReason('');
+  };
+
+  const handleReturnToReporter = () => {
+    if (!returnToReporterTask || !returnToReporterReason.trim()) return;
+    returnToReporterMutation.mutate({
+      taskId: returnToReporterTask.id,
+      reason: returnToReporterReason,
+    });
   };
 
   const handleViewForwardedTasks = () => {
@@ -614,6 +672,21 @@ export default function OperatorDashboard() {
                           >
                             {t('sendToTechnician')}
                           </Button>
+                          {task.status === 'returned_to_operator' && (
+                            <Button
+                              variant="destructive"
+                              className="flex-1 min-h-11 min-w-[190px]"
+                              data-testid={`button-return-to-reporter-${task.id}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openReturnToReporterDialog(task);
+                              }}
+                              disabled={processingTaskId === task.id}
+                            >
+                              <RotateCcw className="w-4 h-4 mr-2" />
+                              {t('returnToReporter')}
+                            </Button>
+                          )}
                         </div>
                       ) : (
                         <div className="space-y-1">
@@ -633,7 +706,7 @@ export default function OperatorDashboard() {
                                 variant={
                                   task.status === 'completed' ? 'default' : 
                                   task.status === 'returned_to_sef' ? 'secondary' : 
-                                  task.status === 'cancelled' ? 'destructive' : 
+                                  task.status === 'cancelled' || task.status === 'not_executed' ? 'destructive' :
                                   'outline'
                                 }
                               >
@@ -641,6 +714,7 @@ export default function OperatorDashboard() {
                                 {task.status === 'returned_to_sef' && 'U Toku'}
                                 {task.status === 'completed' && 'Završeno'}
                                 {task.status === 'cancelled' && 'Otkazano'}
+                                {task.status === 'not_executed' && 'Nije bilo uslova da se zadatak izvrši'}
                               </Badge>
                               {task.sentTo === 'technician' && (
                                 <Badge 
@@ -780,7 +854,9 @@ export default function OperatorDashboard() {
           receipt_confirmed_by_name: selectedTask.receipt_confirmed_by_name ?? (taskDetailResponse?.task as any)?.receipt_confirmed_by_name,
           images: taskDetailResponse?.task ? parseTaskImages(taskDetailResponse.task.images) : selectedTask.images,
           worker_images: taskDetailResponse?.task ? parseTaskImages(taskDetailResponse.task.worker_images) : selectedTask.worker_images,
+          worker_report: (taskDetailResponse?.task as any)?.worker_report ?? selectedTask.worker_report,
         } : null}
+        currentUserRole={user?.role}
       />
 
       {/* Technician Selection Dialog */}
@@ -790,6 +866,57 @@ export default function OperatorDashboard() {
         onSelectTechnician={handleConfirmTechnicianSelection}
         taskTitle={currentTaskForTechnician?.title || ''}
       />
+
+      <Dialog
+        open={returnToReporterTask !== null}
+        onOpenChange={(open) => {
+          if (!open && !returnToReporterMutation.isPending) {
+            setReturnToReporterTask(null);
+            setReturnToReporterReason('');
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-lg" data-testid="dialog-return-to-reporter">
+          <DialogHeader>
+            <DialogTitle>{t('returnToReporterTitle')}</DialogTitle>
+            <DialogDescription>
+              {t('returnToReporterDescription')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="return-to-reporter-reason">{t('notExecutedReasonLabel')}</Label>
+            <Textarea
+              id="return-to-reporter-reason"
+              value={returnToReporterReason}
+              onChange={(event) => setReturnToReporterReason(event.target.value)}
+              placeholder={t('notExecutedReasonPlaceholder')}
+              rows={5}
+              disabled={returnToReporterMutation.isPending}
+              data-testid="textarea-return-to-reporter-reason"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setReturnToReporterTask(null);
+                setReturnToReporterReason('');
+              }}
+              disabled={returnToReporterMutation.isPending}
+            >
+              Otkaži
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReturnToReporter}
+              disabled={!returnToReporterReason.trim() || returnToReporterMutation.isPending}
+              data-testid="button-confirm-return-to-reporter"
+            >
+              {returnToReporterMutation.isPending ? t('returningToReporter') : t('confirmReturnToReporter')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

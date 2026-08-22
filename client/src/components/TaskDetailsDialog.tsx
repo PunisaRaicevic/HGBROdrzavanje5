@@ -337,7 +337,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
           t.id !== task.id && 
           t.scheduled_for &&
           new Date(t.scheduled_for) > currentScheduledDate &&
-          t.status !== 'completed'
+          !['completed', 'cancelled', 'not_executed'].includes(t.status)
         )
         .sort((a, b) => new Date(a.scheduled_for).getTime() - new Date(b.scheduled_for).getTime())
         .slice(0, 3);
@@ -349,7 +349,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
           t.parent_task_id === task.id && 
           t.scheduled_for &&
           new Date(t.scheduled_for) > now &&
-          t.status !== 'completed'
+          !['completed', 'cancelled', 'not_executed'].includes(t.status)
         )
         .sort((a, b) => new Date(a.scheduled_for).getTime() - new Date(b.scheduled_for).getTime())
         .slice(0, 3);
@@ -414,6 +414,17 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()); // Newest first
     
     return reports;
+  }, [historyResponse?.history]);
+
+  const notExecutedReason = useMemo(() => {
+    if (!historyResponse?.history) return '';
+    const matchingEntries = historyResponse.history
+      .filter(entry => entry.status_to === 'not_executed' && entry.notes)
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const latest = matchingEntries[matchingEntries.length - 1];
+    if (!latest?.notes) return '';
+    const match = latest.notes.match(/Not executed \(returned to reporter\):\s*([\s\S]+)/);
+    return match?.[1]?.trim() || latest.notes;
   }, [historyResponse?.history]);
 
   // Delete task mutation
@@ -495,6 +506,8 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
       return <Badge variant="destructive">Kod šefa</Badge>;
     } else if (status === 'rejected') {
       return <Badge variant="destructive">Odbijen</Badge>;
+    } else if (status === 'not_executed') {
+      return <Badge variant="destructive">Nije bilo uslova da se zadatak izvrši</Badge>;
     }
     return <Badge variant="secondary">{status}</Badge>;
   };
@@ -507,7 +520,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
   const isAdminOrSef = currentUserRole === 'sef' || currentUserRole === 'admin';
   const canReassignWorker = isAdminOrSef && (task?.status === 'assigned_to_radnik' || task?.status === 'with_worker');
   // Admin i šef mogu odbiti pogrešno prijavljen zadatak i vratiti ga pošiljaocu sa objašnjenjem.
-  const canReject = isAdminOrSef && !!task && !['completed', 'cancelled', 'rejected'].includes(task.status);
+  const canReject = isAdminOrSef && !!task && !['completed', 'cancelled', 'rejected', 'not_executed'].includes(task.status);
   
   if (!task) return null;
 
@@ -691,6 +704,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                         task.status === 'completed' ? 'default' :
                         task.status === 'returned_to_sef' ? 'destructive' :
                         task.status === 'rejected' ? 'destructive' :
+                        task.status === 'not_executed' ? 'destructive' :
                         task.status === 'with_external' ? 'secondary' :
                         'outline'
                       }
@@ -707,6 +721,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                        task.status === 'with_worker' || task.status === 'assigned_to_radnik' ? 'Kod radnika' :
                        task.status === 'returned_to_sef' ? 'Vraćen šefu' :
                        task.status === 'rejected' ? 'Odbijen' :
+                       task.status === 'not_executed' ? 'Nije bilo uslova da se zadatak izvrši' :
                        task.status === 'completed' ? 'Završen' :
                        task.status === 'cancelled' ? 'Otkazan' :
                        task.status === 'created' ? 'Kreiran' :
@@ -723,8 +738,16 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
                   </div>
                 )}
 
+                {/* Razlog konačnog povrata prijavitelju */}
+                {task.status === 'not_executed' && task.worker_report && (
+                  <div className="rounded-md border border-red-200 bg-red-50 p-2" data-testid="text-not-executed-reason">
+                    <p className="text-xs font-medium text-red-700 mb-1">Razlog zbog kojeg zadatak nije izvršen</p>
+                    <p className="text-sm text-red-900 whitespace-pre-wrap">{notExecutedReason || task.worker_report}</p>
+                  </div>
+                )}
+
                 {/* Trenutno zaduzen */}
-                {(task.assigned_to_name || task.external_company_name || task.operator_name || task.sef_name) && (
+                {task.status !== 'not_executed' && (task.assigned_to_name || task.external_company_name || task.operator_name || task.sef_name) && (
                   <div className="text-sm text-muted-foreground" data-testid="text-task-current-holder">
                     <span className="text-xs">Trenutno zadužen: </span>
                     <span className="font-medium text-foreground">

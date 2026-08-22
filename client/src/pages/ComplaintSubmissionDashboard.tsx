@@ -219,6 +219,8 @@ export default function ComplaintSubmissionDashboard() {
         return <Badge variant="outline" className="text-xs">{t('statusReturned')}</Badge>;
       case 'rejected':
         return <Badge variant="destructive" className="text-xs">{t('statusRejected')}</Badge>;
+      case 'not_executed':
+        return <Badge variant="destructive" className="text-xs">{t('statusNotExecuted')}</Badge>;
       default:
         return <Badge variant="outline" className="text-xs">{status}</Badge>;
     }
@@ -264,6 +266,8 @@ export default function ComplaintSubmissionDashboard() {
         return t('statusCancelled');
       case 'rejected':
         return t('statusRejected');
+      case 'not_executed':
+        return t('statusNotExecuted');
       case 'new':
         return t('awaitingReview');
       case 'with_operator':

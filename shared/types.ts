@@ -11,6 +11,10 @@ export type TaskStatus =
   | 'with_external' 
   | 'returned_to_operator' 
   | 'returned_to_sef' 
+  | 'not_executed'
+  | 'in_progress'
+  | 'accepted'
+  | 'rejected'
   | 'completed' 
   | 'cancelled';
 

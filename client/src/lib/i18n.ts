@@ -28,6 +28,7 @@ const resources = {
       with_external: 'With External',
       returned_to_operator: 'Returned to Operator',
       returned_to_sef: 'Returned to Supervisor',
+      not_executed: 'There were no conditions to complete the task',
       completed: 'Completed',
       cancelled: 'Cancelled',
       
@@ -119,6 +120,15 @@ const resources = {
       noOverdueTasks: 'No overdue tasks from previous period.',
       sendToSupervisor: 'Send to Supervisor',
       sendToTechnician: 'Send to Technician',
+      returnToReporter: 'Return to Reporter',
+      returnToReporterTitle: 'Return Task to Reporter',
+      returnToReporterDescription: 'The task will be marked “There were no conditions to complete the task”, and the reporter will be notified.',
+      notExecutedReasonLabel: 'Reason *',
+      notExecutedReasonPlaceholder: 'For example: The guest was not in the room, so the technician could not access the issue.',
+      confirmReturnToReporter: 'Confirm and Return',
+      returningToReporter: 'Returning...',
+      returnedToReporterSuccess: 'Task returned to reporter',
+      returnedToReporterSuccessDescription: 'The task was marked “There were no conditions to complete the task”.',
       from: 'From',
       forwarded: 'Forwarded',
       inProgress: 'In Progress',
@@ -197,6 +207,7 @@ const resources = {
       statusCancelled: 'Cancelled',
       statusReturned: 'Returned',
       statusRejected: 'Rejected',
+      statusNotExecuted: 'There were no conditions to complete the task',
       
       // Time
       daysAgo: 'd ago',
@@ -254,6 +265,7 @@ const resources = {
       with_external: 'Kod eksternih',
       returned_to_operator: 'Vraćen operateru',
       returned_to_sef: 'Vraćen šefu',
+      not_executed: 'Nije bilo uslova da se zadatak izvrši',
       completed: 'Završen',
       cancelled: 'Otkazan',
       
@@ -345,6 +357,15 @@ const resources = {
       noOverdueTasks: 'Nema neizvršenih zadataka iz prethodnog perioda.',
       sendToSupervisor: 'Pošalji Šefu',
       sendToTechnician: 'Pošalji Radniku',
+      returnToReporter: 'Vrati prijavitelju',
+      returnToReporterTitle: 'Vrati zadatak prijavitelju',
+      returnToReporterDescription: 'Zadatak će dobiti status „Nije bilo uslova da se zadatak izvrši“, a prijavitelj će dobiti obavijest.',
+      notExecutedReasonLabel: 'Razlog *',
+      notExecutedReasonPlaceholder: 'Na primjer: Gost nije bio u sobi i majstor nije mogao pristupiti kvaru.',
+      confirmReturnToReporter: 'Potvrdi i vrati',
+      returningToReporter: 'Vraćam...',
+      returnedToReporterSuccess: 'Zadatak vraćen prijavitelju',
+      returnedToReporterSuccessDescription: 'Status je promijenjen u „Nije bilo uslova da se zadatak izvrši“.',
       from: 'Od',
       forwarded: 'Prosleđeni',
       inProgress: 'U Toku',
@@ -423,6 +444,7 @@ const resources = {
       statusCancelled: 'Otkazan',
       statusReturned: 'Vraćen',
       statusRejected: 'Odbijen',
+      statusNotExecuted: 'Nije bilo uslova da se zadatak izvrši',
       
       // Time
       daysAgo: 'd pre',

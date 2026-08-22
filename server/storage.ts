@@ -60,6 +60,7 @@ export interface IStorage {
   getTasksScheduledBetween(startDate: string, endDate: string): Promise<Task[]>;
   createTask(task: Partial<InsertTask>): Promise<Task>;
   updateTask(id: string, data: Partial<Task>): Promise<Task | undefined>;
+  updateTaskIfStatus(id: string, expectedStatus: string, data: Partial<Task>): Promise<Task | undefined>;
   deleteTask(id: string): Promise<void>;
   
   createTaskHistory(history: Partial<InsertTaskHistory>): Promise<TaskHistory>;
@@ -247,7 +248,7 @@ export class SupabaseStorage implements IStorage {
         // (puna arhiva se učitava na zahtjev za Pretragu/Statistike).
         const cutoff = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
         q = q.or(
-          `created_at.gte.${cutoff},scheduled_for.gte.${cutoff},status.not.in.(completed,cancelled),is_recurring.eq.true`
+          `created_at.gte.${cutoff},scheduled_for.gte.${cutoff},status.not.in.(completed,cancelled,not_executed),is_recurring.eq.true`
         );
       }
       const { data, error } = await q.order('created_at', { ascending: false }).range(from, to);
@@ -352,6 +353,23 @@ export class SupabaseStorage implements IStorage {
       throw error;
     }
     return updated as Task;
+  }
+
+  async updateTaskIfStatus(
+    id: string,
+    expectedStatus: string,
+    data: Partial<Task>
+  ): Promise<Task | undefined> {
+    const { data: updated, error } = await supabase
+      .from('tasks')
+      .update(data)
+      .eq('id', id)
+      .eq('status', expectedStatus)
+      .select()
+      .maybeSingle();
+
+    if (error) throw error;
+    return updated ? updated as Task : undefined;
   }
 
   async deleteTask(id: string): Promise<void> {

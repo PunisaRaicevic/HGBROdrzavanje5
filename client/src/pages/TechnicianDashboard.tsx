@@ -64,11 +64,11 @@ export default function TechnicianDashboard() {
     (task: any) => task.assigned_to?.includes(user?.id) || task.external_company_id === user?.id
   );
 
-  const newTasks = allTasks.filter((t: any) => 
-    t.status !== 'completed' && t.status !== 'cancelled' && !t.estimated_arrival_time
+  const newTasks = allTasks.filter((t: any) =>
+    t.status !== 'completed' && t.status !== 'cancelled' && t.status !== 'not_executed' && !t.estimated_arrival_time
   );
-  const acceptedTasks = allTasks.filter((t: any) => 
-    t.status !== 'completed' && t.status !== 'cancelled' && !!t.estimated_arrival_time
+  const acceptedTasks = allTasks.filter((t: any) =>
+    t.status !== 'completed' && t.status !== 'cancelled' && t.status !== 'not_executed' && !!t.estimated_arrival_time
   );
   const completedTasks = allTasks.filter((t: any) => t.status === 'completed');
 
@@ -388,6 +388,9 @@ export default function TechnicianDashboard() {
     if (task.status === 'completed') {
       return <Badge variant="outline" className="text-xs text-green-600 border-green-300">Zavrseno</Badge>;
     }
+    if (task.status === 'not_executed') {
+      return <Badge variant="destructive" className="text-xs">Nije bilo uslova da se zadatak izvrši</Badge>;
+    }
     if (task.estimated_arrival_time) {
       return <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">Prihvaceno</Badge>;
     }
@@ -440,7 +443,7 @@ export default function TechnicianDashboard() {
             </div>
           </div>
 
-          {task.estimated_arrival_time && task.status !== 'completed' && (
+          {task.estimated_arrival_time && task.status !== 'completed' && task.status !== 'not_executed' && (
             <div className="flex items-center gap-1 text-xs text-blue-600">
               <CalendarClock className="w-3 h-3" />
               <span>Dolazak: {format(new Date(task.estimated_arrival_time), 'dd.MM.yyyy HH:mm')}</span>
@@ -725,7 +728,7 @@ export default function TechnicianDashboard() {
                 )}
 
                 {/* NEW TASK: Accept or Decline */}
-                {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && !selectedTask.estimated_arrival_time && (
+                {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && selectedTask.status !== 'not_executed' && !selectedTask.estimated_arrival_time && (
                   <div className="space-y-4 pt-3 border-t">
                     {currentAction === null && (
                       <div className="flex gap-3">
@@ -831,7 +834,7 @@ export default function TechnicianDashboard() {
                 )}
 
                 {/* ACCEPTED TASK: Complete */}
-                {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && !!selectedTask.estimated_arrival_time && (
+                {selectedTask.status !== 'completed' && selectedTask.status !== 'cancelled' && selectedTask.status !== 'not_executed' && !!selectedTask.estimated_arrival_time && (
                   <div className="space-y-4 pt-3 border-t">
                     {currentAction !== 'complete' && (
                       <div className="flex flex-col gap-2">

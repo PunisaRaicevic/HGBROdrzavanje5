@@ -255,6 +255,10 @@ export default function DailyReportDialog({
               {todaysTasks.filter(t => t.status === 'completed').length}
             </strong></span>
             <span>•</span>
+            <span>Nije izvršeno: <strong className="text-red-600 print:text-black">
+              {todaysTasks.filter(t => t.status === 'not_executed').length}
+            </strong></span>
+            <span>•</span>
             <span>U toku: <strong className="text-blue-600 print:text-black">
               {todaysTasks.filter(t => t.status === 'with_operator').length}
             </strong></span>
@@ -329,6 +333,11 @@ export default function DailyReportDialog({
                               <CheckCircle className="w-3 h-3 text-green-600" />
                               <span className="text-xs text-green-600">Završeno</span>
                             </>
+                          ) : task.status === 'not_executed' ? (
+                            <>
+                              <XCircle className="w-3 h-3 text-red-600" />
+                              <span className="text-xs text-red-600">Nije bilo uslova da se zadatak izvrši</span>
+                            </>
                           ) : task.status === 'with_operator' ? (
                             <>
                               <Clock className="w-3 h-3 text-blue-600" />
@@ -343,7 +352,7 @@ export default function DailyReportDialog({
                         </div>
                       </TableCell>
                       <TableCell className="text-xs font-medium">
-                        {getElapsedTime(task.created_at, task.status === 'completed' ? task.updated_at : undefined)}
+                        {getElapsedTime(task.created_at, ['completed', 'not_executed'].includes(task.status) ? task.updated_at : undefined)}
                       </TableCell>
                     </TableRow>
                   ))}

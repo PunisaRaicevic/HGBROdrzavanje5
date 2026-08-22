@@ -54,6 +54,26 @@ interface ReportOptions {
   tasks: Task[];
 }
 
+const TASK_STATUS_LABELS: Record<string, string> = {
+  new: 'Novo',
+  with_operator: 'Kod operatera',
+  assigned_to_radnik: 'Dodijeljeno radniku',
+  with_sef: 'Kod šefa',
+  with_external: 'Kod eksterne firme',
+  returned_to_operator: 'Vraćeno operateru',
+  returned_to_sef: 'Vraćeno šefu',
+  not_executed: 'Nije bilo uslova da se zadatak izvrši',
+  completed: 'Završeno',
+  cancelled: 'Otkazano',
+  in_progress: 'U toku',
+  accepted: 'Prihvaćeno',
+  rejected: 'Odbijeno',
+};
+
+function getTaskStatusLabel(status: string): string {
+  return TASK_STATUS_LABELS[status] || status;
+}
+
 async function resolveImageBuffers(images: string[]): Promise<(Buffer | null)[]> {
   return Promise.all(
     images.map(async (imageData) => {
@@ -139,26 +159,28 @@ export async function generateDailyReportPdf(options: ReportOptions): Promise<Bu
     try {
       const doc = new PDFDocument({ margin: 40, size: 'A4' });
       const chunks: Buffer[] = [];
+      const { regular: FONT, bold: FONT_B } = registerUnicodeFonts(doc);
 
       doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      doc.fontSize(18).text(options.title, { align: 'center' });
+      doc.font(FONT_B).fontSize(18).text(options.title, { align: 'center' });
       doc.moveDown(0.5);
-      doc.fontSize(12).text(`Datum: ${options.date}`, { align: 'center' });
+      doc.font(FONT).fontSize(12).text(`Datum: ${options.date}`, { align: 'center' });
       doc.moveDown(1);
 
       const completedCount = options.tasks.filter(t => t.status === 'completed').length;
       const inProgressCount = options.tasks.filter(t => t.status === 'with_operator').length;
-      doc.fontSize(11).text(`Ukupno: ${options.tasks.length}  |  Zavrseno: ${completedCount}  |  U toku: ${inProgressCount}`);
+      const notExecutedCount = options.tasks.filter(t => t.status === 'not_executed').length;
+      doc.fontSize(11).text(`Ukupno: ${options.tasks.length}  |  Završeno: ${completedCount}  |  Nije izvršeno: ${notExecutedCount}  |  U toku: ${inProgressCount}`);
       doc.moveDown(1);
 
       const tableTop = doc.y;
       const colWidths = [70, 70, 60, 120, 60, 70, 60];
       const headers = ['Prijavljeno', 'Prijavio', 'Lokacija', 'Opis', 'Prioritet', 'Dodeljen', 'Status'];
 
-      doc.fontSize(9).font('Helvetica-Bold');
+      doc.fontSize(9).font(FONT_B);
       let x = 40;
       headers.forEach((header, i) => {
         doc.text(header, x, tableTop, { width: colWidths[i], align: 'left' });
@@ -167,7 +189,7 @@ export async function generateDailyReportPdf(options: ReportOptions): Promise<Bu
 
       doc.moveTo(40, tableTop + 15).lineTo(555, tableTop + 15).stroke();
 
-      doc.font('Helvetica').fontSize(8);
+      doc.font(FONT).fontSize(8);
       let y = tableTop + 20;
 
       for (const task of options.tasks) {
@@ -180,7 +202,7 @@ export async function generateDailyReportPdf(options: ReportOptions): Promise<Bu
         const dateStr = `${createdAt.getDate().toString().padStart(2, '0')}.${(createdAt.getMonth() + 1).toString().padStart(2, '0')}. ${createdAt.getHours().toString().padStart(2, '0')}:${createdAt.getMinutes().toString().padStart(2, '0')}`;
         
         const priority = task.priority === 'urgent' ? 'Hitno' : task.priority === 'normal' ? 'Normalno' : 'Nisko';
-        const status = task.status === 'completed' ? 'Zavrseno' : task.status === 'with_operator' ? 'U toku' : 'Novo';
+        const status = getTaskStatusLabel(task.status);
         const description = (task.description || task.title || '').substring(0, 40);
 
         const row = [
@@ -222,6 +244,7 @@ export async function generateTaskReportPdf(task: Task, history: any[]): Promise
     try {
       const doc = new PDFDocument({ margin: 40, size: 'A4' });
       const chunks: Buffer[] = [];
+      const { regular: FONT, bold: FONT_B } = registerUnicodeFonts(doc);
 
       doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
@@ -234,28 +257,28 @@ export async function generateTaskReportPdf(task: Task, history: any[]): Promise
       };
 
       const priorityLabel = task.priority === 'urgent' ? 'Hitno' : task.priority === 'normal' ? 'Normalno' : 'Moze sacekati';
-      const statusLabel = task.status === 'completed' ? 'Zavrseno' : task.status === 'cancelled' ? 'Otkazano' : task.status === 'with_external' ? 'Kod eksterne firme' : task.status === 'assigned_to_radnik' ? 'Dodijeljeno radniku' : task.status === 'with_operator' ? 'Kod operatera' : task.status === 'new' ? 'Novo' : task.status;
+      const statusLabel = getTaskStatusLabel(task.status);
 
-      doc.fontSize(16).font('Helvetica-Bold').text('IZVJESTAJ O ZADATKU', { align: 'center' });
+      doc.fontSize(16).font(FONT_B).text('IZVJEŠTAJ O ZADATKU', { align: 'center' });
       doc.moveDown(0.3);
-      doc.fontSize(9).font('Helvetica').text(`Generisan: ${formatDate(new Date())}`, { align: 'center' });
+      doc.fontSize(9).font(FONT).text(`Generisan: ${formatDate(new Date())}`, { align: 'center' });
       doc.moveDown(0.5);
       doc.moveTo(40, doc.y).lineTo(555, doc.y).stroke('#cccccc');
       doc.moveDown(0.5);
 
-      doc.fontSize(14).font('Helvetica-Bold').text(task.title || 'Bez naslova');
+      doc.fontSize(14).font(FONT_B).text(task.title || 'Bez naslova');
       doc.moveDown(0.5);
 
       const sectionTitle = (title: string) => {
         doc.moveDown(0.3);
-        doc.fontSize(11).font('Helvetica-Bold').fillColor('#333333').text(title);
+        doc.fontSize(11).font(FONT_B).fillColor('#333333').text(title);
         doc.moveDown(0.2);
-        doc.font('Helvetica').fillColor('#000000');
+        doc.font(FONT).fillColor('#000000');
       };
 
       const fieldRow = (label: string, value: string) => {
-        doc.fontSize(9).font('Helvetica-Bold').text(`${label}: `, { continued: true });
-        doc.font('Helvetica').text(value);
+        doc.fontSize(9).font(FONT_B).text(`${label}: `, { continued: true });
+        doc.font(FONT).text(value);
       };
 
       sectionTitle('OSNOVNI PODACI');
@@ -324,11 +347,11 @@ export async function generateTaskReportPdf(task: Task, history: any[]): Promise
             entry.action === 'task_returned' ? 'Vraceno' :
             entry.action === 'completed' ? 'Zavrseno' : entry.action;
 
-          doc.fontSize(8).font('Helvetica-Bold').text(
+          doc.fontSize(8).font(FONT_B).text(
             `${formatDate(entry.timestamp)} - ${actionLabel}`,
             { continued: true }
           );
-          doc.font('Helvetica').text(` (${entry.user_name || 'N/A'}, ${entry.user_role || 'N/A'})`);
+          doc.font(FONT).text(` (${entry.user_name || 'N/A'}, ${entry.user_role || 'N/A'})`);
 
           if (entry.action === 'document_uploaded') {
             const fileName = entry.assigned_to || 'Dokument';
@@ -338,7 +361,7 @@ export async function generateTaskReportPdf(task: Task, history: any[]): Promise
             doc.fontSize(8).text(`   ${entry.notes}`, { indent: 15 });
           }
           if (entry.status_to) {
-            const toLabel = entry.status_to === 'completed' ? 'Zavrseno' : entry.status_to === 'with_external' ? 'Kod externe firme' : entry.status_to === 'assigned_to_radnik' ? 'Dodijeljeno radniku' : entry.status_to;
+            const toLabel = getTaskStatusLabel(entry.status_to);
             doc.fontSize(8).text(`   Status: ${toLabel}`, { indent: 15 });
           }
           if (entry.assigned_to_name) {
@@ -501,7 +524,7 @@ export async function generateTasksCsv(tasks: Task[]): Promise<string> {
     const createdAt = new Date(task.created_at);
     const dateStr = `${createdAt.getDate().toString().padStart(2, '0')}.${(createdAt.getMonth() + 1).toString().padStart(2, '0')}.${createdAt.getFullYear()} ${createdAt.getHours().toString().padStart(2, '0')}:${createdAt.getMinutes().toString().padStart(2, '0')}`;
     const priority = task.priority === 'urgent' ? 'Hitno' : task.priority === 'normal' ? 'Normalno' : 'Nisko';
-    const status = task.status === 'completed' ? 'Zavrseno' : task.status === 'with_operator' ? 'U toku' : 'Novo';
+    const status = getTaskStatusLabel(task.status);
     
     return [
       dateStr,

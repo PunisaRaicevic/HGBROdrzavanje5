@@ -260,6 +260,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recipientCount = supervisors.length;
         console.log(`📨 Notifikacije poslane ${supervisors.length} sefovima`);
       }
+
+      // Final return to the original reporter is notified directly by the
+      // authenticated task-update route. Do not fall through and notify the
+      // previously assigned worker just because assigned_to is still present.
+      else if (taskStatus === 'not_executed' && oldStatus !== 'not_executed') {
+        console.log('ℹ️ Neizvršiv zadatak - prijavitelj je obaviješten kroz task update rutu');
+        return res.status(200).json({
+          message: 'Reporter notification handled by task update route',
+          status: taskStatus,
+        });
+      }
       
       // 4. TASKS ASSIGNED TO WORKERS: has assigned_to field → notify assigned workers
       else if (newRecord.assigned_to) {
@@ -1073,6 +1084,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             timestamp: entry.timestamp,
           });
         }
+      } else if (entry.status_to === "not_executed" && entry.notes) {
+        const match = entry.notes.match(/Not executed \(returned to reporter\):\s*([\s\S]+)/);
+        if (match && match[1]) {
+          reasons.push({
+            user_name: entry.user_name || "Unknown",
+            reason: `Nije bilo uslova da se zadatak izvrši: ${match[1].trim()}`,
+            timestamp: entry.timestamp,
+          });
+        }
       }
     }
     return reasons.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
@@ -1378,10 +1398,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Razlog odbijanja je obavezan." });
       }
 
+      // Operater može završiti ovaj tok samo nakon što mu je majstor vratio
+      // zadatak. Razlog je obavezan i promjena nije dozvoljena drugim ulogama.
+      if (status === "not_executed") {
+        if (sessionUser.role !== "operater") {
+          return res.status(403).json({ error: "Samo operater može vratiti neizvršiv zadatak prijavitelju." });
+        }
+        if (currentTask.status !== "returned_to_operator") {
+          return res.status(409).json({ error: "Prijavitelju se može vratiti samo zadatak koji je majstor vratio operateru." });
+        }
+        if (!worker_report || !worker_report.trim()) {
+          return res.status(400).json({ error: "Razlog zbog kojeg zadatak nije izvršen je obavezan." });
+        }
+        updateData.operator_id = sessionUser.id;
+        updateData.operator_name = sessionUser.full_name;
+      }
+
+      // Konačni rezultat "nije bilo uslova" ne smije biti prepisan drugim
+      // završnim statusom kroz generički PATCH endpoint.
+      if (
+        currentTask.status === "not_executed" &&
+        status !== undefined &&
+        status !== currentTask.status
+      ) {
+        return res.status(409).json({
+          error: "Zadatak je već konačno vraćen prijavitelju i status se ne može mijenjati.",
+        });
+      }
+
+      if (
+        currentTask.status === "not_executed" &&
+        (worker_report !== undefined || worker_images !== undefined)
+      ) {
+        return res.status(409).json({
+          error: "Razlog i dokazi konačno vraćenog zadatka ne mogu se mijenjati.",
+        });
+      }
+
       // Prevent overwriting "completed" status with non-completed status (except by admin/sef)
       // This prevents stale cached data from resetting completed tasks
       if (status !== undefined) {
-        const protectedStatuses = ['completed', 'cancelled'];
+        const protectedStatuses = ['completed', 'cancelled', 'not_executed'];
         const isDowngrade = protectedStatuses.includes(currentTask?.status) && !protectedStatuses.includes(status);
         const canDowngrade = sessionUser.role === 'admin' || sessionUser.role === 'sef';
         
@@ -1397,8 +1454,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       if (assigned_to_name !== undefined) updateData.assigned_to_name = assigned_to_name || null;
       // worker_report: za completed status biće obrađen u bloku ispod (append sa imenom).
-      // Za sve ostale slučajeve — direktan upis.
-      if (worker_report && status !== "completed") updateData.worker_report = worker_report;
+      // Kod konačnog povrata prijavitelju čuvamo i prethodni izvještaj majstora.
+      if (worker_report && status !== "completed") {
+        if (status === "not_executed") {
+          const stamp = new Date().toLocaleString("sr-Latn-RS", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          const finalEntry = `${sessionUser.full_name} (${stamp}) — Nije bilo uslova da se zadatak izvrši: ${worker_report.trim()}`;
+          const existingReport = (currentTask.worker_report || "").trim();
+          updateData.worker_report = existingReport
+            ? `${existingReport}\n---\n${finalEntry}`
+            : finalEntry;
+        } else {
+          updateData.worker_report = worker_report;
+        }
+      }
       if (worker_images !== undefined) {
         const uploaded = await uploadImagesArray(worker_images, `worker/${sessionUser.id}`);
         updateData.worker_images = uploaded && uploaded.length > 0 ? uploaded : [];
@@ -1518,8 +1592,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData.completed_by_name = null;
       }
 
-      const task = await storage.updateTask(id, updateData);
-      if (!task) return res.status(404).json({ error: "Task not found" });
+      const task = status === "not_executed"
+        ? await storage.updateTaskIfStatus(id, "returned_to_operator", updateData)
+        : await storage.updateTask(id, updateData);
+      if (!task) {
+        if (status === "not_executed") {
+          return res.status(409).json({
+            error: "Zadatak je u međuvremenu već obrađen. Osvježite listu zadataka.",
+          });
+        }
+        return res.status(404).json({ error: "Task not found" });
+      }
 
       let actionMessage = null;
       if (receipt_confirmed_at) actionMessage = `Receipt confirmed by ${sessionUser.full_name}`;
@@ -1528,6 +1611,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         else if (status === "returned_to_sef") actionMessage = `Returned to Supervisor: ${worker_report}`;
         else if (status === "returned_to_operator") actionMessage = `Returned to Operator: ${worker_report}`;
         else if (status === "rejected") actionMessage = `Rejected (returned to reporter): ${worker_report}`;
+        else if (status === "not_executed") actionMessage = `Not executed (returned to reporter): ${worker_report.trim()}`;
       } else if (assigned_to !== undefined) {
         actionMessage = assigned_to ? `Assigned to ${assigned_to_name || "technician(s)"}` : "Cleared technician assignment";
       }
@@ -1593,6 +1677,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           task.id,
           task.priority as "urgent" | "normal" | "can_wait"
         ).catch((err) => console.error(`OneSignal greska (reject) za ${task.created_by}:`, err));
+      }
+
+      // Kada operater potvrdi da nije bilo uslova za izvršenje, obavijesti
+      // prvobitnog prijavitelja sa razlogom koji je operater unio.
+      if (status === "not_executed" && currentTask?.status !== "not_executed" && task.created_by) {
+        const reason = worker_report.trim();
+        const title = `Zadatak nije izvršen #${task.id.slice(0, 8)}`;
+        const body = `${sessionUser.full_name} je vratio vaš zadatak: ${task.location || task.title}. Razlog: ${reason}`;
+        (async () => {
+          try {
+            const { sendPushToAllUserDevices } = await import("./services/firebase");
+            await sendPushToAllUserDevices(
+              task.created_by,
+              title,
+              body,
+              task.id,
+              task.priority as "urgent" | "normal" | "can_wait"
+            );
+          } catch (err) {
+            console.error(`Push greska (not_executed) za ${task.created_by}:`, err);
+          }
+        })();
+        sendOneSignalToUser(
+          task.created_by,
+          title,
+          body,
+          task.id,
+          task.priority as "urgent" | "normal" | "can_wait"
+        ).catch((err) => console.error(`OneSignal greska (not_executed) za ${task.created_by}:`, err));
       }
 
       // Push notifications to admin/sef when serviser performs key actions
@@ -1675,7 +1788,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (isRecurringTemplate) {
         const childTasks = await storage.getChildTasksByParentId(id);
-        const finalizedStatuses = ['completed', 'cancelled'];
+        const finalizedStatuses = ['completed', 'cancelled', 'not_executed'];
         const pendingChildTasks = childTasks.filter(child => !finalizedStatuses.includes(child.status));
         const completedChildTasks = childTasks.filter(child => finalizedStatuses.includes(child.status));
 

@@ -44,10 +44,13 @@ const TASKS_TO_MAINTAIN = 8;
  */
 export async function ensureChildTasksExist(templateTask: any): Promise<number> {
   try {
-    // Get existing child tasks for this template (only non-completed/non-cancelled)
+    // Get existing child tasks for this template (only non-finalized)
     const existingChildren = await storage.getChildTasksByParentId(templateTask.id);
     const activeChildren = existingChildren.filter(
-      (child: any) => child.status !== 'completed' && child.status !== 'cancelled'
+      (child: any) =>
+        child.status !== 'completed' &&
+        child.status !== 'cancelled' &&
+        child.status !== 'not_executed'
     );
     
     const existingCount = activeChildren.length;

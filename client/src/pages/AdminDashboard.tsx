@@ -108,6 +108,7 @@ function getTaskStatusLabel(status: string): string {
     with_external: 'Treća lica',
     returned_to_operator: 'Vraćeno operateru',
     returned_to_sef: 'Vraćeno šefu',
+    not_executed: 'Nije bilo uslova da se zadatak izvrši',
     rejected: 'Odbijeno',
     completed: 'Završeno',
     cancelled: 'Otkazano',
@@ -190,7 +191,10 @@ function computeWorkerAnalysis(tasks: Task[], rangeStart: Date, rangeEnd: Date) 
 
   periodTasks.forEach(task => {
     const names = (task.assigned_to_name || '').split(',').map(n => n.trim()).filter(Boolean);
-    const isReturned = task.status === 'returned_to_sef' || task.status === 'returned_to_operator';
+    const isReturned =
+      task.status === 'returned_to_sef' ||
+      task.status === 'returned_to_operator' ||
+      task.status === 'not_executed';
     const isCompleted = task.status === 'completed';
     const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => normKey(s)).filter(Boolean));
 
@@ -662,7 +666,7 @@ export default function AdminDashboard() {
     const rows = reportTasks.map(task => [
       task.location || '',
       task.description || '',
-      task.status,
+      getTaskStatusLabel(task.status),
       task.priority || 'normal',
       task.created_by_name || '',
       task.assigned_to_name || '',
@@ -714,6 +718,7 @@ export default function AdminDashboard() {
       'with_external': 'Eksterna sluzba',
       'returned_to_operator': 'Vraceno operateru',
       'returned_to_sef': 'Vraceno sefu',
+      'not_executed': 'Nije bilo uslova da se zadatak izvrsi',
       'rejected': 'Odbijeno',
       'completed': 'Zavrseno',
       'cancelled': 'Otkazano'
@@ -807,7 +812,7 @@ export default function AdminDashboard() {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const oooAlertTasks = tasks.filter(t => {
-    if (!t.room_number || t.status === 'completed') return false;
+    if (!t.room_number || ['completed', 'cancelled', 'not_executed'].includes(t.status)) return false;
     if (!t.created_at || new Date(t.created_at) < todayStart) return false;
     const roomNum = String(t.room_number).replace(/\s+/g, '');
     return activeOooRooms.some(r =>
@@ -1376,12 +1381,14 @@ export default function AdminDashboard() {
                                 // Nezavrseni zadaci koje je majstor PRIHVATIO (potvrdio prijem)
                                 return !!(task as any).receipt_confirmed_at &&
                                        task.status !== 'completed' &&
-                                       task.status !== 'cancelled';
+                                       task.status !== 'cancelled' &&
+                                       task.status !== 'not_executed';
                               case 'pending':
                                 // Nezavrseni zadaci koje majstor JOS NIJE prihvatio
                                 return !(task as any).receipt_confirmed_at &&
                                        task.status !== 'completed' &&
                                        task.status !== 'cancelled' &&
+                                       task.status !== 'not_executed' &&
                                        task.status !== 'with_external';
                               case 'external':
                                 return task.status === 'with_external';
@@ -1412,6 +1419,8 @@ export default function AdminDashboard() {
                           const getStatusBadge = (status: string) => {
                             if (status === 'completed') {
                               return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                            } else if (status === 'not_executed') {
+                              return <Badge variant="destructive">Nije bilo uslova da se zadatak izvrši</Badge>;
                             } else if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') {
                               return <Badge variant="secondary">U toku</Badge>;
                             } else if (status === 'returned_to_operator' || status === 'returned_to_sef') {
@@ -1486,7 +1495,7 @@ export default function AdminDashboard() {
                                         {(() => {
                                           const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                           const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-                                          const showPending = task.status !== 'cancelled';
+                                          const showPending = task.status !== 'cancelled' && task.status !== 'not_executed';
                                           return names.map((name: string, idx: number) => {
                                             const isConfirmed = confirmedSet.has(name.toLowerCase());
                                             const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
@@ -1591,12 +1600,14 @@ export default function AdminDashboard() {
                                 // Nezavrseni zadaci koje je majstor PRIHVATIO (potvrdio prijem)
                                 return !!(task as any).receipt_confirmed_at &&
                                        task.status !== 'completed' &&
-                                       task.status !== 'cancelled';
+                                       task.status !== 'cancelled' &&
+                                       task.status !== 'not_executed';
                               case 'pending':
                                 // Nezavrseni zadaci koje majstor JOS NIJE prihvatio
                                 return !(task as any).receipt_confirmed_at &&
                                        task.status !== 'completed' &&
                                        task.status !== 'cancelled' &&
+                                       task.status !== 'not_executed' &&
                                        task.status !== 'with_external';
                               case 'external':
                                 return task.status === 'with_external';
@@ -1627,6 +1638,8 @@ export default function AdminDashboard() {
                           const getStatusBadge = (status: string) => {
                             if (status === 'completed') {
                               return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                            } else if (status === 'not_executed') {
+                              return <Badge variant="destructive">Nije bilo uslova da se zadatak izvrši</Badge>;
                             } else if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') {
                               return <Badge variant="secondary">U toku</Badge>;
                             } else if (status === 'returned_to_operator' || status === 'returned_to_sef') {
@@ -1703,7 +1716,7 @@ export default function AdminDashboard() {
                                         {(() => {
                                           const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                           const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-                                          const showPending = task.status !== 'cancelled';
+                                          const showPending = task.status !== 'cancelled' && task.status !== 'not_executed';
                                           return names.map((name: string, idx: number) => {
                                             const isConfirmed = confirmedSet.has(name.toLowerCase());
                                             const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
@@ -1955,6 +1968,7 @@ export default function AdminDashboard() {
                     if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') return <Badge variant="secondary">U toku</Badge>;
                     if (status === 'returned_to_operator' || status === 'returned_to_sef') return <Badge variant="secondary" className="bg-orange-100 text-orange-800 border-orange-300">Vraceno</Badge>;
                     if (status === 'rejected') return <Badge variant="destructive">Odbijeno</Badge>;
+                    if (status === 'not_executed') return <Badge variant="destructive">Nije bilo uslova da se zadatak izvrši</Badge>;
                     if (status === 'with_external') return <Badge variant="outline">Eksterna firma</Badge>;
                     if (status === 'with_sef') return <Badge variant="secondary">Sa sefom</Badge>;
                     if (status === 'new') return <Badge variant="outline">Novo</Badge>;
@@ -2083,7 +2097,8 @@ export default function AdminDashboard() {
                   const receiptUnconfirmedTasks = periodTasks.filter(t => 
                     !(t as any).receipt_confirmed_at && 
                     t.status !== 'completed' && 
-                    t.status !== 'cancelled'
+                    t.status !== 'cancelled' &&
+                    t.status !== 'not_executed'
                   );
 
                   const completionRate = periodTasks.length > 0 
@@ -2237,6 +2252,8 @@ export default function AdminDashboard() {
                                     const getStatusBadge = (status: string) => {
                                       if (status === 'completed') {
                                         return <Badge variant="default" className="bg-green-600">Završeno</Badge>;
+                                      } else if (status === 'not_executed') {
+                                        return <Badge variant="destructive">Nije bilo uslova da se zadatak izvrši</Badge>;
                                       } else if (status === 'assigned_to_radnik' || status === 'with_operator' || status === 'in_progress') {
                                         return <Badge variant="secondary">U toku</Badge>;
                                       } else if (status === 'returned_to_operator' || status === 'returned_to_sef') {
@@ -2300,7 +2317,7 @@ export default function AdminDashboard() {
                                             {(() => {
                                               const names = task.assigned_to_name.split(',').map((n: string) => n.trim()).filter(Boolean);
                                               const confirmedSet = new Set(((task as any).receipt_confirmed_by_name || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean));
-                                              const showPending = task.status !== 'cancelled';
+                                              const showPending = task.status !== 'cancelled' && task.status !== 'not_executed';
                                               return names.map((name: string, idx: number) => {
                                                 const isConfirmed = confirmedSet.has(name.toLowerCase());
                                                 const tooltipText = task.status === 'completed' ? 'Obavio zadatak' : 'Potvrdio prijem';
