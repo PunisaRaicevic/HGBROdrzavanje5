@@ -85,7 +85,7 @@ export default function SupervisorDashboard() {
   const [historyPeriodFilter, setHistoryPeriodFilter] = useState('7d');
   const [historyStatusFilter, setHistoryStatusFilter] = useState('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
-  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month'>('day');
+  const [statsGranularity, setStatsGranularity] = useState<'day' | 'week' | 'month' | 'range'>('day');
   const [statsRange, setStatsRange] = useState(() => {
     const n = new Date();
     return {
@@ -1408,6 +1408,7 @@ export default function SupervisorDashboard() {
                     onChange={setStatsRange}
                     granularity={statsGranularity}
                     onGranularityChange={setStatsGranularity}
+                    allowRange
                     data-testid="period-picker-supervisor-stats"
                   />
                 </CardHeader>

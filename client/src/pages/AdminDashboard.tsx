@@ -2056,6 +2056,7 @@ export default function AdminDashboard() {
                 onChange={setStatsRange}
                 granularity={statsGranularity}
                 onGranularityChange={setStatsGranularity}
+                allowRange
                 data-testid="period-picker-stats"
               />
             </CardHeader>
@@ -2414,6 +2415,7 @@ export default function AdminDashboard() {
                 onChange={setAnalysisRange}
                 granularity={analysisGranularity}
                 onGranularityChange={setAnalysisGranularity}
+                allowRange
                 data-testid="period-picker-analysis"
               />
             </CardHeader>
@@ -2533,6 +2535,7 @@ export default function AdminDashboard() {
                 onChange={setAnalysisRange}
                 granularity={analysisGranularity}
                 onGranularityChange={setAnalysisGranularity}
+                allowRange
                 data-testid="period-picker-workers"
               />
             </CardHeader>
