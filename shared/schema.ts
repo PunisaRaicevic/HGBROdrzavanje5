@@ -37,6 +37,7 @@ export const user_device_tokens = pgTable("user_device_tokens", {
 
 export const tasks = pgTable("tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  task_number: integer("task_number").notNull().unique().default(sql`nextval('public.tasks_task_number_seq')`),
   title: text("title").notNull(),
   description: text("description"),
   location: text("location"),

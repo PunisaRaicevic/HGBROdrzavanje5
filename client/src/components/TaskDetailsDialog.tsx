@@ -98,6 +98,7 @@ interface TaskDetailsDialogProps {
     is_recurring?: boolean;
     recurrence_pattern?: string | null;
     worker_report?: string;
+    task_number?: number;
     created_at?: string;
     parent_task_id?: string | null;
     scheduled_for?: string | null;
@@ -530,6 +531,7 @@ export default function TaskDetailsDialog({ open, onOpenChange, task, currentUse
       <DialogContent className="max-w-2xl" data-testid="dialog-task-details">
         <DialogHeader>
           <DialogTitle className="text-xl" data-testid="text-task-details-title">
+            {task.task_number != null && <span>#{task.task_number} — </span>}
             {task.title}
           </DialogTitle>
           <DialogDescription>

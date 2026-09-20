@@ -37,6 +37,7 @@ export interface User {
 }
 
 export interface Task {
+  task_number?: number;
   id: string;
   title: string;
   description: string;

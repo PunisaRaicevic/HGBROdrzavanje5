@@ -205,7 +205,7 @@ export class SupabaseStorage implements IStorage {
   // Lista kolona bez slika - koristi se za sve list endpointe
   // Slike (images, worker_images) se ucitavaju samo na getTaskById
   private static readonly TASK_LIST_COLUMNS = `
-    id, title, description, location, room_number, priority, status,
+    id, task_number, title, description, location, room_number, priority, status,
     created_by, created_by_name, created_by_department,
     operator_id, operator_name, assigned_to, assigned_to_name, assigned_to_type,
     sef_id, sef_name, external_company_id, external_company_name,

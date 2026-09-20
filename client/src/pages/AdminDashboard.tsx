@@ -427,6 +427,7 @@ export default function AdminDashboard() {
   const [searchWorker, setSearchWorker] = useState<string>('all');
   const [searchReporter, setSearchReporter] = useState<string>('all');
   const [searchAllTime, setSearchAllTime] = useState<boolean>(false);
+  const [searchTaskNumber, setSearchTaskNumber] = useState('');
 
   // Fetch users (auto-refresh every 10 seconds)
   // Aktivne sobe van funkcije (za alert o zadacima za takve sobe)
@@ -1466,7 +1467,7 @@ export default function AdminDashboard() {
                                       data-testid={`task-id-${task.id}`}
                                       onClick={(event) => event.stopPropagation()}
                                     >
-                                      ID: {task.id}
+                                      Broj zadatka: #{task.task_number}
                                     </div>
                                   </div>
                                   <div className="flex flex-col gap-1 items-end">
@@ -1777,6 +1778,7 @@ export default function AdminDashboard() {
                     setSearchWorker('all');
                     setSearchReporter('all');
                     setSearchAllTime(false);
+                    setSearchTaskNumber('');
                   }}
                   data-testid="button-clear-search"
                 >
@@ -1786,6 +1788,20 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="search-task-number">Broj zadatka</Label>
+                <Input
+                  id="search-task-number"
+                  value={searchTaskNumber}
+                  onChange={(event) => setSearchTaskNumber(event.target.value)}
+                  placeholder="Npr. 1234 ili #1234"
+                  className="mt-1 max-w-xs"
+                  data-testid="input-search-task-number"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Pretraga po broju zanemaruje ostale filtere i pretražuje cijelu bazu.
+                </p>
+              </div>
               <div>
                 <Label className="text-xs mb-1.5 block">Vremenski period</Label>
                 <div className={searchAllTime ? 'opacity-50 pointer-events-none' : undefined}>
@@ -1939,6 +1955,10 @@ export default function AdminDashboard() {
                   const isScheduled = (t: Task) => isScheduledTask(t);
                   const results = tasks
                     .filter((t) => {
+                      if (searchTaskNumber.trim()) {
+                        const number = searchTaskNumber.trim().replace(/^#/, '');
+                        return /^\d+$/.test(number) && t.task_number === Number(number);
+                      }
                       if (!searchAllTime) {
                         const ref = refDate(t);
                         const refLocal = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
@@ -2034,7 +2054,7 @@ export default function AdminDashboard() {
                                 </div>
                                 {statusBadge(task.status)}
                               </div>
-                              <h3 className="font-medium text-sm mt-1">{task.title}</h3>
+                              <h3 className="font-medium text-sm mt-1">#{task.task_number} — {task.title}</h3>
                               <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
                                 {task.description && <p className="whitespace-pre-wrap break-words">{task.description}</p>}
                                 {task.created_by_name && <p>Prijavio: {task.created_by_name}</p>}
@@ -2683,6 +2703,7 @@ export default function AdminDashboard() {
         onOpenChange={(open) => !open && setSelectedTask(null)}
         task={selectedTask ? {
           id: selectedTask.id,
+          task_number: selectedTask.task_number,
           title: selectedTask.title,
           description: selectedTask.description,
           location: selectedTask.location || '',
