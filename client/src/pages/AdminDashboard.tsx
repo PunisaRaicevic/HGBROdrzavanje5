@@ -1455,12 +1455,19 @@ export default function AdminDashboard() {
                             >
                               <div className="space-y-2">
                                 <div className="flex items-start justify-between gap-2">
-                                  <div className="text-xs sm:text-sm text-muted-foreground">
+                                  <div className="min-w-0 text-xs sm:text-sm text-muted-foreground">
                                     {task.scheduled_for ? (
                                       <span>Zakazano: {formatDate(task.scheduled_for)}</span>
                                     ) : (
                                       formatDate(task.created_at)
                                     )}
+                                    <div
+                                      className="mt-1 break-all font-mono text-xs select-text cursor-text"
+                                      data-testid={`task-id-${task.id}`}
+                                      onClick={(event) => event.stopPropagation()}
+                                    >
+                                      ID: {task.id}
+                                    </div>
                                   </div>
                                   <div className="flex flex-col gap-1 items-end">
                                     {getStatusBadge(task.status)}
