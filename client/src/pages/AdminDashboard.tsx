@@ -1690,6 +1690,13 @@ export default function AdminDashboard() {
                                     ) : (
                                       formatDate(task.created_at)
                                     )}
+                                    <div
+                                      className="mt-1 font-mono text-xs select-text cursor-text"
+                                      data-testid={`history-task-number-${task.id}`}
+                                      onClick={(event) => event.stopPropagation()}
+                                    >
+                                      Broj zadatka: #{task.task_number}
+                                    </div>
                                   </div>
                                   <div className="flex flex-col gap-1 items-end">
                                     {getStatusBadge(task.status)}
