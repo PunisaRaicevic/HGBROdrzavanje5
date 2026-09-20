@@ -1795,20 +1795,47 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  document.getElementById('task-search-results')?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                  });
+                }}
+              >
                 <Label htmlFor="search-task-number">Broj zadatka</Label>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
                 <Input
                   id="search-task-number"
                   value={searchTaskNumber}
                   onChange={(event) => setSearchTaskNumber(event.target.value)}
                   placeholder="Npr. 1234 ili #1234"
-                  className="mt-1 max-w-xs"
+                  className="max-w-xs"
+                  pattern="#?[0-9]+"
+                  title="Unesite broj zadatka, npr. 1234 ili #1234."
                   data-testid="input-search-task-number"
                 />
+                <Button type="submit" data-testid="button-search-task-number">
+                  <Search className="mr-2 h-4 w-4" />
+                  Pretraži
+                </Button>
+                </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Pretraga po broju zanemaruje ostale filtere i pretražuje cijelu bazu.
                 </p>
-              </div>
+                {searchTaskNumber.trim() && (
+                  <p className="mt-2 text-sm font-medium" role="status" aria-live="polite">
+                    {archiveLoading
+                      ? 'Učitavanje zadataka…'
+                      : !/^#?\d+$/.test(searchTaskNumber.trim())
+                        ? 'Unesite kratak broj zadatka, npr. 1234 ili #1234.'
+                        : tasks.some((task) => Number(task.task_number) === Number(searchTaskNumber.trim().replace(/^#/, '')))
+                          ? 'Zadatak je pronađen. Kliknite „Pretraži” za prikaz rezultata.'
+                          : 'Nema zadatka s tim brojem.'}
+                  </p>
+                )}
+              </form>
               <div>
                 <Label className="text-xs mb-1.5 block">Vremenski period</Label>
                 <div className={searchAllTime ? 'opacity-50 pointer-events-none' : undefined}>
@@ -1941,7 +1968,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="task-search-results" className="scroll-mt-4">
             <CardContent className="pt-6">
               {archiveLoading ? (
                 <Skeleton className="h-64 w-full" />
@@ -1964,7 +1991,7 @@ export default function AdminDashboard() {
                     .filter((t) => {
                       if (searchTaskNumber.trim()) {
                         const number = searchTaskNumber.trim().replace(/^#/, '');
-                        return /^\d+$/.test(number) && t.task_number === Number(number);
+                        return /^\d+$/.test(number) && Number(t.task_number) === Number(number);
                       }
                       if (!searchAllTime) {
                         const ref = refDate(t);
