@@ -200,6 +200,7 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
         <CardHeader className="flex flex-row items-center justify-between space-y-0 gap-2 flex-wrap">
           <CardTitle>Sobe van funkcije ({visibleActive.length})</CardTitle>
           <Button
+            className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200"
             onClick={() => setCreateOpen(true)}
             disabled={!canEditReason && !data?.allowedHotel}
             data-testid="button-ooo-open-create"
