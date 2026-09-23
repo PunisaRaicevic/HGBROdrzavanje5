@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -51,10 +51,17 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
   const [editingRoom, setEditingRoom] = useState<OutOfOrderRoom | null>(null);
   const [editReason, setEditReason] = useState('');
 
-  const { data, isLoading, isError } = useQuery<{ rooms: OutOfOrderRoom[] }>({
+  const { data, isLoading, isError } = useQuery<{ rooms: OutOfOrderRoom[]; allowedHotel?: string | null }>({
     queryKey: ['/api/out-of-order-rooms', '?status=all'],
     refetchInterval: 60000,
   });
+  const availableHotels = canEditReason ? HOTELS : data?.allowedHotel ? [data.allowedHotel] : [];
+  useEffect(() => {
+    if (!canEditReason && data?.allowedHotel) {
+      setHotel(data.allowedHotel);
+      setFilterHotel(data.allowedHotel);
+    }
+  }, [canEditReason, data?.allowedHotel]);
 
   const allRooms = data?.rooms || [];
   const activeRooms = allRooms.filter(r => r.status === 'active');
@@ -139,12 +146,12 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="ooo-hotel">Hotel *</Label>
-                <Select value={hotel} onValueChange={setHotel}>
+                <Select value={hotel} onValueChange={setHotel} disabled={!canEditReason}>
                   <SelectTrigger id="ooo-hotel" data-testid="select-ooo-hotel">
                     <SelectValue placeholder="Izaberite hotel" />
                   </SelectTrigger>
                   <SelectContent>
-                    {HOTELS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+                    {availableHotels.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -189,8 +196,8 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Svi hoteli</SelectItem>
-              {HOTELS.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
+              {canEditReason && <SelectItem value="all">Svi hoteli</SelectItem>}
+              {availableHotels.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
             </SelectContent>
           </Select>
         </CardHeader>

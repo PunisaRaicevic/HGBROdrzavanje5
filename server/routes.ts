@@ -11,6 +11,7 @@ import { generateDailyReportPdf, generateTasksCsv, generateTaskReportPdf, genera
 import { uploadImagesArray, deleteImagesFromStorage } from "./lib/imageStorage";
 import { supabase } from "./lib/supabase";
 import { validateSobaInput } from "@shared/rooms";
+import { receptionHotel } from "./roomAccess";
 // --- NOVI IMPORTI ZA NOTIFIKACIJE ---
 import { sendPushNotification } from "./services/notificationService";
 
@@ -600,10 +601,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // List rooms out of order — samo admin i recepcioneri
   app.get("/api/out-of-order-rooms", requireAuth, async (req: any, res) => {
     try {
-      let role = req.session.userRole;
-      if (!role && req.session.userId) {
-        const u = await storage.getUserById(req.session.userId);
-        role = u?.role;
+      const roomUser = await storage.getUserById(req.session.userId);
+      const role = roomUser?.role;
+      const allowedHotel = role === 'recepcioner' ? receptionHotel(roomUser?.full_name || '') : null;
+      if (!roomUser?.is_active || (role === 'recepcioner' && !allowedHotel)) {
+        return res.status(403).json({ error: "Vašem nalogu nije dodijeljen hotel za upravljanje sobama." });
       }
       if (role !== 'admin' && role !== 'recepcioner') {
         return res.status(403).json({ error: "Nemate pristup" });
@@ -621,10 +623,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (hotel) {
         query = query.eq('hotel', hotel);
       }
+      if (allowedHotel) query = query.eq('hotel', allowedHotel);
 
       const { data, error } = await query;
       if (error) throw error;
-      res.json({ rooms: data || [] });
+      res.json({ rooms: data || [], allowedHotel });
     } catch (error) {
       console.error("Error fetching out-of-order rooms:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -638,6 +641,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Samo administrator i recepcija mogu upravljati statusom sobe." });
       }
       req.session.fullName = user.full_name;
+      req.roomHotel = user.role === 'recepcioner' ? receptionHotel(user.full_name) : null;
+      if (user.role === 'recepcioner' && !req.roomHotel) {
+        return res.status(403).json({ error: "Vašem nalogu nije dodijeljen hotel za upravljanje sobama." });
+      }
       next();
     } catch (error) {
       res.status(500).json({ error: "Nije moguće provjeriti dozvole." });
@@ -657,6 +664,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: parsed.error.errors[0]?.message || "Neispravni podaci" });
       }
       const { hotel, reason } = parsed.data;
+      if (req.roomHotel && hotel !== req.roomHotel) {
+        return res.status(403).json({ error: "Možete upravljati samo sobama svog hotela." });
+      }
 
       // Only known hotels are allowed (admin UI uses the same fixed list)
       const ALLOWED_HOTELS = [
@@ -748,7 +758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/out-of-order-rooms/:id/resolve", requireAuth, requireRoomManager, async (req: any, res) => {
     try {
-      const { data, error } = await supabase
+      let resolveQuery = supabase
         .from('out_of_order_rooms')
         .update({
           status: 'resolved',
@@ -757,7 +767,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           resolved_at: new Date().toISOString(),
         })
         .eq('id', req.params.id)
-        .eq('status', 'active')
+        .eq('status', 'active');
+      if (req.roomHotel) resolveQuery = resolveQuery.eq('hotel', req.roomHotel);
+      const { data, error } = await resolveQuery
         .select()
         .single();
       if (error || !data) {
