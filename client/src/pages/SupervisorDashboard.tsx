@@ -33,6 +33,7 @@ import SelectExternalCompanyDialog from '@/components/SelectExternalCompanyDialo
 import WorkerProfileDialog from '@/components/WorkerProfileDialog';
 import TeamPerformanceDialog from '@/components/TeamPerformanceDialog';
 import DailyReportDialog from '@/components/DailyReportDialog';
+import OutOfOrderRoomsTab from '@/components/OutOfOrderRoomsTab';
 import CreateRecurringTaskDialog from '@/components/CreateRecurringTaskDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
 import EditTaskDialog from '@/components/EditTaskDialog';
@@ -651,7 +652,7 @@ export default function SupervisorDashboard() {
         {/* Tasks Tabs */}
         <div className="lg:col-span-2">
           <Tabs defaultValue="my-tasks" className="space-y-4">
-            <TabsList className="w-full grid grid-cols-3">
+            <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-4">
               <TabsTrigger value="my-tasks" data-testid="tab-my-tasks">
                 Moji zadaci
               </TabsTrigger>
@@ -661,7 +662,13 @@ export default function SupervisorDashboard() {
               <TabsTrigger value="overview" data-testid="tab-overview">
                 Pregled
               </TabsTrigger>
+              <TabsTrigger value="out-of-order" data-testid="tab-supervisor-out-of-order">
+                Sobe van funkcije
+              </TabsTrigger>
             </TabsList>
+            <TabsContent value="out-of-order" className="space-y-4">
+              <OutOfOrderRoomsTab canEditReason={false} />
+            </TabsContent>
 
             {/* Moji zadaci Tab */}
             <TabsContent value="my-tasks" className="space-y-4">

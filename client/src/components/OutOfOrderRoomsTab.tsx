@@ -52,11 +52,12 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
   const [editReason, setEditReason] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { data, isLoading, isError } = useQuery<{ rooms: OutOfOrderRoom[]; allowedHotel?: string | null }>({
+  const { data, isLoading, isError } = useQuery<{ rooms: OutOfOrderRoom[]; allowedHotel?: string | null; allowedHotels?: string[] }>({
     queryKey: ['/api/out-of-order-rooms', '?status=all'],
     refetchInterval: 60000,
   });
-  const availableHotels = canEditReason ? HOTELS : data?.allowedHotel ? [data.allowedHotel] : [];
+  const availableHotels = canEditReason ? HOTELS : data?.allowedHotels ?? (data?.allowedHotel ? [data.allowedHotel] : []);
+  const canChooseHotel = canEditReason || availableHotels.length > 1;
   useEffect(() => {
     if (!canEditReason && data?.allowedHotel) {
       setHotel(data.allowedHotel);
@@ -150,7 +151,7 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="ooo-hotel">Hotel *</Label>
-                {canEditReason ? <Select value={hotel} onValueChange={setHotel}>
+                {canChooseHotel ? <Select value={hotel} onValueChange={setHotel}>
                   <SelectTrigger id="ooo-hotel" data-testid="select-ooo-hotel">
                     <SelectValue placeholder="Izaberite hotel" />
                   </SelectTrigger>
@@ -202,18 +203,18 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
           <Button
             className="bg-red-100 text-red-800 border-red-200 hover:bg-red-200"
             onClick={() => setCreateOpen(true)}
-            disabled={!canEditReason && !data?.allowedHotel}
+            disabled={!canEditReason && availableHotels.length === 0}
             data-testid="button-ooo-open-create"
           >
             <BedDouble className="mr-2 h-4 w-4" />
             Stavi sobu van funkcije
           </Button>
-          {canEditReason ? <Select value={filterHotel} onValueChange={setFilterHotel}>
+          {canChooseHotel ? <Select value={filterHotel} onValueChange={setFilterHotel}>
             <SelectTrigger className="w-56" data-testid="select-ooo-filter">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {canEditReason && <SelectItem value="all">Svi hoteli</SelectItem>}
+              {canChooseHotel && <SelectItem value="all">Svi hoteli</SelectItem>}
               {availableHotels.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
             </SelectContent>
           </Select> : (
