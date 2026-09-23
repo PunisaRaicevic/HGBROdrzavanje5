@@ -14,6 +14,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { PhotoUpload, PhotoPreview } from '@/components/PhotoUpload';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
+import OutOfOrderRoomsTab from '@/components/OutOfOrderRoomsTab';
 import { validateSobaInput } from '@shared/rooms';
 
 export default function ComplaintSubmissionDashboard() {
@@ -442,40 +443,7 @@ export default function ComplaintSubmissionDashboard() {
 
         {/* Sobe van funkcije — ispod forme za prijavu, samo recepcioneri */}
         {isRecepcioner && (
-          <Card className="border-orange-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-orange-700">
-                <BedDouble className="w-5 h-5" />
-                Sobe van funkcije ({(oooResponse?.rooms || []).length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {(oooResponse?.rooms || []).length === 0 ? (
-                <p className="text-sm text-muted-foreground">Trenutno nema soba van funkcije.</p>
-              ) : (
-                <div className="space-y-3">
-                  {Object.entries(
-                    (oooResponse?.rooms || []).reduce((acc: Record<string, { id: string; hotel: string; room_number: string; reason: string; created_at: string }[]>, r) => {
-                      (acc[r.hotel] = acc[r.hotel] || []).push(r);
-                      return acc;
-                    }, {})
-                  ).map(([hotelName, rooms]) => (
-                    <div key={hotelName}>
-                      <p className="text-sm font-semibold mb-1">{hotelName}</p>
-                      <div className="space-y-1">
-                        {rooms.map(room => (
-                          <div key={room.id} className="flex items-start gap-2 text-sm" data-testid={`ooo-main-${room.id}`}>
-                            <Badge variant="destructive" className="shrink-0">Soba {room.room_number}</Badge>
-                            <span>{room.reason}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <OutOfOrderRoomsTab canEditReason={false} />
         )}
         </div>
 

@@ -631,13 +631,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin: mark a room out of order
-  app.post("/api/out-of-order-rooms", requireAdmin, async (req: any, res) => {
+  const requireRoomManager = async (req: any, res: any, next: any) => {
+    try {
+      const user = await storage.getUserById(req.session.userId);
+      if (!user || !user.is_active || !['admin', 'recepcioner'].includes(user.role)) {
+        return res.status(403).json({ error: "Samo administrator i recepcija mogu upravljati statusom sobe." });
+      }
+      req.session.fullName = user.full_name;
+      next();
+    } catch (error) {
+      res.status(500).json({ error: "Nije moguće provjeriti dozvole." });
+    }
+  };
+
+  // Admin and reception: mark a room out of order
+  app.post("/api/out-of-order-rooms", requireAuth, requireRoomManager, async (req: any, res) => {
     try {
       const schema = z.object({
         hotel: z.string().min(1, "Hotel je obavezan"),
         room_number: z.string().min(1, "Broj sobe je obavezan"),
-        reason: z.string().min(1, "Razlog je obavezan"),
+        reason: z.string().trim().min(1, "Razlog je obavezan"),
       });
       const parsed = schema.safeParse(req.body);
       if (!parsed.success) {
@@ -733,7 +746,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/out-of-order-rooms/:id/resolve", requireAdmin, async (req: any, res) => {
+  app.patch("/api/out-of-order-rooms/:id/resolve", requireAuth, requireRoomManager, async (req: any, res) => {
     try {
       const { data, error } = await supabase
         .from('out_of_order_rooms')

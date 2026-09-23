@@ -41,7 +41,7 @@ function formatDate(iso: string | null): string {
     ' ' + d.toLocaleTimeString('sr-Latn-ME', { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function OutOfOrderRoomsTab() {
+export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditReason?: boolean }) {
   const { toast } = useToast();
   const [hotel, setHotel] = useState('');
   const [roomNumber, setRoomNumber] = useState('');
@@ -51,7 +51,7 @@ export default function OutOfOrderRoomsTab() {
   const [editingRoom, setEditingRoom] = useState<OutOfOrderRoom | null>(null);
   const [editReason, setEditReason] = useState('');
 
-  const { data, isLoading } = useQuery<{ rooms: OutOfOrderRoom[] }>({
+  const { data, isLoading, isError } = useQuery<{ rooms: OutOfOrderRoom[] }>({
     queryKey: ['/api/out-of-order-rooms', '?status=all'],
     refetchInterval: 60000,
   });
@@ -195,7 +195,9 @@ export default function OutOfOrderRoomsTab() {
           </Select>
         </CardHeader>
         <CardContent className="space-y-3">
-          {isLoading ? (
+          {isError ? (
+            <p role="alert" className="text-sm text-destructive">Nije moguće učitati sobe. Pokušajte ponovo.</p>
+          ) : isLoading ? (
             <p className="text-sm text-muted-foreground">Učitavanje...</p>
           ) : visibleActive.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nema soba van funkcije.</p>
@@ -217,7 +219,7 @@ export default function OutOfOrderRoomsTab() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap justify-start sm:justify-end">
-                <Button
+                {canEditReason && <Button
                   size="sm"
                   variant="outline"
                   onClick={() => { setEditingRoom(room); setEditReason(room.reason); }}
@@ -225,7 +227,7 @@ export default function OutOfOrderRoomsTab() {
                 >
                   <Pencil className="w-4 h-4 mr-1" />
                   Izmijeni
-                </Button>
+                </Button>}
                 <Button
                   size="sm"
                   variant="outline"
