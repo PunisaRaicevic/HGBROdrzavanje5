@@ -662,7 +662,11 @@ export default function SupervisorDashboard() {
               <TabsTrigger value="overview" data-testid="tab-overview">
                 Pregled
               </TabsTrigger>
-              <TabsTrigger value="out-of-order" data-testid="tab-supervisor-out-of-order">
+              <TabsTrigger
+                value="out-of-order"
+                className="bg-red-100 text-red-800 hover:bg-red-200 data-[state=active]:bg-red-600 data-[state=active]:text-white"
+                data-testid="tab-supervisor-out-of-order"
+              >
                 Sobe van funkcije
               </TabsTrigger>
             </TabsList>
