@@ -146,14 +146,18 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="ooo-hotel">Hotel *</Label>
-                <Select value={hotel} onValueChange={setHotel} disabled={!canEditReason}>
+                {canEditReason ? <Select value={hotel} onValueChange={setHotel}>
                   <SelectTrigger id="ooo-hotel" data-testid="select-ooo-hotel">
                     <SelectValue placeholder="Izaberite hotel" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableHotels.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
                   </SelectContent>
-                </Select>
+                </Select> : (
+                  <p id="ooo-hotel" className="text-sm font-medium" data-testid="text-ooo-hotel">
+                    {data?.allowedHotel || (isLoading ? 'Učitavanje...' : 'Hotel nije dodijeljen')}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ooo-room">Broj sobe *</Label>
@@ -191,7 +195,7 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 gap-2 flex-wrap">
           <CardTitle>Sobe van funkcije ({visibleActive.length})</CardTitle>
-          <Select value={filterHotel} onValueChange={setFilterHotel}>
+          {canEditReason ? <Select value={filterHotel} onValueChange={setFilterHotel}>
             <SelectTrigger className="w-56" data-testid="select-ooo-filter">
               <SelectValue />
             </SelectTrigger>
@@ -199,7 +203,9 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
               {canEditReason && <SelectItem value="all">Svi hoteli</SelectItem>}
               {availableHotels.map(h => <SelectItem key={h} value={h}>{h}</SelectItem>)}
             </SelectContent>
-          </Select>
+          </Select> : (
+            <p className="text-sm text-muted-foreground">{data?.allowedHotel}</p>
+          )}
         </CardHeader>
         <CardContent className="space-y-3">
           {isError ? (
