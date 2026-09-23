@@ -50,6 +50,7 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
   const [showHistory, setShowHistory] = useState(false);
   const [editingRoom, setEditingRoom] = useState<OutOfOrderRoom | null>(null);
   const [editReason, setEditReason] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
 
   const { data, isLoading, isError } = useQuery<{ rooms: OutOfOrderRoom[]; allowedHotel?: string | null }>({
     queryKey: ['/api/out-of-order-rooms', '?status=all'],
@@ -81,6 +82,7 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
       toast({ title: 'Sačuvano', description: `Soba ${roomNumber.trim()} je označena kao van funkcije` });
       setRoomNumber('');
       setReason('');
+      setCreateOpen(false);
       queryClient.invalidateQueries({ queryKey: ['/api/out-of-order-rooms'] });
     },
     onError: (error: Error) => {
@@ -134,14 +136,16 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Dialog open={createOpen} onOpenChange={(open) => {
+        if (!createMutation.isPending) setCreateOpen(open);
+      }}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
             <BedDouble className="w-5 h-5" />
             Stavi sobu van funkcije
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </DialogTitle>
+        </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -189,12 +193,20 @@ export default function OutOfOrderRoomsTab({ canEditReason = true }: { canEditRe
               Stavi van funkcije
             </Button>
           </form>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 gap-2 flex-wrap">
           <CardTitle>Sobe van funkcije ({visibleActive.length})</CardTitle>
+          <Button
+            onClick={() => setCreateOpen(true)}
+            disabled={!canEditReason && !data?.allowedHotel}
+            data-testid="button-ooo-open-create"
+          >
+            <BedDouble className="mr-2 h-4 w-4" />
+            Stavi sobu van funkcije
+          </Button>
           {canEditReason ? <Select value={filterHotel} onValueChange={setFilterHotel}>
             <SelectTrigger className="w-56" data-testid="select-ooo-filter">
               <SelectValue />
