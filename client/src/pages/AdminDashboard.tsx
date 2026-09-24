@@ -28,6 +28,7 @@ import SelectExternalCompanyDialog from '@/components/SelectExternalCompanyDialo
 import EditTaskDialog from '@/components/EditTaskDialog';
 import AdminAIChat from '@/components/AdminAIChat';
 import OutOfOrderRoomsTab from '@/components/OutOfOrderRoomsTab';
+import { useRoomAccess } from '@/hooks/use-room-access';
 import { PeriodPicker } from '@/components/PeriodPicker';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
@@ -50,6 +51,7 @@ interface User {
   created_at: string;
   last_seen: string | null;
   roomAccess?: { canManage: boolean; allowedHotels: string[] };
+  canConfigureRoomAccess?: boolean;
 }
 
 interface Task {
@@ -365,6 +367,7 @@ async function downloadCsvFile(csv: string, fileName: string) {
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { data: ownRoomAccess } = useRoomAccess();
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [newUserUsername, setNewUserUsername] = useState('');
@@ -434,6 +437,7 @@ export default function AdminDashboard() {
   // Aktivne sobe van funkcije (za alert o zadacima za takve sobe)
   const { data: oooData } = useQuery<{ rooms: { id: string; hotel: string; room_number: string; reason: string }[] }>({
     queryKey: ['/api/out-of-order-rooms'],
+    enabled: ownRoomAccess?.canManage === true,
     refetchInterval: 60000,
   });
 
@@ -480,6 +484,21 @@ export default function AdminDashboard() {
       }
     }
   }, [tasksData?.tasks, selectedTask?.id]);
+
+  const roomAccessMutation = useMutation({
+    mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
+      await apiRequest('PATCH', `/api/users/${id}`, { room_access_enabled: enabled });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/room-access'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/out-of-order-rooms'] });
+      toast({ title: 'Sačuvano', description: 'Pristup sobama van funkcije je ažuriran.' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Greška', description: error.message, variant: 'destructive' });
+    },
+  });
 
   // Create new user mutation
   const createUserMutation = useMutation({
@@ -933,15 +952,15 @@ export default function AdminDashboard() {
             <MapPin className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Lokacije</span>
           </TabsTrigger>
-          <TabsTrigger value="ooo-rooms" data-testid="tab-ooo-rooms" className="text-xs sm:text-sm px-1 sm:px-3">
+          {ownRoomAccess?.canManage && <TabsTrigger value="ooo-rooms" data-testid="tab-ooo-rooms" className="text-xs sm:text-sm px-1 sm:px-3">
             <BedDouble className="w-3.5 h-3.5 sm:mr-1.5" />
             <span className="hidden sm:inline">Sobe van funkcije</span>
-          </TabsTrigger>
+          </TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="ooo-rooms" className="space-y-4">
+        {ownRoomAccess?.canManage && <TabsContent value="ooo-rooms" className="space-y-4">
           <OutOfOrderRoomsTab />
-        </TabsContent>
+        </TabsContent>}
 
         <TabsContent value="users" className="space-y-4">
           <Card>
@@ -1106,17 +1125,21 @@ export default function AdminDashboard() {
                         </div>
                         <div className="min-w-0">
                           <p className="font-medium leading-tight">{u.full_name}</p>
-                          {u.roomAccess?.canManage && (
-                            <Badge
-                              variant="outline"
-                              className="mt-1 gap-1 px-1.5 py-0 text-[10px] font-medium bg-red-50 text-red-800 border-red-200"
-                              title={`Pristup sobama van funkcije: ${u.roomAccess.allowedHotels.join(', ')}`}
+                          <label
+                            className="mt-1 inline-flex items-center gap-1.5 text-xs text-red-800"
+                            onClick={(event) => event.stopPropagation()}
+                            onKeyDown={(event) => event.stopPropagation()}
+                            title={u.canConfigureRoomAccess ? 'Uključi ili isključi pristup sobama van funkcije' : 'Pristup nije dozvoljen za ovaj nalog'}
+                          >
+                            <Checkbox
+                              checked={u.roomAccess?.canManage === true}
+                              disabled={!u.canConfigureRoomAccess || roomAccessMutation.isPending}
+                              onCheckedChange={(checked) => roomAccessMutation.mutate({ id: u.id, enabled: checked === true })}
                               data-testid={`user-room-access-${u.id}`}
-                            >
-                              <BedDouble className="h-3 w-3" aria-hidden="true" />
-                              Sobe van funkcije
-                            </Badge>
-                          )}
+                              aria-label={`Sobe van funkcije — ${u.full_name}`}
+                            />
+                            Sobe van funkcije
+                          </label>
                           <p className="text-sm text-muted-foreground truncate">
                             {u.job_title || u.role}
                             {u.phone && ` | ${u.phone}`}

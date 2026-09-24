@@ -37,6 +37,7 @@ const createUserSchema = z.object({
 });
 
 const updateUserSchema = z.object({
+  room_access_enabled: z.boolean().optional(),
   username: z.string().min(3, "Username must be at least 3 characters").optional(),
   email: z.string().email().optional(),
   password: z.string().min(4, "Password must be at least 4 characters").optional(),
@@ -795,6 +796,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const usersWithoutPasswords = users.map(({ password_hash, ...user }) => ({
         ...user,
         roomAccess: roomAccess(user),
+        canConfigureRoomAccess: roomAccess({ ...user, room_access_enabled: true }).canManage,
       }));
       res.json({ users: usersWithoutPasswords });
     } catch (error) {
@@ -857,6 +859,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = validationResult.data;
       const updates: any = {};
+      if (validatedData.room_access_enabled !== undefined) {
+        const target = await storage.getUserById(id);
+        if (!target) return res.status(404).json({ error: "Korisnik nije pronađen." });
+        if (validatedData.room_access_enabled &&
+            !roomAccess({ ...target, ...validatedData, room_access_enabled: true }).canManage) {
+          return res.status(403).json({ error: "Ovaj nalog nema pravo pristupa sobama van funkcije." });
+        }
+        updates.room_access_enabled = validatedData.room_access_enabled;
+      }
 
       if (validatedData.username !== undefined) updates.username = validatedData.username;
       if (validatedData.email !== undefined) updates.email = validatedData.email;

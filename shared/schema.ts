@@ -14,6 +14,7 @@ export const users = pgTable("users", {
   phone: varchar("phone"),
   password_hash: text("password_hash").notNull(),
   is_active: boolean("is_active").notNull().default(true),
+  room_access_enabled: boolean("room_access_enabled").notNull().default(true),
   shift: text("shift"),
   push_token: text("push_token"),
   onesignal_player_id: text("onesignal_player_id"),

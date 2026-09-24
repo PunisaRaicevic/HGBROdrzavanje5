@@ -12,6 +12,8 @@ test('housekeepers, supervisors, managers and operators can manage both hotels',
   }
 });
 test('cooks and excluded roles cannot access rooms', () => {
+  assert.equal(roomAccess({ ...user, room_access_enabled: false }).canManage, false);
+  assert.equal(roomAccess({ ...user, room_access_enabled: true }).canManage, true);
   for (const job_title of ['Kuvar', 'Glavni kuvar', 'Pomoćni kuhar', 'Kuvarica', 'Chef', 'Majstor']) {
     assert.equal(roomAccess({ ...user, job_title }).canManage, false);
   }

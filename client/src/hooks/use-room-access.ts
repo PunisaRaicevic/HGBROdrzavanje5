@@ -7,6 +7,7 @@ export function useRoomAccess() {
   return useQuery<{ canManage: boolean; allowedHotel: string | null; allowedHotels: string[] }>({
     queryKey: ['/api/room-access', user?.id],
     enabled: !!user,
+    refetchInterval: 10000,
     queryFn: async () => (await apiRequest('GET', '/api/room-access')).json(),
   });
 }

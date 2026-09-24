@@ -14,10 +14,10 @@ const ROOM_HOTELS = ['Hotel Slovenska plaža', 'Hotel Aleksandar'];
 const ALL_ROOM_HOTELS = [...ROOM_HOTELS, 'Hotel Mogren', 'Hotel Palas', 'Hotel Castellastva', 'Hotel Palas Lux'];
 
 export function roomAccess(user?: {
-  role: string; is_active: boolean; full_name: string; job_title?: string | null;
+  role: string; is_active: boolean; full_name: string; job_title?: string | null; room_access_enabled?: boolean;
 } | null) {
   const denied = { canManage: false, allowedHotel: null, allowedHotels: [] as string[] };
-  if (!user?.is_active) return denied;
+  if (!user?.is_active || user.room_access_enabled === false) return denied;
   const title = (user.job_title || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   if (!['admin', 'sef', 'operater', 'menadzer', 'recepcioner'].includes(user.role) ||
       /\b(kuvar\w*|kuhar\w*|cook\w*|chef|majstor\w*|serviser\w*|treca\s+lica)\b/.test(title)) return denied;
