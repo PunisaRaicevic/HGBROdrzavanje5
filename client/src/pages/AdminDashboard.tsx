@@ -49,6 +49,7 @@ interface User {
   is_active: boolean;
   created_at: string;
   last_seen: string | null;
+  roomAccess?: { canManage: boolean; allowedHotels: string[] };
 }
 
 interface Task {
@@ -1105,6 +1106,17 @@ export default function AdminDashboard() {
                         </div>
                         <div className="min-w-0">
                           <p className="font-medium leading-tight">{u.full_name}</p>
+                          {u.roomAccess?.canManage && (
+                            <Badge
+                              variant="outline"
+                              className="mt-1 gap-1 px-1.5 py-0 text-[10px] font-medium bg-red-50 text-red-800 border-red-200"
+                              title={`Pristup sobama van funkcije: ${u.roomAccess.allowedHotels.join(', ')}`}
+                              data-testid={`user-room-access-${u.id}`}
+                            >
+                              <BedDouble className="h-3 w-3" aria-hidden="true" />
+                              Sobe van funkcije
+                            </Badge>
+                          )}
                           <p className="text-sm text-muted-foreground truncate">
                             {u.job_title || u.role}
                             {u.phone && ` | ${u.phone}`}

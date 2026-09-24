@@ -792,7 +792,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/users", requireAdmin, async (req, res) => {
     try {
       const users = await storage.getUsers();
-      const usersWithoutPasswords = users.map(({ password_hash, ...user }) => user);
+      const usersWithoutPasswords = users.map(({ password_hash, ...user }) => ({
+        ...user,
+        roomAccess: roomAccess(user),
+      }));
       res.json({ users: usersWithoutPasswords });
     } catch (error) {
       console.error("Error fetching users:", error);
