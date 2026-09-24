@@ -11,7 +11,7 @@ import { generateDailyReportPdf, generateTasksCsv, generateTaskReportPdf, genera
 import { uploadImagesArray, deleteImagesFromStorage } from "./lib/imageStorage";
 import { supabase } from "./lib/supabase";
 import { validateSobaInput } from "@shared/rooms";
-import { receptionHotel } from "./roomAccess";
+import { roomAccess } from "./roomAccess";
 // --- NOVI IMPORTI ZA NOTIFIKACIJE ---
 import { sendPushNotification } from "./services/notificationService";
 
@@ -597,18 +597,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ===== SOBE VAN FUNKCIJE (out of order rooms) =====
-  const supervisorRoomHotels = ['Hotel Slovenska plaža', 'Hotel Aleksandar'];
+  app.get("/api/room-access", requireAuth, async (req: any, res) => {
+    try {
+      res.json(roomAccess(await storage.getUserById(req.session.userId)));
+    } catch {
+      res.status(500).json({ error: "Nije moguće provjeriti dozvole." });
+    }
+  });
 
-  // List rooms out of order — samo admin i recepcioneri
+  // Room list and mutations share the same account and hotel permissions.
   app.get("/api/out-of-order-rooms", requireAuth, async (req: any, res) => {
     try {
       const roomUser = await storage.getUserById(req.session.userId);
-      const role = roomUser?.role;
-      const allowedHotel = role === 'recepcioner' ? receptionHotel(roomUser?.full_name || '') : null;
-      if (!roomUser?.is_active || (role === 'recepcioner' && !allowedHotel)) {
-        return res.status(403).json({ error: "Vašem nalogu nije dodijeljen hotel za upravljanje sobama." });
-      }
-      if (role !== 'admin' && role !== 'recepcioner' && role !== 'sef') {
+      const access = roomAccess(roomUser);
+      if (!access.canManage) {
         return res.status(403).json({ error: "Nemate pristup" });
       }
       const { hotel, status } = req.query as { hotel?: string; status?: string };
@@ -624,12 +626,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (hotel) {
         query = query.eq('hotel', hotel);
       }
-      if (allowedHotel) query = query.eq('hotel', allowedHotel);
-      if (role === 'sef') query = query.in('hotel', supervisorRoomHotels);
+      query = query.in('hotel', access.allowedHotels);
 
       const { data, error } = await query;
       if (error) throw error;
-      res.json({ rooms: data || [], allowedHotel, allowedHotels: role === 'sef' ? supervisorRoomHotels : undefined });
+      res.json({ rooms: data || [], ...access });
     } catch (error) {
       console.error("Error fetching out-of-order rooms:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -639,22 +640,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const requireRoomManager = async (req: any, res: any, next: any) => {
     try {
       const user = await storage.getUserById(req.session.userId);
-      if (!user || !user.is_active || !['admin', 'recepcioner', 'sef'].includes(user.role)) {
-        return res.status(403).json({ error: "Samo administrator, šef i recepcija mogu upravljati statusom sobe." });
+      const access = roomAccess(user);
+      if (!user || !access.canManage) {
+        return res.status(403).json({ error: "Nemate pristup upravljanju sobama." });
       }
       req.session.fullName = user.full_name;
-      req.roomHotel = user.role === 'recepcioner' ? receptionHotel(user.full_name) : null;
-      req.roomHotels = user.role === 'sef' ? supervisorRoomHotels : null;
-      if (user.role === 'recepcioner' && !req.roomHotel) {
-        return res.status(403).json({ error: "Vašem nalogu nije dodijeljen hotel za upravljanje sobama." });
-      }
+      req.roomHotel = access.allowedHotel;
+      req.roomHotels = access.allowedHotels;
       next();
     } catch (error) {
       res.status(500).json({ error: "Nije moguće provjeriti dozvole." });
     }
   };
 
-  // Admin and reception: mark a room out of order
+  // Authorized room managers: mark a room out of order.
   app.post("/api/out-of-order-rooms", requireAuth, requireRoomManager, async (req: any, res) => {
     try {
       const schema = z.object({
@@ -668,7 +667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const { hotel, reason } = parsed.data;
       if (req.roomHotels && !req.roomHotels.includes(hotel)) {
-        return res.status(403).json({ error: "Možete upravljati samo sobama Slovenske plaže i Aleksandra." });
+        return res.status(403).json({ error: "Možete upravljati samo sobama dozvoljenih hotela." });
       }
       if (req.roomHotel && hotel !== req.roomHotel) {
         return res.status(403).json({ error: "Možete upravljati samo sobama svog hotela." });
@@ -738,8 +737,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin: return a room to service
-  app.patch("/api/out-of-order-rooms/:id", requireAdmin, async (req: any, res) => {
+  // Editing an existing reason remains admin-only.
+  app.patch("/api/out-of-order-rooms/:id", requireAdmin, requireRoomManager, async (req: any, res) => {
     try {
       const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim() : '';
       if (!reason) {

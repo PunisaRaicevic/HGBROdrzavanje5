@@ -14,7 +14,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient, apiRequest } from '@/lib/queryClient';
 import { PhotoUpload, PhotoPreview } from '@/components/PhotoUpload';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
-import OutOfOrderRoomsTab from '@/components/OutOfOrderRoomsTab';
+import { useRoomAccess } from '@/hooks/use-room-access';
 import { validateSobaInput } from '@shared/rooms';
 
 export default function ComplaintSubmissionDashboard() {
@@ -48,11 +48,11 @@ export default function ComplaintSubmissionDashboard() {
   });
 
   // Sobe van funkcije (za izabrani hotel) — spisak vide SAMO recepcioneri
-  const isRecepcioner = user?.role === 'recepcioner';
+  const { data: roomAccess } = useRoomAccess();
   const { data: oooResponse } = useQuery<{ rooms: { id: string; hotel: string; room_number: string; reason: string; created_at: string }[] }>({
     queryKey: ['/api/out-of-order-rooms'],
     refetchInterval: 60000,
-    enabled: isRecepcioner,
+    enabled: roomAccess?.canManage === true,
   });
   const selectedHotelName = hotel === 'Ostalo' ? customHotel : hotel;
   const oooRoomsForHotel = (oooResponse?.rooms || []).filter(r => r.hotel === selectedHotelName);
@@ -441,10 +441,6 @@ export default function ComplaintSubmissionDashboard() {
           </CardContent>
         </Card>
 
-        {/* Sobe van funkcije — ispod forme za prijavu, samo recepcioneri */}
-        {isRecepcioner && (
-          <OutOfOrderRoomsTab canEditReason={false} />
-        )}
         </div>
 
         {/* My Submitted Complaints */}

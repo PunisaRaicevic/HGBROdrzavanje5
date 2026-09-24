@@ -7,3 +7,4 @@
 - [Recurring task anchor](recurring-task-anchor.md) — recurring child generation must anchor to recurrence_start_date, not "now", or near-duplicate tasks slip past the date-only dedup.
 - [Zod optional() rejects null](zod-optional-vs-null.md) — user-update route: nullable DB cols need .nullable().optional(); empty dialog fields send null → 400 that silently blocks password change.
 - [Shared operator return queue](shared-operator-return-queue.md) — returned_to_operator is shared by all operators; finalization is role-based, not operator_id-owned.
+- [Room access positions](room-access-positions.md) — cooks are identified by “Zanimanje / Pozicija”; technical reporter roles also cover housekeepers and supervisors.

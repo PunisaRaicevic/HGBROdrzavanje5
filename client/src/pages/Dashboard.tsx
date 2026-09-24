@@ -6,6 +6,7 @@ import WorkerDashboard from './WorkerDashboard';
 import TechnicianDashboard from './TechnicianDashboard';
 import ManagerDashboard from './ManagerDashboard';
 import ComplaintSubmissionDashboard from './ComplaintSubmissionDashboard';
+import RoomManagementDashboard from '@/components/RoomManagementDashboard';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -19,7 +20,7 @@ export default function Dashboard() {
     case 'admin':
       return <AdminDashboard />;
     case 'operater':
-      return <OperatorDashboard />;
+      return <RoomManagementDashboard><OperatorDashboard /></RoomManagementDashboard>;
     case 'sef':
       return <SupervisorDashboard />;
     case 'radnik':
@@ -27,9 +28,9 @@ export default function Dashboard() {
     case 'serviser':
       return <TechnicianDashboard />;
     case 'menadzer':
-      return <ManagerDashboard />;
+      return <RoomManagementDashboard><ManagerDashboard /></RoomManagementDashboard>;
     default:
       // All other roles (recepcioner, kuhar, sobarica, etc.) use complaint submission dashboard
-      return <ComplaintSubmissionDashboard />;
+      return <RoomManagementDashboard><ComplaintSubmissionDashboard /></RoomManagementDashboard>;
   }
 }

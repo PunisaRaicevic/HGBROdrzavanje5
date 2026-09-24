@@ -34,6 +34,7 @@ import WorkerProfileDialog from '@/components/WorkerProfileDialog';
 import TeamPerformanceDialog from '@/components/TeamPerformanceDialog';
 import DailyReportDialog from '@/components/DailyReportDialog';
 import OutOfOrderRoomsTab from '@/components/OutOfOrderRoomsTab';
+import { useRoomAccess } from '@/hooks/use-room-access';
 import CreateRecurringTaskDialog from '@/components/CreateRecurringTaskDialog';
 import TaskDetailsDialog from '@/components/TaskDetailsDialog';
 import EditTaskDialog from '@/components/EditTaskDialog';
@@ -57,6 +58,7 @@ const getElapsedTime = (createdAt: Date): string => {
 export default function SupervisorDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { data: roomAccess } = useRoomAccess();
   const { toast } = useToast();
   
   const [selectTechnicianOpen, setSelectTechnicianOpen] = useState(false);
@@ -662,17 +664,17 @@ export default function SupervisorDashboard() {
               <TabsTrigger value="overview" data-testid="tab-overview">
                 Pregled
               </TabsTrigger>
-              <TabsTrigger
+              {roomAccess?.canManage && <TabsTrigger
                 value="out-of-order"
                 className="bg-red-100 text-red-800 hover:bg-red-200 data-[state=active]:bg-red-600 data-[state=active]:text-white"
                 data-testid="tab-supervisor-out-of-order"
               >
                 Sobe van funkcije
-              </TabsTrigger>
+              </TabsTrigger>}
             </TabsList>
-            <TabsContent value="out-of-order" className="space-y-4">
+            {roomAccess?.canManage && <TabsContent value="out-of-order" className="space-y-4">
               <OutOfOrderRoomsTab canEditReason={false} />
-            </TabsContent>
+            </TabsContent>}
 
             {/* Moji zadaci Tab */}
             <TabsContent value="my-tasks" className="space-y-4">
